@@ -1,0 +1,107 @@
+<div class="student-list-container">
+  <div class="page-header">
+    <h2><i class="fas fa-users"></i> Students List</h2>
+    <button class="btn btn-primary" (click)="addStudent()">
+      <i class="fas fa-plus"></i> Add Student
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <div class="row">
+      <div class="col-md-4">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search by name, roll number..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+        >
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="selectedClass" (change)="onClassChange()">
+          <option value="">All Classes</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="selectedSection" (change)="onSectionChange()">
+          <option value="">All Sections</option>
+          <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline w-100" (click)="loadStudents()">
+          <i class="fas fa-sync"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+    <p class="mt-3">Loading students...</p>
+  </div>
+
+  <!-- Students Table -->
+  <div *ngIf="!loading" class="table-card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of filteredStudents">
+            <td><strong>{{ student.rollNumber }}</strong></td>
+            <td>
+              <div class="student-info">
+                <div class="avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div>
+                <div>
+                  <div class="name">{{ student.firstName }} {{ student.lastName }}</div>
+                  <small class="text-muted">{{ student.gender }}</small>
+                </div>
+              </div>
+            </td>
+            <td>{{ student.email }}</td>
+            <td>{{ student.phoneNumber }}</td>
+            <td>{{ student.className }}</td>
+            <td>{{ student.sectionName }}</td>
+            <td>
+              <span class="badge" [class.badge-success]="student.isActive" [class.badge-danger]="!student.isActive">
+                {{ student.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-view" (click)="viewDetails(student)" title="View">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-action btn-edit" (click)="editStudent(student)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-action btn-delete" (click)="deleteStudent(student)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredStudents.length === 0" class="no-data">
+        <i class="fas fa-inbox fa-3x"></i>
+        <p>No students found</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,132 @@
+<div class="registration-container">
+  <div class="page-header">
+    <h2><i class="fas fa-user-graduate"></i> Student Registration</h2>
+    <button class="btn btn-outline" (click)="showBulkUpload = !showBulkUpload">
+      <i class="fas fa-upload"></i>
+      {{ showBulkUpload ? 'Single Registration' : 'Bulk Upload' }}
+    </button>
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    <i class="fas fa-check-circle"></i> {{ success }}
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Single Registration Form -->
+  <div *ngIf="!showBulkUpload" class="registration-card">
+    <form [formGroup]="studentForm" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">First Name *</label>
+          <input type="text" class="form-control" formControlName="firstName">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Last Name *</label>
+          <input type="text" class="form-control" formControlName="lastName">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Date of Birth *</label>
+          <input type="date" class="form-control" formControlName="dateOfBirth">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Gender *</label>
+          <select class="form-control" formControlName="gender">
+            <option value="">Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email *</label>
+          <input type="email" class="form-control" formControlName="email">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone Number *</label>
+          <input type="text" class="form-control" formControlName="phoneNumber">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Address *</label>
+        <textarea class="form-control" formControlName="address" rows="2"></textarea>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Class *</label>
+          <select class="form-control" formControlName="classId">
+            <option value="">Select Class</option>
+            <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Section *</label>
+          <select class="form-control" formControlName="sectionId">
+            <option value="">Select Section</option>
+            <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+          </select>
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Roll Number *</label>
+          <input type="text" class="form-control" formControlName="rollNumber" readonly>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Admission Date *</label>
+        <input type="date" class="form-control" formControlName="admissionDate">
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="loading || studentForm.invalid">
+        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
+        {{ loading ? 'Registering...' : 'Register Student' }}
+      </button>
+    </form>
+  </div>
+
+  <!-- Bulk Upload -->
+  <div *ngIf="showBulkUpload" class="registration-card">
+    <h4><i class="fas fa-file-excel"></i> Bulk Upload Students</h4>
+    <p class="text-muted">Upload an Excel file (.xlsx) with student data</p>
+
+    <div class="row mb-3">
+    <div class="col-md-6">
+      <label class="form-label">Class *</label>
+      <select class="form-control" [(ngModel)]="bulkClassId" (change)="onBulkClassChange()">
+        <option value="">Select Class</option>
+        <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+      </select>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Section *</label>
+      <select class="form-control" [(ngModel)]="bulkSectionId">
+        <option value="">Select Section</option>
+        <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+      </select>
+    </div>
+  </div>
+
+ <div class="upload-area">
+    <input type="file" id="fileInput" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>
+    <label for="fileInput" class="upload-label">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <span>{{ selectedFile ? selectedFile.name : 'Click to select Excel file' }}</span>
+    </label>
+  </div>
+
+  <button class="btn btn-primary mt-3" (click)="uploadBulk()" [disabled]="!selectedFile || !bulkClassId || !bulkSectionId || uploadProgress">
+    <i [class]="uploadProgress ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
+    {{ uploadProgress ? 'Uploading...' : 'Upload Students' }}
+  </button>
+  </div>
+</div>

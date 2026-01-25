@@ -1,0 +1,95 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="logo-section">
+      <div class="logo-icon">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
+      <h2>Welcome Back!</h2>
+      <p>Sign in to continue to School Portal</p>
+    </div>
+
+    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="fas fa-exclamation-circle me-2"></i>
+      {{ error }}
+      <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-envelope"></i>
+          </span>
+          <input 
+            type="email" 
+            class="form-control" 
+            id="email" 
+            formControlName="email"
+            placeholder="teacher@school.edu"
+            [class.is-invalid]="f['email'].invalid && f['email'].touched"
+          >
+        </div>
+        <div *ngIf="f['email'].invalid && f['email'].touched" class="text-danger small mt-1">
+          <div *ngIf="f['email'].errors?.['required']">Email is required</div>
+          <div *ngIf="f['email'].errors?.['email']">Please enter a valid email</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text">
+            <i class="fas fa-lock"></i>
+          </span>
+          <input 
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-control" 
+            id="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            [class.is-invalid]="f['password'].invalid && f['password'].touched"
+          >
+          <span class="input-group-text toggle-password" (click)="togglePassword()">
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </span>
+        </div>
+        <div *ngIf="f['password'].invalid && f['password'].touched" class="text-danger small mt-1">
+          Password is required
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col-6">
+          <div class="form-check">
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="rememberMe"
+              formControlName="rememberMe"
+            >
+            <label class="form-check-label" for="rememberMe">
+              Remember me
+            </label>
+          </div>
+        </div>
+        <div class="col-6 text-end">
+          <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-submit" [disabled]="loading">
+        <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
+        {{ loading ? 'Signing in...' : 'Sign In' }}
+      </button>
+    </form>
+
+    <div class="divider">
+      <span>or</span>
+    </div>
+
+    <div class="text-center mt-3">
+      <p class="mb-0">Don't have an account? <a routerLink="/auth/register" class="register-link">Register here</a></p>
+    </div>
+  </div>
+</div>

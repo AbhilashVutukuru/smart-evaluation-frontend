@@ -1,0 +1,103 @@
+<div class="teacher-list-container">
+  <div class="page-header">
+    <h2><i class="fas fa-chalkboard-teacher"></i> Teachers List</h2>
+    <button class="btn btn-primary" (click)="addTeacher()">
+      <i class="fas fa-plus"></i> Add Teacher
+    </button>
+  </div>
+
+  <!-- Search -->
+  <div class="filters-card">
+    <div class="row">
+      <div class="col-md-10">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Search by name, employee code..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearch()"
+        >
+      </div>
+      <div class="col-md-2">
+        <button class="btn btn-outline w-100" (click)="loadTeachers()">
+          <i class="fas fa-sync"></i> Refresh
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+    <p class="mt-3">Loading teachers...</p>
+  </div>
+
+  <!-- Teachers Table -->
+  <div *ngIf="!loading" class="table-card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Employee Code</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Qualification</th>
+            <th>Subjects</th>
+            <th>Joining Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let teacher of filteredTeachers">
+            <td><strong>{{ teacher.employeeCode }}</strong></td>
+            <td>
+              <div class="teacher-info">
+                <div class="avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div>
+                <div>
+                  <div class="name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
+                  <small class="text-muted">{{ teacher.gender }}</small>
+                </div>
+              </div>
+            </td>
+            <td>{{ teacher.email }}</td>
+            <td>{{ teacher.phoneNumber }}</td>
+            <td>{{ teacher.qualification }}</td>
+            <td>
+              <div class="subjects">
+                <span class="subject-badge" *ngFor="let subject of teacher.subjects">
+                  {{ subject }}
+                </span>
+              </div>
+            </td>
+            <td>{{ teacher.joiningDate | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span class="badge" [class.badge-success]="teacher.isActive" [class.badge-danger]="!teacher.isActive">
+                {{ teacher.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-action btn-view" (click)="viewDetails(teacher)" title="View">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn-action btn-edit" (click)="editTeacher(teacher)" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-action btn-delete" (click)="deleteTeacher(teacher)" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div *ngIf="filteredTeachers.length === 0" class="no-data">
+        <i class="fas fa-inbox fa-3x"></i>
+        <p>No teachers found</p>
+      </div>
+    </div>
+  </div>
+</div>
