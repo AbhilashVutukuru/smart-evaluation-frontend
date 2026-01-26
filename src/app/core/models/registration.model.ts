@@ -24,7 +24,7 @@ export interface TeacherRegisterRequest {
   gender: string;
   qualification: string;
   experience: number;
-  joiningDate: string;
+  dateOfJoining: string;
   subjectIds: number[];
 }
 

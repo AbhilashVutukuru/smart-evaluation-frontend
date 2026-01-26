@@ -41,7 +41,7 @@ export class TeacherRegistrationComponent implements OnInit {
       gender: ['', Validators.required],
       qualification: ['', Validators.required],
       experience: [0, [Validators.required, Validators.min(0)]],
-      joiningDate: ['', Validators.required],
+      dateOfJoining: ['', Validators.required],
       subjectIds: [[], Validators.required]
     });
   }

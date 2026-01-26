@@ -85,7 +85,9 @@ export class RegistrationService {
     sectionId: number,
   ): Observable<ApiResponse<NextRollNumber>> {
     return this.http.get<ApiResponse<NextRollNumber>>(
-      `${this.apiUrl}/enrollment/next-roll-number?classId=${classId}&sectionId=${sectionId}`,
+      `${this.apiUrl}/student/next-roll-number?classId=${classId}&sectionId=${sectionId}`,
     );
   }
+     
+  var =10;
 }
