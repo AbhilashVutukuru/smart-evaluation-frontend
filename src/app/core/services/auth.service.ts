@@ -3,10 +3,16 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, LoginResponse, ForgotPasswordRequest, ResetPasswordRequest, ApiResponse } from '../models/auth.model';
+import {
+  LoginRequest,
+  LoginResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  ApiResponse,
+} from '../models/auth.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private readonly apiUrl = environment.apiUrl;
@@ -16,7 +22,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
   ) {
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
@@ -26,19 +32,28 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
-      .pipe(
-        tap(response => {
-          if (response.success && response.data) {
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
-            localStorage.setItem('accessToken', response.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken);
-            this.currentUserSubject.next(response.data);
-            this.startRefreshTokenTimer();
-          }
-        })
-      );
-  }
+  return this.http
+    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
+    .pipe(
+      tap((response) => {
+        if (response.success && response.data) {
+          // Store tokens first
+          localStorage.setItem('currentUser', JSON.stringify(response.data));
+          localStorage.setItem('accessToken', response.data.accessToken);
+          localStorage.setItem('refreshToken', response.data.refreshToken);
+          this.currentUserSubject.next(response.data);
+
+          // Check if password change required AFTER storing tokens
+          // if (response.data.requirePasswordChange) {
+          //   this.router.navigate(['/auth/change-password']); // No sidebar route
+          //   return;
+          // }
+           this.currentUserSubject.next(response.data);
+          this.startRefreshTokenTimer();
+        }
+      }),
+    );
+}
 
   refreshToken(): Observable<ApiResponse<LoginResponse>> {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -47,9 +62,12 @@ export class AuthService {
       return throwError(() => new Error('No refresh token'));
     }
 
-    return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/refresh`, { refreshToken })
+    return this.http
+      .post<
+        ApiResponse<LoginResponse>
+      >(`${this.apiUrl}/auth/refresh`, { refreshToken })
       .pipe(
-        tap(response => {
+        tap((response) => {
           if (response.success && response.data) {
             localStorage.setItem('currentUser', JSON.stringify(response.data));
             localStorage.setItem('accessToken', response.data.accessToken);
@@ -61,7 +79,7 @@ export class AuthService {
         catchError((error: HttpErrorResponse) => {
           this.logout();
           return throwError(() => error);
-        })
+        }),
       );
   }
 
@@ -72,7 +90,7 @@ export class AuthService {
     // Parse JWT to get expiry
     const jwtToken = JSON.parse(atob(token.split('.')[1]));
     const expires = new Date(jwtToken.exp * 1000);
-    const timeout = expires.getTime() - Date.now() - (60 * 1000); // Refresh 1 min before expiry
+    const timeout = expires.getTime() - Date.now() - 60 * 1000; // Refresh 1 min before expiry
 
     this.refreshTokenTimeout = setTimeout(() => {
       this.refreshToken().subscribe();
@@ -86,15 +104,28 @@ export class AuthService {
   }
 
   forgotPassword(request: ForgotPasswordRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/auth/forgot-password`, request);
+    return this.http.post<ApiResponse>(
+      `${this.apiUrl}/auth/forgot-password`,
+      request,
+    );
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/auth/reset-password`, request);
+    return this.http.post<ApiResponse>(
+      `${this.apiUrl}/auth/reset-password`,
+      request,
+    );
   }
 
   changePassword(data: any): Observable<ApiResponse> {
-  return this.http.post<ApiResponse>(`${this.apiUrl}/auth/change-password`, data);
+    return this.http.post<ApiResponse>(
+      `${this.apiUrl}/auth/change-password`,
+      data,
+    );
+  }
+
+  updateCurrentUser(user: LoginResponse): void {
+  this.currentUserSubject.next(user);
 }
 
   logout(): void {

@@ -16,6 +16,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'auth/change-password',
+    loadComponent: () =>
+      import('./features/auth/change-password/change-password.component').then(
+        (m) => m.ChangePasswordComponent,
+      ),
+  },
+  {
     path: 'auth/forgot-password',
     loadComponent: () =>
       import('./features/auth/forgot-password/forgot-password.component').then(
@@ -23,7 +30,7 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'reset-password',
+    path: 'auth/reset-password',
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,

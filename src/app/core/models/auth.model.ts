@@ -9,6 +9,7 @@ export interface LoginResponse {
   userName: string;
   email: string;
   role: string;
+  requirePasswordChange: boolean; 
 }
 
 export interface ForgotPasswordRequest {
@@ -16,7 +17,7 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string;
+  resetToken: string;
   newPassword: string;
   confirmPassword: string;
 }
