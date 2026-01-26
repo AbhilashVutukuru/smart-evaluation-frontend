@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-change-password',
@@ -11,13 +12,14 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./change-password.component.css']
 })
 export class ChangePasswordComponent {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   changePasswordForm: FormGroup;
-
   loading = false;
   error = '';
   success = '';
-
   showOldPassword = false;
   showNewPassword = false;
   showConfirmPassword = false;
@@ -29,77 +31,61 @@ export class ChangePasswordComponent {
     number: false
   };
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService
-  ) {
-    this.changePasswordForm = this.fb.group(
-      {
-        oldPassword: ['', Validators.required],
-        newPassword: ['', [Validators.required, Validators.minLength(8)]],
-        confirmPassword: ['', Validators.required]
-      },
-      { validators: this.passwordMatchValidator }
-    );
+  constructor() {
+    this.changePasswordForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required]
+    }, { validators: this.passwordMatchValidator });
 
-    this.changePasswordForm.get('newPassword')?.valueChanges.subscribe(value => {
-      this.checkPasswordRequirements(value || '');
+    this.changePasswordForm.get('newPassword')?.valueChanges.subscribe(password => {
+      this.checkPasswordStrength(password);
     });
   }
 
-  get f() {
-    return this.changePasswordForm.controls;
+  get f() { return this.changePasswordForm.controls; }
+
+  passwordMatchValidator(group: FormGroup) {
+    const password = group.get('newPassword')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
-  togglePassword(type: 'old' | 'new' | 'confirm') {
-    if (type === 'old') this.showOldPassword = !this.showOldPassword;
-    if (type === 'new') this.showNewPassword = !this.showNewPassword;
-    if (type === 'confirm') this.showConfirmPassword = !this.showConfirmPassword;
+  togglePassword(field: string): void {
+    if (field === 'old') this.showOldPassword = !this.showOldPassword;
+    else if (field === 'new') this.showNewPassword = !this.showNewPassword;
+    else this.showConfirmPassword = !this.showConfirmPassword;
   }
 
-  passwordMatchValidator(form: FormGroup) {
-    const newPassword = form.get('newPassword')?.value;
-    const confirmPassword = form.get('confirmPassword')?.value;
-
-    return newPassword === confirmPassword
-      ? null
-      : { passwordMismatch: true };
-  }
-
-  checkPasswordRequirements(password: string) {
-    this.passwordRequirements.length = password.length >= 8;
-    this.passwordRequirements.uppercase = /[A-Z]/.test(password);
-    this.passwordRequirements.lowercase = /[a-z]/.test(password);
-    this.passwordRequirements.number = /[0-9]/.test(password);
+  checkPasswordStrength(password: string): void {
+    this.passwordRequirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password)
+    };
   }
 
   onSubmit(): void {
-    if (this.changePasswordForm.invalid) {
-      this.changePasswordForm.markAllAsTouched();
-      return;
-    }
+    if (this.changePasswordForm.invalid) return;
 
     this.loading = true;
     this.error = '';
     this.success = '';
 
-    const payload = {
-      oldPassword: this.changePasswordForm.value.oldPassword,
-      newPassword: this.changePasswordForm.value.newPassword
-    };
-
-    this.authService.changePassword(payload).subscribe({
+    this.authService.changePassword(this.changePasswordForm.value).subscribe({
       next: (response) => {
         if (response.success) {
-          this.success = 'Password changed successfully';
+          this.success = 'Password changed successfully!';
           this.changePasswordForm.reset();
+          setTimeout(() => this.router.navigate(['/dashboard']), 2000);
         } else {
-          this.error = response.message || 'Failed to change password';
+          this.error = response.message;
         }
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Network error. Please try again.';
+        this.error = error.error?.message || 'Failed to change password';
         this.loading = false;
       }
     });
