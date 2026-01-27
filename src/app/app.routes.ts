@@ -77,6 +77,13 @@ export const routes: Routes = [
           ),
       },
       {
+        path: 'exam/create',
+        loadComponent: () =>
+          import('./features/teachers/exam-upload/exam-upload.component').then(
+            (m) => m.ExamUploadComponent,
+          ),
+      },
+      {
         path: 'change-password',
         loadComponent: () =>
           import('./features/auth/change-password/change-password.component').then(
