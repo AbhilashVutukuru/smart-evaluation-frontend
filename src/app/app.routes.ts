@@ -83,6 +83,13 @@ export const routes: Routes = [
             (m) => m.ChangePasswordComponent,
           ),
       },
+      {
+        path: 'upload-answer-sheets',
+        loadComponent: () =>
+          import('./features/student-answers/upload-answer-sheets/upload-answer-sheets.component').then(
+            (m) => m.UploadAnswerSheetsComponent,
+          ),
+      },
     ],
   },
   {

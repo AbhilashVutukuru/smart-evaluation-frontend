@@ -39,6 +39,7 @@ export class SidebarComponent {
     { icon: 'fas fa-upload', label: 'Upload Docs', route: '/upload' },
     { icon: 'fas fa-chart-bar', label: 'Results', route: '/results' },
     { icon: 'fas fa-key', label: 'Change Password', route: '/change-password' },
+     { icon: 'fas fa-upload', label: 'Upload Answer Sheets', route: '/upload-answer-sheets' },
     { icon: 'fas fa-cog', label: 'Settings', route: '/settings' },
   ];
 
