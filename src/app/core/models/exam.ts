@@ -1,0 +1,61 @@
+export interface RubricPoint {
+  description: string;
+  marks: number | null;
+}
+
+export interface QuestionSet {
+  questionNumber: number;
+  questionText: string;
+  answerText: string;
+  maxMarks: number | null;
+  validationRulesCount: number | null;
+  rubricPoints: RubricPoint[];
+}
+
+export interface Exam {
+  questionPaperId: number;
+  examTitle: string;
+  examTypeName: string;
+  examDate: string;
+  sectionName: string;
+  academicYear: string;
+  classId: number;
+}
+
+export interface ExamFormData {
+  academicYear: string;
+  classId: string;
+  subjectId: string;
+  examTypeId: string;
+  totalMarks: number | null;
+  numberOfQuestions: number | null;
+  questionSets: QuestionSet[];
+}
+
+export interface ExamFilters {
+  filterExamClass: string;
+  filterExamSubject: string;
+  filterExamExamType: string;
+}
+
+export interface Question {
+  questionNumber: number;
+  questionText: string;
+  maxMarks: number;
+  answerText: string;
+  rubrics: Rubric[];
+}
+
+export interface Rubric {
+  criterionOrder: number;
+  rubricText: string;
+  maxMarks: number;
+}
+
+export interface ApiRequest {
+  classId: number;
+  subjectId: number;
+  examTypeId: number;
+  totalMarks: number;
+  questions: Question[];
+}

@@ -1,0 +1,402 @@
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { delay, catchError, map } from 'rxjs/operators';
+import { 
+  Exam, 
+  QuestionSet, 
+  ApiRequest,
+  ExamFormData,
+  ExamFilters
+} from "../models/exam";
+import { Class, SubjectItem, ExamType, Section } from '../../shared/models/common';
+
+const API_URL = 'http://localhost:5163/api';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TeacherUploadService {
+  constructor(
+    private http: HttpClient
+  ) {}
+
+  // Mock data fallbacks
+  getMockClasses(): Class[] {
+    return [
+      { id: 1, name: 'Class 6' },
+      { id: 3, name: 'Class 7' },
+      { id: 4, name: 'Class 8' },
+      { id: 6, name: 'Class 9' },
+      { id: 7, name: 'Class 10' }
+    ];
+  }
+
+  getMockSubjects(): SubjectItem[] {
+    return [
+      { id: 1, name: 'Mathematics' },
+      { id: 2, name: 'Science' },
+      { id: 3, name: 'Chemistry' },
+      { id: 4, name: 'Biology' },
+      { id: 5, name: 'English' },
+      { id: 6, name: 'Computer Science' },
+      { id: 7, name: 'History' },
+      { id: 8, name: 'Geography' }
+    ];
+  }
+
+  getMockExamTypes(): ExamType[] {
+    return [
+      { id: 1, name: 'Mid-Term' },
+      { id: 2, name: 'Final Examination' },
+      { id: 3, name: 'Unit Test' },
+      { id: 4, name: 'Quiz' },
+      { id: 5, name: 'Pre-Board' }
+    ];
+  }
+
+  getMockSections(): Section[] {
+    return [
+      { id: 1, name: 'Section A' },
+      { id: 2, name: 'Section B' },
+      { id: 9, name: 'Section C' }
+    ];
+  }
+
+  // Get Classes from API
+  getClasses(token?: string): Observable<Class[]> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || localStorage.getItem('token') || ''}`
+    });
+
+    return this.http.get<any>(`${API_URL}/master-data/classes`, { headers }).pipe(
+      map((response: any) => {
+        return (response.data || []).map((cls: any) => ({
+          id: cls.id,
+          name: cls.className,
+          className: cls.className,
+          classNumber: cls.classNumber
+        }));
+      }),
+      catchError(error => {
+        console.error('Error fetching classes from API:', error);
+        // Fallback to mock data if API fails
+        return of(this.getMockClasses());
+      })
+    );
+  }
+
+  // Get Subjects from API
+  getSubjects(token?: string): Observable<SubjectItem[]> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || localStorage.getItem('token') || ''}`
+    });
+
+    return this.http.get<any>(`${API_URL}/master-data/subjects`, { headers }).pipe(
+      map((response: any) => {
+        return (response.data || []).map((subject: any) => ({
+          id: subject.id,
+          name: subject.name || subject.subjectName
+        }));
+      }),
+      catchError(error => {
+        console.error('Error fetching subjects from API:', error);
+        // Fallback to mock data if API fails
+        return of(this.getMockSubjects());
+      })
+    );
+  }
+
+  // Get Exam Types from API
+  getExamTypes(token?: string): Observable<ExamType[]> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || localStorage.getItem('token') || ''}`
+    });
+
+    return this.http.get<any>(`${API_URL}/master-data/exam-types`, { headers }).pipe(
+      map((response: any) => {
+        return (response.data || []).map((examType: any) => ({
+          id: examType.id,
+          name: examType.name || examType.examTypeName
+        }));
+      }),
+      catchError(error => {
+        console.error('Error fetching exam types from API:', error);
+        // Fallback to mock data if API fails
+        return of(this.getMockExamTypes());
+      })
+    );
+  }
+
+  // Get Sections from API
+  getSections(classId: number | string, token?: string): Observable<Section[]> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token || localStorage.getItem('token') || ''}`
+    });
+
+    return this.http.get<any>(`${API_URL}/master-data/sections?classId=${classId}`, { headers }).pipe(
+      map((response: any) => {
+        return (response.data || []).map((section: any) => ({
+          id: section.id,
+          name: section.name || section.sectionName
+        }));
+      }),
+      catchError(error => {
+        console.error('Error fetching sections from API:', error);
+        // Fallback to mock data if API fails
+        return of(this.getMockSections());
+      })
+    );
+  }
+
+  getMockExams(filters: ExamFilters): Observable<Exam[]> {
+    const { filterExamClass, filterExamSubject, filterExamExamType } = filters;
+    
+    if (!filterExamClass || !filterExamSubject || !filterExamExamType) {
+      return of([]);
+    }
+    
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
+    });
+    
+    // Call API to get exams based on filters
+    return this.http.get<any>(
+      `${API_URL}/question-papers?classId=${filterExamClass}&subjectId=${filterExamSubject}&examTypeId=${filterExamExamType}`,
+      { headers }
+    ).pipe(
+      map((response: any) => {
+        return (response.data || []).map((exam: any) => ({
+          questionPaperId: exam.id,
+          examTitle: exam.title || exam.examTitle,
+          examTypeName: exam.examTypeName,
+          examDate: exam.examDate,
+          sectionName: exam.sectionName,
+          academicYear: exam.academicYear,
+          classId: exam.classId
+        }));
+      }),
+      catchError(error => {
+        console.error('Error fetching exams:', error);
+        return of([]);
+      })
+    );
+  }
+
+  generateQuestionSets(numberOfQuestions: number, totalMarks: number): QuestionSet[] {
+    const questionSets: QuestionSet[] = [];
+    const marksPerQuestion = Math.floor(totalMarks / numberOfQuestions);
+    const remainder = totalMarks % numberOfQuestions;
+    
+    for (let i = 0; i < numberOfQuestions; i++) {
+      let questionMarks = marksPerQuestion;
+      if (i < remainder) {
+        questionMarks += 1;
+      }
+      
+      questionSets.push({
+        questionNumber: i + 1,
+        questionText: '',
+        answerText: '',
+        maxMarks: questionMarks,
+        validationRulesCount: 1,
+        rubricPoints: [{ description: '', marks: null }]
+      });
+    }
+    
+    return questionSets;
+  }
+
+  calculateTotalQuestionMarks(questionSets: QuestionSet[]): number {
+    return questionSets.reduce((total, questionSet) => {
+      return total + (questionSet.maxMarks || 0);
+    }, 0);
+  }
+
+  calculateValidationMarksTotal(questionSet: QuestionSet): number {
+    return questionSet.rubricPoints.reduce((total, rule) => {
+      return total + (rule.marks || 0);
+    }, 0);
+  }
+
+  validateMarksMatch(questionSet: QuestionSet): boolean {
+    if (!questionSet.maxMarks) return false;
+    return questionSet.maxMarks === this.calculateValidationMarksTotal(questionSet);
+  }
+
+  validateQuestionSet(questionSet: QuestionSet): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+
+    if (!questionSet.questionText || questionSet.questionText.trim().length === 0) {
+      errors.push('Question text field is required');
+    }
+    if (!questionSet.answerText || questionSet.answerText.trim().length === 0) {
+      errors.push('Answer field is required');
+    }
+    if (!questionSet.maxMarks || questionSet.maxMarks <= 0) {
+      errors.push('Maximum marks field is required and must be greater than 0');
+    }
+    if (!questionSet.validationRulesCount || questionSet.validationRulesCount < 1) {
+      errors.push('Validation rules count is required');
+    }
+    
+    const invalidRules = questionSet.rubricPoints.filter(
+      (rule) => !rule.description || rule.description.trim().length === 0 || rule.marks === null || rule.marks < 0
+    );
+    
+    if (invalidRules.length > 0) {
+      invalidRules.forEach((rule) => {
+        const ruleNum = questionSet.rubricPoints.indexOf(rule) + 1;
+        if (!rule.description || rule.description.trim().length === 0) {
+          errors.push(`Validation Rule ${ruleNum}: Description field is required`);
+        }
+        if (rule.marks === null || rule.marks < 0) {
+          errors.push(`Validation Rule ${ruleNum}: Marks field is required and must be >= 0`);
+        }
+      });
+    }
+
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
+  prepareApiRequest(formData: ExamFormData): ApiRequest {
+    const apiQuestions = formData.questionSets.map(questionSet => {
+      const rubrics = questionSet.rubricPoints.map((rule, index) => ({
+        criterionOrder: index + 1,
+        rubricText: rule.description,
+        maxMarks: rule.marks || 0
+      }));
+
+      return {
+        questionNumber: questionSet.questionNumber,
+        questionText: questionSet.questionText,
+        maxMarks: questionSet.maxMarks || 0,
+        answerText: questionSet.answerText,
+        rubrics: rubrics
+      };
+    });
+
+    return {
+      classId: parseInt(formData.classId) || 0,
+      subjectId: parseInt(formData.subjectId) || 0,
+      examTypeId: parseInt(formData.examTypeId) || 0,
+      totalMarks: formData.totalMarks || 0,
+      questions: apiQuestions
+    };
+  }
+
+  uploadExam(apiRequest: ApiRequest): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
+    
+    return this.http.post(`${API_URL}/question-paper/upload`, apiRequest, { headers }).pipe(
+      catchError(error => {
+        console.error('Upload error:', error);
+        throw error;
+      })
+    );
+  }
+
+  updateExam(examId: number, apiRequest: ApiRequest): Observable<any> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    });
+    
+    return this.http.put(`${API_URL}/exams/${examId}`, apiRequest, { headers }).pipe(
+      catchError(error => {
+        console.error('Update error:', error);
+        throw error;
+      })
+    );
+  }
+
+  validateExamForm(formData: ExamFormData): { isValid: boolean; errors: string[] } {
+    const errors: string[] = [];
+    
+    if (!formData.classId) {
+      errors.push('Class is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!formData.subjectId) {
+      errors.push('Subject is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!formData.examTypeId) {
+      errors.push('Exam type is required');
+      return { isValid: false, errors };
+    }
+    
+    if (!formData.numberOfQuestions || formData.numberOfQuestions < 1) {
+      errors.push('Please enter a valid number of questions (minimum 1)');
+      return { isValid: false, errors };
+    }
+    
+    if (!formData.totalMarks || formData.totalMarks < 1) {
+      errors.push('Total marks is required and must be greater than 0');
+      return { isValid: false, errors };
+    }
+    
+    // Check total marks match
+    const totalQuestionMarks = this.calculateTotalQuestionMarks(formData.questionSets);
+    if (totalQuestionMarks !== formData.totalMarks) {
+      errors.push(`Sum of all question marks (${totalQuestionMarks}) must equal total exam marks (${formData.totalMarks})`);
+      return { isValid: false, errors };
+    }
+    
+    // Validate each question
+    for (let index = 0; index < formData.questionSets.length; index++) {
+      const question = formData.questionSets[index];
+      const questionValidation = this.validateQuestionSet(question);
+      
+      if (!questionValidation.isValid) {
+        errors.push(`Question ${index + 1}: ${questionValidation.errors[0]}`);
+        return { isValid: false, errors };
+      }
+      
+      if (!this.validateMarksMatch(question)) {
+        const totalValidationMarks = this.calculateValidationMarksTotal(question);
+        errors.push(`Question ${index + 1}: Validation marks (${totalValidationMarks}) don't match question marks (${question.maxMarks})`);
+        return { isValid: false, errors };
+      }
+    }
+    
+    return {
+      isValid: errors.length === 0,
+      errors: errors
+    };
+  }
+
+  getUserInfo(): any {
+    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+    if (!userInfo.firstName) {
+      const defaultUser = {
+        firstName: 'Test',
+        lastName: 'Teacher',
+        email: 'teacher@school.edu',
+        userId: 1,
+        role: 'Teacher'
+      };
+      localStorage.setItem('userInfo', JSON.stringify(defaultUser));
+      return defaultUser;
+    }
+    return userInfo;
+  }
+
+  getCurrentAcademicYear(): string {
+    const currentYear = new Date().getFullYear();
+    return `${currentYear}-${currentYear + 1}`;
+  }
+}
