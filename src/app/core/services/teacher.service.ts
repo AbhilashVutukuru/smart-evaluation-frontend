@@ -20,6 +20,10 @@ export class TeacherService {
     return this.http.get<ApiResponse>(`${this.apiUrl}/teacher/${id}`);
   }
 
+  updateTeacher(data: any): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.apiUrl}/teacher/${data.id}`, data);
+  }
+
   deleteTeacher(id: number): Observable<ApiResponse> {
     return this.http.delete<ApiResponse>(`${this.apiUrl}/teacher/${id}`);
   }

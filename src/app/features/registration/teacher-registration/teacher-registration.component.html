@@ -1,57 +1,84 @@
 <div class="registration-container">
+  <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-chalkboard-teacher"></i> Teacher Registration</h2>
-    <button class="btn btn-outline" (click)="showBulkUpload = !showBulkUpload">
-      <i class="fas fa-upload"></i>
-      {{ showBulkUpload ? 'Single Registration' : 'Bulk Upload' }}
+    <button
+      class="btn btn-outline-primary"
+      (click)="showBulkUpload = !showBulkUpload"
+    >
+      <i [class]="showBulkUpload ? 'fas fa-user' : 'fas fa-file-upload'"></i>
+      {{ showBulkUpload ? "Single Registration" : "Bulk Upload" }}
     </button>
   </div>
 
+  <!-- Success/Error Messages -->
   <div *ngIf="success" class="alert alert-success">
-    <i class="fas fa-check-circle"></i> {{ success }}
+    <i class="fas fa-check-circle"></i>
+    <span>{{ success }}</span>
+    <button class="alert-close" (click)="success = ''">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger">
-    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  <div *ngIf="error" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ error }}</span>
+    <button class="alert-close" (click)="error = ''">
+      <i class="fas fa-times"></i>
+    </button>
   </div>
 
   <!-- Single Registration Form -->
-  <div *ngIf="!showBulkUpload" class="registration-card">
+  <div *ngIf="!showBulkUpload" class="card">
+    <h4><i class="fas fa-user-plus"></i> Teacher Information</h4>
+
     <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()">
+      <!-- Personal Information Section -->
+      <div class="section-header">
+        <i class="fas fa-id-card"></i>
+        <span>Personal Information</span>
+      </div>
+
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">First Name *</label>
-          <input type="text" class="form-control" formControlName="firstName">
+          <label class="form-label"
+            >First Name <span class="required">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            formControlName="firstName"
+            placeholder="Enter first name"
+          />
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Last Name *</label>
-          <input type="text" class="form-control" formControlName="lastName">
+          <label class="form-label"
+            >Last Name <span class="required">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            formControlName="lastName"
+            placeholder="Enter last name"
+          />
         </div>
       </div>
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Email *</label>
-          <input type="email" class="form-control" formControlName="email">
+          <label class="form-label"
+            >Date of Birth <span class="required">*</span></label
+          >
+          <input
+            type="date"
+            class="form-control"
+            formControlName="dateOfBirth"
+          />
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Phone Number *</label>
-          <input type="text" class="form-control" formControlName="phoneNumber">
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Address *</label>
-        <textarea class="form-control" formControlName="address" rows="2"></textarea>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Date of Birth *</label>
-          <input type="date" class="form-control" formControlName="dateOfBirth">
-        </div>
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Gender *</label>
+          <label class="form-label"
+            >Gender <span class="required">*</span></label
+          >
           <select class="form-control" formControlName="gender">
             <option value="">Select Gender</option>
             <option value="Male">Male</option>
@@ -61,62 +88,265 @@
         </div>
       </div>
 
+      <!-- Contact Information Section -->
+      <div class="section-header">
+        <i class="fas fa-address-book"></i>
+        <span>Contact Information</span>
+      </div>
+
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">Qualification *</label>
-          <input type="text" class="form-control" formControlName="qualification" placeholder="e.g., M.Sc., B.Ed.">
+          <label class="form-label"
+            >Email <span class="required">*</span></label
+          >
+          <input
+            type="email"
+            class="form-control"
+            formControlName="email"
+            placeholder="teacher@example.com"
+          />
         </div>
         <div class="col-md-6 mb-3">
-          <label class="form-label">Experience (Years) *</label>
-          <input type="number" class="form-control" formControlName="experience" min="0" >
+          <label class="form-label"
+            >Phone Number <span class="required">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            formControlName="phoneNumber"
+            placeholder="+91 1234567890"
+          />
         </div>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Joining Date *</label>
-        <input type="date" class="form-control" formControlName="dateOfJoining">
+        <label class="form-label"
+          >Address <span class="required">*</span></label
+        >
+        <textarea
+          class="form-control"
+          formControlName="address"
+          rows="2"
+          placeholder="Enter complete address"
+        ></textarea>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Subjects *</label>
-        <div class="subjects-grid">
-          <div *ngFor="let subject of subjects" class="form-check">
-            <input 
-              class="form-check-input" 
-              type="checkbox" 
-              [id]="'subject-' + subject.id"
-              (change)="onSubjectChange($event, subject.id)"
-            >
-            <label class="form-check-label" [for]="'subject-' + subject.id">
-              {{ subject.subjectName }}
-            </label>
-          </div>
+      <!-- Professional Information Section -->
+      <div class="section-header">
+        <i class="fas fa-graduation-cap"></i>
+        <span>Professional Information</span>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label"
+            >Qualification <span class="required">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            formControlName="qualification"
+            placeholder="e.g., M.Sc., B.Ed."
+          />
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label"
+            >Experience (Years) <span class="required">*</span></label
+          >
+          <input
+            type="number"
+            class="form-control"
+            formControlName="experience"
+            min="0"
+            placeholder="Years of experience"
+          />
         </div>
       </div>
 
-      <button type="submit" class="btn btn-primary" [disabled]="loading || teacherForm.invalid">
-        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
-        {{ loading ? 'Registering...' : 'Register Teacher' }}
-      </button>
+      <div class="mb-3">
+        <label class="form-label"
+          >Joining Date <span class="required">*</span></label
+        >
+        <input type="date" class="form-control" formControlName="joiningDate" />
+      </div>
+
+      <!-- Subjects Section -->
+      <!-- <div class="section-header">
+        <i class="fas fa-book"></i>
+        <span>Subject Specialization <span class="required">*</span></span>
+      </div>
+
+      <div class="subjects-grid">
+        <div *ngFor="let subject of subjects" class="subject-checkbox">
+          <input 
+            class="checkbox-input" 
+            type="checkbox" 
+            [id]="'subject-' + subject.id"
+            (change)="onSubjectChange($event, subject.id)"
+          >
+          <label class="checkbox-label" [for]="'subject-' + subject.id">
+            <i class="fas fa-book-open"></i>
+            {{ subject.subjectName }}
+          </label>
+        </div>
+      </div> -->
+
+      <div class="button-group">
+        <button
+          type="submit"
+          class="btn btn-primary btn-lg"
+          [disabled]="loading || teacherForm.invalid"
+        >
+          <i
+            [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"
+          ></i>
+          {{ loading ? "Registering..." : "Register Teacher" }}
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary btn-lg"
+          (click)="teacherForm.reset()"
+        >
+          <i class="fas fa-redo"></i>
+          Reset Form
+        </button>
+      </div>
     </form>
   </div>
 
   <!-- Bulk Upload -->
-  <div *ngIf="showBulkUpload" class="registration-card">
-    <h4><i class="fas fa-file-excel"></i> Bulk Upload Teachers</h4>
-    <p class="text-muted">Upload an Excel file (.xlsx) with teacher data</p>
-
-    <div class="upload-area">
-      <input type="file" id="fileInput" accept=".xlsx,.xls" (change)="onFileSelected($event)" hidden>
-      <label for="fileInput" class="upload-label">
-        <i class="fas fa-cloud-upload-alt"></i>
-        <span>{{ selectedFile ? selectedFile.name : 'Click to select Excel file' }}</span>
-      </label>
+  <div *ngIf="showBulkUpload">
+    <!-- Instructions Card -->
+    <div class="card info-card">
+      <h4><i class="fas fa-info-circle"></i> Bulk Upload Instructions</h4>
+      <ul class="instructions-list">
+        <li>
+          <i class="fas fa-check"></i>
+          <span
+            >Download the template Excel file and fill in teacher details</span
+          >
+        </li>
+        <li>
+          <i class="fas fa-check"></i>
+          <span>Ensure all required fields are filled correctly</span>
+        </li>
+        <li>
+          <i class="fas fa-check"></i>
+          <span>Upload the completed Excel file (.xlsx or .xls format)</span>
+        </li>
+        <li>
+          <i class="fas fa-check"></i>
+          <span>Review the upload results and fix any errors if needed</span>
+        </li>
+      </ul>
+      <button
+        class="btn btn-secondary"
+        (click)="downloadTemplate()"
+        [disabled]="isDownloading"
+      >
+        <span *ngIf="!isDownloading">
+          <i class="fas fa-download"></i>
+          Download Template
+        </span>
+        <span *ngIf="isDownloading">
+          <span class="spinner-border spinner-border-sm me-2"></span>
+          Downloading...
+        </span>
+      </button>
     </div>
 
-    <button class="btn btn-primary mt-3" (click)="uploadBulk()" [disabled]="!selectedFile || uploadProgress">
-      <i [class]="uploadProgress ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
-      {{ uploadProgress ? 'Uploading...' : 'Upload Teachers' }}
-    </button>
+    <!-- Upload Card -->
+    <div class="card">
+      <h4>
+        <i class="fas fa-cloud-upload-alt"></i> Upload Teachers Excel File
+      </h4>
+
+      <div class="upload-area">
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx,.xls"
+          (change)="onFileSelected($event)"
+          hidden
+        />
+        <label for="fileInput" class="upload-label">
+          <div class="upload-icon">
+            <i class="fas fa-file-excel"></i>
+          </div>
+          <div class="upload-text">
+            <span class="upload-title">{{
+              selectedFile ? selectedFile.name : "Click to select Excel file"
+            }}</span>
+            <span class="upload-subtitle">Supported formats: .xlsx, .xls</span>
+          </div>
+        </label>
+      </div>
+
+      <div *ngIf="selectedFile" class="selected-file-info">
+        <i class="fas fa-file-excel"></i>
+        <span class="file-name">{{ selectedFile.name }}</span>
+        <span class="file-size"
+          >{{ (selectedFile.size / 1024).toFixed(2) }} KB</span
+        >
+        <button class="btn-remove" (click)="removeFile()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="button-group">
+        <button
+          class="btn btn-primary btn-lg"
+          (click)="uploadBulk()"
+          [disabled]="!selectedFile || uploadProgress"
+        >
+          <i
+            [class]="
+              uploadProgress ? 'fas fa-spinner fa-spin' : 'fas fa-upload'
+            "
+          ></i>
+          {{ uploadProgress ? "Uploading..." : "Upload Teachers" }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Upload Results (if any) -->
+    <div class="card" *ngIf="uploadResults">
+      <h4><i class="fas fa-clipboard-check"></i> Upload Results</h4>
+
+      <div class="results-stats">
+        <div class="stat-item success">
+          <i class="fas fa-check-circle"></i>
+          <div>
+            <span class="stat-number">{{ uploadResults.success }}</span>
+            <span class="stat-label">Successful</span>
+          </div>
+        </div>
+        <div class="stat-item error">
+          <i class="fas fa-times-circle"></i>
+          <div>
+            <span class="stat-number">{{ uploadResults.failed }}</span>
+            <span class="stat-label">Failed</span>
+          </div>
+        </div>
+        <div class="stat-item total">
+          <i class="fas fa-list"></i>
+          <div>
+            <span class="stat-number">{{ uploadResults.total }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
+      </div>
+
+      <div
+        *ngIf="uploadResults.errors && uploadResults.errors.length > 0"
+        class="errors-section"
+      >
+        <h5>Errors:</h5>
+        <div class="error-item" *ngFor="let error of uploadResults.errors">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>{{ error }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

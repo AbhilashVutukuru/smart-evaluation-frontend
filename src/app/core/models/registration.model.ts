@@ -35,6 +35,8 @@ export interface BulkUploadResponse {
   successfulRecords: number;
   failedRecords: number;
   errors?: string[];
+  classId:string;
+  sectionId:string;
 }
 
 export interface ClassDropdown {

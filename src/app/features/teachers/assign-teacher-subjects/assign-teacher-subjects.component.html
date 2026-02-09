@@ -1,0 +1,168 @@
+<div class="assignment-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2><i class="fas fa-chalkboard-teacher"></i> Assign Subjects to Teacher</h2>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div *ngIf="success" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <span>{{ success }}</span>
+    <button class="alert-close" (click)="success = ''">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ error }}</span>
+    <button class="alert-close" (click)="error = ''">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
+  <!-- Teacher Selection -->
+  <div class="card">
+    <h4><i class="fas fa-user-tie"></i> Select Teacher</h4>
+    
+    <div class="info-box">
+      <i class="fas fa-info-circle"></i>
+      <span>Select a teacher to view their current assignments and add new subject assignments.</span>
+    </div>
+
+    <div class="row">
+      <div class="col-md-12 mb-3">
+        <label class="form-label">Teacher <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedTeacherId" (change)="onTeacherChange()">
+          <option value="">Select Teacher</option>
+          <option *ngFor="let teacher of teachers" [value]="teacher.id">
+            {{ teacher.firstName }} {{ teacher.lastName }} ({{ teacher.employeeCode }})
+          </option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assignment Form -->
+  <div class="card" *ngIf="selectedTeacherId">
+    <h4><i class="fas fa-plus-circle"></i> Add Subject Assignment</h4>
+    
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Class <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedClassId" (change)="onClassChange()">
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Section <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedSectionId" [disabled]="!selectedClassId">
+          <option value="">{{ selectedClassId ? 'Select Section' : 'Select Class First' }}</option>
+          <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Subject <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedSubjectId" [disabled]="!selectedClassId">
+          <option value="">{{ selectedClassId ? 'Select Subject' : 'Select Class First' }}</option>
+          <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="d-flex">
+      <button class="btn btn-primary" (click)="addAssignment()" [disabled]="!selectedClassId || !selectedSectionId || !selectedSubjectId">
+        <i class="fas fa-plus"></i> Add to List
+      </button>
+    </div>
+  </div>
+
+  <!-- Pending Assignments -->
+  <div class="card" *ngIf="assignments.length > 0">
+    <div class="card-header-flex">
+      <h4><i class="fas fa-list"></i> Pending Assignments</h4>
+      <span class="badge badge-warning">{{ assignments.length }} Pending</span>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Subject</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let assignment of assignments; let i = index">
+            <td><strong class="index-number">{{ i + 1 }}</strong></td>
+            <td>{{ assignment.className }}</td>
+            <td>{{ assignment.sectionName }}</td>
+            <td>{{ assignment.subjectName }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="removeAssignment(i)">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="submit-section">
+      <button class="btn btn-success btn-lg" (click)="submitAssignments()" [disabled]="loading">
+        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
+        {{ loading ? 'Assigning...' : 'Assign All Subjects' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Existing Assignments -->
+  <div class="card" *ngIf="selectedTeacherId && existingAssignments.length > 0">
+    <div class="card-header-flex">
+      <h4><i class="fas fa-check-circle"></i> Current Assignments</h4>
+      <span class="badge badge-success">{{ existingAssignments.length }} Assigned</span>
+    </div>
+    
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Subject</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let assignment of existingAssignments; let i = index">
+            <td><strong class="index-number">{{ i + 1 }}</strong></td>
+            <td>{{ assignment.className }}</td>
+            <td>{{ assignment.sectionName }}</td>
+            <td>{{ assignment.subjectName }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" (click)="removeExistingAssignment(assignment.id)" [disabled]="loading">
+                <i class="fas fa-times"></i> Remove
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="card" *ngIf="selectedTeacherId && existingAssignments.length === 0 && assignments.length === 0">
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <h5>No Assignments Yet</h5>
+      <p>This teacher has no subject assignments. Add subjects using the form above.</p>
+    </div>
+  </div>
+</div>

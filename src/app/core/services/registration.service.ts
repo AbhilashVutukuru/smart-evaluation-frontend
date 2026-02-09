@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
@@ -20,6 +20,23 @@ export class RegistrationService {
   private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
+
+  // ✅ Download template method
+  downloadTemplate(type: 'student' | 'teacher'): Observable<Blob> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+    });
+
+    const urlType = type === 'student' ? 'student' : 'teacher';
+
+    return this.http.get(
+      `${this.apiUrl}/bulk-registration/${urlType}-template`,
+      {
+        headers: headers,
+        responseType: 'blob', // ✅ Important: responseType must be 'blob'
+      },
+    );
+  }
 
   // Student Registration
   registerStudent(data: StudentRegisterRequest): Observable<ApiResponse> {
@@ -74,9 +91,15 @@ export class RegistrationService {
     );
   }
 
-  getSubjects(): Observable<ApiResponse<SubjectDropdown[]>> {
+  getAllSubjects(): Observable<ApiResponse<SubjectDropdown[]>> {
     return this.http.get<ApiResponse<SubjectDropdown[]>>(
       `${this.apiUrl}/master-data/subjects`,
+    );
+  }
+
+  getSubjects(classId: number): Observable<ApiResponse<SubjectDropdown[]>> {
+    return this.http.get<ApiResponse<SubjectDropdown[]>>(
+      `${this.apiUrl}/master-data/classes/${classId}/subjects`,
     );
   }
 
@@ -88,6 +111,6 @@ export class RegistrationService {
       `${this.apiUrl}/student/next-roll-number?classId=${classId}&sectionId=${sectionId}`,
     );
   }
-     
-  var =10;
+
+  var = 10;
 }

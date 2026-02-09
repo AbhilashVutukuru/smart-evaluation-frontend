@@ -77,10 +77,10 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'exam/create',
+        path: 'create/exam',
         loadComponent: () =>
-          import('./features/teachers/exam-upload/exam-upload.component').then(
-            (m) => m.ExamUploadComponent,
+          import('./features/exams/create-exam/create-exam.component').then(
+            (m) => m.CreateExamComponent,
           ),
       },
       {
@@ -93,8 +93,60 @@ export const routes: Routes = [
       {
         path: 'upload-answer-sheets',
         loadComponent: () =>
-          import('./features/student-answers/upload-answer-sheets/upload-answer-sheets.component').then(
+          import('./features/exams/upload-answer-sheets/upload-answer-sheets.component').then(
             (m) => m.UploadAnswerSheetsComponent,
+          ),
+      },
+      {
+        path: 'assign-teacher-subjects',
+        loadComponent: () =>
+          import('./features/teachers/assign-teacher-subjects/assign-teacher-subjects.component').then(
+            (m) => m.AssignTeacherSubjectsComponent,
+          ),
+      },
+      {
+        path: 'students/view/:id',
+        data: { mode: 'view' },
+        loadComponent: () =>
+          import('./features/students/student-view-edit/student-view-edit.component').then(
+            (m) => m.StudentViewEditComponent,
+          ),
+      },
+      {
+        path: 'students/edit/:id',
+        data: { mode: 'edit' },
+        loadComponent: () =>
+          import('./features/students/student-view-edit/student-view-edit.component').then(
+            (m) => m.StudentViewEditComponent,
+          ),
+      },
+      {
+        path: 'teachers/view/:id',
+        data: { mode: 'view' },
+        loadComponent: () =>
+          import('./features/teachers/teacher-view-edit/teacher-view-edit.component').then(
+            (m) => m.TeacherViewEditComponent,
+          ),
+      },
+      {
+        path: 'teachers/edit/:id',
+        data: { mode: 'edit' },
+        loadComponent: () =>
+          import('./features/teachers/teacher-view-edit/teacher-view-edit.component').then(
+            (m) => m.TeacherViewEditComponent,
+          ),
+      },
+      {
+        path: 'admin-settings',
+        loadComponent: () =>
+          import('./features/admin/admin-settings/admin-settings.component').then(
+            (m) => m.AdminSettingsComponent,
+          ),
+      }, {
+        path: 'results',
+        loadComponent: () =>
+          import('./features/exams/exam-result/exam-result.component').then(
+            (m) => m.ExamResultsComponent,
           ),
       },
     ],

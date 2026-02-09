@@ -2,20 +2,21 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentService } from '../../../core/services/student.service';
-import { RegistrationService } from '../../../core/services/registration.service';
 import { Router } from '@angular/router';
+import { RegistrationService } from '../../../core/services/registration.service';
+import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 
 @Component({
   selector: 'app-student-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DeleteConfirmationComponent],
   templateUrl: './student-list.component.html',
-  styleUrls: ['./student-list.component.css']
+  styleUrls: ['./student-list.component.css'],
 })
 export class StudentListComponent implements OnInit {
   private studentService = inject(StudentService);
   private registrationService = inject(RegistrationService);
-   private router = inject(Router);
+  private router = inject(Router);
 
   students: any[] = [];
   filteredStudents: any[] = [];
@@ -23,34 +24,36 @@ export class StudentListComponent implements OnInit {
   searchTerm = '';
   selectedClass = '';
   selectedSection = '';
-  
+
   classes: any[] = [];
   sections: any[] = [];
 
+  // Delete modal
+  showDeleteModal = false;
+  studentToDelete: any = null;
 
+  
   ngOnInit(): void {
     //this.loadStudents();
-
     this.loadClasses();
-    //this.loadStudents();
   }
 
-   loadClasses(): void {
+  loadClasses(): void {
     this.registrationService.getClasses().subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.classes = response.data;
         }
       },
-      error: (error) => console.error('Error loading classes', error)
+      error: (error) => console.error('Error loading classes', error),
     });
   }
 
   onClassChange(): void {
-     this.selectedSection = '';
-  this.sections = [];
-  this.students = [];
-  this.filteredStudents = [];
+    this.selectedSection = '';
+    this.sections = [];
+    this.students = [];
+    this.filteredStudents = [];
     if (this.selectedClass) {
       this.registrationService.getSections(+this.selectedClass).subscribe({
         next: (response) => {
@@ -58,17 +61,17 @@ export class StudentListComponent implements OnInit {
             this.sections = response.data;
           }
         },
-        error: (error) => console.error('Error loading sections', error)
+        error: (error) => console.error('Error loading sections', error),
       });
     }
-   //this.loadStudents();
+    //this.loadStudents();
   }
 
   onSectionChange(): void {
-  if (this.selectedClass && this.selectedSection) {
-    this.loadStudents();
+    if (this.selectedClass && this.selectedSection) {
+      this.loadStudents();
+    }
   }
-}
 
   loadStudents(): void {
     this.loading = true;
@@ -88,35 +91,68 @@ export class StudentListComponent implements OnInit {
   }
 
   onSearch(): void {
-    this.filteredStudents = this.students.filter(s => 
-      s.firstName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      s.lastName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-      s.rollNumber.toLowerCase().includes(this.searchTerm.toLowerCase()) 
-      // s.email.toLowerCase().includes(this.searchTerm.toLowerCase())
+    this.filteredStudents = this.students.filter(
+      (s) =>
+        s.firstName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        s.lastName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        s.rollNumber.toLowerCase().includes(this.searchTerm.toLowerCase()), //||
+      //s.email.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }
 
+  onFilter(): void {
+    this.loadStudents();
+  }
   addStudent(): void {
     this.router.navigate(['/registration/student']);
   }
-
- 
-  viewDetails(student: any): void {
-    // Navigate to details or show modal
-    console.log('View details:', student);
+  viewDetails(id: number): void {
+    this.router.navigate(['/students/view', id]);
   }
 
-  editStudent(student: any): void {
-    // Navigate to edit
-    console.log('Edit:', student);
+  editStudent(id: number): void {
+    this.router.navigate(['/students/edit', id]);
   }
+
+  // deleteStudent(id: number): void {
+  //   if (!confirm('Are you sure you want to delete this student?')) return;
+
+  //   this.studentService.deleteStudent(id).subscribe({
+  //     next: (response) => {
+  //       if (response.success) {
+  //         this.loadStudents();
+  //       }
+  //     },
+  //     error: (error) => {
+  //       console.error('Delete failed', error);
+  //     },
+  //   });
+  // }
 
   deleteStudent(student: any): void {
-    if (confirm(`Delete ${student.firstName} ${student.lastName}?`)) {
-      this.studentService.deleteStudent(student.id).subscribe({
-        next: () => this.loadStudents(),
-        error: (error) => console.error('Delete error', error)
+    this.studentToDelete = student;
+    this.showDeleteModal = true;
+  }
+
+  onDeleteConfirmed(): void {
+    if (this.studentToDelete) {
+      this.studentService.deleteStudent(this.studentToDelete.id).subscribe({
+        next: () => {
+          this.loadStudents();
+          this.showDeleteModal = false;
+          this.studentToDelete = null;
+        },
+        error: (error) => {
+          console.error('Delete error', error);
+          this.showDeleteModal = false;
+          this.studentToDelete = null;
+        }
       });
     }
+  }
+
+  onDeleteCancelled(): void {
+    this.showDeleteModal = false;
+    this.studentToDelete = null;
   }
 }

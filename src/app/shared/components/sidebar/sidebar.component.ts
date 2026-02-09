@@ -35,12 +35,14 @@ export class SidebarComponent {
       label: 'Teacher Registration',
       route: '/registration/teacher',
     },
-    { icon: 'fas fa-file-alt', label: 'Create Exam', route: '/exam/create' },
-    { icon: 'fas fa-upload', label: 'Upload Docs', route: '/upload' },
+    { icon: 'fas fa-user-tag', label: 'Assign Subjects', route: '/assign-teacher-subjects' },
+    { icon: 'fas fa-file-alt', label: 'Create Exam', route: '/create/exam' },
+        { icon: 'fas fa-upload', label: 'Upload Answer Sheets', route: '/upload-answer-sheets' },
+    // { icon: 'fas fa-upload', label: 'Upload Docs', route: '/upload' },
     { icon: 'fas fa-chart-bar', label: 'Results', route: '/results' },
     { icon: 'fas fa-key', label: 'Change Password', route: '/change-password' },
-     { icon: 'fas fa-upload', label: 'Upload Answer Sheets', route: '/upload-answer-sheets' },
-    { icon: 'fas fa-cog', label: 'Settings', route: '/settings' },
+ 
+    { icon: 'fas fa-cog', label: 'Settings', route: '/admin-settings' },
   ];
 
   logout(): void {
