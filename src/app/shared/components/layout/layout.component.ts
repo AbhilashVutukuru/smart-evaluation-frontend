@@ -2,12 +2,14 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from '../sidebar/sidebar.component';
+import { ToastComponent } from '../toast/toast.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent],
+   imports: [CommonModule, RouterOutlet, SidebarComponent, ToastComponent],
   template: `
+   <app-toast></app-toast>
     <div class="layout">
       <app-sidebar></app-sidebar>
       <div class="main-content">

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { delay, catchError, map } from 'rxjs/operators';
 import { 
   Exam, 
@@ -16,52 +16,10 @@ const API_URL = 'http://localhost:5163/api';
 @Injectable({
   providedIn: 'root'
 })
-export class TeacherUploadService {
+export class CreateExamService {
   constructor(
     private http: HttpClient
   ) {}
-
-  // Mock data fallbacks
-  getMockClasses(): Class[] {
-    return [
-      { id: 1, name: 'Class 6' },
-      { id: 3, name: 'Class 7' },
-      { id: 4, name: 'Class 8' },
-      { id: 6, name: 'Class 9' },
-      { id: 7, name: 'Class 10' }
-    ];
-  }
-
-  getMockSubjects(): SubjectItem[] {
-    return [
-      { id: 1, name: 'Mathematics' },
-      { id: 2, name: 'Science' },
-      { id: 3, name: 'Chemistry' },
-      { id: 4, name: 'Biology' },
-      { id: 5, name: 'English' },
-      { id: 6, name: 'Computer Science' },
-      { id: 7, name: 'History' },
-      { id: 8, name: 'Geography' }
-    ];
-  }
-
-  getMockExamTypes(): ExamType[] {
-    return [
-      { id: 1, name: 'Mid-Term' },
-      { id: 2, name: 'Final Examination' },
-      { id: 3, name: 'Unit Test' },
-      { id: 4, name: 'Quiz' },
-      { id: 5, name: 'Pre-Board' }
-    ];
-  }
-
-  getMockSections(): Section[] {
-    return [
-      { id: 1, name: 'Section A' },
-      { id: 2, name: 'Section B' },
-      { id: 9, name: 'Section C' }
-    ];
-  }
 
   // Get Classes from API
   getClasses(token?: string): Observable<Class[]> {
@@ -82,7 +40,8 @@ export class TeacherUploadService {
       catchError(error => {
         console.error('Error fetching classes from API:', error);
         // Fallback to mock data if API fails
-        return of(this.getMockClasses());
+        //return of(this.getMockClasses());
+         return throwError(() => error);
       })
     );
   }
@@ -104,7 +63,8 @@ export class TeacherUploadService {
       catchError(error => {
         console.error('Error fetching subjects from API:', error);
         // Fallback to mock data if API fails
-        return of(this.getMockSubjects());
+        //return of(this.getMockSubjects());
+         return throwError(() => error);
       })
     );
   }
@@ -126,7 +86,8 @@ export class TeacherUploadService {
       catchError(error => {
         console.error('Error fetching exam types from API:', error);
         // Fallback to mock data if API fails
-        return of(this.getMockExamTypes());
+        //return of(this.getMockExamTypes());
+         return throwError(() => error);
       })
     );
   }
@@ -148,7 +109,8 @@ export class TeacherUploadService {
       catchError(error => {
         console.error('Error fetching sections from API:', error);
         // Fallback to mock data if API fails
-        return of(this.getMockSections());
+        //return of(this.getMockSections());
+         return throwError(() => error);
       })
     );
   }

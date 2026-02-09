@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { StudentAnswerSheetService } from '../../../core/services/student-answer-sheet.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ExamService } from '../../../core/services/exam.serice';
+import { ExamService } from '../../../core/services/exam.service';
 
 interface StudentUploadStatus {
   studentId: number;
@@ -14,7 +14,9 @@ interface StudentUploadStatus {
   sectionName: string;
   isAbsent: boolean;
   isUploaded: boolean;
+   isUploading?: boolean;
   answerSheetFile?: File;
+    fileName?: string;
 }
 
 @Component({
@@ -108,7 +110,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
   onClassChange(): void {
     if (this.filters.classId) {
       this.loadSections(+this.filters.classId);
-      this.loadSubjects(+this.filters.classId);
+      this.loadSubjects();
     }
   }
 
@@ -122,8 +124,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
     });
   }
 
-  loadSubjects(classId: number): void {
-    this.registrationService.getSubjects().subscribe({
+  loadSubjects(): void {
+    this.registrationService.getAllSubjects().subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.allSubjects = response.data;
@@ -181,6 +183,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
                 isUploaded:
                   s.status?.toLowerCase().includes('uploaded') === true &&
                   !s.status?.toLowerCase().includes('not'),
+                  fileName: s.fileName || s.documentName || '',
               };
             });
 
@@ -211,7 +214,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
 
   uploadAnswerSheet(student: StudentUploadStatus): void {
     if (!student.answerSheetFile) return;
-    //student.isUploaded = true;
+    student.isUploading = true;
 
     const formData = new FormData();
     formData.append('StudentAnswerSheetFile', student.answerSheetFile);
@@ -225,13 +228,16 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           student.isUploaded = true;
+          student.fileName = student.answerSheetFile?.name;
           this.success = `Answer sheet uploaded for ${student.studentName}`;
           setTimeout(() => (this.success = ''), 3000);
         }
+        student.isUploading = false;
       },
       error: (error) => {
         this.error = error.error?.message || 'Failed to upload answer sheet';
         setTimeout(() => (this.error = ''), 3000);
+        student.isUploading = false;
       },
     });
   }

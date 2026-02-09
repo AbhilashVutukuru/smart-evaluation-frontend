@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/auth.model';
@@ -10,8 +10,8 @@ import { ApiResponse } from '../models/auth.model';
 export class StudentService {
   private readonly apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
-
+  constructor(private http: HttpClient) {}  
+  
   getStudents(classId?: string, sectionId?: string): Observable<ApiResponse> {
     let url = `${this.apiUrl}/student`;
     const params = [];
@@ -24,6 +24,10 @@ export class StudentService {
 
   getStudentById(id: number): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`${this.apiUrl}/student/${id}`);
+  }
+
+   updateStudent(data: any): Observable<ApiResponse> {
+    return this.http.put<ApiResponse>(`${this.apiUrl}/student/${data.id}`, data);
   }
 
   deleteStudent(id: number): Observable<ApiResponse> {

@@ -2,25 +2,25 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
-import { TeacherUploadService } from '../../../core/services/teacher-upload.service';
+import { CreateExamService } from '../../../core/services/create-exam.service';
 import { 
   ExamFormData, 
   ExamFilters, 
   QuestionSet,
   Exam
 } from '../../../core/models/exam';
-import { Class, SubjectItem, ExamType, ToastConfig } from '../../../shared/models/common';
+import { Class, SubjectItem, ExamType } from '../../../shared/models/common';
 
 @Component({
   selector: 'app-exam-upload',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './exam-upload.component.html',
-  styleUrls: ['./exam-upload.component.css']
+  templateUrl: './create-exam.component.html',
+  styleUrls: ['./create-exam.component.css']
 })
-export class ExamUploadComponent implements OnInit {
+export class CreateExamComponent implements OnInit {
   private toastService = inject(ToastService);
-  private teacherUploadService = inject(TeacherUploadService);
+  private createExamService = inject(CreateExamService);
 
   // Properties
   examMode: 'upload' | 'update' = 'upload';
@@ -36,7 +36,7 @@ export class ExamUploadComponent implements OnInit {
   selectedExamForUpdate: Exam | null = null;
 
   questionSets: QuestionSet[] = [];
-  toast: ToastConfig | null = null;
+  // toast: ToastConfig | null = null;
 
   uploadProgress = {
     visible: false,
@@ -45,7 +45,7 @@ export class ExamUploadComponent implements OnInit {
   };
 
   examFormData: ExamFormData = {
-    academicYear: this.teacherUploadService.getCurrentAcademicYear(),
+    academicYear: this.createExamService.getCurrentAcademicYear(),
     classId: '',
     subjectId: '',
     examTypeId: '',
@@ -62,26 +62,26 @@ export class ExamUploadComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadInitialData();
-    this.subscribeToToasts();
+    //this.subscribeToToasts();
   }
 
   private loadInitialData(): void {
-    this.teacherUploadService.getClasses().subscribe(classes => {
+    this.createExamService.getClasses().subscribe(classes => {
       this.allClasses = classes;
     });
-    this.teacherUploadService.getSubjects().subscribe(subjects => {
+    this.createExamService.getSubjects().subscribe(subjects => {
       this.allSubjects = subjects;
     });
-    this.teacherUploadService.getExamTypes().subscribe(examTypes => {
+    this.createExamService.getExamTypes().subscribe(examTypes => {
       this.allExamTypes = examTypes;
     });
   }
 
-  private subscribeToToasts(): void {
-    this.toastService.toast$.subscribe(toast => {
-      this.toast = toast;
-    });
-  }
+  // private subscribeToToasts(): void {
+  //   this.toastService.toast$.subscribe(toast => {
+  //     this.toast = toast;
+  //   });
+  // }
 
   setExamMode(mode: 'upload' | 'update'): void {
     this.examMode = mode;
@@ -100,7 +100,7 @@ export class ExamUploadComponent implements OnInit {
       return;
     }
 
-    this.questionSets = this.teacherUploadService.generateQuestionSets(
+    this.questionSets = this.createExamService.generateQuestionSets(
       this.examFormData.numberOfQuestions,
       this.examFormData.totalMarks
     );
@@ -143,7 +143,7 @@ export class ExamUploadComponent implements OnInit {
       return;
     }
 
-    const formValidation = this.teacherUploadService.validateExamForm(this.examFormData);
+    const formValidation = this.createExamService.validateExamForm(this.examFormData);
     if (!formValidation.isValid) {
       this.toastService.showError('Validation Error', formValidation.errors[0]);
       return;
@@ -152,9 +152,9 @@ export class ExamUploadComponent implements OnInit {
     this.isSubmitting = true;
     this.uploadProgress.visible = true;
 
-    const apiRequest = this.teacherUploadService.prepareApiRequest(this.examFormData);
+    const apiRequest = this.createExamService.prepareApiRequest(this.examFormData);
 
-    this.teacherUploadService.uploadExam(apiRequest).subscribe({
+    this.createExamService.uploadExam(apiRequest).subscribe({
       next: (response) => {
         this.uploadProgress.visible = false;
         this.isSubmitting = false;
@@ -177,7 +177,7 @@ export class ExamUploadComponent implements OnInit {
     }
 
     this.isLoading = true;
-    this.teacherUploadService.getMockExams(this.examFilters).subscribe({
+    this.createExamService.getMockExams(this.examFilters).subscribe({
       next: (exams) => {
         this.existingExams = exams;
         this.isLoading = false;
@@ -218,15 +218,15 @@ export class ExamUploadComponent implements OnInit {
   }
 
   calculateValidationMarksTotal(): number {
-    return this.teacherUploadService.calculateValidationMarksTotal(this.currentQuestionSet);
+    return this.createExamService.calculateValidationMarksTotal(this.currentQuestionSet);
   }
 
   validateMarksMatch(): boolean {
-    return this.teacherUploadService.validateMarksMatch(this.currentQuestionSet);
+    return this.createExamService.validateMarksMatch(this.currentQuestionSet);
   }
 
   getQuestionValidationErrors(): string[] {
-    return this.teacherUploadService.validateQuestionSet(this.currentQuestionSet).errors;
+    return this.createExamService.validateQuestionSet(this.currentQuestionSet).errors;
   }
 
   formatDate(dateString: string): string {
@@ -235,23 +235,23 @@ export class ExamUploadComponent implements OnInit {
   }
 
   getUserName(): string {
-    const userInfo = this.teacherUploadService.getUserInfo();
+    const userInfo = this.createExamService.getUserInfo();
     return `${userInfo.firstName} ${userInfo.lastName}`;
   }
 
   getUserInitial(): string {
-    const userInfo = this.teacherUploadService.getUserInfo();
+    const userInfo = this.createExamService.getUserInfo();
     return `${userInfo.firstName.charAt(0)}${userInfo.lastName.charAt(0)}`.toUpperCase();
   }
 
   getUserEmail(): string {
-    const userInfo = this.teacherUploadService.getUserInfo();
+    const userInfo = this.createExamService.getUserInfo();
     return userInfo.email;
   }
 
-  closeToast(): void {
-    this.toast = null;
-  }
+  // closeToast(): void {
+  //   this.toast = null;
+  // }
 
   trackByIndex(index: number): number {
     return index;
@@ -259,7 +259,7 @@ export class ExamUploadComponent implements OnInit {
 
   private resetForm(): void {
     this.examFormData = {
-      academicYear: this.teacherUploadService.getCurrentAcademicYear(),
+      academicYear: this.createExamService.getCurrentAcademicYear(),
       classId: '',
       subjectId: '',
       examTypeId: '',

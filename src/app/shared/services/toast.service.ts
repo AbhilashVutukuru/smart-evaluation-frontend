@@ -16,21 +16,21 @@ export class ToastService {
 
   showSuccess(title: string, message: string): void {
     this.toastSubject.next({ type: 'success', title, message });
-    setTimeout(() => this.toastSubject.next(null), 5000);
+    setTimeout(() => this.toastSubject.next(null), 3000);
   }
 
   showError(title: string, message: string): void {
     this.toastSubject.next({ type: 'error', title, message });
-    setTimeout(() => this.toastSubject.next(null), 5000);
+    setTimeout(() => this.toastSubject.next(null), 3000);
   }
 
   showWarning(title: string, message: string): void {
     this.toastSubject.next({ type: 'warning', title, message });
-    setTimeout(() => this.toastSubject.next(null), 5000);
+    setTimeout(() => this.toastSubject.next(null), 3000);
   }
 
   showInfo(title: string, message: string): void {
     this.toastSubject.next({ type: 'info', title, message });
-    setTimeout(() => this.toastSubject.next(null), 5000);
-  }
+    setTimeout(() => this.toastSubject.next(null), 3000);
+  }  
 }

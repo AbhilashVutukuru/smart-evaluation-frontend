@@ -3,6 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { SubjectDropdown } from '../../../core/models/registration.model';
+import { ToastService } from '../../../shared/services/toast.service';
+
+interface UploadResults {
+  success: number;
+  failed: number;
+  total: number;
+  errors?: string[];
+}
 
 @Component({
   selector: 'app-teacher-registration',
@@ -14,7 +22,9 @@ import { SubjectDropdown } from '../../../core/models/registration.model';
 export class TeacherRegistrationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private registrationService = inject(RegistrationService);
+   private toastService= inject(ToastService);
 
+  isDownloading = false;
   teacherForm!: FormGroup;
   loading = false;
   error = '';
@@ -24,10 +34,11 @@ export class TeacherRegistrationComponent implements OnInit {
   subjects: SubjectDropdown[] = [];
   selectedFile: File | null = null;
   uploadProgress = false;
+  uploadResults: UploadResults | null = null;
 
   ngOnInit(): void {
     this.initForm();
-    this.loadSubjects();
+    //this.loadSubjects();
   }
 
   initForm(): void {
@@ -37,25 +48,25 @@ export class TeacherRegistrationComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
       address: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],    
+      dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       qualification: ['', Validators.required],
       experience: [0, [Validators.required, Validators.min(0)]],
-      dateOfJoining: ['', Validators.required],
-      subjectIds: [[], Validators.required]
+      joiningDate: ['', Validators.required],
+      //subjectIds: [[], Validators.required]
     });
   }
 
-  loadSubjects(): void {
-    this.registrationService.getSubjects().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.subjects = response.data;
-        }
-      },
-      error: (error) => console.error('Error loading subjects', error)
-    });
-  }
+  // loadSubjects(): void {
+  //   this.registrationService.getSubjects().subscribe({
+  //     next: (response) => {
+  //       if (response.success && response.data) {
+  //         this.subjects = response.data;
+  //       }
+  //     },
+  //     error: (error) => console.error('Error loading subjects', error)
+  //   });
+  // }
 
   onSubjectChange(event: any, subjectId: number): void {
     const currentSubjects = this.teacherForm.get('subjectIds')?.value || [];
@@ -94,6 +105,13 @@ export class TeacherRegistrationComponent implements OnInit {
 
   onFileSelected(event: any): void {
     this.selectedFile = event.target.files[0];
+    this.uploadResults = null; // Clear previous results
+  }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   }
 
   uploadBulk(): void {
@@ -105,13 +123,22 @@ export class TeacherRegistrationComponent implements OnInit {
     this.uploadProgress = true;
     this.error = '';
     this.success = '';
+    this.uploadResults = null;
 
     this.registrationService.bulkUploadTeachers(this.selectedFile).subscribe({
       next: (response) => {
         if (response.success) {
+          this.uploadResults = {
+            success: response.successfulRecords || 0,
+            failed: response.failedRecords || 0,
+            total: response.totalRecords || 0,
+            errors: response.errors || []
+          };
+          
           this.success = `Successfully uploaded ${response.successfulRecords} of ${response.totalRecords} teachers`;
+          
           if (response.failedRecords > 0) {
-            this.error = `Failed: ${response.failedRecords} records. Errors: ${response.errors?.join(', ')}`;
+            this.error = `${response.failedRecords} records failed to upload. Check errors below.`;
           }
         } else {
           this.error = response.message;
@@ -125,4 +152,28 @@ export class TeacherRegistrationComponent implements OnInit {
       }
     });
   }
+
+  downloadTemplate(): void {
+  this.isDownloading = true;
+
+  this.registrationService.downloadTemplate('teacher').subscribe({
+    next: (blob: Blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'TeacherUploadTemplate.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      this.isDownloading = false;
+      this.toastService.showSuccess('Success', 'Template downloaded!');
+    },
+    error: () => {
+      this.isDownloading = false;
+      this.toastService.showError('Error', 'Download failed');
+    }
+  });
+}
 }
