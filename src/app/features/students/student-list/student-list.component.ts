@@ -5,6 +5,8 @@ import { StudentService } from '../../../core/services/student.service';
 import { Router } from '@angular/router';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
+import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-student-list',
@@ -17,6 +19,8 @@ export class StudentListComponent implements OnInit {
   private studentService = inject(StudentService);
   private registrationService = inject(RegistrationService);
   private router = inject(Router);
+   private masterDataService = inject(MasterDataService);
+    private toastService = inject(ToastService);
 
   students: any[] = [];
   filteredStudents: any[] = [];
@@ -25,8 +29,8 @@ export class StudentListComponent implements OnInit {
   selectedClass = '';
   selectedSection = '';
 
-  classes: any[] = [];
-  sections: any[] = [];
+   classes: ClassDto[] = [];
+    sections: SectionDto[] = [];
 
   // Delete modal
   showDeleteModal = false;
@@ -39,13 +43,13 @@ export class StudentListComponent implements OnInit {
   }
 
   loadClasses(): void {
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
+     this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
       },
-      error: (error) => console.error('Error loading classes', error),
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      },
     });
   }
 
@@ -55,16 +59,15 @@ export class StudentListComponent implements OnInit {
     this.students = [];
     this.filteredStudents = [];
     if (this.selectedClass) {
-      this.registrationService.getSections(+this.selectedClass).subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            this.sections = response.data;
-          }
-        },
-        error: (error) => console.error('Error loading sections', error),
-      });
+    this.masterDataService.getSectionsByClass(+this.selectedClass).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
+      },
+    });
     }
-    //this.loadStudents();
   }
 
   onSectionChange(): void {

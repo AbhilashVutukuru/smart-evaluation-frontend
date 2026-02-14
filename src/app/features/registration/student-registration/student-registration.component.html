@@ -142,7 +142,7 @@
           <label class="form-label"
             >Class <span class="required">*</span></label
           >
-          <select class="form-control" formControlName="classId">
+          <select class="form-control" formControlName="classId" (change)="onClassChange($event)">
             <option value="">Select Class</option>
             <option *ngFor="let cls of classes" [value]="cls.id">
               {{ cls.className }}
@@ -153,7 +153,8 @@
           <label class="form-label"
             >Section <span class="required">*</span></label
           >
-          <select class="form-control" formControlName="sectionId">
+          <select class="form-control" formControlName="sectionId"
+           [disabled]="!studentForm.get('classId')?.value">
             <option value="">Select Section</option>
             <option *ngFor="let sec of sections" [value]="sec.id">
               {{ sec.sectionName }}

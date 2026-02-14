@@ -13,7 +13,11 @@ import {
   SectionDropdown,
 } from '../../../core/models/registration.model';
 import { ToastService } from '../../../shared/services/toast.service';
-import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
+import {
+  ClassDto,
+  MasterDataService,
+  SectionDto,
+} from '../../../core/services/master-data.service';
 
 interface UploadResults {
   success: number;
@@ -48,7 +52,7 @@ export class StudentRegistrationComponent implements OnInit {
   bulkSectionId: number | null = null;
 
   classes: ClassDto[] = [];
-   sections: SectionDto[] = [];
+  sections: SectionDto[] = [];
   selectedFile: File | null = null;
   uploadProgress = false;
   uploadResults: UploadResults | null = null;
@@ -56,9 +60,18 @@ export class StudentRegistrationComponent implements OnInit {
   ngOnInit(): void {
     this.initForm();
     this.loadClasses();
-    // Auto-fetch roll number when class and section are selected
-    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
-      if (sectionId && this.studentForm.get('classId')?.value) {
+
+    const classControl = this.studentForm.get('classId');
+    const sectionControl = this.studentForm.get('sectionId');
+    const rollControl = this.studentForm.get('rollNumber');
+
+    sectionControl?.valueChanges.subscribe((sectionId) => {
+      const classId = classControl?.value;
+
+      // ✅ Always clear previous roll first
+      rollControl?.reset();
+
+      if (classId && sectionId) {
         this.loadNextRollNumber();
       }
     });
@@ -89,23 +102,30 @@ export class StudentRegistrationComponent implements OnInit {
   loadNextRollNumber(): void {
     const classId = this.studentForm.get('classId')?.value;
     const sectionId = this.studentForm.get('sectionId')?.value;
+    const rollControl = this.studentForm.get('rollNumber');
 
-    if (classId && sectionId) {
-      this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
-        next: (response) => {
-          if (response.success && response.data) {
-            this.studentForm.patchValue({
-              rollNumber: response.data.nextRollNumber,
-            });
-          }
-        },
-        error: (error) => console.error('Error loading roll number', error),
-      });
+    if (!classId || !sectionId) {
+      rollControl?.reset();
+      return;
     }
+
+    this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
+      next: (response) => {
+        if (response.success && response.data) {
+          rollControl?.setValue(response.data.nextRollNumber);
+        } else {
+          rollControl?.reset();
+        }
+      },
+      error: (error) => {
+        console.error('Error loading roll number', error);
+        rollControl?.reset();
+      },
+    });
   }
 
   loadClasses(): void {
-     this.masterDataService.getClasses().subscribe({
+    this.masterDataService.getClasses().subscribe({
       next: (classes) => {
         this.classes = classes;
       },
@@ -114,9 +134,23 @@ export class StudentRegistrationComponent implements OnInit {
       },
     });
   }
+  onClassChange(event: Event): void {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+
+    const classId = Number(selectedValue); // convert to number
+
+    this.studentForm.patchValue({
+      sectionId: null,
+      rollNumber: null,
+    });
+    this.sections = [];
+    if (classId) {
+      this.loadSections(classId);
+    }
+  }
 
   loadSections(classId: number): void {
-     this.masterDataService.getSectionsByClass(classId).subscribe({
+    this.masterDataService.getSectionsByClass(classId).subscribe({
       next: (sections) => {
         this.sections = sections;
       },
@@ -155,11 +189,11 @@ export class StudentRegistrationComponent implements OnInit {
   onBulkClassChange(): void {
     this.bulkSectionId = null;
     this.sections = [];
-    
+
     if (this.bulkClassId) {
       this.loadSections(this.bulkClassId);
     }
-    
+
     // Clear selected file when class changes
     if (this.selectedFile) {
       this.removeFile();
@@ -193,7 +227,7 @@ export class StudentRegistrationComponent implements OnInit {
     if (!this.bulkClassId || !this.bulkSectionId) {
       this.toastService.showWarning(
         'Selection Required',
-        'Please select Class and Section first'
+        'Please select Class and Section first',
       );
       event.target.value = '';
       return;
@@ -201,10 +235,15 @@ export class StudentRegistrationComponent implements OnInit {
 
     // File type validation
     const validExtensions = ['.xlsx', '.xls'];
-    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-    
+    const fileExtension = file.name
+      .substring(file.name.lastIndexOf('.'))
+      .toLowerCase();
+
     if (!validExtensions.includes(fileExtension)) {
-      this.toastService.showWarning('Invalid File', 'Please select an Excel file (.xlsx or .xls)');
+      this.toastService.showWarning(
+        'Invalid File',
+        'Please select an Excel file (.xlsx or .xls)',
+      );
       event.target.value = '';
       return;
     }
@@ -212,7 +251,10 @@ export class StudentRegistrationComponent implements OnInit {
     // File size validation (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      this.toastService.showWarning('File Too Large', 'Maximum file size is 5MB');
+      this.toastService.showWarning(
+        'File Too Large',
+        'Maximum file size is 5MB',
+      );
       event.target.value = '';
       return;
     }
@@ -233,7 +275,7 @@ export class StudentRegistrationComponent implements OnInit {
     if (!this.canUpload()) {
       this.toastService.showWarning(
         'Required Fields',
-        'Please select class, section, and file'
+        'Please select class, section, and file',
       );
       return;
     }
@@ -267,12 +309,14 @@ export class StudentRegistrationComponent implements OnInit {
 
             // Clear file after successful upload
             this.selectedFile = null;
-            const fileInput = document.getElementById('fileInput') as HTMLInputElement;
+            const fileInput = document.getElementById(
+              'fileInput',
+            ) as HTMLInputElement;
             if (fileInput) fileInput.value = '';
 
             this.toastService.showSuccess(
               'Upload Complete',
-              `${response.successfulRecords} students uploaded successfully`
+              `${response.successfulRecords} students uploaded successfully`,
             );
           } else {
             this.error = response.message;
@@ -289,16 +333,16 @@ export class StudentRegistrationComponent implements OnInit {
   }
 
   getClassName(classId: number | null): string {
-  if (!classId) return '';
-  const cls = this.classes.find(c => c.id === classId);
-  return cls ? cls.className : '';
-}
+    if (!classId) return '';
+    const cls = this.classes.find((c) => c.id === classId);
+    return cls ? cls.className : '';
+  }
 
-getSectionName(sectionId: number | null): string {
-  if (!sectionId) return '';
-  const section = this.sections.find(s => s.id === sectionId);
-  return section ? section.sectionName : '';
-}
+  getSectionName(sectionId: number | null): string {
+    if (!sectionId) return '';
+    const section = this.sections.find((s) => s.id === sectionId);
+    return section ? section.sectionName : '';
+  }
 
   downloadTemplate(): void {
     this.isDownloading = true;

@@ -6,6 +6,8 @@ import { StudentService } from '../../../core/services/student.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
+import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-student-view-edit',
@@ -20,6 +22,8 @@ export class StudentViewEditComponent implements OnInit {
   private router = inject(Router);
   private studentService = inject(StudentService);
   private registrationService = inject(RegistrationService);
+   private masterDataService = inject(MasterDataService);
+      private toastService = inject(ToastService);
 
   studentForm!: FormGroup;
   studentId!: number;
@@ -28,8 +32,8 @@ export class StudentViewEditComponent implements OnInit {
   error = '';
   success = '';
 
-  classes: any[] = [];
-  sections: any[] = [];
+ classes: ClassDto[] = [];
+    sections: SectionDto[] = [];
 
   // Delete Modal
   showDeleteModal = false;
@@ -78,24 +82,32 @@ export class StudentViewEditComponent implements OnInit {
   }
 
   loadClasses(): void {
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
-      }
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      },
     });
   }
+onClassChange(event: Event): void {
+  const selectedValue = (event.target as HTMLSelectElement).value;
+
+  const classId = Number(selectedValue);  // convert to number
+  this.loadSections(classId);
+}
 
   loadSections(classId: number): void {
-    this.registrationService.getSections(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.sections = response.data;
-        }
-      }
+   this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
+      },
     });
-  }
+  }  
 
   loadStudent(): void {
     this.loading = true;
