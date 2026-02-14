@@ -79,29 +79,29 @@ export class RegistrationService {
   }
 
   // Dropdowns
-  getClasses(): Observable<ApiResponse<ClassDropdown[]>> {
-    return this.http.get<ApiResponse<ClassDropdown[]>>(
-      `${this.apiUrl}/master-data/classes`,
-    );
-  }
+  // getClasses(): Observable<ApiResponse<ClassDropdown[]>> {
+  //   return this.http.get<ApiResponse<ClassDropdown[]>>(
+  //     `${this.apiUrl}/master-data/classes`,
+  //   );
+  // }
 
-  getSections(classId: number): Observable<ApiResponse<SectionDropdown[]>> {
-    return this.http.get<ApiResponse<SectionDropdown[]>>(
-      `${this.apiUrl}/master-data/sections?classId=${classId}`,
-    );
-  }
+  // getSections(classId: number): Observable<ApiResponse<SectionDropdown[]>> {
+  //   return this.http.get<ApiResponse<SectionDropdown[]>>(
+  //     `${this.apiUrl}/master-data/sections?classId=${classId}`,
+  //   );
+  // }
 
-  getAllSubjects(): Observable<ApiResponse<SubjectDropdown[]>> {
-    return this.http.get<ApiResponse<SubjectDropdown[]>>(
-      `${this.apiUrl}/master-data/subjects`,
-    );
-  }
+  // getAllSubjects(): Observable<ApiResponse<SubjectDropdown[]>> {
+  //   return this.http.get<ApiResponse<SubjectDropdown[]>>(
+  //     `${this.apiUrl}/master-data/subjects`,
+  //   );
+  // }
 
-  getSubjects(classId: number): Observable<ApiResponse<SubjectDropdown[]>> {
-    return this.http.get<ApiResponse<SubjectDropdown[]>>(
-      `${this.apiUrl}/master-data/classes/${classId}/subjects`,
-    );
-  }
+  // getSubjects(classId: number): Observable<ApiResponse<SubjectDropdown[]>> {
+  //   return this.http.get<ApiResponse<SubjectDropdown[]>>(
+  //     `${this.apiUrl}/master-data/classes/${classId}/subjects`,
+  //   );
+  // }
 
   getNextRollNumber(
     classId: number,

@@ -5,6 +5,13 @@ import { TeacherSubjectService } from '../../../core/services/teacher-subject.se
 import { RegistrationService } from '../../../core/services/registration.service';
 import { TeacherService } from '../../../core/services/teacher.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
+import {
+  ClassDto,
+  MasterDataService,
+  SectionDto,
+  SubjectDto,
+} from '../../../core/services/master-data.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface Assignment {
   classId: number;
@@ -20,18 +27,20 @@ interface Assignment {
   standalone: true,
   imports: [CommonModule, FormsModule, ConfirmationModalComponent],
   templateUrl: './assign-teacher-subjects.component.html',
-  styleUrls: ['./assign-teacher-subjects.component.css']
+  styleUrls: ['./assign-teacher-subjects.component.css'],
 })
 export class AssignTeacherSubjectsComponent implements OnInit {
   private teacherSubjectService = inject(TeacherSubjectService);
   private registrationService = inject(RegistrationService);
   private teacherService = inject(TeacherService);
+  private masterDataService = inject(MasterDataService);
+  private toastService = inject(ToastService);
 
   // Dropdowns
   teachers: any[] = [];
-  classes: any[] = [];
-  sections: any[] = [];
-  subjects: any[] = [];
+  classes: ClassDto[] = [];
+  sections: SectionDto[] = [];
+  subjects: SubjectDto[] = [];
 
   // Selection
   selectedTeacherId = '';
@@ -47,10 +56,9 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   error = '';
   success = '';
 
-    showRemoveModal = false;
+  showRemoveModal = false;
   assignmentToRemove: any = null;
   removing = false;
-
 
   ngOnInit(): void {
     this.loadTeachers();
@@ -63,17 +71,18 @@ export class AssignTeacherSubjectsComponent implements OnInit {
         if (response.success && response.data) {
           this.teachers = response.data;
         }
-      }
+      },
     });
   }
 
   loadClasses(): void {
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
-      }
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      },
     });
   }
 
@@ -96,44 +105,58 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   }
 
   loadSections(classId: number): void {
-    this.registrationService.getSections(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.sections = response.data;
-        }
-      }
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
+      },
     });
   }
 
   loadSubjects(classId: number): void {
-    this.registrationService.getSubjects(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.subjects = response.data;
-        }
-      }
+    this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
+      },
     });
   }
 
   loadExistingAssignments(): void {
-    this.teacherSubjectService.getTeacherAssignments(+this.selectedTeacherId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.existingAssignments = response.data;
-        }
-      }
-    });
+    this.teacherSubjectService
+      .getTeacherAssignments(+this.selectedTeacherId)
+      .subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.existingAssignments = response.data;
+          }
+        },
+      });
   }
 
   addAssignment(): void {
-    if (!this.selectedClassId || !this.selectedSectionId || !this.selectedSubjectId) {
+    if (
+      !this.selectedClassId ||
+      !this.selectedSectionId ||
+      !this.selectedSubjectId
+    ) {
       this.error = 'Please select class, section and subject';
       return;
     }
 
-    const classObj = this.classes.find(c => c.id == this.selectedClassId);
-    const sectionObj = this.sections.find(s => s.id == this.selectedSectionId);
-    const subjectObj = this.subjects.find(s => s.id == this.selectedSubjectId);
+    const classObj = this.classes.find(
+      (c) => c.id === Number(this.selectedClassId),
+    );
+    const sectionObj = this.sections.find(
+      (s) => s.id === Number(this.selectedSectionId),
+    );
+    const subjectObj = this.subjects.find(
+      (s) => s.id === Number(this.selectedSubjectId),
+    );
 
     const assignment: Assignment = {
       classId: +this.selectedClassId,
@@ -141,14 +164,15 @@ export class AssignTeacherSubjectsComponent implements OnInit {
       subjectId: +this.selectedSubjectId,
       className: classObj?.className,
       sectionName: sectionObj?.sectionName,
-      subjectName: subjectObj?.subjectName
+      subjectName: subjectObj?.subjectName,
     };
 
     // Check for duplicates
-    const exists = this.assignments.some(a => 
-      a.classId === assignment.classId && 
-      a.sectionId === assignment.sectionId && 
-      a.subjectId === assignment.subjectId
+    const exists = this.assignments.some(
+      (a) =>
+        a.classId === assignment.classId &&
+        a.sectionId === assignment.sectionId &&
+        a.subjectId === assignment.subjectId,
     );
 
     if (exists) {
@@ -188,11 +212,11 @@ export class AssignTeacherSubjectsComponent implements OnInit {
 
     const payload = {
       teacherId: +this.selectedTeacherId,
-      assignments: this.assignments.map(a => ({
+      assignments: this.assignments.map((a) => ({
         classId: a.classId,
         sectionId: a.sectionId,
-        subjectId: a.subjectId
-      }))
+        subjectId: a.subjectId,
+      })),
     };
 
     this.teacherSubjectService.assignSubjectsToTeacher(payload).subscribe({
@@ -207,7 +231,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
       error: (error) => {
         this.error = error.error?.message || 'Failed to assign subjects';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -227,7 +251,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   //   });
   // }
 
-    openRemoveModal(assignment: any): void {
+  openRemoveModal(assignment: any): void {
     this.assignmentToRemove = assignment;
     this.showRemoveModal = true;
   }
@@ -236,20 +260,22 @@ export class AssignTeacherSubjectsComponent implements OnInit {
     if (!this.assignmentToRemove || this.removing) return;
 
     this.removing = true;
-    this.teacherSubjectService.removeAssignment(this.assignmentToRemove.id).subscribe({
-      next: (r) => {
-        if (r.success) {
-          this.success = 'Assignment removed successfully';
-          this.loadExistingAssignments();
-          this.closeRemoveModal();
-        }
-        this.removing = false;
-      },
-      error: (error) => {
-      this.error = error.error?.message || 'Failed to remove assignment';
-        this.removing = false;
-      }
-    });
+    this.teacherSubjectService
+      .removeAssignment(this.assignmentToRemove.id)
+      .subscribe({
+        next: (r) => {
+          if (r.success) {
+            this.success = 'Assignment removed successfully';
+            this.loadExistingAssignments();
+            this.closeRemoveModal();
+          }
+          this.removing = false;
+        },
+        error: (error) => {
+          this.error = error.error?.message || 'Failed to remove assignment';
+          this.removing = false;
+        },
+      });
   }
 
   closeRemoveModal(): void {
