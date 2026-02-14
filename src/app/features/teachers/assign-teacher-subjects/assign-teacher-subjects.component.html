@@ -147,9 +147,15 @@
             <td>{{ assignment.sectionName }}</td>
             <td>{{ assignment.subjectName }}</td>
             <td>
-              <button class="btn btn-sm btn-danger" (click)="removeExistingAssignment(assignment.id)" [disabled]="loading">
+              <!-- <button class="btn btn-sm btn-danger" (click)="removeExistingAssignment(assignment.id)" [disabled]="loading">
                 <i class="fas fa-times"></i> Remove
-              </button>
+              </button> -->
+               <button 
+            class="btn btn-sm btn-danger" 
+            (click)="openRemoveModal(assignment)"
+            [disabled]="removing">
+            <i class="fas fa-times"></i> Remove
+          </button>
             </td>
           </tr>
         </tbody>
@@ -166,3 +172,22 @@
     </div>
   </div>
 </div>
+
+<app-confirmation-modal
+  [isOpen]="showRemoveModal"
+  title="Remove Assignment"
+  message="Are you sure you want to remove this assignment?"
+  [details]="assignmentToRemove ? [
+    { label: 'Class', value: assignmentToRemove.className },
+    { label: 'Section', value: assignmentToRemove.sectionName },
+    { label: 'Subject', value: assignmentToRemove.subjectName }
+  ] : []"
+  warningText="This action cannot be undone."
+  confirmText="Remove"
+  cancelText="Cancel"
+  [loading]="removing"
+  loadingText="Removing..."
+  type="danger"
+  (confirmed)="confirmRemove()"
+  (cancelled)="closeRemoveModal()">
+</app-confirmation-modal>

@@ -1,56 +1,88 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { AdminSettingsService } from '../../../core/services/admin-settings.service';
-import { RegistrationService } from '../../../core/services/registration.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
-import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule,DeleteConfirmationComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    DeleteConfirmationComponent,
+  ],
   templateUrl: './admin-settings.component.html',
-  styleUrls: ['./admin-settings.component.css']
+  styleUrls: ['./admin-settings.component.css'],
 })
 export class AdminSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
-  private adminSettingsService = inject(AdminSettingsService);
-  private registrationService = inject(RegistrationService);
-  private toastService = inject(ToastService);
+  private svc = inject(AdminSettingsService);
 
-  activeTab: 'class' | 'section' | 'subject' | 'examtype' | 'academic' | 'admin' = 'class';
-  
-  // Forms
-  classForm!: FormGroup;
-  sectionForm!: FormGroup;
-  subjectForm!: FormGroup;
-  examTypeForm!: FormGroup;
-  academicYearForm!: FormGroup;
-  promoteStudentsForm!: FormGroup;
-  adminAssignForm!: FormGroup;
+  // ── Tab state ──────────────────────────────────────────────
+  mainTab: 'master' | 'assign' | 'academic' | 'admin' = 'master';
+  masterTab: 'class' | 'section' | 'subject' | 'examtype' = 'class';
+  assignTab: 'assign-section' | 'assign-subject' | 'assign-examtype' =
+    'assign-section';
 
-  // Data
+  // ── Master data lists ──────────────────────────────────────
   classes: any[] = [];
-  sections: any[] = [];
-  subjects: any[] = [];
-  examTypes: any[] = [];
+  masterSections: any[] = []; // stand-alone section names (A, B, C …)
+  masterSubjects: any[] = []; // stand-alone subject names
+  masterExamTypes: any[] = []; // stand-alone exam type names
+
+  // ── Assignment lists ───────────────────────────────────────
+  assignedSections: any[] = []; // class ↔ section links
+  assignedSubjects: any[] = []; // class ↔ section ↔ subject links
+  assignedExamTypes: any[] = []; // class ↔ section ↔ examtype links
+
+  // ── Academic Year & Admin lists ───────────────────────────
   academicYears: any[] = [];
   users: any[] = [];
   admins: any[] = [];
 
-  loading = false;
-  error = '';
-  success = '';
+  // ── Sections loaded dynamically for subject/examtype forms ─
+  sectionsForAssignSubject: any[] = [];
+  sectionsForAssignExamType: any[] = [];
 
-  // Filters
+  // ── Forms ──────────────────────────────────────────────────
+  classForm!: FormGroup;
+  sectionForm!: FormGroup;
+  subjectForm!: FormGroup;
+  examTypeForm!: FormGroup;
+
+  assignSectionForm!: FormGroup;
+  assignSubjectForm!: FormGroup;
+  assignExamTypeForm!: FormGroup;
+
+  // ── Academic Year & Admin forms ────────────────────────────
+  academicYearForm!: FormGroup;
+  promoteStudentsForm!: FormGroup;
+  adminAssignForm!: FormGroup;
+
+  // ── UI state ───────────────────────────────────────────────
+  loading = false;
+  success = '';
+  error = '';
+
+  // ── Filters ───────────────────────────────────────────────
   classFilter = '';
   sectionFilter = '';
   subjectFilter = '';
   examTypeFilter = '';
+  assignSectionFilter = '';
+  assignSubjectFilter = '';
+  assignExamTypeFilter = '';
   academicYearFilter = '';
 
-    // Delete Modal - ADD THESE
+  // ── Delete modal ──────────────────────────────────────────
   showDeleteModal = false;
   deleteModalTitle = '';
   deleteModalMessage = '';
@@ -58,287 +90,480 @@ export class AdminSettingsComponent implements OnInit {
   deleteType = '';
   itemToDelete: any = null;
 
+  showRemoveAdminModal = false;
+  adminToRemove: any = null;
+
+  // ─────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.initForms();
-    this.loadAllData();
+    this.loadAll();
   }
 
+  // ── Form initialisation ───────────────────────────────────
   initForms(): void {
-    this.classForm = this.fb.group({
-      className: ['', Validators.required],
-      displayOrder: [1, [Validators.required, Validators.min(1)]]
-    });
-
+    // Master forms — no class dependency
+    this.classForm = this.fb.group({ classNumber: ['', Validators.required] });
     this.sectionForm = this.fb.group({
-      classId: ['', Validators.required],
       sectionName: ['', Validators.required],
-      displayOrder: [1, [Validators.required, Validators.min(1)]]
+    });
+    this.subjectForm = this.fb.group({
+      subjectName: ['', Validators.required],
+    });
+    this.examTypeForm = this.fb.group({
+      examTypeName: ['', Validators.required],
     });
 
-    this.subjectForm = this.fb.group({
+    // Assignment forms
+    this.assignSectionForm = this.fb.group({
       classId: ['', Validators.required],
       sectionId: ['', Validators.required],
-      subjectName: ['', Validators.required],
-      subjectCode: ['', Validators.required],
-      displayOrder: [1, [Validators.required, Validators.min(1)]]
     });
 
-    this.examTypeForm = this.fb.group({
-      classId: ['', Validators.required],     // Only class dependency
-      examTypeName: ['', Validators.required],
-      displayOrder: [1, [Validators.required, Validators.min(1)]]
+    this.assignSubjectForm = this.fb.group({
+      classId: ['', Validators.required],
+      //sectionId: ['', Validators.required],
+      subjectId: ['', Validators.required],
     });
 
+    this.assignExamTypeForm = this.fb.group({
+      classId: ['', Validators.required],
+      //sectionId:  ['', Validators.required],
+      examTypeId: ['', Validators.required],
+    });
+
+    // Academic Year forms
     this.academicYearForm = this.fb.group({
       yearName: ['', Validators.required],
       startDate: ['', Validators.required],
-      endDate: ['', Validators.required]
+      endDate: ['', Validators.required],
     });
 
     this.promoteStudentsForm = this.fb.group({
       fromYearId: ['', Validators.required],
-      toYearId: ['', Validators.required]
+      toYearId: ['', Validators.required],
     });
 
+    // Admin form
     this.adminAssignForm = this.fb.group({
-      userId: ['', Validators.required]
-    });
-
-    // Watch for section form class changes
-    this.sectionForm.get('classId')?.valueChanges.subscribe(() => {
-      // Just validate that class is selected
-    });
-
-    // Watch for subject form class/section changes
-    this.subjectForm.get('classId')?.valueChanges.subscribe(classId => {
-      this.subjectForm.patchValue({ sectionId: '' });
-      this.loadSectionsForClass(+classId);
+      userId: ['', Validators.required],
     });
   }
 
-  loadAllData(): void {
+  // ── Load all data ─────────────────────────────────────────
+  loadAll(): void {
     this.loadClasses();
-    this.loadSections();
-    this.loadSubjects();
-    this.loadExamTypes();
+    this.loadMasterSections();
+    this.loadMasterSubjects();
+    this.loadMasterExamTypes();
+    this.loadAssignedSections();
+    this.loadAssignedSubjects();
+    this.loadAssignedExamTypes();
     this.loadAcademicYears();
     this.loadUsers();
     this.loadAdmins();
   }
 
   loadClasses(): void {
-    this.adminSettingsService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
-      }
+    this.svc.getClasses().subscribe({
+      next: (r) => {
+        if (r.success) this.classes = r.data ?? [];
+      },
     });
   }
 
-  loadSections(): void {
-    this.adminSettingsService.getSections().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.sections = response.data;
-        }
-      }
+  loadMasterSections(): void {
+    this.svc.getMasterSections().subscribe({
+      next: (r) => {
+        if (r.success) this.masterSections = r.data ?? [];
+      },
     });
   }
 
-  loadSubjects(): void {
-    this.adminSettingsService.getSubjects().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.subjects = response.data;
-        }
-      }
+  loadMasterSubjects(): void {
+    this.svc.getMasterSubjects().subscribe({
+      next: (r) => {
+        if (r.success) this.masterSubjects = r.data ?? [];
+      },
     });
   }
 
-  loadExamTypes(): void {
-    this.adminSettingsService.getExamTypes().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.examTypes = response.data;
-        }
-      }
+  loadMasterExamTypes(): void {
+    this.svc.getMasterExamTypes().subscribe({
+      next: (r) => {
+        if (r.success) this.masterExamTypes = r.data ?? [];
+      },
+    });
+  }
+
+  loadAssignedSections(): void {
+    this.svc.getAssignedSections().subscribe({
+      next: (r) => {
+        if (r.success) this.assignedSections = r.data ?? [];
+      },
+    });
+  }
+
+  loadAssignedSubjects(): void {
+    this.svc.getAssignedSubjects().subscribe({
+      next: (r) => {
+        if (r.success) this.assignedSubjects = r.data ?? [];
+      },
+    });
+  }
+
+  loadAssignedExamTypes(): void {
+    this.svc.getAssignedExamTypes().subscribe({
+      next: (r) => {
+        if (r.success) this.assignedExamTypes = r.data ?? [];
+      },
     });
   }
 
   loadAcademicYears(): void {
-    this.adminSettingsService.getAcademicYears().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.academicYears = response.data;
-          console.log('Academic years loaded:', this.academicYears);
-        }
-      }
+    this.svc.getAcademicYears().subscribe({
+      next: (r) => {
+        if (r.success) this.academicYears = r.data ?? [];
+      },
     });
   }
 
   loadUsers(): void {
-    this.adminSettingsService.getUsers().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.users = response.data;
-        }
-      }
+    this.svc.getUsers().subscribe({
+      next: (r) => {
+        if (r.success) this.users = r.data ?? [];
+      },
     });
   }
 
   loadAdmins(): void {
-    this.adminSettingsService.getAdmins().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.admins = response.data;
-        }
-      }
+    this.svc.getAdmins().subscribe({
+      next: (r) => {
+        if (r.success) this.admins = r.data ?? [];
+      },
     });
   }
 
-  // Helper methods for hierarchical dropdowns
-  sectionsForClass: any[] = [];
-
-  loadSectionsForClass(classId: number): void {
+  // ── Dynamic section loading for assignment forms ──────────
+  onAssignSubjectClassChange(event: any): void {
+    const classId = +event.target.value;
+    this.assignSubjectForm.patchValue({ sectionId: '' });
+    this.sectionsForAssignSubject = [];
     if (!classId) return;
-    this.registrationService.getSections(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.sectionsForClass = response.data;
-        }
-      }
+    this.svc.getSectionsByClass(classId).subscribe({
+      next: (r) => {
+        if (r.success) this.sectionsForAssignSubject = r.data ?? [];
+      },
     });
   }
 
-  // Class Operations
+  onAssignExamTypeClassChange(event: any): void {
+    const classId = +event.target.value;
+    this.assignExamTypeForm.patchValue({ sectionId: '' });
+    this.sectionsForAssignExamType = [];
+    if (!classId) return;
+    this.svc.getSectionsByClass(classId).subscribe({
+      next: (r) => {
+        if (r.success) this.sectionsForAssignExamType = r.data ?? [];
+      },
+    });
+  }
+
+  // ── Tab navigation ────────────────────────────────────────
+  setMainTab(tab: 'master' | 'assign' | 'academic' | 'admin'): void {
+    this.mainTab = tab;
+    this.clearMessages();
+  }
+
+  setMasterTab(tab: 'class' | 'section' | 'subject' | 'examtype'): void {
+    this.masterTab = tab;
+    this.clearMessages();
+  }
+
+  setAssignTab(
+    tab: 'assign-section' | 'assign-subject' | 'assign-examtype',
+  ): void {
+    this.assignTab = tab;
+    this.clearMessages();
+  }
+
+  // ── MASTER: Create ────────────────────────────────────────
   createClass(): void {
     if (this.classForm.invalid) return;
-
     this.loading = true;
-    this.adminSettingsService.createClass(this.classForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Class created successfully!';
-          this.classForm.reset({ displayOrder: 1 });
+    this.svc.createClass(this.classForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Class created successfully!');
+          this.classForm.reset();
           this.loadClasses();
         }
         this.loading = false;
       },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to create class';
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to create class');
         this.loading = false;
-      }
+      },
     });
-  } 
+  }
 
+  createSection(): void {
+    if (this.sectionForm.invalid) return;
+    this.loading = true;
+    this.svc.createMasterSection(this.sectionForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Section created successfully!');
+          this.sectionForm.reset();
+          this.loadMasterSections();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to create section');
+        this.loading = false;
+      },
+    });
+  }
+
+  createSubject(): void {
+    if (this.subjectForm.invalid) return;
+    this.loading = true;
+    this.svc.createMasterSubject(this.subjectForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Subject created successfully!');
+          this.subjectForm.reset();
+          this.loadMasterSubjects();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to create subject');
+        this.loading = false;
+      },
+    });
+  }
+
+  createExamType(): void {
+    if (this.examTypeForm.invalid) return;
+    this.loading = true;
+    this.svc.createMasterExamType(this.examTypeForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Exam Type created successfully!');
+          this.examTypeForm.reset();
+          this.loadMasterExamTypes();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to create exam type');
+        this.loading = false;
+      },
+    });
+  }
+
+  // ── ASSIGNMENTS: Create ───────────────────────────────────
+  assignSection(): void {
+    if (this.assignSectionForm.invalid) return;
+    this.loading = true;
+    this.svc.assignSection(this.assignSectionForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Section assigned successfully!');
+          this.assignSectionForm.reset();
+          this.loadAssignedSections();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to assign section');
+        this.loading = false;
+      },
+    });
+  }
+
+  assignSubject(): void {
+    if (this.assignSubjectForm.invalid) return;
+    this.loading = true;
+    this.svc.assignSubject(this.assignSubjectForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Subject assigned successfully!');
+          this.assignSubjectForm.reset();
+          this.sectionsForAssignSubject = [];
+          this.loadAssignedSubjects();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to assign subject');
+        this.loading = false;
+      },
+    });
+  }
+
+  assignExamType(): void {
+    if (this.assignExamTypeForm.invalid) return;
+    this.loading = true;
+    this.svc.assignExamType(this.assignExamTypeForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Exam Type assigned successfully!');
+          this.assignExamTypeForm.reset();
+          this.sectionsForAssignExamType = [];
+          this.loadAssignedExamTypes();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to assign exam type');
+        this.loading = false;
+      },
+    });
+  }
+
+  // ── Delete modal ──────────────────────────────────────────
   openDeleteModal(type: string, item: any): void {
     this.deleteType = type;
     this.itemToDelete = item;
-    
-    switch(type) {
-      case 'class':
-        this.deleteModalTitle = 'Delete Class';
-        this.deleteModalMessage = 'Are you sure you want to delete this class?';
-        this.deleteItemName = item.className;
-        break;
-      case 'section':
-        this.deleteModalTitle = 'Delete Section';
-        this.deleteModalMessage = 'Are you sure you want to delete this section?';
-        this.deleteItemName = `${item.className} - ${item.sectionName}`;
-        break;
-      case 'subject':
-        this.deleteModalTitle = 'Delete Subject';
-        this.deleteModalMessage = 'Are you sure you want to delete this subject?';
-        this.deleteItemName = `${item.subjectName} (${item.subjectCode})`;
-        break;
-      case 'examtype':
-        this.deleteModalTitle = 'Delete Exam Type';
-        this.deleteModalMessage = 'Are you sure you want to delete this exam type?';
-        this.deleteItemName = item.examTypeName;
-        break;
-      case 'academic':
-        this.deleteModalTitle = 'Delete Academic Year';
-        this.deleteModalMessage = 'Are you sure you want to delete this academic year?';
-        this.deleteItemName = item.yearName;
-        break;
-    }
-    
+    const titles: Record<string, [string, string, string]> = {
+      class: ['Delete Class', 'Delete this class?', item.className ?? ''],
+      'master-section': [
+        'Delete Section',
+        'Delete this section?',
+        item.sectionName ?? '',
+      ],
+      'master-subject': [
+        'Delete Subject',
+        'Delete this subject?',
+        item.subjectName ?? '',
+      ],
+      'master-examtype': [
+        'Delete Exam Type',
+        'Delete this exam type?',
+        item.examTypeName ?? '',
+      ],
+      'assigned-section': [
+        'Remove Assignment',
+        'Remove section assignment?',
+        `Class ${item.classNumber} → ${item.sectionName}`,
+      ],
+      'assigned-subject': [
+        'Remove Assignment',
+        'Remove subject assignment?',
+        `Class ${item.classNumber}  → ${item.subjectName}`,
+      ],
+      'assigned-examtype': [
+        'Remove Assignment',
+        'Remove exam type assignment?',
+        `Class ${item.classNumber}  → ${item.examTypeName}`,
+      ],
+    };
+    const [title, message, name] = titles[type] ?? [
+      'Delete',
+      'Confirm delete?',
+      '',
+    ];
+    this.deleteModalTitle = title;
+    this.deleteModalMessage = message;
+    this.deleteItemName = name;
     this.showDeleteModal = true;
   }
 
   onDeleteConfirmed(): void {
     if (!this.itemToDelete) return;
-
     this.loading = true;
-    
-    switch(this.deleteType) {
-      case 'class':
-        this.adminSettingsService.deleteClass(this.itemToDelete.id).subscribe({
+    const id = this.itemToDelete.id;
+
+    const actions: Record<string, () => void> = {
+      class: () =>
+        this.svc.deleteClass(id).subscribe({
           next: () => {
-            this.success = 'Class deleted successfully!';
+            this.showSuccess('Class deleted!');
             this.loadClasses();
             this.resetDeleteModal();
           },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to delete class';
-            this.resetDeleteModal();
-          }
-        });
-        break;
-      case 'section':
-        this.adminSettingsService.deleteSection(this.itemToDelete.id).subscribe({
-          next: () => {
-            this.success = 'Section deleted successfully!';
-            this.loadSections();
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
             this.resetDeleteModal();
           },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to delete section';
-            this.resetDeleteModal();
-          }
-        });
-        break;
-      case 'subject':
-        this.adminSettingsService.deleteSubject(this.itemToDelete.id).subscribe({
+        }),
+      'master-section': () =>
+        this.svc.deleteMasterSection(id).subscribe({
           next: () => {
-            this.success = 'Subject deleted successfully!';
-            this.loadSubjects();
+            this.showSuccess('Section deleted!');
+            this.loadMasterSections();
             this.resetDeleteModal();
           },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to delete subject';
-            this.resetDeleteModal();
-          }
-        });
-        break;
-      case 'examtype':
-        this.adminSettingsService.deleteExamType(this.itemToDelete.id).subscribe({
-          next: () => {
-            this.success = 'Exam type deleted successfully!';
-            this.loadExamTypes();
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
             this.resetDeleteModal();
           },
-          error: (err) => {
-            this.error = err.error?.message || 'Failed to delete exam type';
+        }),
+      'master-subject': () =>
+        this.svc.deleteMasterSubject(id).subscribe({
+          next: () => {
+            this.showSuccess('Subject deleted!');
+            this.loadMasterSubjects();
             this.resetDeleteModal();
-          }
-        });
-        break;
-      // case 'academic':
-      //   this.adminSettingsService.deleteAcademicYear(this.itemToDelete.id).subscribe({
-      //     next: () => {
-      //       this.success = 'Academic year deleted successfully!';
-      //       this.loadAcademicYears();
-      //       this.resetDeleteModal();
-      //     },
-      //     error: (err) => {
-      //       this.error = err.error?.message || 'Failed to delete academic year';
-      //       this.resetDeleteModal();
-      //     }
-      //   });
-      //   break;
-    }
+          },
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
+            this.resetDeleteModal();
+          },
+        }),
+      'master-examtype': () =>
+        this.svc.deleteMasterExamType(id).subscribe({
+          next: () => {
+            this.showSuccess('Exam type deleted!');
+            this.loadMasterExamTypes();
+            this.resetDeleteModal();
+          },
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
+            this.resetDeleteModal();
+          },
+        }),
+      'assigned-section': () =>
+        this.svc.removeAssignedSection(id).subscribe({
+          next: () => {
+            this.showSuccess('Assignment removed!');
+            this.loadAssignedSections();
+            this.resetDeleteModal();
+          },
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
+            this.resetDeleteModal();
+          },
+        }),
+      'assigned-subject': () =>
+        this.svc.removeAssignedSubject(id).subscribe({
+          next: () => {
+            this.showSuccess('Assignment removed!');
+            this.loadAssignedSubjects();
+            this.resetDeleteModal();
+          },
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
+            this.resetDeleteModal();
+          },
+        }),
+      'assigned-examtype': () =>
+        this.svc.removeAssignedExamType(id).subscribe({
+          next: () => {
+            this.showSuccess('Assignment removed!');
+            this.loadAssignedExamTypes();
+            this.resetDeleteModal();
+          },
+          error: (e) => {
+            this.showError(e.error?.message || 'Failed');
+            this.resetDeleteModal();
+          },
+        }),
+    };
+
+    actions[this.deleteType]?.();
   }
 
   onDeleteCancelled(): void {
@@ -349,337 +574,238 @@ export class AdminSettingsComponent implements OnInit {
     this.showDeleteModal = false;
     this.deleteType = '';
     this.itemToDelete = null;
-    this.deleteModalTitle = '';
-    this.deleteModalMessage = '';
-    this.deleteItemName = '';
     this.loading = false;
   }
 
-  
-
-  // Section Operations
-  createSection(): void {
-    if (this.sectionForm.invalid) return;
-
-    this.loading = true;
-    this.adminSettingsService.createSection(this.sectionForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Section created successfully!';
-          this.sectionForm.reset({ displayOrder: 1 });
-          this.loadSections();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to create section';
-        this.loading = false;
-      }
-    });
+  // ── Filtered getters ──────────────────────────────────────
+  get filteredClasses() {
+    return this.filterList(this.classes, this.classFilter, ['classNumber']);
   }
 
-  // deleteSection(id: number, isUsed: boolean): void {
-  //   if (isUsed) {
-  //     this.error = 'Cannot delete section that is already in use';
-  //     return;
-  //   }
-
-  //   if (!confirm('Are you sure you want to delete this section?')) return;
-
-  //   this.adminSettingsService.deleteSection(id).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         this.success = 'Section deleted successfully!';
-  //         this.loadSections();
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.error = error.error?.message || 'Failed to delete section';
-  //     }
-  //   });
-  // }
-
-  // Subject Operations
-  createSubject(): void {
-    if (this.subjectForm.invalid) return;
-
-    this.loading = true;
-    this.adminSettingsService.createSubject(this.subjectForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Subject created successfully!';
-          this.subjectForm.reset({ displayOrder: 1 });
-          this.loadSubjects();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to create subject';
-        this.loading = false;
-      }
-    });
+  get filteredMasterSections() {
+    return this.filterList(this.masterSections, this.sectionFilter, [
+      'sectionName',
+    ]);
   }
 
-  // deleteSubject(id: number, isUsed: boolean): void {
-  //   if (isUsed) {
-  //     this.error = 'Cannot delete subject that is already in use';
-  //     return;
-  //   }
-
-  //   if (!confirm('Are you sure you want to delete this subject?')) return;
-
-  //   this.adminSettingsService.deleteSubject(id).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         this.success = 'Subject deleted successfully!';
-  //         this.loadSubjects();
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.error = error.error?.message || 'Failed to delete subject';
-  //     }
-  //   });
-  // }
-
-  // ExamType Operations
-  createExamType(): void {
-    if (this.examTypeForm.invalid) return;
-
-    this.loading = true;
-    this.adminSettingsService.createExamType(this.examTypeForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Exam Type created successfully!';
-          this.examTypeForm.reset({ displayOrder: 1 });
-          this.loadExamTypes();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to create exam type';
-        this.loading = false;
-      }
-    });
+  get filteredMasterSubjects() {
+    return this.filterList(this.masterSubjects, this.subjectFilter, [
+      'subjectName',
+    ]);
   }
 
-  // deleteExamType(id: number, isUsed: boolean): void {
-  //   if (isUsed) {
-  //     this.error = 'Cannot delete exam type that is already in use';
-  //     return;
-  //   }
+  get filteredMasterExamTypes() {
+    return this.filterList(this.masterExamTypes, this.examTypeFilter, [
+      'examTypeName',
+    ]);
+  }
 
-  //   if (!confirm('Are you sure you want to delete this exam type?')) return;
+  get filteredAssignedSections() {
+    return this.filterList(this.assignedSections, this.assignSectionFilter, [
+      'classNumber',
+      'sectionName',
+    ]);
+  }
 
-  //   this.adminSettingsService.deleteExamType(id).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         this.success = 'Exam Type deleted successfully!';
-  //         this.loadExamTypes();
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.error = error.error?.message || 'Failed to delete exam type';
-  //     }
-  //   });
-  // }
+  get filteredAssignedSubjects() {
+    return this.filterList(this.assignedSubjects, this.assignSubjectFilter, [
+      'classNumber',
+      'sectionName',
+      'subjectName',
+    ]);
+  }
 
-  // Academic Year Operations
+  get filteredAssignedExamTypes() {
+    return this.filterList(this.assignedExamTypes, this.assignExamTypeFilter, [
+      'classNumber',
+      'sectionName',
+      'examTypeName',
+    ]);
+  }
+
+  // ── ACADEMIC YEAR ─────────────────────────────────────────
   createAcademicYear(): void {
     if (this.academicYearForm.invalid) return;
-
     this.loading = true;
-    this.adminSettingsService.createAcademicYear(this.academicYearForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Academic Year created successfully!';
+    this.svc.createAcademicYear(this.academicYearForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Academic Year created successfully!');
           this.academicYearForm.reset();
           this.loadAcademicYears();
         }
         this.loading = false;
       },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to create academic year';
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to create academic year');
         this.loading = false;
-      }
+      },
     });
   }
 
   setActiveAcademicYear(id: number): void {
-    this.adminSettingsService.setActiveAcademicYear(id).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Active academic year updated!';
+    this.loading = true;
+    this.svc.setActiveAcademicYear(id).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Active academic year updated!');
           this.loadAcademicYears();
-          this.clearMessages();
         }
+        this.loading = false;
       },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to set active year';
-        this.clearMessages();
-      }
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to set active year');
+        this.loading = false;
+      },
     });
   }
 
   promoteStudents(): void {
-    if (this.promoteStudentsForm.invalid) {
-      this.error = 'Please select both academic years';
-      this.clearMessages();
-      return;
-    }
-
+    if (this.promoteStudentsForm.invalid) return;
     const fromYearId = +this.promoteStudentsForm.get('fromYearId')?.value;
     const toYearId = +this.promoteStudentsForm.get('toYearId')?.value;
+    const fromYear = this.academicYears.find((y) => y.id === fromYearId);
+    const toYear = this.academicYears.find((y) => y.id === toYearId);
 
-    console.log('Form values:', { 
-      fromYearId, 
-      toYearId, 
-      fromYearIdType: typeof fromYearId, 
-      toYearIdType: typeof toYearId 
-    });
-
-    if (!fromYearId || !toYearId) {
-      this.error = 'Please select both academic years';
-      this.clearMessages();
+    if (
+      fromYear &&
+      toYear &&
+      new Date(fromYear.startDate) >= new Date(toYear.startDate)
+    ) {
+      this.showError(
+        `Cannot promote backward. "${toYear.yearName}" starts before "${fromYear.yearName}".`,
+      );
       return;
     }
 
-    if (fromYearId === toYearId) {
-      const selectedYear = this.academicYears.find(y => y.id === fromYearId);
-      this.error = `From and To academic years must be different. You selected "${selectedYear?.yearName}" for both.`;
-      this.clearMessages();
+    if (
+      !confirm(
+        `Promote all students from "${fromYear?.yearName}" to "${toYear?.yearName}"?`,
+      )
+    )
       return;
-    }
-
-    const fromYear = this.academicYears.find(y => y.id === fromYearId);
-    const toYear = this.academicYears.find(y => y.id === toYearId);
-    
-    if (!confirm(`This will promote all students from "${fromYear?.yearName}" to "${toYear?.yearName}". Continue?`)) {
-      return;
-    }
 
     this.loading = true;
-    const data = { fromYearId, toYearId };
-    
-    console.log('Promoting students with data:', data);
-    
-    this.adminSettingsService.promoteStudents(data).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = response.message || 'Students promoted successfully!';
+    this.svc.promoteStudents({ fromYearId, toYearId }).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess(r.message || 'Students promoted successfully!');
           this.promoteStudentsForm.reset();
-          this.clearMessages();
+          this.loadAcademicYears();
         }
         this.loading = false;
       },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to promote students';
-        this.loading = false;
-        this.clearMessages();
-      }
-    });
-  }
-
-  // Admin Assignment
-  assignAdmin(): void {
-    if (this.adminAssignForm.invalid) return;
-
-    this.loading = true;
-    this.adminSettingsService.assignAdmin(this.adminAssignForm.value).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Admin role assigned successfully!';
-          this.adminAssignForm.reset();
-          this.loadUsers();  // Refresh available users
-          this.loadAdmins(); // Refresh admin list
-          this.clearMessages();
-        }
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to promote students');
         this.loading = false;
       },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to assign admin';
-        this.loading = false;
-        this.clearMessages();       
-      }
     });
   }
 
-  removeAdmin(userId: number): void {
-    if (!confirm('Are you sure you want to remove admin role from this user?')) return;
-
-    this.loading = true;
-    this.adminSettingsService.removeAdmin(userId).subscribe({
-      next: (response) => {
-        if (response.success) {
-          this.success = 'Admin role removed successfully!';
-          this.loadUsers();  // Refresh available users
-          this.loadAdmins(); // Refresh admin list
-          this.clearMessages();
-        }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to remove admin';
-        this.loading = false;
-        this.clearMessages();
-      }
-    });
+  get activeAcademicYears() {
+    return this.academicYears.filter((y) => y.isActive);
   }
 
-  setActiveTab(tab: any): void {
-    this.activeTab = tab;
-    this.error = '';
-    this.success = '';
-  }
-
-  clearMessages(): void {
-    setTimeout(() => {
-      this.error = '';
-      this.success = '';
-    }, 3000);
-  }
-
-  // Filter methods
-  get filteredClasses() {
-    if (!this.classFilter) return this.classes;
-    const filter = this.classFilter.toLowerCase();
-    return this.classes.filter(c => 
-      c.className.toLowerCase().includes(filter)
-    );
-  }
-
-  get filteredSections() {
-    if (!this.sectionFilter) return this.sections;
-    const filter = this.sectionFilter.toLowerCase();
-    return this.sections.filter(s => 
-      s.sectionName.toLowerCase().includes(filter) ||
-      s.className.toLowerCase().includes(filter)
-    );
-  }
-
-  get filteredSubjects() {
-    if (!this.subjectFilter) return this.subjects;
-    const filter = this.subjectFilter.toLowerCase();
-    return this.subjects.filter(s => 
-      s.subjectName.toLowerCase().includes(filter) ||
-      s.subjectCode.toLowerCase().includes(filter) ||
-      s.className.toLowerCase().includes(filter)
-    );
-  }
-
-  get filteredExamTypes() {
-    if (!this.examTypeFilter) return this.examTypes;
-    const filter = this.examTypeFilter.toLowerCase();
-    return this.examTypes.filter(e => 
-      e.examTypeName.toLowerCase().includes(filter) ||
-      e.className.toLowerCase().includes(filter)
+  get availableTargetYears() {
+    const active = this.academicYears.find((y) => y.isActive);
+    if (!active)
+      return this.academicYears.filter(
+        (y) => !y.isActive && !y.isPromotionCompleted,
+      );
+    const activeStart = new Date(active.startDate);
+    return this.academicYears.filter(
+      (y) =>
+        !y.isActive &&
+        !y.isPromotionCompleted &&
+        new Date(y.startDate) > activeStart,
     );
   }
 
   get filteredAcademicYears() {
-    if (!this.academicYearFilter) return this.academicYears;
-    const filter = this.academicYearFilter.toLowerCase();
-    return this.academicYears.filter(y => 
-      y.yearName.toLowerCase().includes(filter)
+    return this.filterList(this.academicYears, this.academicYearFilter, [
+      'yearName',
+    ]);
+  }
+
+  // ── ADMIN ACCESS ──────────────────────────────────────────
+  assignAdmin(): void {
+    if (this.adminAssignForm.invalid) return;
+    this.loading = true;
+    this.svc.assignAdmin(this.adminAssignForm.value).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Admin role assigned successfully!');
+          this.adminAssignForm.reset();
+          this.loadUsers();
+          this.loadAdmins();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to assign admin');
+        this.loading = false;
+      },
+    });
+  }
+
+  openRemoveAdminModal(admin: any): void {
+    this.adminToRemove = admin;
+    this.deleteModalTitle = 'Remove Admin Role';
+    this.deleteModalMessage =
+      'Are you sure you want to remove admin privileges from this user? They will no longer have access to admin features.';
+    this.deleteItemName = `${admin.firstName} ${admin.lastName}`;
+    this.showRemoveAdminModal = true;
+  }
+
+  confirmRemoveAdmin(): void {
+    if (!this.adminToRemove) return;
+
+    this.loading = true;
+    this.svc.removeAdmin(this.adminToRemove.userId).subscribe({
+      next: (r) => {
+        if (r.success) {
+          this.showSuccess('Admin role removed successfully!');
+          this.loadUsers();
+          this.loadAdmins();
+          this.closeRemoveAdminModal();
+        }
+        this.loading = false;
+      },
+      error: (e) => {
+        this.showError(e.error?.message || 'Failed to remove admin');
+        this.loading = false;
+      },
+    });
+  }
+
+  closeRemoveAdminModal(): void {
+    this.showRemoveAdminModal = false;
+    this.adminToRemove = null;
+  }
+
+  private filterList(list: any[], query: string, fields: string[]): any[] {
+    if (!query.trim()) return list;
+    const q = query.toLowerCase();
+    return list.filter((item) =>
+      fields.some((f) => (item[f] ?? '').toString().toLowerCase().includes(q)),
     );
+  }
+
+  // ── Helpers ───────────────────────────────────────────────
+  private showSuccess(msg: string): void {
+    this.success = msg;
+    this.error = '';
+    setTimeout(() => (this.success = ''), 3500);
+  }
+
+  private showError(msg: string): void {
+    this.error = msg;
+    this.success = '';
+    setTimeout(() => (this.error = ''), 4000);
+  }
+
+  clearMessages(): void {
+    this.success = '';
+    this.error = '';
   }
 }

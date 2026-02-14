@@ -4,7 +4,7 @@
     <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
   </div>
 
-  <!-- ✅ Error Alert -->
+  <!-- Error Alert -->
   <div class="alert alert-error" *ngIf="error">
     <i class="fas fa-exclamation-circle"></i>
     <span>{{ error }}</span>
@@ -27,40 +27,34 @@
         >
           <option value="">Select Class</option>
           <option *ngFor="let cls of classes" [value]="cls.id">
-            {{ cls.name }}
+            {{ cls.classNumber }}
           </option>
         </select>
       </div>
       <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Section <span class="required">*</span></label
-        >
+        <label class="form-label">Section <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="selectedSection">
           <option value="">Select Section</option>
           <option *ngFor="let section of sections" [value]="section.id">
-            {{ section.name }}
+            {{ section.sectionName }}
           </option>
         </select>
       </div>
       <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Subject <span class="required">*</span></label
-        >
+        <label class="form-label">Subject <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="selectedSubject">
           <option value="">Select Subject</option>
           <option *ngFor="let subject of subjects" [value]="subject.id">
-            {{ subject.name }}
+            {{ subject.subjectName }}
           </option>
         </select>
       </div>
       <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Exam Type <span class="required">*</span></label
-        >
+        <label class="form-label">Exam Type <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="selectedExamType">
           <option value="">Select Exam Type</option>
           <option *ngFor="let examType of examTypes" [value]="examType.id">
-            {{ examType.name }}
+            {{ examType.examTypeName }}
           </option>
         </select>
       </div>
@@ -77,15 +71,13 @@
     </div>
   </div>
 
-  <!-- ✅ Select Student Card - ONLY SHOW WHEN STUDENTS EXIST -->
+  <!-- Select Student Card -->
   <div class="card" *ngIf="students && students.length > 0">
     <h4><i class="fas fa-user-graduate"></i> Select Student</h4>
 
     <div class="row">
       <div class="col-md-6 mb-3">
-        <label class="form-label"
-          >Student <span class="required">*</span></label
-        >
+        <label class="form-label">Student <span class="required">*</span></label>
         <select
           class="form-control"
           [(ngModel)]="selectedStudent"
@@ -100,42 +92,27 @@
     </div>
   </div>
 
-  <!-- ✅ Empty State - SHOW WHEN NO STUDENTS FOUND -->
+  <!-- Empty State -->
   <div class="card" *ngIf="searchCompleted && (!students || students.length === 0) && !error">
     <div class="empty-state">
       <i class="fas fa-users-slash"></i>
       <h5>No Students Found</h5>
-      <p>No students found for the selected exam details. Please try different filters.</p>
+      <p>No students found for the selected exam details.</p>
     </div>
   </div>
 
   <!-- Results Display Card -->
-  <div
-    class="card"
-    *ngIf="showResultsCard && currentResults && selectedStudent"
-  >
+  <div class="card" *ngIf="showResultsCard && currentResults && selectedStudent">
     <div class="card-header-flex">
       <h4><i class="fas fa-clipboard-check"></i> Student Exam Results</h4>
       <div class="header-badges">
         <span class="badge badge-danger" *ngIf="currentResults.isAbsent">
           <i class="fas fa-user-slash"></i> Absent
         </span>
-        <span
-          class="badge badge-warning"
-          *ngIf="
-            !currentResults.isAbsent &&
-            currentResults.evaluationStatus === 'Pending'
-          "
-        >
+        <span class="badge badge-warning" *ngIf="!currentResults.isAbsent && currentResults.evaluationStatus === 'Pending'">
           <i class="fas fa-hourglass-half"></i> Pending Evaluation
         </span>
-        <div
-          *ngIf="
-            !currentResults.isAbsent &&
-            currentResults.evaluationStatus !== 'Pending'
-          "
-          class="score-badges"
-        >
+        <div *ngIf="!currentResults.isAbsent && currentResults.evaluationStatus !== 'Pending'" class="score-badges">
           <span class="badge badge-info">
             Total: {{ getTotalMarks() | number: "1.1-1" }}/{{ getMaxMarks() }}
           </span>
@@ -158,19 +135,9 @@
       </div>
       <div class="info-item">
         <strong>Status:</strong>
-        <span class="badge badge-danger" *ngIf="selectedStudent.isAbsent"
-          >Absent</span
-        >
-        <span
-          class="badge badge-success" style="color: white;"
-          *ngIf="!selectedStudent.isAbsent && selectedStudent.hasUploaded"
-          >Uploaded</span
-        >
-        <span
-          class="badge badge-warning"
-          *ngIf="!selectedStudent.isAbsent && !selectedStudent.hasUploaded"
-          >Not Uploaded</span
-        >
+        <span class="badge badge-danger" *ngIf="selectedStudent.isAbsent">Absent</span>
+        <span class="badge badge-success" style="color: white;" *ngIf="!selectedStudent.isAbsent && selectedStudent.hasUploaded">Uploaded</span>
+        <span class="badge badge-warning" *ngIf="!selectedStudent.isAbsent && !selectedStudent.hasUploaded">Not Uploaded</span>
       </div>
     </div>
 
@@ -183,51 +150,24 @@
     </div>
 
     <!-- Pending Evaluation Status -->
-    <div
-      *ngIf="
-        !currentResults.isAbsent &&
-        currentResults.evaluationStatus === 'Pending'
-      "
-      class="status-message status-pending"
-    >
+    <div *ngIf="!currentResults.isAbsent && currentResults.evaluationStatus === 'Pending'" class="status-message status-pending">
       <i class="fas fa-hourglass-half"></i>
       <h5>Evaluation in Progress</h5>
       <p>{{ currentResults.statusMessage }}</p>
-      <small
-        >Please check back later for the detailed evaluation results.</small
-      >
+      <small>Please check back later for the detailed evaluation results.</small>
       <div class="spinner-border"></div>
     </div>
 
     <!-- Question Navigation -->
-    <div
-      *ngIf="
-        !currentResults.isAbsent &&
-        currentResults.evaluationStatus !== 'Pending' &&
-        totalQuestions > 0
-      "
-    >
+    <div *ngIf="!currentResults.isAbsent && currentResults.evaluationStatus !== 'Pending' && totalQuestions > 0">
       <!-- Progress Bar -->
       <div class="progress-section">
         <div class="progress-info">
-          <span class="progress-label"
-            >Question {{ currentQuestionIndex + 1 }} of
-            {{ totalQuestions }}</span
-          >
-          <span class="progress-percentage"
-            >{{
-              ((currentQuestionIndex + 1) / totalQuestions) * 100
-                | number: "1.0-0"
-            }}% Complete</span
-          >
+          <span class="progress-label">Question {{ currentQuestionIndex + 1 }} of {{ totalQuestions }}</span>
+          <span class="progress-percentage">{{ ((currentQuestionIndex + 1) / totalQuestions) * 100 | number: "1.0-0" }}% Complete</span>
         </div>
         <div class="progress-bar-container">
-          <div
-            class="progress-bar-fill"
-            [style.width.%]="
-              ((currentQuestionIndex + 1) / totalQuestions) * 100
-            "
-          ></div>
+          <div class="progress-bar-fill" [style.width.%]="((currentQuestionIndex + 1) / totalQuestions) * 100"></div>
         </div>
       </div>
 
@@ -239,8 +179,11 @@
           [class.active]="i === currentQuestionIndex"
           [class.completed]="q.marksObtained > 0"
           (click)="goToQuestion(i)"
+          [disabled]="isEditMode"
         >
-          {{ i + 1 }}
+          <span class="question-number">{{ i + 1 }}</span>
+          <!-- <i *ngIf="q.marksObtained > 0" class="fas fa-check question-check"></i> -->
+          <i *ngIf="i === currentQuestionIndex" class="fas fa-check question-check"></i>
         </button>
       </div>
 
@@ -254,12 +197,9 @@
       <div *ngIf="!isLoadingQuestion && currentQuestion" class="question-card">
         <div class="question-header">
           <h5>
-            <i class="fas fa-question-circle"></i> Question
-            {{ currentQuestion.questionNumber }}
+            <i class="fas fa-question-circle"></i> Question {{ currentQuestion.questionNumber }}
           </h5>
-          <span class="badge badge-primary"
-            >Max: {{ currentQuestion.maxMarks }}</span
-          >
+          <span class="badge badge-primary">Max: {{ currentQuestion.maxMarks }}</span>
         </div>
 
         <div class="question-section">
@@ -273,21 +213,17 @@
           <label class="section-label">
             <i class="fas fa-check-circle"></i> Official Answer:
           </label>
-          <div class="readonly-text official-answer">
-            {{ currentQuestion.officialAnswer }}
-          </div>
+          <div class="readonly-text official-answer">{{ currentQuestion.officialAnswer }}</div>
         </div>
 
         <div class="question-section">
           <label class="section-label">
             <i class="fas fa-user-edit"></i> Student's Answer:
           </label>
-          <div class="readonly-text student-answer">
-            {{ currentQuestion.studentAnswerText || "Not answered" }}
-          </div>
+          <div class="readonly-text student-answer">{{ currentQuestion.studentAnswerText || "Not answered" }}</div>
         </div>
 
-        <!-- ✅✅✅ RUBRIC TABLE WITH ENHANCED VALIDATION ✅✅✅ -->
+        <!-- Rubric Table -->
         <div class="question-section">
           <label class="section-label">
             <i class="fas fa-list-check"></i> Rubric Criteria:
@@ -302,39 +238,29 @@
                 </tr>
               </thead>
               <tbody>
-                <tr
-                  *ngFor="let rubric of currentQuestion.rubrics; let i = index"
-                >
+                <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
                   <td>{{ rubric.criterion || rubric.name }}</td>
                   <td>
                     <input
                       type="number"
                       [(ngModel)]="rubric.marksGiven"
                       (ngModelChange)="onRubricMarksChange(rubric, currentQuestion)"
+                      (blur)="onRubricBlur(rubric, currentQuestion)"
+                      [disabled]="!isEditMode"
                       min="0"
                       [max]="rubric.maxMarks"
                       step="0.5"
                       class="form-control"
                       [class.is-invalid]="rubric.marksGiven > rubric.maxMarks"
-                      [class.is-valid]="
-                        rubric.marksGiven > 0 &&
-                        rubric.marksGiven <= rubric.maxMarks
-                      "
+                      [class.is-valid]="rubric.marksGiven > 0 && rubric.marksGiven <= rubric.maxMarks"
                     />
-
-                    <!-- ✅ Individual Rubric Error -->
-                    <div
-                      *ngIf="rubric.marksGiven > rubric.maxMarks"
-                      class="invalid-feedback d-block"
-                    >
+                    <div *ngIf="rubric.marksGiven > rubric.maxMarks" class="invalid-feedback d-block">
                       <i class="fas fa-exclamation-circle"></i>
                       Marks cannot exceed {{ rubric.maxMarks }}
                     </div>
                   </td>
                   <td>
-                    <span class="badge bg-secondary">{{
-                      rubric.maxMarks
-                    }}</span>
+                    <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
                   </td>
                 </tr>
               </tbody>
@@ -342,12 +268,8 @@
           </div>
         </div>
 
-        <!-- ✅✅✅ MARKS SECTION WITH VALIDATION ✅✅✅ -->
-        <div
-          class="marks-section"
-          [class.marks-error]="hasValidationError(currentQuestion)"
-          [class.marks-success]="!hasValidationError(currentQuestion)"
-        >
+        <!-- Marks Section -->
+        <div class="marks-section" [class.marks-error]="hasValidationError(currentQuestion)" [class.marks-success]="!hasValidationError(currentQuestion)">
           <label class="section-label">
             <i class="fas fa-star"></i> Marks Obtained (Auto-calculated):
           </label>
@@ -362,92 +284,99 @@
             <span class="marks-max">/ {{ currentQuestion.maxMarks }}</span>
           </div>
 
-          <!-- ✅ PERSISTENT ERROR MESSAGE -->
-          <div
-            *ngIf="hasValidationError(currentQuestion)"
-            class="alert alert-danger mt-3 mb-0 py-2"
-          >
+          <!-- Error Message -->
+          <div *ngIf="hasValidationError(currentQuestion)" class="alert alert-danger mt-3 mb-0 py-2">
             <i class="fas fa-times-circle"></i>
             <strong>Error:</strong> Total marks ({{ getTotalRubricMarks(currentQuestion) }}) 
             exceed maximum ({{ currentQuestion.maxMarks }}). 
             Please adjust the rubric marks before saving.
           </div>
 
-          <!-- ✅ SUCCESS MESSAGE -->
-          <div
-            *ngIf="!hasValidationError(currentQuestion) && getTotalRubricMarks(currentQuestion) > 0"
-            class="alert alert-success mt-3 mb-0 py-2"
-          >
+          <!-- Success Message -->
+          <div *ngIf="!hasValidationError(currentQuestion) && getTotalRubricMarks(currentQuestion) > 0" class="alert alert-success mt-3 mb-0 py-2">
             <i class="fas fa-check-circle"></i>
             <strong>Valid:</strong> Total marks are within the allowed limit.
           </div>
 
-          <small class="text-muted mt-2"
-            >Automatically calculated from rubric marks</small
-          >
+          <small class="text-muted mt-2">Automatically calculated from rubric marks</small>
         </div>
       </div>
 
-      <!-- ✅✅✅ NAVIGATION BUTTONS - DISABLED WHEN ERROR ✅✅✅ -->
+      <!-- NAVIGATION BUTTONS -->
       <div class="navigation-buttons">
+        <!-- Previous Button - DISABLED when editing -->
         <button
           class="btn btn-secondary btn-lg"
-          (click)="saveAndPrevious()"
-          [disabled]="currentQuestionIndex === 0 || isLoading || hasValidationError(currentQuestion)"
+          (click)="previousQuestion()"
+          [disabled]="currentQuestionIndex === 0 || isLoading || isEditMode"
         >
-          <i class="fas fa-arrow-left"></i> Save & Previous
+          <i class="fas fa-arrow-left"></i> Previous
         </button>
 
-        <button
-          class="btn btn-primary btn-lg"
-          (click)="updateCurrentQuestionMarks()"
-          [disabled]="isLoading || hasValidationError(currentQuestion)"
-        >
-          <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
-          {{ isLoading ? 'Saving...' : 'Save Current Question' }}
-        </button>
+        <!-- Middle Buttons - Edit Mode Toggle -->
+        <div class="middle-buttons">
+          <!-- Default: Show Edit Button -->
+          <button
+            *ngIf="!isEditMode"
+            class="btn btn-primary btn-lg"
+            (click)="enableEdit()"
+            [disabled]="isLoading"
+          >
+            <i class="fas fa-edit"></i> Edit
+          </button>
 
+          <!-- Edit Mode: Show Cancel and Save -->
+          <div *ngIf="isEditMode" class="edit-mode-buttons">
+            <button
+              class="btn btn-secondary btn-lg"
+              (click)="cancelEdit()"
+              [disabled]="isLoading"
+            >
+              <i class="fas fa-times"></i> Cancel
+            </button>
+            
+            <button
+              class="btn btn-success btn-lg"
+              (click)="updateCurrentQuestionMarks()"
+              [disabled]="isLoading || hasValidationError(currentQuestion)"
+            >
+              <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
+              {{ isLoading ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Next Button - DISABLED when editing -->
         <button
           class="btn btn-secondary btn-lg"
-          (click)="saveAndNext()"
-          [disabled]="currentQuestionIndex === totalQuestions - 1 || isLoading || hasValidationError(currentQuestion)"
+          (click)="nextQuestion()"
+          [disabled]="currentQuestionIndex === totalQuestions - 1 || isLoading || isEditMode"
         >
-          Save & Next <i class="fas fa-arrow-right"></i>
+          Next <i class="fas fa-arrow-right"></i>
         </button>
       </div>
 
-      <!-- ✅ HELPER TEXT WHEN BUTTONS DISABLED -->
-      <div 
-        *ngIf="hasValidationError(currentQuestion)" 
-        class="text-center mt-3"
-      >
+      <!-- Helper Text -->
+      <div *ngIf="isEditMode && !hasValidationError(currentQuestion)" class="text-center mt-3">
+        <small class="text-info">
+          <i class="fas fa-info-circle"></i>
+          Previous and Next buttons are disabled during editing. Please Save or Cancel first.
+        </small>
+      </div>
+
+      <div *ngIf="hasValidationError(currentQuestion)" class="text-center mt-3">
         <small class="text-danger">
           <i class="fas fa-lock"></i>
-          Buttons are disabled until validation errors are resolved
+          Save button is disabled until validation errors are resolved
         </small>
       </div>
 
       <!-- No Questions Message -->
-      <div
-        *ngIf="
-          !currentResults.isAbsent &&
-          currentResults.evaluationStatus !== 'Pending' &&
-          totalQuestions === 0
-        "
-        class="empty-state"
-      >
+      <div *ngIf="!currentResults.isAbsent && currentResults.evaluationStatus !== 'Pending' && totalQuestions === 0" class="empty-state">
         <i class="fas fa-inbox"></i>
         <h5>No Questions Found</h5>
         <p>No questions found for this evaluation.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- Loading Overlay -->
-  <div class="loading-overlay" *ngIf="isLoading">
-    <div class="spinner">
-      <div class="spinner-border"></div>
-      <p>Loading...</p>
     </div>
   </div>
 </div>
