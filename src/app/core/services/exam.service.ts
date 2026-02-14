@@ -12,13 +12,13 @@ export class ExamService {
 
   constructor(private http: HttpClient) {}
 
-  // Get exam types from master-data endpoint
-  getExamTypes(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/master-data/exam-types`);
-  }
+  // // Get exam types from master-data endpoint
+  // getExamTypes(): Observable<ApiResponse> {
+  //   return this.http.get<ApiResponse>(`${this.apiUrl}/master-data/exam-types`);
+  // }
 
   // Upload question paper with questions and rubrics
-  uploadQuestionPaper(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/exams/question-paper/upload`, data);
-  }
+  // uploadQuestionPaper(data: any): Observable<ApiResponse> {
+  //   return this.http.post<ApiResponse>(`${this.apiUrl}/exams/question-paper/upload`, data);
+  // }
 }

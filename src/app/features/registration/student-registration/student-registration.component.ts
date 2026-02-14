@@ -13,6 +13,7 @@ import {
   SectionDropdown,
 } from '../../../core/models/registration.model';
 import { ToastService } from '../../../shared/services/toast.service';
+import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 
 interface UploadResults {
   success: number;
@@ -32,6 +33,7 @@ export class StudentRegistrationComponent implements OnInit {
   private fb = inject(FormBuilder);
   private registrationService = inject(RegistrationService);
   private toastService = inject(ToastService);
+  private masterDataService = inject(MasterDataService);
 
   isDownloading = false;
   isLoadingClasses = false;
@@ -45,8 +47,8 @@ export class StudentRegistrationComponent implements OnInit {
   bulkClassId: number | null = null;
   bulkSectionId: number | null = null;
 
-  classes: ClassDropdown[] = [];
-  sections: SectionDropdown[] = [];
+  classes: ClassDto[] = [];
+   sections: SectionDto[] = [];
   selectedFile: File | null = null;
   uploadProgress = false;
   uploadResults: UploadResults | null = null;
@@ -103,34 +105,22 @@ export class StudentRegistrationComponent implements OnInit {
   }
 
   loadClasses(): void {
-    this.isLoadingClasses = true;
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
-        this.isLoadingClasses = false;
+     this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
       },
       error: (error) => {
-        console.error('Error loading classes', error);
-        this.isLoadingClasses = false;
         this.toastService.showError('Error', 'Failed to load classes');
       },
     });
   }
 
   loadSections(classId: number): void {
-    this.isLoadingSections = true;
-    this.registrationService.getSections(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.sections = response.data;
-        }
-        this.isLoadingSections = false;
+     this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
       },
       error: (error) => {
-        console.error('Error loading sections', error);
-        this.isLoadingSections = false;
         this.toastService.showError('Error', 'Failed to load sections');
       },
     });

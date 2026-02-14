@@ -39,10 +39,10 @@
         <select
           class="form-control"
           [(ngModel)]="filters.classId"
-          (change)="onClassChange()"
+          (change)="onClassChange(filters.classId)"
         >
           <option value="">Select Class</option>
-          <option *ngFor="let cls of allClasses" [value]="cls.id">
+          <option *ngFor="let cls of classes" [value]="cls.id">
             {{ cls.className }}
           </option>
         </select>
@@ -58,7 +58,7 @@
           <option value="">
             {{ filters.classId ? "Select Section" : "Select Class First" }}
           </option>
-          <option *ngFor="let sec of allSections" [value]="sec.id">
+          <option *ngFor="let sec of sections" [value]="sec.id">
             {{ sec.sectionName }}
           </option>
         </select>
@@ -74,7 +74,7 @@
           <option value="">
             {{ filters.classId ? "Select Subject" : "Select Class First" }}
           </option>
-          <option *ngFor="let sub of allSubjects" [value]="sub.id">
+          <option *ngFor="let sub of subjects" [value]="sub.id">
             {{ sub.subjectName }}
           </option>
         </select>
@@ -84,7 +84,7 @@
         <label class="form-label">Exam Type <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="filters.examTypeId">
           <option value="">Select Exam Type</option>
-          <option *ngFor="let exam of allExamTypes" [value]="exam.id">
+          <option *ngFor="let exam of examTypes" [value]="exam.id">
             {{ exam.examTypeName }}
           </option>
         </select>
@@ -303,9 +303,9 @@
 </div>
 
 <!-- Loading Overlay -->
-<div class="loading-overlay" *ngIf="loading">
+<!-- <div class="loading-overlay" *ngIf="loading">
   <div class="spinner">
     <div class="spinner-border"></div>
     <p>Loading...</p>
   </div>
-</div>
+</div> -->

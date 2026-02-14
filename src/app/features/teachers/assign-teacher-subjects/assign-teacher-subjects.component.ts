@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { TeacherSubjectService } from '../../../core/services/teacher-subject.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { TeacherService } from '../../../core/services/teacher.service';
+import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 
 interface Assignment {
   classId: number;
@@ -17,7 +18,7 @@ interface Assignment {
 @Component({
   selector: 'app-assign-teacher-subjects',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmationModalComponent],
   templateUrl: './assign-teacher-subjects.component.html',
   styleUrls: ['./assign-teacher-subjects.component.css']
 })
@@ -45,6 +46,11 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   loading = false;
   error = '';
   success = '';
+
+    showRemoveModal = false;
+  assignmentToRemove: any = null;
+  removing = false;
+
 
   ngOnInit(): void {
     this.loadTeachers();
@@ -205,19 +211,49 @@ export class AssignTeacherSubjectsComponent implements OnInit {
     });
   }
 
-  removeExistingAssignment(assignmentId: number): void {
-    if (!confirm('Are you sure you want to remove this assignment?')) return;
+  // removeExistingAssignment(assignmentId: number): void {
+  //   if (!confirm('Are you sure you want to remove this assignment?')) return;
 
-    this.teacherSubjectService.removeAssignment(assignmentId).subscribe({
-      next: (response) => {
-        if (response.success) {
+  //   this.teacherSubjectService.removeAssignment(assignmentId).subscribe({
+  //     next: (response) => {
+  //       if (response.success) {
+  //         this.success = 'Assignment removed successfully';
+  //         this.loadExistingAssignments();
+  //       }
+  //     },
+  //     error: (error) => {
+  //       this.error = error.error?.message || 'Failed to remove assignment';
+  //     }
+  //   });
+  // }
+
+    openRemoveModal(assignment: any): void {
+    this.assignmentToRemove = assignment;
+    this.showRemoveModal = true;
+  }
+
+  confirmRemove(): void {
+    if (!this.assignmentToRemove || this.removing) return;
+
+    this.removing = true;
+    this.teacherSubjectService.removeAssignment(this.assignmentToRemove.id).subscribe({
+      next: (r) => {
+        if (r.success) {
           this.success = 'Assignment removed successfully';
           this.loadExistingAssignments();
+          this.closeRemoveModal();
         }
+        this.removing = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to remove assignment';
+      this.error = error.error?.message || 'Failed to remove assignment';
+        this.removing = false;
       }
     });
+  }
+
+  closeRemoveModal(): void {
+    this.showRemoveModal = false;
+    this.assignmentToRemove = null;
   }
 }

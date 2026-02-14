@@ -9,12 +9,14 @@ import {
   ExamResult,
   ExamQuestion,
 } from '../../../core/models/exam-result';
+
 import {
-  Class,
-  SubjectItem,
-  ExamType,
-  Section,
-} from '../../../shared/models/common';
+  ClassDto,
+  ExamTypeDto,
+  MasterDataService,
+  SectionDto,
+  SubjectDto,
+} from '../../../core/services/master-data.service';
 
 @Component({
   selector: 'app-exam-results',
@@ -27,6 +29,7 @@ export class ExamResultsComponent implements OnInit {
   private resultsService = inject(ExamResultService);
   private toastService = inject(ToastService);
   private teacherUploadService = inject(CreateExamService);
+  private masterDataService = inject(MasterDataService);
 
   selectedClass: string = '';
   selectedSection: string = '';
@@ -41,71 +44,78 @@ export class ExamResultsComponent implements OnInit {
   showStudentCard = false;
   showResultsCard = false;
 
-  // ✅ NEW: Track search completion and errors
   searchCompleted = false;
   error = '';
 
-  classes: Class[] = [];
-  sections: Section[] = [];
-  subjects: SubjectItem[] = [];
-  examTypes: ExamType[] = [];
+  classes: ClassDto[] = [];
+  sections: SectionDto[] = [];
+  subjects: SubjectDto[] = [];
+  examTypes: ExamTypeDto[] = [];
 
-  userName = 'Test Teacher';
-  userEmail = 'teacher@school.edu';
-  userAvatar = 'TT';
-
-  // Pagination properties
   currentQuestionIndex = 0;
   totalQuestions = 0;
   currentQuestion: ExamQuestion | null = null;
   isLoadingQuestion = false;
 
+  isEditMode = false;
+  originalQuestion: ExamQuestion | null = null;
+
   ngOnInit(): void {
     this.loadInitialData();
-    this.getUserInfo();
   }
 
   private loadInitialData(): void {
-    this.teacherUploadService.getClasses().subscribe((classes) => {
-      this.classes = classes;
-    });
-    this.teacherUploadService.getSections(1).subscribe((sections) => {
-      this.sections = sections;
-    });
-    this.teacherUploadService.getSubjects().subscribe((subjects) => {
-      this.subjects = subjects;
-    });
-    this.teacherUploadService.getExamTypes().subscribe((examTypes) => {
-      this.examTypes = examTypes;
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      },
     });
   }
 
-  private getUserInfo(): void {
-    const userInfo = this.teacherUploadService.getUserInfo();
-    this.userName = `${userInfo.firstName} ${userInfo.lastName}`;
-    this.userEmail = userInfo.email;
-    this.userAvatar =
-      `${userInfo.firstName.charAt(0)}${userInfo.lastName.charAt(0)}`.toUpperCase();
-  }
-
-  // ✅ MODIFIED: Clear student data when class changes
   onClassSelected(classId: string): void {
     this.selectedSection = '';
+    this.selectedSubject = '';
+    this.selectedExamType = '';
     this.sections = [];
-    
-    // ✅ Clear student data when filters change
-    this.clearStudentData();
-    
-    if (classId) {
-      this.teacherUploadService
-        .getSections(parseInt(classId))
-        .subscribe((sections) => {
-          this.sections = sections;
-        });
-    }
+    this.subjects = [];
+    this.examTypes = [];
+    this.students = [];
+    this.showStudentCard = false;
+    this.showResultsCard = false;
+
+    if (!classId) return;
+
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
+      },
+    });
+
+    this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load subjects');
+      },
+    });
+
+    this.masterDataService.getExamTypesByClass(classId).subscribe({
+      next: (examTypes) => {
+        this.examTypes = examTypes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load exam types');
+      },
+    });
   }
 
-  // ✅ NEW: Clear all student-related data
   clearStudentData(): void {
     this.students = [];
     this.selectedStudent = null;
@@ -117,9 +127,10 @@ export class ExamResultsComponent implements OnInit {
     this.currentQuestion = null;
     this.currentQuestionIndex = 0;
     this.totalQuestions = 0;
+    this.isEditMode = false;
+    this.originalQuestion = null;
   }
 
-  // ✅ MODIFIED: getStudents - Clear previous data first
   getStudents(): void {
     const missingFields: string[] = [];
 
@@ -136,9 +147,7 @@ export class ExamResultsComponent implements OnInit {
       return;
     }
 
-    // ✅ CLEAR PREVIOUS DATA BEFORE NEW SEARCH
     this.clearStudentData();
-
     this.isLoading = true;
     this.error = '';
 
@@ -154,7 +163,7 @@ export class ExamResultsComponent implements OnInit {
           this.students = data;
           this.showStudentCard = data.length > 0;
           this.isLoading = false;
-          this.searchCompleted = true; // ✅ Mark search as completed
+          this.searchCompleted = true;
 
           if (data.length === 0) {
             this.toastService.showInfo(
@@ -170,7 +179,7 @@ export class ExamResultsComponent implements OnInit {
         },
         error: (err) => {
           this.isLoading = false;
-          this.searchCompleted = true; // ✅ Mark search as completed even on error
+          this.searchCompleted = true;
           this.error = err.error?.message || 'Error loading students';
           this.toastService.showError('Error', this.error);
         },
@@ -206,7 +215,6 @@ export class ExamResultsComponent implements OnInit {
           this.currentResults = results;
           this.showResultsCard = true;
 
-          // Initialize pagination if not absent and has questions
           if (!results.isAbsent && results.evaluationStatus === 'Evaluated') {
             this.totalQuestions = results.questions?.length || 0;
             this.currentQuestionIndex = 0;
@@ -231,26 +239,26 @@ export class ExamResultsComponent implements OnInit {
       });
   }
 
-  // Pagination Methods
   loadQuestion(index: number): void {
     if (!this.currentResults || !this.selectedStudent) return;
 
     this.isLoadingQuestion = true;
 
-    // Call API to get specific question data
     this.resultsService
       .getQuestionDetails(
         this.selectedStudent.studentId,
         parseInt(this.selectedClass),
         parseInt(this.selectedSubject),
         parseInt(this.selectedExamType),
-        index + 1, // Question number (1-based)
+        index + 1,
       )
       .subscribe({
         next: (question: ExamQuestion) => {
           this.currentQuestion = question;
           this.currentQuestionIndex = index;
           this.isLoadingQuestion = false;
+          this.isEditMode = false;
+          this.originalQuestion = JSON.parse(JSON.stringify(question));
         },
         error: () => {
           this.isLoadingQuestion = false;
@@ -285,68 +293,66 @@ export class ExamResultsComponent implements OnInit {
     );
   }
 
+  // ✅ FIXED: Calculate max marks from questions if not provided
   getMaxMarks(): number {
-    if (!this.currentResults || this.currentResults.maxMarks === undefined)
-      return 0;
-    return this.currentResults.maxMarks;
+    if (!this.currentResults) return 0;
+    
+    // If maxMarks is set, use it
+    if (this.currentResults.maxMarks !== undefined && this.currentResults.maxMarks !== null) {
+      return this.currentResults.maxMarks;
+    }
+    
+    // Otherwise calculate from questions
+    if (this.currentResults.questions && this.currentResults.questions.length > 0) {
+      return this.currentResults.questions.reduce(
+        (sum, q) => sum + q.maxMarks,
+        0
+      );
+    }
+    
+    return 0;
   }
 
   getPercentage(): number {
-    if (
-      !this.currentResults ||
-      this.currentResults.maxMarks === undefined ||
-      this.currentResults.maxMarks === 0
-    )
-      return 0;
+    const maxMarks = this.getMaxMarks();
+    if (!this.currentResults || maxMarks === 0) return 0;
+    
     const total = this.getTotalMarks();
-    return (total / this.currentResults.maxMarks) * 100;
+    return (total / maxMarks) * 100;
   }
 
-  // ✅✅✅ NEW: MASTER VALIDATION METHOD ✅✅✅
   hasValidationError(question: ExamQuestion | null): boolean {
     if (!question || !question.rubrics || question.rubrics.length === 0) {
       return false;
     }
 
-    // Check if any individual rubric exceeds its max
     const hasIndividualRubricError = question.rubrics.some(
-      rubric => rubric.marksGiven > rubric.maxMarks
+      (rubric) => rubric.marksGiven > rubric.maxMarks,
     );
 
-    // Check if total marks exceed question max
     const totalRubricMarks = this.getTotalRubricMarks(question);
     const hasTotalMarksError = totalRubricMarks > question.maxMarks;
 
     return hasIndividualRubricError || hasTotalMarksError;
   }
 
-  // ✅✅✅ NEW: CALLED WHENEVER RUBRIC MARKS CHANGE ✅✅✅
   onRubricMarksChange(rubric: any, question: ExamQuestion): void {
-    // Ensure marks are not negative
     if (rubric.marksGiven < 0) {
       rubric.marksGiven = 0;
     }
 
-    // Check if marks exceed max for this individual rubric
-    if (rubric.marksGiven > rubric.maxMarks) {
-      // Show toast warning for individual rubric
-      this.toastService.showWarning(
-        'Invalid Marks',
-        `${rubric.criterion || rubric.name}: Marks cannot exceed ${rubric.maxMarks}`
-      );
+    if (rubric.marksGiven !== null && rubric.marksGiven !== undefined) {
+      rubric.marksGiven = this.roundToHalfIncrement(rubric.marksGiven);
     }
 
-    // Recalculate total marks
     question.marksObtained = this.getTotalRubricMarks(question);
+  }
 
-    // Check if total exceeds question max
-    const totalMarks = this.getTotalRubricMarks(question);
-    if (totalMarks > question.maxMarks) {
-      // Show persistent error (will be shown in UI via hasValidationError)
-      this.toastService.showError(
-        'Total Marks Exceed Maximum',
-        `Total marks (${totalMarks}) exceed question maximum (${question.maxMarks})`
-      );
+  onRubricBlur(rubric: any, question: ExamQuestion): void {
+    if (rubric.marksGiven !== null && rubric.marksGiven !== undefined) {
+      const numValue = parseFloat(rubric.marksGiven.toString());
+      rubric.marksGiven = this.roundToHalfIncrement(numValue);
+      question.marksObtained = this.getTotalRubricMarks(question);
     }
   }
 
@@ -358,24 +364,21 @@ export class ExamResultsComponent implements OnInit {
     );
   }
 
-  // ✅✅✅ MODIFIED: VALIDATE BEFORE SAVING ✅✅✅
   updateCurrentQuestionMarks(): void {
     if (!this.selectedStudent || !this.currentQuestion) {
       this.toastService.showWarning('Warning', 'No question selected');
       return;
     }
 
-    // ✅ CHECK FOR VALIDATION ERRORS BEFORE SAVING
     if (this.hasValidationError(this.currentQuestion)) {
       const totalMarks = this.getTotalRubricMarks(this.currentQuestion);
       this.toastService.showError(
         'Cannot Save',
-        `Total marks (${totalMarks}) exceed maximum (${this.currentQuestion.maxMarks}). Please adjust rubric marks.`
+        `Total marks (${totalMarks}) exceed maximum (${this.currentQuestion.maxMarks})`,
       );
       return;
     }
 
-    // Check if rubrics exist
     if (
       !this.currentQuestion.rubrics ||
       this.currentQuestion.rubrics.length === 0
@@ -387,16 +390,13 @@ export class ExamResultsComponent implements OnInit {
       return;
     }
 
-    // Map rubrics to API format - handle ALL possible property names
     const rubricMarks = this.currentQuestion.rubrics.map((rubric) => {
-      // Extract rubric ID - try all possible property names
       const rubricId =
         rubric.questionPaperRubricId ||
         rubric.id ||
         (rubric as any).QuestionPaperRubricId ||
         0;
 
-      // Extract marks given - try all possible property names
       const marksGiven =
         rubric.marksGiven ||
         rubric.marksAssignedByTeacher ||
@@ -404,45 +404,19 @@ export class ExamResultsComponent implements OnInit {
         (rubric as any).MarksAssignedByTeacher ||
         0;
 
-      console.log('Processing rubric:', {
-        original: rubric,
-        extractedId: rubricId,
-        extractedMarks: marksGiven,
-      });
-
       return {
         questionPaperRubricId: rubricId,
         marksGiven: marksGiven,
       };
     });
 
-    // Validate rubric IDs
     const invalidRubrics = rubricMarks.filter(
       (r) => r.questionPaperRubricId === 0,
     );
     if (invalidRubrics.length > 0) {
-      console.error('Invalid rubric data found:');
-      console.error(
-        'Original rubrics:',
-        JSON.stringify(this.currentQuestion.rubrics, null, 2),
-      );
-      console.error('Processed rubrics:', JSON.stringify(rubricMarks, null, 2));
-      console.error(
-        'Invalid entries:',
-        JSON.stringify(invalidRubrics, null, 2),
-      );
       this.toastService.showError('Error', 'Invalid rubric data - missing IDs');
       return;
     }
-
-    console.log('=== Saving Rubric Marks ===');
-    console.log('Student ID:', this.selectedStudent.studentId);
-    console.log('Class ID:', this.selectedClass);
-    console.log('Subject ID:', this.selectedSubject);
-    console.log('Exam Type ID:', this.selectedExamType);
-    console.log('Question Number:', this.currentQuestion.questionNumber);
-    console.log('Rubric Marks:', rubricMarks);
-    console.log('===========================');
 
     this.isLoading = true;
 
@@ -458,19 +432,22 @@ export class ExamResultsComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isLoading = false;
-          console.log('✅ Marks saved successfully');
+          this.isEditMode = false;
+          
+          if (this.currentQuestion) {
+            this.originalQuestion = JSON.parse(JSON.stringify(this.currentQuestion));
+          }
+          
           this.toastService.showSuccess(
             'Success',
             `Question ${this.currentQuestion?.questionNumber} marks saved!`,
           );
 
-          // Update the marks in currentResults
           if (this.currentResults && this.currentQuestion) {
             const questionIndex = this.currentResults.questions.findIndex(
               (q) => q.questionNumber === this.currentQuestion!.questionNumber,
             );
             if (questionIndex !== -1) {
-              // Recalculate total marks from rubrics
               const totalMarks = this.getTotalRubricMarks(this.currentQuestion);
               this.currentResults.questions[questionIndex].marksObtained =
                 totalMarks;
@@ -480,8 +457,6 @@ export class ExamResultsComponent implements OnInit {
         },
         error: (error) => {
           this.isLoading = false;
-          console.error('❌ Error saving marks:', error);
-          console.error('Error details:', error.error);
           this.toastService.showError(
             'Error',
             'Failed to save marks. Please try again.',
@@ -490,39 +465,11 @@ export class ExamResultsComponent implements OnInit {
       });
   }
 
-  updateAllMarks(): void {
-    if (!this.selectedStudent || !this.currentResults) return;
-
-    const updatedMarks: { [key: number]: number } = {};
-    this.currentResults.questions.forEach((q) => {
-      updatedMarks[q.questionNumber] = q.marksObtained;
-    });
-
-    this.isLoading = true;
-    this.resultsService
-      .updateMarks(this.selectedStudent.studentId, updatedMarks)
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.toastService.showSuccess(
-            'Success',
-            'All marks updated successfully!',
-          );
-        },
-        error: () => {
-          this.isLoading = false;
-          this.toastService.showError('Error', 'Error updating marks');
-        },
-      });
-  }
-
-  // ✅✅✅ MODIFIED: VALIDATE BEFORE PROCEEDING ✅✅✅
   saveAndNext(): void {
-    // ✅ Validate before saving
     if (this.hasValidationError(this.currentQuestion!)) {
       this.toastService.showError(
         'Cannot Proceed',
-        'Please fix validation errors before moving to next question'
+        'Please fix validation errors before moving to next question',
       );
       return;
     }
@@ -533,13 +480,11 @@ export class ExamResultsComponent implements OnInit {
     }
   }
 
-  // ✅✅✅ MODIFIED: VALIDATE BEFORE PROCEEDING ✅✅✅
   saveAndPrevious(): void {
-    // ✅ Validate before saving
     if (this.hasValidationError(this.currentQuestion!)) {
       this.toastService.showError(
         'Cannot Proceed',
-        'Please fix validation errors before moving to previous question'
+        'Please fix validation errors before moving to previous question',
       );
       return;
     }
@@ -576,15 +521,40 @@ export class ExamResultsComponent implements OnInit {
       });
   }
 
-  // ✅ NEW: Check if value is valid 0.5 increment
-isValidHalfIncrement(value: number): boolean {
-  // Check if the value is a valid multiple of 0.5
-  // Valid: 0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, etc.
-  return (value * 2) % 1 === 0;
-}
+  enableEdit(): void {
+    if (this.currentQuestion) {
+      this.originalQuestion = JSON.parse(JSON.stringify(this.currentQuestion));
+      this.isEditMode = true;
+    }
+  }
 
-// ✅ NEW: Round to nearest 0.5
-roundToHalfIncrement(value: number): number {
-  return Math.round(value * 2) / 2;
-}
+  cancelEdit(): void {
+    if (!this.originalQuestion || !this.currentQuestion) {
+      this.isEditMode = false;
+      this.toastService.showInfo('Info', 'No changes to cancel');
+      return;
+    }
+
+    this.currentQuestion.marksObtained = this.originalQuestion.marksObtained;
+    
+    if (this.originalQuestion.rubrics && this.currentQuestion.rubrics) {
+      this.currentQuestion.rubrics.forEach((rubric, index) => {
+        const originalRubric = this.originalQuestion?.rubrics?.[index];
+        if (originalRubric) {
+          rubric.marksGiven = originalRubric.marksGiven;
+        }
+      });
+    }
+
+    this.isEditMode = false;
+    this.toastService.showInfo('Info', 'Changes cancelled - original values restored');
+  }
+
+  isValidHalfIncrement(value: number): boolean {
+    return (value * 2) % 1 === 0;
+  }
+
+  roundToHalfIncrement(value: number): number {
+    return Math.round(value * 2) / 2;
+  }
 }

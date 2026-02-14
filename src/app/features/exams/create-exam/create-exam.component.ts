@@ -3,24 +3,25 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../shared/services/toast.service';
 import { CreateExamService } from '../../../core/services/create-exam.service';
-import { 
-  ExamFormData, 
-  ExamFilters, 
+import { MasterDataService, ClassDto, SubjectDto, ExamTypeDto } from '../../../core/services/master-data.service';
+import {
+  ExamFormData,
+  ExamFilters,
   QuestionSet,
-  Exam
+  Exam,
 } from '../../../core/models/exam';
-import { Class, SubjectItem, ExamType } from '../../../shared/models/common';
 
 @Component({
   selector: 'app-exam-upload',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './create-exam.component.html',
-  styleUrls: ['./create-exam.component.css']
+  styleUrls: ['./create-exam.component.css'],
 })
 export class CreateExamComponent implements OnInit {
   private toastService = inject(ToastService);
   private createExamService = inject(CreateExamService);
+  private masterDataService = inject(MasterDataService); 
 
   // Properties
   examMode: 'upload' | 'update' = 'upload';
@@ -29,19 +30,19 @@ export class CreateExamComponent implements OnInit {
   isLoading = false;
   isSubmitting = false;
 
-  allClasses: Class[] = [];
-  allSubjects: SubjectItem[] = [];
-  allExamTypes: ExamType[] = [];
+  // ✅ UPDATED: Using DTOs from MasterDataService
+  allClasses: ClassDto[] = [];
+  allSubjects: SubjectDto[] = [];
+  allExamTypes: ExamTypeDto[] = [];
   existingExams: Exam[] = [];
   selectedExamForUpdate: Exam | null = null;
 
   questionSets: QuestionSet[] = [];
-  // toast: ToastConfig | null = null;
 
   uploadProgress = {
     visible: false,
     width: '0%',
-    text: ''
+    text: '',
   };
 
   examFormData: ExamFormData = {
@@ -51,65 +52,131 @@ export class CreateExamComponent implements OnInit {
     examTypeId: '',
     totalMarks: null,
     numberOfQuestions: null,
-    questionSets: []
+    questionSets: [],
   };
 
   examFilters: ExamFilters = {
     filterExamClass: '',
     filterExamSubject: '',
-    filterExamExamType: ''
+    filterExamExamType: '',
   };
 
   ngOnInit(): void {
     this.loadInitialData();
-    //this.subscribeToToasts();
   }
 
+  // ============================================================
+  // ✅ UPDATED: Load classes using MasterDataService
+  // ============================================================
   private loadInitialData(): void {
-    this.createExamService.getClasses().subscribe(classes => {
-      this.allClasses = classes;
-    });
-    this.createExamService.getSubjects().subscribe(subjects => {
-      this.allSubjects = subjects;
-    });
-    this.createExamService.getExamTypes().subscribe(examTypes => {
-      this.allExamTypes = examTypes;
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.allClasses = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      }
     });
   }
 
-  // private subscribeToToasts(): void {
-  //   this.toastService.toast$.subscribe(toast => {
-  //     this.toast = toast;
-  //   });
-  // }
-
-  setExamMode(mode: 'upload' | 'update'): void {
-    this.examMode = mode;
-    this.resetForm();
-  }
-
+  // ============================================================
+  // ✅ UPDATED: Load subjects and exam types using MasterDataService
+  // ============================================================
   onClassSelected(classId: string): void {
-    // Additional logic if needed when class is selected
+    // Reset dependent dropdowns
+    this.examFormData.subjectId = '';
+    this.examFormData.examTypeId = '';
+    this.allSubjects = [];
+    this.allExamTypes = [];
+
+    if (!classId) {
+      return;
+    }
+
+    // ✅ Load subjects for selected class
+    this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.allSubjects = subjects;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load subjects');
+      }
+    });
+
+    // ✅ Load exam types for selected class
+    this.masterDataService.getExamTypesByClass(classId).subscribe({
+      next: (examTypes) => {
+        this.allExamTypes = examTypes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load exam types');
+      }
+    });
   }
 
+  // ============================================================
+  // ✅ UPDATED: Filter dropdowns for update mode
+  // ============================================================
+  onFilterClassSelected(classId: string): void {
+    // Reset dependent filters
+    this.examFilters.filterExamSubject = '';
+    this.examFilters.filterExamExamType = '';
+    this.existingExams = [];
+    this.allSubjects = [];
+    this.allExamTypes = [];
+
+    if (!classId) {
+      return;
+    }
+
+    // ✅ Load subjects and exam types for filtering
+    this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.allSubjects = subjects;
+      }
+    });
+
+    this.masterDataService.getExamTypesByClass(classId).subscribe({
+      next: (examTypes) => {
+        this.allExamTypes = examTypes;
+      }
+    });
+  }
+
+  // ============================================================
+  // Generate Questions
+  // ============================================================
   generateQuestions(): void {
-    if (!this.examFormData.classId || !this.examFormData.subjectId || 
-        !this.examFormData.examTypeId || !this.examFormData.totalMarks || 
-        !this.examFormData.numberOfQuestions) {
-      this.toastService.showError('Validation Error', 'Please fill all required fields');
+    if (
+      !this.examFormData.classId ||
+      !this.examFormData.subjectId ||
+      !this.examFormData.examTypeId ||
+      !this.examFormData.totalMarks ||
+      !this.examFormData.numberOfQuestions
+    ) {
+      this.toastService.showError(
+        'Validation Error',
+        'Please fill all required fields',
+      );
       return;
     }
 
     this.questionSets = this.createExamService.generateQuestionSets(
       this.examFormData.numberOfQuestions,
-      this.examFormData.totalMarks
+      this.examFormData.totalMarks,
     );
     this.examFormData.questionSets = this.questionSets;
     this.questionsGenerated = true;
     this.currentQuestionIndex = 0;
-    this.toastService.showSuccess('Questions Generated', `${this.questionSets.length} questions created successfully`);
+    this.toastService.showSuccess(
+      'Questions Generated',
+      `${this.questionSets.length} questions created successfully`,
+    );
   }
 
+  // ============================================================
+  // Question Navigation
+  // ============================================================
   get currentQuestionSet(): QuestionSet {
     return this.questionSets[this.currentQuestionIndex];
   }
@@ -136,6 +203,9 @@ export class CreateExamComponent implements OnInit {
     }
   }
 
+  // ============================================================
+  // Submit Exam
+  // ============================================================
   submitExamDocuments(): void {
     const errors = this.getQuestionValidationErrors();
     if (errors.length > 0) {
@@ -143,7 +213,9 @@ export class CreateExamComponent implements OnInit {
       return;
     }
 
-    const formValidation = this.createExamService.validateExamForm(this.examFormData);
+    const formValidation = this.createExamService.validateExamForm(
+      this.examFormData,
+    );
     if (!formValidation.isValid) {
       this.toastService.showError('Validation Error', formValidation.errors[0]);
       return;
@@ -152,7 +224,9 @@ export class CreateExamComponent implements OnInit {
     this.isSubmitting = true;
     this.uploadProgress.visible = true;
 
-    const apiRequest = this.createExamService.prepareApiRequest(this.examFormData);
+    const apiRequest = this.createExamService.prepareApiRequest(
+      this.examFormData,
+    );
 
     this.createExamService.uploadExam(apiRequest).subscribe({
       next: (response) => {
@@ -164,15 +238,27 @@ export class CreateExamComponent implements OnInit {
       error: (error) => {
         this.uploadProgress.visible = false;
         this.isSubmitting = false;
-        this.toastService.showError('Error', error.message || 'Failed to upload exam');
-      }
+        this.toastService.showError(
+          'Error',
+          error.message || 'Failed to upload exam',
+        );
+      },
     });
   }
 
+  // ============================================================
+  // Load Existing Exams (Update Mode)
+  // ============================================================
   loadExistingExams(): void {
-    if (!this.examFilters.filterExamClass || !this.examFilters.filterExamSubject || 
-        !this.examFilters.filterExamExamType) {
-      this.toastService.showError('Validation Error', 'Please select Class, Subject, and Exam Type');
+    if (
+      !this.examFilters.filterExamClass ||
+      !this.examFilters.filterExamSubject ||
+      !this.examFilters.filterExamExamType
+    ) {
+      this.toastService.showError(
+        'Validation Error',
+        'Please select Class, Subject, and Exam Type',
+      );
       return;
     }
 
@@ -181,12 +267,16 @@ export class CreateExamComponent implements OnInit {
       next: (exams) => {
         this.existingExams = exams;
         this.isLoading = false;
-        this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
+        if (exams.length === 0) {
+          this.toastService.showInfo('Info', 'No exams found with selected filters');
+        } else {
+          this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
+        }
       },
       error: (error) => {
         this.isLoading = false;
         this.toastService.showError('Error', 'Failed to load exams');
-      }
+      },
     });
   }
 
@@ -194,17 +284,22 @@ export class CreateExamComponent implements OnInit {
     this.selectedExamForUpdate = exam;
   }
 
+  // ============================================================
+  // Validation Rules
+  // ============================================================
   generateValidationRules(): void {
     const rulesCount = this.currentQuestionSet.validationRulesCount || 1;
-    
-    // Keep existing rules or add new ones if count increased
+
     while (this.currentQuestionSet.rubricPoints.length < rulesCount) {
-      this.currentQuestionSet.rubricPoints.push({ description: '', marks: null });
+      this.currentQuestionSet.rubricPoints.push({
+        description: '',
+        marks: null,
+      });
     }
-    
-    // Remove extra rules if count decreased
+
     if (this.currentQuestionSet.rubricPoints.length > rulesCount) {
-      this.currentQuestionSet.rubricPoints = this.currentQuestionSet.rubricPoints.slice(0, rulesCount);
+      this.currentQuestionSet.rubricPoints =
+        this.currentQuestionSet.rubricPoints.slice(0, rulesCount);
     }
   }
 
@@ -218,7 +313,9 @@ export class CreateExamComponent implements OnInit {
   }
 
   calculateValidationMarksTotal(): number {
-    return this.createExamService.calculateValidationMarksTotal(this.currentQuestionSet);
+    return this.createExamService.calculateValidationMarksTotal(
+      this.currentQuestionSet,
+    );
   }
 
   validateMarksMatch(): boolean {
@@ -226,11 +323,24 @@ export class CreateExamComponent implements OnInit {
   }
 
   getQuestionValidationErrors(): string[] {
-    return this.createExamService.validateQuestionSet(this.currentQuestionSet).errors;
+    return this.createExamService.validateQuestionSet(this.currentQuestionSet)
+      .errors;
+  }
+
+  // ============================================================
+  // Helper Methods
+  // ============================================================
+  setExamMode(mode: 'upload' | 'update'): void {
+    this.examMode = mode;
+    this.resetForm();
   }
 
   formatDate(dateString: string): string {
-    const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    };
     return new Date(dateString).toLocaleDateString('en-US', options);
   }
 
@@ -249,10 +359,6 @@ export class CreateExamComponent implements OnInit {
     return userInfo.email;
   }
 
-  // closeToast(): void {
-  //   this.toast = null;
-  // }
-
   trackByIndex(index: number): number {
     return index;
   }
@@ -265,7 +371,7 @@ export class CreateExamComponent implements OnInit {
       examTypeId: '',
       totalMarks: null,
       numberOfQuestions: null,
-      questionSets: []
+      questionSets: [],
     };
     this.questionSets = [];
     this.questionsGenerated = false;
@@ -275,7 +381,9 @@ export class CreateExamComponent implements OnInit {
     this.examFilters = {
       filterExamClass: '',
       filterExamSubject: '',
-      filterExamExamType: ''
+      filterExamExamType: '',
     };
+    this.allSubjects = [];
+    this.allExamTypes = [];
   }
 }

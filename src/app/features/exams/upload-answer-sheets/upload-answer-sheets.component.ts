@@ -5,6 +5,8 @@ import { StudentAnswerSheetService } from '../../../core/services/student-answer
 import { RegistrationService } from '../../../core/services/registration.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { ExamService } from '../../../core/services/exam.service';
+import { ClassDto, ExamTypeDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 interface StudentUploadStatus {
   studentId: number;
@@ -31,6 +33,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
   private registrationService = inject(RegistrationService);
   private examService = inject(ExamService);
   private authService = inject(AuthService);
+    private masterDataService = inject(MasterDataService);
+      private toastService = inject(ToastService);
 
   // Filters
   filters = {
@@ -41,10 +45,16 @@ export class UploadAnswerSheetsComponent implements OnInit {
     absentStudentIds: [] as number[],
   };
 
-  allClasses: any[] = [];
-  allSections: any[] = [];
-  allSubjects: any[] = [];
-  allExamTypes: any[] = [];
+ classes: ClassDto[] = [];
+  sections: SectionDto[] = [];
+  subjects: SubjectDto[] = [];
+  examTypes: ExamTypeDto[] = [];
+
+    selectedClass: string = '';
+  selectedSection: string = '';
+  selectedSubject: string = '';
+  selectedExamType: string = '';
+
 
   students: StudentUploadStatus[] = [];
   showStudentsCard = false;
@@ -80,69 +90,66 @@ export class UploadAnswerSheetsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.loadClasses();
-    this.loadExamTypes();
+   this.loadInitialData();
   }
 
-  getUserInitial(): string {
-    const user = this.authService.currentUserValue;
-    return user?.userName?.substring(0, 2).toUpperCase() || 'U';
-  }
-
-  getUserName(): string {
-    return this.authService.currentUserValue?.userName || 'User';
-  }
-
-  getUserEmail(): string {
-    return this.authService.currentUserValue?.email || '';
-  }
-
-  loadClasses(): void {
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.allClasses = response.data;
-        }
+ private loadInitialData(): void {
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
       },
     });
   }
 
-  onClassChange(): void {
-    if (this.filters.classId) {
-      this.loadSections(+this.filters.classId);
-      this.loadSubjects();
+
+
+  onClassChange(classId: string): void {
+    // Reset dependent dropdowns
+    this.selectedSection = '';
+    this.selectedSubject = '';
+    this.selectedExamType = '';
+    this.sections = [];
+    this.subjects = [];
+    this.examTypes = [];
+    //this.students = [];
+
+    if (!classId) {
+      return;
     }
-  }
 
-  loadSections(classId: number): void {
-    this.registrationService.getSections(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.allSections = response.data;
-        }
+    // ✅ Load sections for selected class
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load sections');
       },
     });
-  }
 
-  loadSubjects(): void {
-    this.registrationService.getAllSubjects().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.allSubjects = response.data;
-        }
+    // ✅ Load subjects for selected class
+    this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load subjects');
       },
     });
-  }
 
-  loadExamTypes(): void {
-    this.examService.getExamTypes().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.allExamTypes = response.data;
-        }
+    // ✅ Load exam types for selected class
+    this.masterDataService.getExamTypesByClass(classId).subscribe({
+      next: (examTypes) => {
+        this.examTypes = examTypes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load exam types');
       },
     });
-  }
+  }  
 
   showStudents(): void {
     if (

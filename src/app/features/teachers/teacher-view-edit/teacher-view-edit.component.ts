@@ -6,6 +6,8 @@ import { TeacherService } from '../../../core/services/teacher.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
+import { ClassDto, MasterDataService, SubjectDto } from '../../../core/services/master-data.service';
+import { ToastService } from '../../../shared/services/toast.service';
 
 @Component({
   selector: 'app-teacher-view-edit',
@@ -20,6 +22,8 @@ export class TeacherViewEditComponent implements OnInit {
   private router = inject(Router);
   private teacherService = inject(TeacherService);
   private registrationService = inject(RegistrationService);
+    private masterDataService = inject(MasterDataService);
+    private toastService = inject(ToastService);
 
   teacherForm!: FormGroup;
   teacherId!: number;
@@ -28,8 +32,8 @@ export class TeacherViewEditComponent implements OnInit {
   error = '';
   success = '';
 
-  classes: any[] = [];
-  subjects: any[] = [];
+  classes: ClassDto[] = [];
+  subjects: SubjectDto[] = [];
 
   // Add properties
 showDeleteModal = false;
@@ -75,25 +79,24 @@ teacherToDelete: any = null;
   }
 
   loadClasses(): void {
-    this.registrationService.getClasses().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.classes = response.data;
-        }
-      }
+     this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load classes');
+      },
     });
   }
 
   loadSubjects(classId: number): void {
-    this.registrationService.getSubjects(classId).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.subjects = response.data.map((s: any) => ({
-            ...s,
-            selected: false
-          }));
-        }
-      }
+     this.masterDataService.getSubjectsByClass(classId).subscribe({
+      next: (subjects) => {
+        this.subjects = subjects;
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load subjects');
+      },
     });
   }
 

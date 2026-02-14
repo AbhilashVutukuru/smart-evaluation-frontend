@@ -1,100 +1,116 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/auth.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+export interface ApiResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+@Injectable({ providedIn: 'root' })
 export class AdminSettingsService {
-  private readonly apiUrl = environment.apiUrl;
+  private http = inject(HttpClient);
+  private base = `${environment.apiUrl}/admin-settings`;
 
-  constructor(private http: HttpClient) {}
+  // ── Classes ──────────────────────────────────────────────
+  getClasses = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/classes`);
 
-  // Class operations
-  getClasses(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/classes`);
-  }
+  createClass = (body: any): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/classes`, body);
 
-  createClass(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/classes`, data);
-  }
+  deleteClass = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/classes/${id}`);
 
-  deleteClass(id: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/admin-settings/classes/${id}`);
-  }
+  // ── Master Sections (name only, not linked to class) ─────
+  getMasterSections = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/master-sections`);
 
-  // Section operations
-  getSections(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/sections`);
-  }
+  createMasterSection = (body: any): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/master-sections`, body);
 
-  createSection(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/sections`, data);
-  }
+  deleteMasterSection = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/master-sections/${id}`);
 
-  deleteSection(id: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/admin-settings/sections/${id}`);
-  }
+  // ── Master Subjects (name only) ───────────────────────────
+  getMasterSubjects = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/master-subjects`);
 
-  // Subject operations
-  getSubjects(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/subjects`);
-  }
+  createMasterSubject = (body: any): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/master-subjects`, body);
 
-  createSubject(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/subjects`, data);
-  }
+  deleteMasterSubject = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/master-subjects/${id}`);
 
-  deleteSubject(id: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/admin-settings/subjects/${id}`);
-  }
+  // ── Master Exam Types (name only) ─────────────────────────
+  getMasterExamTypes = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/master-exam-types`);
 
-  // ExamType operations
-  getExamTypes(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/exam-types`);
-  }
+  createMasterExamType = (body: any): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/master-exam-types`, body);
 
-  createExamType(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/exam-types`, data);
-  }
+  deleteMasterExamType = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/master-exam-types/${id}`);
 
-  deleteExamType(id: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/admin-settings/exam-types/${id}`);
-  }
+  // ── Assigned Sections (class ↔ section) ──────────────────
+  getAssignedSections = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/assigned-sections`);
 
-  // Academic Year operations
-  getAcademicYears(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/academic-years`);
-  }
+  assignSection = (body: { classId: number; masterSectionId: number }): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/assigned-sections`, body);
 
-  createAcademicYear(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/academic-years`, data);
-  }
+  removeAssignedSection = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/assigned-sections/${id}`);
 
-  setActiveAcademicYear(id: number): Observable<ApiResponse> {
-    return this.http.put<ApiResponse>(`${this.apiUrl}/admin-settings/academic-years/${id}/set-active`, {});
-  }
+  // ── Assigned Subjects (class ↔ section ↔ subject) ────────
+  getAssignedSubjects = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/assigned-subjects`);
 
-  promoteStudents(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/promote-students`, data);
-  }
+  assignSubject = (body: { classId: number; sectionId: number; subjectId: number }): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/assigned-subjects`, body);
 
-  // Admin assignment
-  getUsers(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/users`);
-  }
+  removeAssignedSubject = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/assigned-subjects/${id}`);
 
-  getAdmins(): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(`${this.apiUrl}/admin-settings/admins`);
-  }
+  // ── Assigned Exam Types (class ↔ section ↔ exam type) ────
+  getAssignedExamTypes = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/assigned-exam-types`);
 
-  assignAdmin(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(`${this.apiUrl}/admin-settings/assign-admin`, data);
-  }
+  assignExamType = (body: { classId: number; sectionId: number; examTypeId: number }): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/assigned-exam-types`, body);
 
-  removeAdmin(userId: number): Observable<ApiResponse> {
-    return this.http.delete<ApiResponse>(`${this.apiUrl}/admin-settings/admins/${userId}`);
-  }
+  removeAssignedExamType = (id: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/assigned-exam-types/${id}`);
+
+  // ── Sections filtered by class (for assignment dropdowns) ─
+  getSectionsByClass = (classId: number): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/assigned-sections/by-class/${classId}`);
+
+  // ── Academic Years ────────────────────────────────────────
+  getAcademicYears = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/academic-years`);
+
+  createAcademicYear = (body: any): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/academic-years`, body);
+
+  setActiveAcademicYear = (id: number): Observable<ApiResponse> =>
+    this.http.put<ApiResponse>(`${this.base}/academic-years/${id}/set-active`, {});
+
+  promoteStudents = (body: { fromYearId: number; toYearId: number }): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/promote-students`, body);
+
+  // ── Users & Admins ────────────────────────────────────────
+  getUsers = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/users`);
+
+  getAdmins = (): Observable<ApiResponse<any[]>> =>
+    this.http.get<ApiResponse<any[]>>(`${this.base}/admins`);
+
+  assignAdmin = (body: { userId: number }): Observable<ApiResponse> =>
+    this.http.post<ApiResponse>(`${this.base}/assign-admin`, body);
+
+  removeAdmin = (userId: number): Observable<ApiResponse> =>
+    this.http.delete<ApiResponse>(`${this.base}/admins/${userId}`);
 }

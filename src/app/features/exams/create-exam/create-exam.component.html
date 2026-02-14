@@ -46,9 +46,9 @@
     <div class="row">
       <div class="col-md-4 mb-3">
         <label class="form-label">Filter by Class <span class="required">*</span></label>
-        <select [(ngModel)]="examFilters.filterExamClass" (change)="examFilters.filterExamSubject = ''; examFilters.filterExamExamType = ''; existingExams = []" class="form-control">
+        <select [(ngModel)]="examFilters.filterExamClass" (change)="onFilterClassSelected(examFilters.filterExamClass)" class="form-control">
           <option value="">Select Class</option>
-          <option *ngFor="let cls of allClasses" [value]="cls.id">{{ cls.name }}</option>
+          <option *ngFor="let cls of allClasses" [value]="cls.id">{{ cls.className }}</option>
         </select>
       </div>
 
@@ -59,7 +59,7 @@
                 (change)="examFilters.filterExamExamType = ''; existingExams = []" 
                 class="form-control">
           <option value="">{{ examFilters.filterExamClass ? 'Select Subject' : 'Select Class First' }}</option>
-          <option *ngFor="let subject of allSubjects" [value]="subject.id">{{ subject.name }}</option>
+          <option *ngFor="let subject of allSubjects" [value]="subject.id">{{ subject.subjectName }}</option>
         </select>
       </div>
 
@@ -70,7 +70,7 @@
                 (change)="existingExams = []" 
                 class="form-control">
           <option value="">{{ examFilters.filterExamSubject ? 'Select Exam Type' : 'Select Subject First' }}</option>
-          <option *ngFor="let examType of allExamTypes" [value]="examType.id">{{ examType.name }}</option>
+          <option *ngFor="let examType of allExamTypes" [value]="examType.id">{{ examType.examTypeName }}</option>
         </select>
       </div>
     </div>
@@ -136,7 +136,7 @@
         <label class="form-label">Class <span class="required">*</span></label>
         <select [(ngModel)]="examFormData.classId" (change)="onClassSelected(examFormData.classId)" [disabled]="examMode === 'update'" required class="form-control">
           <option value="">Select Class</option>
-          <option *ngFor="let cls of allClasses" [value]="cls.id">{{ cls.name }}</option>
+          <option *ngFor="let cls of allClasses" [value]="cls.id">{{ cls.className }}</option>
         </select>
       </div>
 
@@ -144,7 +144,7 @@
         <label class="form-label">Subject <span class="required">*</span></label>
         <select [(ngModel)]="examFormData.subjectId" [disabled]="examMode === 'update'" required class="form-control">
           <option value="">Select Subject</option>
-          <option *ngFor="let subject of allSubjects" [value]="subject.id">{{ subject.name }}</option>
+          <option *ngFor="let subject of allSubjects" [value]="subject.id">{{ subject.subjectName }}</option>
         </select>
       </div>
 
@@ -152,7 +152,7 @@
         <label class="form-label">Exam Type <span class="required">*</span></label>
         <select [(ngModel)]="examFormData.examTypeId" [disabled]="examMode === 'update'" required class="form-control">
           <option value="">Select Exam Type</option>
-          <option *ngFor="let examType of allExamTypes" [value]="examType.id">{{ examType.name }}</option>
+          <option *ngFor="let examType of allExamTypes" [value]="examType.id">{{ examType.examTypeName }}</option>
         </select>
       </div>
 
