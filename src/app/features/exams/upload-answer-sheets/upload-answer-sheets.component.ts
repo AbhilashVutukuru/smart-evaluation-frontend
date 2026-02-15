@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { StudentAnswerSheetService } from '../../../core/services/student-answer-sheet.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ExamService } from '../../../core/services/exam.service';
 import { ClassDto, ExamTypeDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
@@ -31,7 +30,6 @@ interface StudentUploadStatus {
 export class UploadAnswerSheetsComponent implements OnInit {
   private studentAnswerService = inject(StudentAnswerSheetService);
   private registrationService = inject(RegistrationService);
-  private examService = inject(ExamService);
   private authService = inject(AuthService);
     private masterDataService = inject(MasterDataService);
       private toastService = inject(ToastService);

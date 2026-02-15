@@ -11,6 +11,20 @@ import {
   ApiResponse,
 } from '../models/auth.model';
 
+interface DecodedToken {
+    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': string;
+  'UserId': string;
+  'TenantId': string;
+  'schoolId': string;
+  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
+  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': string;
+  'jti': string;
+  'exp': number;
+  'iss': string;
+  'aud': string;
+  [key: string]: any;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -32,28 +46,30 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
-  return this.http
-    .post<ApiResponse<LoginResponse>>(`${this.apiUrl}/auth/login`, credentials)
-    .pipe(
-      tap((response) => {
-        if (response.success && response.data) {
-          // Store tokens first
-          localStorage.setItem('currentUser', JSON.stringify(response.data));
-          localStorage.setItem('accessToken', response.data.accessToken);
-          localStorage.setItem('refreshToken', response.data.refreshToken);
-          this.currentUserSubject.next(response.data);
+    return this.http
+      .post<
+        ApiResponse<LoginResponse>
+      >(`${this.apiUrl}/auth/login`, credentials)
+      .pipe(
+        tap((response) => {
+          if (response.success && response.data) {
+            // Store tokens first
+            localStorage.setItem('currentUser', JSON.stringify(response.data));
+            localStorage.setItem('accessToken', response.data.accessToken);
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+            this.currentUserSubject.next(response.data);
 
-          // Check if password change required AFTER storing tokens
-          // if (response.data.requirePasswordChange) {
-          //   this.router.navigate(['/auth/change-password']); // No sidebar route
-          //   return;
-          // }
-           this.currentUserSubject.next(response.data);
-          this.startRefreshTokenTimer();
-        }
-      }),
-    );
-}
+            // Check if password change required AFTER storing tokens
+            // if (response.data.requirePasswordChange) {
+            //   this.router.navigate(['/auth/change-password']); // No sidebar route
+            //   return;
+            // }
+            this.currentUserSubject.next(response.data);
+            this.startRefreshTokenTimer();
+          }
+        }),
+      );
+  }
 
   refreshToken(): Observable<ApiResponse<LoginResponse>> {
     const refreshToken = localStorage.getItem('refreshToken');
@@ -125,8 +141,8 @@ export class AuthService {
   }
 
   updateCurrentUser(user: LoginResponse): void {
-  this.currentUserSubject.next(user);
-}
+    this.currentUserSubject.next(user);
+  }
 
   logout(): void {
     this.stopRefreshTokenTimer();
@@ -151,5 +167,165 @@ export class AuthService {
 
   get currentUserValue(): LoginResponse | null {
     return this.currentUserSubject.value;
+  }
+
+  // ============================================================
+  // ✅ NEW: ROLE-BASED METHODS
+  // ============================================================
+
+  /**
+   * Decode JWT token and extract claims
+   */
+  private decodeToken(): DecodedToken | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(jsonPayload);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get user role from JWT token
+   */
+  getUserRole(): string | null {
+    const decoded = this.decodeToken();
+    if (!decoded) return null;
+
+    // Your JWT uses this claim path for role
+    return (
+      decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
+      null
+    );
+  }
+
+  /**
+   * Check if user is Admin
+   */
+  isAdmin(): boolean {
+    return this.getUserRole() === 'Admin';
+  }
+
+  /**
+   * Check if user is Teacher
+   */
+  isTeacher(): boolean {
+    return this.getUserRole() === 'Teacher';
+  }
+
+  /**
+   * Check if user is Student
+   */
+  isStudent(): boolean {
+    return this.getUserRole() === 'Student';
+  }
+
+  /**
+   * Check if user has specific role
+   */
+  hasRole(role: string): boolean {
+    return this.getUserRole() === role;
+  }
+
+  /**
+   * Check if user has any of the specified roles
+   */
+  hasAnyRole(roles: string[]): boolean {
+    const userRole = this.getUserRole();
+    return userRole ? roles.includes(userRole) : false;
+  }
+
+  /**
+   * Get user ID from JWT token
+   */
+  getUserId(): string | null {
+    const decoded = this.decodeToken();
+    return decoded?.UserId || null;
+  }
+
+  /**
+   * Get tenant ID from JWT token
+   */
+  getTenantId(): string | null {
+    const decoded = this.decodeToken();
+    return decoded?.TenantId || null;
+  }
+
+  getNameIdentifier(): string | null {
+  const decoded = this.decodeToken();
+  return decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;
+}
+
+  /**
+   * Get school ID from JWT token
+   */
+  getSchoolId(): string | null {
+    const decoded = this.decodeToken();
+    return decoded?.schoolId || null;
+  }
+
+  /**
+   * Get user email from JWT token
+   */
+  getUserEmail(): string | null {
+    const decoded = this.decodeToken();
+   if (!decoded) return null;
+    // Your JWT uses this claim for email
+  return decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || null;
+  }
+
+  /**
+   * Check if token is expired
+   */
+  isTokenExpired(): boolean {
+    const decoded = this.decodeToken();
+    if (!decoded || !decoded.exp) return true;
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    return decoded.exp < currentTime;
+  }
+
+  /**
+   * Get token expiration date
+   */
+  getTokenExpiration(): Date | null {
+    const decoded = this.decodeToken();
+    if (!decoded || !decoded.exp) return null;
+
+    return new Date(decoded.exp * 1000);
+  }
+
+  getUserName(): string | null {
+    const email = this.getUserEmail();
+  if (!email) return null;
+
+   return email.split('@')[0];
+  }
+
+  getUserDisplayName(): string | null {
+    const name = this.getUserName();
+    if (!name) return null;
+
+     const cleanName = name
+    .replace(/[0-9]/g, '') // Remove numbers: venkatlearning2025 → venkatlearning
+    .replace(/[._-]/g, ' ') // Replace separators with space
+    .trim();
+
+  // Capitalize first letter of each word
+  return cleanName
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
   }
 }

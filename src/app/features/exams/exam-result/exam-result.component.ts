@@ -296,27 +296,33 @@ export class ExamResultsComponent implements OnInit {
   // ✅ FIXED: Calculate max marks from questions if not provided
   getMaxMarks(): number {
     if (!this.currentResults) return 0;
-    
+
     // If maxMarks is set, use it
-    if (this.currentResults.maxMarks !== undefined && this.currentResults.maxMarks !== null) {
+    if (
+      this.currentResults.maxMarks !== undefined &&
+      this.currentResults.maxMarks !== null
+    ) {
       return this.currentResults.maxMarks;
     }
-    
+
     // Otherwise calculate from questions
-    if (this.currentResults.questions && this.currentResults.questions.length > 0) {
+    if (
+      this.currentResults.questions &&
+      this.currentResults.questions.length > 0
+    ) {
       return this.currentResults.questions.reduce(
         (sum, q) => sum + q.maxMarks,
-        0
+        0,
       );
     }
-    
+
     return 0;
   }
 
   getPercentage(): number {
     const maxMarks = this.getMaxMarks();
     if (!this.currentResults || maxMarks === 0) return 0;
-    
+
     const total = this.getTotalMarks();
     return (total / maxMarks) * 100;
   }
@@ -433,11 +439,13 @@ export class ExamResultsComponent implements OnInit {
         next: () => {
           this.isLoading = false;
           this.isEditMode = false;
-          
+
           if (this.currentQuestion) {
-            this.originalQuestion = JSON.parse(JSON.stringify(this.currentQuestion));
+            this.originalQuestion = JSON.parse(
+              JSON.stringify(this.currentQuestion),
+            );
           }
-          
+
           this.toastService.showSuccess(
             'Success',
             `Question ${this.currentQuestion?.questionNumber} marks saved!`,
@@ -536,7 +544,7 @@ export class ExamResultsComponent implements OnInit {
     }
 
     this.currentQuestion.marksObtained = this.originalQuestion.marksObtained;
-    
+
     if (this.originalQuestion.rubrics && this.currentQuestion.rubrics) {
       this.currentQuestion.rubrics.forEach((rubric, index) => {
         const originalRubric = this.originalQuestion?.rubrics?.[index];
@@ -547,7 +555,10 @@ export class ExamResultsComponent implements OnInit {
     }
 
     this.isEditMode = false;
-    this.toastService.showInfo('Info', 'Changes cancelled - original values restored');
+    this.toastService.showInfo(
+      'Info',
+      'Changes cancelled - original values restored',
+    );
   }
 
   isValidHalfIncrement(value: number): boolean {
@@ -556,5 +567,53 @@ export class ExamResultsComponent implements OnInit {
 
   roundToHalfIncrement(value: number): number {
     return Math.round(value * 2) / 2;
+  }
+
+  downloadAnswerSheet(): void {
+    if (!this.selectedStudent) {
+      this.toastService.showWarning('Warning', 'No student selected');
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.resultsService
+      .downloadStudentAnswerSheet(
+        this.selectedStudent.studentId,
+        parseInt(this.selectedClass),
+        parseInt(this.selectedSubject),
+        parseInt(this.selectedExamType),
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          // Create download link
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${this.selectedStudent?.studentName}_AnswerSheet.pdf`;
+
+          // Trigger download
+          document.body.appendChild(link);
+          link.click();
+
+          // Cleanup
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          this.isLoading = false;
+          this.toastService.showSuccess(
+            'Success',
+            'Answer sheet downloaded successfully',
+          );
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Download error:', error);
+          this.toastService.showError(
+            'Error',
+            error.error?.message || 'Failed to download answer sheet',
+          );
+        },
+      });
   }
 }

@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { AdminSettingsService } from '../../../core/services/admin-settings.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
+import { MasterDataService } from '../../../core/services/master-data.service';
 
 @Component({
   selector: 'app-admin-settings',
@@ -25,6 +26,7 @@ import { DeleteConfirmationComponent } from '../../../shared/components/delete-c
 export class AdminSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private svc = inject(AdminSettingsService);
+  private masterDataService = inject(MasterDataService);
 
   // ── Tab state ──────────────────────────────────────────────
   mainTab: 'master' | 'assign' | 'academic' | 'admin' = 'master';
@@ -645,10 +647,19 @@ export class AdminSettingsComponent implements OnInit {
 
   setActiveAcademicYear(id: number): void {
     this.loading = true;
+
+    // ✅ Find the year object from your list
+    const selectedYear = this.academicYears.find(year => year.id === id);
+
     this.svc.setActiveAcademicYear(id).subscribe({
       next: (r) => {
-        if (r.success) {
+        if (r.success) {    
           this.showSuccess('Active academic year updated!');
+
+          if (selectedYear) {
+            this.masterDataService.updateAcademicYearInstantly(selectedYear.yearName);
+          }
+          
           this.loadAcademicYears();
         }
         this.loading = false;

@@ -649,6 +649,7 @@
                   <th>#</th>
                   <th>Class</th>
                   <th>Subject</th>
+                   <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -662,9 +663,19 @@
                     <strong>{{ item.subjectName }}</strong>
                   </td>
                   <td>
+                     <span
+                      class="status-badge"
+                      [class.used]="item.isUsed"
+                      [class.free]="!item.isUsed"
+                      >{{ item.isUsed ? "In Use" : "Available" }}</span
+                    >
+                  </td>
+                  <td>
                     <button
                       class="btn-del"
                       (click)="openDeleteModal('assigned-subject', item)"
+                       [disabled]="item.isUsed"
+                      [title]="item.isUsed ? 'Students enrolled' : 'Remove'"
                     >
                       <i class="fas fa-trash"></i>
                     </button>
@@ -751,6 +762,7 @@
                   <th>#</th>
                   <th>Class</th>
                   <th>Exam Type</th>
+                  <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -764,9 +776,19 @@
                     <strong>{{ item.examTypeName }}</strong>
                   </td>
                   <td>
+                     <span
+                      class="status-badge"
+                      [class.used]="item.isUsed"
+                      [class.free]="!item.isUsed"
+                      >{{ item.isUsed ? "In Use" : "Available" }}</span
+                    >
+                  </td>
+                  <td>
                     <button
                       class="btn-del"
                       (click)="openDeleteModal('assigned-examtype', item)"
+                       [disabled]="item.isUsed"
+                      [title]="item.isUsed ? 'Students enrolled' : 'Remove'"
                     >
                       <i class="fas fa-trash"></i>
                     </button>
