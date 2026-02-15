@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay, catchError, map } from 'rxjs/operators';
 import { StudentInfo, ExamResult, ExamQuestion } from '../models/exam-result';
@@ -98,7 +98,6 @@ export class ExamResultService {
       .pipe(
         map(() => true),
         catchError((error) => {
-          console.error('Error updating question marks:', error);
           return of(false);
         }),
       );
@@ -126,49 +125,64 @@ export class ExamResultService {
       .pipe(
         map(() => true),
         catchError((error) => {
-          console.error('Error updating marks:', error);
           return of(false);
         }),
       );
   }
 
   updateQuestionRubrics(
-  studentId: number,
-  classId: number,
-  subjectId: number,
-  examTypeId: number,
-  questionNumber: number,
-  rubrics: Array<{ questionPaperRubricId: number; marksGiven: number }>
-): Observable<boolean> {
-  const headers = new HttpHeaders({
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
-  });
+    studentId: number,
+    classId: number,
+    subjectId: number,
+    examTypeId: number,
+    questionNumber: number,
+    rubrics: Array<{ questionPaperRubricId: number; marksGiven: number }>,
+  ): Observable<boolean> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+    });
 
-  const body = {
-    studentId: studentId,
-    classId: classId,
-    subjectId: subjectId,
-    examTypeId: examTypeId,
-    questionNumber: questionNumber,
-    rubrics: rubrics
-  };
+    const body = {
+      studentId: studentId,
+      classId: classId,
+      subjectId: subjectId,
+      examTypeId: examTypeId,
+      questionNumber: questionNumber,
+      rubrics: rubrics,
+    };
 
-  console.log('API Request:', body);
+    console.log('API Request:', body);
 
-  return this.http.put<any>(
-    `${API_URL}/exam-result/update-question-rubrics`,
-    body,
-    { headers }
-  ).pipe(
-    map(response => {
-      console.log('API Response:', response);
-      return true;
-    }),
-    catchError(error => {
-      console.error('API Error:', error);
-      return of(false);
-    })
-  );
-}
+    return this.http
+      .put<any>(`${API_URL}/exam-result/update-question-rubrics`, body, {
+        headers,
+      })
+      .pipe(
+        map((response) => {
+          return true;
+        }),
+        catchError((error) => {
+          return of(false);
+        }),
+      );
+  }
+
+  downloadStudentAnswerSheet(
+    studentId: number,
+    classId: number,
+    subjectId: number,
+    examTypeId: number,
+  ): Observable<Blob> {
+    const url = `${API_URL}/student-answer-sheet/download/${studentId}`;
+    const params = new HttpParams()
+      .set('classId', classId.toString())
+      .set('subjectId', subjectId.toString())
+      .set('examTypeId', examTypeId.toString());
+
+    return this.http.get(url, {
+      params: params,
+      responseType: 'blob',
+    });
+  }
 }

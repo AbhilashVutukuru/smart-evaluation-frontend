@@ -1,24 +1,52 @@
 <div class="sidebar">
+  <!-- Sidebar Header -->
   <div class="sidebar-header">
     <div class="logo">
       <i class="fas fa-th-large"></i>
     </div>
     <h3>School Portal</h3>
     <p>Dashboard</p>
+    
+    <!-- ✅ NEW: Academic Year Display -->
+    <div class="academic-year" *ngIf="currentAcademicYear">
+      <i class="fas fa-calendar-alt"></i>
+      <span>{{ currentAcademicYear }}</span>
+    </div>
+    
+    <!-- Loading state for academic year -->
+    <div class="academic-year loading" *ngIf="isLoadingAcademicYear">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Loading...</span>
+    </div>
   </div>
 
+  <!-- User Info - Name with Icon -->
+  <div class="user-info-minimal" *ngIf="userName">
+    <i class="fas fa-user"></i>
+    <span class="user-name-simple">{{ userName }}</span>
+  </div>
+
+  <!-- Menu Items -->
   <nav class="sidebar-nav">
     <a 
-      *ngFor="let item of menuItems"
+      *ngFor="let item of visibleMenuItems"
       [routerLink]="item.route"
       routerLinkActive="active"
       class="nav-item"
+      [title]="item.label"
     >
       <i [class]="item.icon"></i>
       <span>{{ item.label }}</span>
     </a>
+
+    <!-- Show message if no menu items visible -->
+    <div *ngIf="visibleMenuItems.length === 0" class="no-menu-items">
+      <i class="fas fa-info-circle"></i>
+      <p>No menu items available</p>
+    </div>
   </nav>
 
+  <!-- Sidebar Footer -->
   <div class="sidebar-footer">
     <button (click)="logout()" class="logout-btn">
       <i class="fas fa-sign-out-alt"></i>
