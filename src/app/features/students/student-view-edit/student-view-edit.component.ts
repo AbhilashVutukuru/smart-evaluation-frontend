@@ -178,16 +178,17 @@ onClassChange(event: Event): void {
   }
 
   deleteStudent(): void {
+     //this.studentToDelete = student;
     this.showDeleteModal = true;
   }
 
   onDeleteConfirmed(): void {
-    if (this.studentToDelete) {
-      this.studentService.deleteStudent(this.studentToDelete.id).subscribe({
+    if (this.studentId) {
+      this.studentService.deleteStudent(this.studentId).subscribe({
         next: () => {
           this.success = 'Student deleted successfully!';
           setTimeout(() => {
-            this.router.navigate(['/students']);
+            this.router.navigate(['//students/list']);
           }, 1500);
         },
         error: (error) => {

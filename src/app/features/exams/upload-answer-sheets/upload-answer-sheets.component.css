@@ -535,6 +535,34 @@
   font-weight: 600;
 }
 
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.empty-state i {
+  font-size: 80px;
+  color: #d1d5db;
+  margin-bottom: 20px;
+  display: block;
+}
+
+.empty-state h5 {
+  color: #374151;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  border: none;
+  padding: 0;
+}
+
+.empty-state p {
+  color: #6b7280;
+  font-size: 16px;
+  margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .upload-container {

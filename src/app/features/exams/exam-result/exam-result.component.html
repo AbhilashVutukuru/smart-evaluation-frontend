@@ -4,7 +4,15 @@
     <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
   </div>
 
-  <!-- Error Alert -->
+   <!-- Success/Error Messages -->
+  <div *ngIf="success" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    <span>{{ success }}</span>
+    <button class="alert-close" (click)="success = ''">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+
   <div class="alert alert-error" *ngIf="error">
     <i class="fas fa-exclamation-circle"></i>
     <span>{{ error }}</span>
@@ -35,7 +43,8 @@
         <label class="form-label"
           >Section <span class="required">*</span></label
         >
-        <select class="form-control" [(ngModel)]="selectedSection">
+        <select class="form-control" [(ngModel)]="selectedSection" [disabled]="!selectedClass"
+          (change)="validateFilters()">
           <option value="">Select Section</option>
           <option *ngFor="let section of sections" [value]="section.id">
             {{ section.sectionName }}
@@ -46,7 +55,8 @@
         <label class="form-label"
           >Subject <span class="required">*</span></label
         >
-        <select class="form-control" [(ngModel)]="selectedSubject">
+        <select class="form-control" [(ngModel)]="selectedSubject" [disabled]="!selectedClass"
+          (change)="validateFilters()">
           <option value="">Select Subject</option>
           <option *ngFor="let subject of subjects" [value]="subject.id">
             {{ subject.subjectName }}
@@ -57,7 +67,8 @@
         <label class="form-label"
           >Exam Type <span class="required">*</span></label
         >
-        <select class="form-control" [(ngModel)]="selectedExamType">
+        <select class="form-control" [(ngModel)]="selectedExamType" [disabled]="!selectedClass"
+          (change)="validateFilters()">
           <option value="">Select Exam Type</option>
           <option *ngFor="let examType of examTypes" [value]="examType.id">
             {{ examType.examTypeName }}

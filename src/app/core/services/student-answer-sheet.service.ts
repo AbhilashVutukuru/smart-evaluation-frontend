@@ -27,7 +27,7 @@ export class StudentAnswerSheetService {
     return this.http.post<ApiResponse>(`${this.apiUrl}/student-answer-sheet/upload`, formData);
   }
 
-  startEvaluation(data: any): Observable<ApiResponse> {
+  submitAllStudents(data: any): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/student-answer-sheet/submissions`, data);
   }
 }

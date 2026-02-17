@@ -375,6 +375,7 @@ export class AdminSettingsComponent implements OnInit {
           this.showSuccess('Section assigned successfully!');
           this.assignSectionForm.reset();
           this.loadAssignedSections();
+          this.loadMasterSections();
         }
         this.loading = false;
       },
@@ -395,6 +396,7 @@ export class AdminSettingsComponent implements OnInit {
           this.assignSubjectForm.reset();
           this.sectionsForAssignSubject = [];
           this.loadAssignedSubjects();
+          this.loadMasterSubjects();
         }
         this.loading = false;
       },
@@ -415,6 +417,7 @@ export class AdminSettingsComponent implements OnInit {
           this.assignExamTypeForm.reset();
           this.sectionsForAssignExamType = [];
           this.loadAssignedExamTypes();
+          this.loadMasterExamTypes();
         }
         this.loading = false;
       },
@@ -532,6 +535,7 @@ export class AdminSettingsComponent implements OnInit {
           next: () => {
             this.showSuccess('Assignment removed!');
             this.loadAssignedSections();
+            this.loadMasterSections();
             this.resetDeleteModal();
           },
           error: (e) => {
@@ -544,6 +548,7 @@ export class AdminSettingsComponent implements OnInit {
           next: () => {
             this.showSuccess('Assignment removed!');
             this.loadAssignedSubjects();
+            this.loadMasterSubjects();
             this.resetDeleteModal();
           },
           error: (e) => {
@@ -556,6 +561,7 @@ export class AdminSettingsComponent implements OnInit {
           next: () => {
             this.showSuccess('Assignment removed!');
             this.loadAssignedExamTypes();
+            this.loadMasterExamTypes();
             this.resetDeleteModal();
           },
           error: (e) => {
@@ -576,7 +582,7 @@ export class AdminSettingsComponent implements OnInit {
     this.showDeleteModal = false;
     this.deleteType = '';
     this.itemToDelete = null;
-    this.loading = false;
+    this.loading = false;     
   }
 
   // ── Filtered getters ──────────────────────────────────────
