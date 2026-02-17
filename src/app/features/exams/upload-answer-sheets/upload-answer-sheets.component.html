@@ -39,7 +39,7 @@
         <select
           class="form-control"
           [(ngModel)]="filters.classId"
-          (change)="onClassChange(filters.classId)"
+          (change)="onClassChange(filters.classId); validateFilters()"
         >
           <option value="">Select Class</option>
           <option *ngFor="let cls of classes" [value]="cls.id">
@@ -54,6 +54,7 @@
           class="form-control"
           [(ngModel)]="filters.sectionId"
           [disabled]="!filters.classId"
+          (change)="validateFilters()"
         >
           <option value="">
             {{ filters.classId ? "Select Section" : "Select Class First" }}
@@ -70,6 +71,7 @@
           class="form-control"
           [(ngModel)]="filters.subjectId"
           [disabled]="!filters.classId"
+          (change)="validateFilters()"
         >
           <option value="">
             {{ filters.classId ? "Select Subject" : "Select Class First" }}
@@ -82,7 +84,7 @@
 
       <div class="col-md-3 mb-3">
         <label class="form-label">Exam Type <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="filters.examTypeId">
+        <select class="form-control" [(ngModel)]="filters.examTypeId" [disabled]="!filters.classId" (change)="validateFilters()">
           <option value="">Select Exam Type</option>
           <option *ngFor="let exam of examTypes" [value]="exam.id">
             {{ exam.examTypeName }}
@@ -98,13 +100,24 @@
         [disabled]="loading"
       >
         <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-        {{ loading ? "Loading..." : "Show Students" }}
+        {{ loading ? "Loading..." : "Show Student Details" }}
       </button>
     </div>
   </div>
 
+  <div
+  class="card"
+  *ngIf="showStudentsCard && students && students.length === 0 && !loading"
+>
+   <div class="empty-state">
+      <i class="fas fa-users-slash"></i>
+      <h5>No Students Found</h5>
+      <p>No students found for the selected exam details.</p>
+    </div>
+</div>
+
   <!-- Students Table -->
-  <div class="card" *ngIf="showStudentsCard">
+  <div class="card" *ngIf="showStudentsCard && students.length > 0">
     <div class="card-header-flex">
       <h4><i class="fas fa-users"></i> Students List</h4>
       <span class="badge badge-primary">{{ totalStudents }} Students</span>
@@ -280,11 +293,11 @@
               </button>
             </td>
           </tr>
-          <tr *ngIf="students.length === 0">
+          <!-- <tr *ngIf="students.length === 0">
             <td colspan="8" class="text-center text-muted">
               No students found
             </td>
-          </tr>
+          </tr> -->
         </tbody>
       </table>
     </div>
@@ -293,10 +306,10 @@
     <div class="submit-section">
       <button
         class="btn btn-success btn-lg"
-        (click)="evaluateStudents()"
-        [disabled]="!canEvaluate || loading"
+        (click)="submitAllStudents()"
+        [disabled]="pendingCount === 0 || loading"
       >
-        <i class="fas fa-paper-plane"></i> Submit Students
+        <i class="fas fa-paper-plane"></i> Submit All
       </button>
     </div>
   </div>

@@ -17,9 +17,11 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
+   email: string; 
   resetToken: string;
   newPassword: string;
   confirmPassword: string;
+  schoolId:number
 }
 
 export interface ApiResponse<T = any> {

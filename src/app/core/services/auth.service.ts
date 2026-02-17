@@ -14,7 +14,6 @@ import {
 interface DecodedToken {
     'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': string;
   'UserId': string;
-  'TenantId': string;
   'schoolId': string;
   'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
   'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': string;
@@ -252,15 +251,7 @@ export class AuthService {
   getUserId(): string | null {
     const decoded = this.decodeToken();
     return decoded?.UserId || null;
-  }
-
-  /**
-   * Get tenant ID from JWT token
-   */
-  getTenantId(): string | null {
-    const decoded = this.decodeToken();
-    return decoded?.TenantId || null;
-  }
+  }  
 
   getNameIdentifier(): string | null {
   const decoded = this.decodeToken();

@@ -23,6 +23,7 @@ export class ResetPasswordComponent implements OnInit {
   success = false;
   invalidToken = false;
   token = '';
+  schoolId=0;
   showPassword = false;
   showConfirmPassword = false;
 
@@ -42,6 +43,8 @@ export class ResetPasswordComponent implements OnInit {
       {
         resetToken: ['', Validators.required],
         newPassword: ['', [Validators.required, Validators.minLength(8)]],
+        email: ['', [Validators.required, Validators.email]], // ✅ Added
+        schoolId: [0, [Validators.required, Validators.min(1)]],
         confirmPassword: ['', Validators.required],
       },
       { validators: this.passwordMatchValidator },
@@ -50,12 +53,20 @@ export class ResetPasswordComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
-      this.token = params['token'] || '';
-      if (!this.token) {
+      const token = params['token'] || '';
+      const email = params['email'] || ''; // ✅ Extract from URL
+      const schoolId = +params['schoolId'] || 0; // ✅ Extract from URL (convert to number)
+
+      if (!token || !email || !schoolId) {
         this.invalidToken = true;
-        this.error = 'No reset token found in URL.';
+        this.error = 'Invalid reset link. Please check your email.';
       } else {
-        this.resetForm.patchValue({ resetToken: this.token });
+        // ✅ Patch all values into the form
+        this.resetForm.patchValue({ 
+          resetToken: token,
+          email: email,
+          schoolId: schoolId
+        });
       }
     });
 
@@ -103,6 +114,7 @@ export class ResetPasswordComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.success = true;
+          
         } else {
           this.error = response.message || 'Failed to reset password';
         }

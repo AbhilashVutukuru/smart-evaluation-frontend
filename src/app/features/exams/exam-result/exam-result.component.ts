@@ -46,6 +46,7 @@ export class ExamResultsComponent implements OnInit {
 
   searchCompleted = false;
   error = '';
+   success = '';
 
   classes: ClassDto[] = [];
   sections: SectionDto[] = [];
@@ -93,7 +94,7 @@ export class ExamResultsComponent implements OnInit {
         this.sections = sections;
       },
       error: (error) => {
-        this.toastService.showError('Error', 'Failed to load sections');
+      this.error = error.error?.message || 'Failed to load sections';    
       },
     });
 
@@ -102,7 +103,7 @@ export class ExamResultsComponent implements OnInit {
         this.subjects = subjects;
       },
       error: (error) => {
-        this.toastService.showError('Error', 'Failed to load subjects');
+           this.error = error.error?.message || 'Failed to load subjects';  
       },
     });
 
@@ -111,7 +112,7 @@ export class ExamResultsComponent implements OnInit {
         this.examTypes = examTypes;
       },
       error: (error) => {
-        this.toastService.showError('Error', 'Failed to load exam types');
+        this.error = error.error?.message || 'Failed to load exam types';  
       },
     });
   }
@@ -132,24 +133,17 @@ export class ExamResultsComponent implements OnInit {
   }
 
   getStudents(): void {
-    const missingFields: string[] = [];
-
-    if (!this.selectedClass) missingFields.push('Class');
-    if (!this.selectedSection) missingFields.push('Section');
-    if (!this.selectedSubject) missingFields.push('Subject');
-    if (!this.selectedExamType) missingFields.push('Exam Type');
-
-    if (missingFields.length > 0) {
-      this.toastService.showWarning(
-        'Validation Error',
-        `Please select all required fields: ${missingFields.join(', ')}`,
-      );
-      return;
-    }
-
-    this.clearStudentData();
     this.isLoading = true;
     this.error = '';
+    this.success = '';   
+    this.clearStudentData(); 
+
+     if (!this.selectedClass ||!this.selectedSection ||!this.selectedSubject ||!this.selectedExamType) 
+     {
+      this.error ='Please select all required fields';    
+      this.isLoading = false;
+      return;
+    }
 
     this.resultsService
       .getStudents(
@@ -163,28 +157,26 @@ export class ExamResultsComponent implements OnInit {
           this.students = data;
           this.showStudentCard = data.length > 0;
           this.isLoading = false;
-          this.searchCompleted = true;
-
-          if (data.length === 0) {
-            this.toastService.showInfo(
-              'No Students',
-              'No students found for the selected exam details',
-            );
-          } else {
-            this.toastService.showSuccess(
-              'Success',
-              `Found ${data.length} student(s)`,
-            );
-          }
+          this.searchCompleted = true;          
         },
         error: (err) => {
           this.isLoading = false;
           this.searchCompleted = true;
-          this.error = err.error?.message || 'Error loading students';
-          this.toastService.showError('Error', this.error);
+          this.error = err.error?.message || 'Error loading students';          
         },
       });
   }
+
+   validateFilters(): void {
+  if (
+    this.selectedClass &&
+    this.selectedSection &&
+    this.selectedSubject &&
+    this.selectedExamType
+  ) {
+    this.error = '';
+  }
+}
 
   onStudentChange(): void {
     if (!this.selectedStudent) {

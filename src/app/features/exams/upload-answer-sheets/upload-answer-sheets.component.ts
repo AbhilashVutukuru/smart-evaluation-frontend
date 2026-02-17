@@ -4,7 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { StudentAnswerSheetService } from '../../../core/services/student-answer-sheet.service';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { ClassDto, ExamTypeDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
+import {
+  ClassDto,
+  ExamTypeDto,
+  MasterDataService,
+  SectionDto,
+  SubjectDto,
+} from '../../../core/services/master-data.service';
 import { ToastService } from '../../../shared/services/toast.service';
 
 interface StudentUploadStatus {
@@ -15,9 +21,9 @@ interface StudentUploadStatus {
   sectionName: string;
   isAbsent: boolean;
   isUploaded: boolean;
-   isUploading?: boolean;
+  isUploading?: boolean;
   answerSheetFile?: File;
-    fileName?: string;
+  fileName?: string;
 }
 
 @Component({
@@ -31,8 +37,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
   private studentAnswerService = inject(StudentAnswerSheetService);
   private registrationService = inject(RegistrationService);
   private authService = inject(AuthService);
-    private masterDataService = inject(MasterDataService);
-      private toastService = inject(ToastService);
+  private masterDataService = inject(MasterDataService);
+  private toastService = inject(ToastService);
 
   // Filters
   filters = {
@@ -43,16 +49,15 @@ export class UploadAnswerSheetsComponent implements OnInit {
     absentStudentIds: [] as number[],
   };
 
- classes: ClassDto[] = [];
+  classes: ClassDto[] = [];
   sections: SectionDto[] = [];
   subjects: SubjectDto[] = [];
   examTypes: ExamTypeDto[] = [];
 
-    selectedClass: string = '';
+  selectedClass: string = '';
   selectedSection: string = '';
   selectedSubject: string = '';
   selectedExamType: string = '';
-
 
   students: StudentUploadStatus[] = [];
   showStudentsCard = false;
@@ -82,16 +87,16 @@ export class UploadAnswerSheetsComponent implements OnInit {
     //return this.students.some((s) => s.isUploaded);
     if (!this.students || this.students.length === 0) {
       return false;
-    }    
+    }
 
     return this.students.every((s) => s.isUploaded || s.isAbsent);
   }
 
   ngOnInit(): void {
-   this.loadInitialData();
+    this.loadInitialData();
   }
 
- private loadInitialData(): void {
+  private loadInitialData(): void {
     this.masterDataService.getClasses().subscribe({
       next: (classes) => {
         this.classes = classes;
@@ -101,8 +106,6 @@ export class UploadAnswerSheetsComponent implements OnInit {
       },
     });
   }
-
-
 
   onClassChange(classId: string): void {
     // Reset dependent dropdowns
@@ -123,8 +126,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (sections) => {
         this.sections = sections;
       },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load sections');
+      error: (error) => {   
+         this.error = error.error?.message || 'Failed to load sections';    
       },
     });
 
@@ -133,8 +136,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (subjects) => {
         this.subjects = subjects;
       },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load subjects');
+      error: (error) => {    
+        this.error = error.error?.message || 'Failed to load subjects';  
       },
     });
 
@@ -143,42 +146,36 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (examTypes) => {
         this.examTypes = examTypes;
       },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load exam types');
+      error: (error) => {       
+             this.error = error.error?.message || 'Failed to load exam types';  
       },
     });
-  }  
+  }
 
   showStudents(): void {
-    if (
-      !this.filters.classId ||
-      !this.filters.sectionId ||
-      !this.filters.subjectId ||
-      !this.filters.examTypeId
-    ) {
-      this.error = 'Please select all required fields';
-      return;
-    }
-
     this.loading = true;
     this.error = '';
+    this.success = '';
+    this.showStudentsCard = false; // Reset card visibility
+
+    if (!this.filters.classId ||!this.filters.sectionId ||!this.filters.subjectId ||!this.filters.examTypeId) 
+     {
+      this.error ='Please select all required fields';    
+      this.loading = false;
+      return;
+    }  
 
     this.studentAnswerService
-      .getStudentsWithUploadStatus(
-        +this.filters.classId,
-        +this.filters.sectionId,
-        +this.filters.subjectId,
+      .getStudentsWithUploadStatus(+this.filters.classId,+this.filters.sectionId,+this.filters.subjectId,  
         +this.filters.examTypeId,
       )
       .subscribe({
         next: (response) => {
           if (response.success && Array.isArray(response.data.students)) {
-            this.students = response.data.students.map((s: any) => {
-              // const [firstName, ...lastNameParts] = (s.studentName || '').split(
-              //   ' ',
-              // );
+            const rawStudents = response.data.students;
 
-              return {
+            if (rawStudents.length > 0) {
+              this.students = rawStudents.map((s: any) => ({
                 studentId: s.studentId,
                 rollNumber: s.rollNumber,
                 studentName: s.studentName,
@@ -188,24 +185,30 @@ export class UploadAnswerSheetsComponent implements OnInit {
                 isUploaded:
                   s.status?.toLowerCase().includes('uploaded') === true &&
                   !s.status?.toLowerCase().includes('not'),
-                  fileName: s.fileName || s.documentName || '',
-              };
-            });
-
-            //  If everything is already completed, lock evaluation on load
-            // this.isEvaluationCompleted = this.students.every(
-            //   (s) => s.isUploaded || s.isAbsent,
-            // );
+                fileName: s.fileName || s.documentName || '',
+              }));            
+            }
             this.showStudentsCard = true;
           }
           this.loading = false;
         },
         error: (error) => {
-          this.error = error.error?.message || 'Failed to load students';
+          this.error = error.error?.message || 'Failed to load students';          
           this.loading = false;
         },
       });
   }
+
+  validateFilters(): void {
+  if (
+    this.filters.classId &&
+    this.filters.sectionId &&
+    this.filters.subjectId &&
+    this.filters.examTypeId
+  ) {
+    this.error = '';
+  }
+}
 
   onFileSelected(event: any, student: StudentUploadStatus): void {
     const file = event.target.files[0];
@@ -266,7 +269,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
     }
   }
 
-  evaluateStudents(): void {
+  submitAllStudents(): void {
     if (!this.canEvaluate) return;
 
     this.loading = true;
@@ -280,7 +283,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
       absentStudentIds: this.filters.absentStudentIds,
     };
 
-    this.studentAnswerService.startEvaluation(payload).subscribe({
+    this.studentAnswerService.submitAllStudents(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.success = response.message || 'Evaluation started successfully';
