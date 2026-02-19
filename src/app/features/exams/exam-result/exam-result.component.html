@@ -164,30 +164,33 @@
     <!-- Student Info Box -->
     <div class="info-box">
       <div class="info-group">
-        <div class="info-item">
-          <strong>Roll No:</strong>
+        <!-- Header Row -->
+        <div class="info-column">
+          <strong>Roll No</strong>
           <span>{{ selectedStudent.rollNumber }}</span>
         </div>
-        <div class="info-item">
-          <strong>Name:</strong>
+        <div class="info-column">
+          <strong>Name</strong>
           <span>{{ selectedStudent.studentName }}</span>
         </div>
-        <div class="info-item">
-          <strong>Status:</strong>
-          <span class="badge badge-danger" *ngIf="selectedStudent.isAbsent"
-            >Absent</span
-          >
-          <span
-            class="badge badge-success"
-            style="color: white"
-            *ngIf="!selectedStudent.isAbsent && selectedStudent.hasUploaded"
-            >Uploaded</span
-          >
-          <span
-            class="badge badge-warning"
-            *ngIf="!selectedStudent.isAbsent && !selectedStudent.hasUploaded"
-            >Not Uploaded</span
-          >
+        <div class="info-column">
+          <strong>Status</strong>
+          <div class="status-badges">
+            <span class="badge badge-danger" *ngIf="selectedStudent.isAbsent"
+              >Absent</span
+            >
+            <span
+              class="badge badge-success"
+              style="color: white"
+              *ngIf="!selectedStudent.isAbsent && selectedStudent.hasUploaded"
+              >Uploaded</span
+            >
+            <span
+              class="badge badge-warning"
+              *ngIf="!selectedStudent.isAbsent && !selectedStudent.hasUploaded"
+              >Not Uploaded</span
+            >
+          </div>
         </div>
       </div>
 
@@ -353,23 +356,23 @@
                   <td>{{ rubric.criterion || rubric.name }}</td>
                   <td>
                     <input
-                      type="number"
-                      [(ngModel)]="rubric.marksGiven"
-                      (ngModelChange)="
-                        onRubricMarksChange(rubric, currentQuestion)
-                      "
-                      (blur)="onRubricBlur(rubric, currentQuestion)"
-                      [disabled]="!isEditMode"
-                      min="0"
-                      [max]="rubric.maxMarks"
-                      step="0.5"
-                      class="form-control"
-                      [class.is-invalid]="rubric.marksGiven > rubric.maxMarks"
-                      [class.is-valid]="
-                        rubric.marksGiven > 0 &&
-                        rubric.marksGiven <= rubric.maxMarks
-                      "
-                    />
+  type="number"
+  [(ngModel)]="rubric.marksGiven"
+  (input)="limitDecimalInput($event)"
+  (ngModelChange)="onRubricMarksChange(rubric, currentQuestion)"
+  (blur)="onRubricBlur(rubric, currentQuestion)"
+  [disabled]="!isEditMode"
+  min="0"
+  [max]="rubric.maxMarks"
+  step="0.5"
+  class="form-control"
+  [class.is-invalid]="rubric.marksGiven > rubric.maxMarks"
+  [class.is-valid]="
+    rubric.marksGiven > 0 &&
+    rubric.marksGiven <= rubric.maxMarks
+  "
+/>
+
                     <div
                       *ngIf="rubric.marksGiven > rubric.maxMarks"
                       class="invalid-feedback d-block"
@@ -436,6 +439,19 @@
           <small class="text-muted mt-2"
             >Automatically calculated from rubric marks</small
           >
+        </div>
+
+        <!-- Remarks Section - Only visible in Edit Mode -->
+        <div class="question-section mt-4" *ngIf="isEditMode">
+          <label class="section-label">
+            <i class="fas fa-comments"></i> Remarks:
+          </label>
+          <textarea
+            [(ngModel)]="remarks"
+            placeholder="Add any remarks or comments for the student..."
+            rows="4"
+            class="form-control"
+          ></textarea>
         </div>
       </div>
 
