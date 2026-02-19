@@ -114,7 +114,9 @@
             type="text"
             class="form-control"
             formControlName="phoneNumber"
-            placeholder="+91 1234567890"
+            placeholder="1234567890"
+            maxlength="10"
+            (input)="onPhoneNumberInput($event)"
           />
         </div>
       </div>
@@ -153,9 +155,10 @@
           <label class="form-label"
             >Section <span class="required">*</span></label
           >
-          <select class="form-control" formControlName="sectionId"
-           [disabled]="!studentForm.get('classId')?.value">
-            <option value="">Select Section</option>
+          <select class="form-control" formControlName="sectionId">
+            <option value="">
+              {{ isClassSelected ? "Select Section" : "Select Class First" }}
+            </option>
             <option *ngFor="let sec of sections" [value]="sec.id">
               {{ sec.sectionName }}
             </option>

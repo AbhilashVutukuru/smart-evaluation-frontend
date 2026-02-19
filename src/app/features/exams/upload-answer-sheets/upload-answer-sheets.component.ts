@@ -157,6 +157,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
     this.error = '';
     this.success = '';
     this.showStudentsCard = false; // Reset card visibility
+    this.isEvaluationCompleted = false; // ✅ Reset evaluation status
+    this.filters.absentStudentIds = []; // ✅ Clear absent students list when loading new students
 
     if (!this.filters.classId ||!this.filters.sectionId ||!this.filters.subjectId ||!this.filters.examTypeId) 
      {
@@ -186,7 +188,12 @@ export class UploadAnswerSheetsComponent implements OnInit {
                   s.status?.toLowerCase().includes('uploaded') === true &&
                   !s.status?.toLowerCase().includes('not'),
                 fileName: s.fileName || s.documentName || '',
-              }));            
+              }));
+              
+              // ✅ Populate absentStudentIds with students already marked as absent
+              this.filters.absentStudentIds = this.students
+                .filter(student => student.isAbsent)
+                .map(student => student.studentId);
             }
             this.showStudentsCard = true;
           }

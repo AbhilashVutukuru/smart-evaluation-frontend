@@ -60,6 +60,8 @@ export class ExamResultsComponent implements OnInit {
 
   isEditMode = false;
   originalQuestion: ExamQuestion | null = null;
+  remarks = '';
+  originalRemarks = '';
 
   ngOnInit(): void {
     this.loadInitialData();
@@ -368,6 +370,12 @@ export class ExamResultsComponent implements OnInit {
       return;
     }
 
+    // ✅ NEW: Validate remarks field when in edit mode
+    if (this.isEditMode && (!this.remarks || this.remarks.trim() === '')) {
+      this.toastService.showError('Validation Error', 'Remarks field is required');
+      return;
+    }
+
     if (this.hasValidationError(this.currentQuestion)) {
       const totalMarks = this.getTotalRubricMarks(this.currentQuestion);
       this.toastService.showError(
@@ -480,6 +488,9 @@ export class ExamResultsComponent implements OnInit {
     }
   }
 
+
+  
+
   saveAndPrevious(): void {
     if (this.hasValidationError(this.currentQuestion!)) {
       this.toastService.showError(
@@ -494,6 +505,26 @@ export class ExamResultsComponent implements OnInit {
       setTimeout(() => this.previousQuestion(), 500);
     }
   }
+
+  limitDecimalInput(event: any): void {
+
+  let input = event.target;
+  let value = input.value;
+
+  if (!value) return;
+
+  // Regex: allow only one decimal place
+  const regex = /^\d+(\.\d{0,1})?$/;
+
+  if (!regex.test(value)) {
+
+    // remove last typed character
+    input.value = value.slice(0, -1);
+
+  }
+
+}
+
 
   updateMarks(): void {
     if (!this.selectedStudent || !this.currentResults) return;
@@ -524,6 +555,8 @@ export class ExamResultsComponent implements OnInit {
   enableEdit(): void {
     if (this.currentQuestion) {
       this.originalQuestion = JSON.parse(JSON.stringify(this.currentQuestion));
+      this.originalRemarks = this.remarks;
+      this.remarks = ''; // ✅ Clear remarks when entering edit mode
       this.isEditMode = true;
     }
   }
@@ -536,6 +569,7 @@ export class ExamResultsComponent implements OnInit {
     }
 
     this.currentQuestion.marksObtained = this.originalQuestion.marksObtained;
+    this.remarks = this.originalRemarks;
 
     if (this.originalQuestion.rubrics && this.currentQuestion.rubrics) {
       this.currentQuestion.rubrics.forEach((rubric, index) => {
@@ -549,7 +583,7 @@ export class ExamResultsComponent implements OnInit {
     this.isEditMode = false;
     this.toastService.showInfo(
       'Info',
-      'Changes cancelled - original values restored',
+      'Changes cancelled',
     );
   }
 

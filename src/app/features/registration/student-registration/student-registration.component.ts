@@ -87,16 +87,53 @@ export class StudentRegistrationComponent implements OnInit {
       phoneNumber: ['', Validators.required],
       address: ['', Validators.required],
       classId: ['', Validators.required],
-      sectionId: ['', Validators.required],
-      rollNumber: ['', Validators.required],
+      sectionId: [{ value: '', disabled: true }, Validators.required],
+      rollNumber: [{ value: '', disabled: true }, Validators.required],
       admissionDate: ['', Validators.required],
     });
 
     this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
+      const sectionControl = this.studentForm.get('sectionId');
+      const rollControl = this.studentForm.get('rollNumber');
       if (classId) {
+        sectionControl?.enable();
         this.loadSections(classId);
+      } else {
+        sectionControl?.disable();
+        sectionControl?.reset();
+        rollControl?.disable();
+        rollControl?.reset();
+        this.sections = [];
       }
     });
+
+    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
+      const rollControl = this.studentForm.get('rollNumber');
+      if (sectionId) {
+        rollControl?.enable();
+        this.loadNextRollNumber();
+      } else {
+        rollControl?.disable();
+        rollControl?.reset();
+      }
+    });
+  }
+
+  get isClassSelected(): boolean {
+    const classId = this.studentForm.get('classId')?.value;
+    return classId !== '' && classId !== null && classId !== undefined;
+  }
+
+  onPhoneNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Remove any non-digit characters
+    input.value = input.value.replace(/[^0-9]/g, '');
+    // Limit to 10 digits
+    if (input.value.length > 10) {
+      input.value = input.value.slice(0, 10);
+    }
+    // Update the form control value
+    this.studentForm.get('phoneNumber')?.setValue(input.value, { emitEvent: false });
   }
 
   loadNextRollNumber(): void {
