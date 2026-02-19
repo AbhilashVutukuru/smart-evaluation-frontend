@@ -330,6 +330,41 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* ✅ Info Group - Display items side by side */
+.info-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 50px;
+  flex: 1;
+}
+
+/* ✅ Info Column - For table-like layout */
+.info-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 120px;
+}
+
+.info-column strong {
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-column span {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.status-badges {
+  display: flex;
+  gap: 8px;
+}
+
 .info-item {
   display: flex;
   align-items: center;

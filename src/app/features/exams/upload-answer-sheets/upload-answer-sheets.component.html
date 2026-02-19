@@ -272,6 +272,7 @@
                   [id]="'absent-' + student.studentId"
                   [checked]="student.isAbsent"
                   (change)="toggleAbsent(student)"
+                  [disabled]="isEvaluationCompleted && student.isAbsent"
                   class="custom-checkbox"
                 />
                 <label
@@ -307,7 +308,7 @@
       <button
         class="btn btn-success btn-lg"
         (click)="submitAllStudents()"
-        [disabled]="pendingCount === 0 || loading"
+        [disabled]="!canEvaluate || loading || isEvaluationCompleted"
       >
         <i class="fas fa-paper-plane"></i> Submit All
       </button>
