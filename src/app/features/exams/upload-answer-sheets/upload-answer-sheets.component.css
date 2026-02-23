@@ -443,7 +443,7 @@
 
 .text-muted {
   color: #9ca3af;
-  font-style: italic;
+  font-style: normal;
 }
 
 .text-center {
@@ -606,5 +606,43 @@
   .btn-lg {
     width: 100%;
     justify-content: center;
-  }
+  }  
+}
+
+.table thead th:nth-child(7),
+.table tbody td:nth-child(7),
+.table thead th:nth-child(8),
+.table tbody td:nth-child(8) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.form-check {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.download-link {
+  color: #6366f1;
+  font-weight: 600;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer !important;
+  pointer-events: auto !important; /* Force interaction */
+  user-select: none;               /* Optional: prevents text highlight on double-click */
+}
+
+.download-link * {
+  cursor: pointer !important;   /* 👈 Also force icon */
+}
+
+.download-link.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: not-allowed;
 }

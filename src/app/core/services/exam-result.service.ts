@@ -3,13 +3,14 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { delay, catchError, map } from 'rxjs/operators';
 import { StudentInfo, ExamResult, ExamQuestion } from '../models/exam-result';
-
-const API_URL = 'http://localhost:5163/api';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExamResultService {
+
+   private readonly apiUrl = environment.apiUrl;
   constructor(private http: HttpClient) {}
 
   // Get students from API
@@ -19,7 +20,7 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
   ): Observable<StudentInfo[]> {
-    const url = `${API_URL}/exam-result/students?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+    const url = `${this.apiUrl}/exam-result/students?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
     return this.http.get<any>(url).pipe(
       map((response) => {
         if (response && response.data) {
@@ -41,7 +42,7 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
   ): Observable<ExamResult> {
-    const url = `${API_URL}/exam-result/student-details?studentId=${studentId}&classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+    const url = `${this.apiUrl}/exam-result/student-details?studentId=${studentId}&classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
     return this.http.get<any>(url).pipe(
       map((response) => {
         if (response && response.data) {
@@ -63,7 +64,7 @@ export class ExamResultService {
     examTypeId: number,
     questionNumber: number,
   ): Observable<ExamQuestion> {
-    const url = `${API_URL}/exam-result/question-details?studentId=${studentId}&classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}&questionNumber=${questionNumber}`;
+    const url = `${this.apiUrl}/exam-result/question-details?studentId=${studentId}&classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}&questionNumber=${questionNumber}`;
     return this.http.get<any>(url).pipe(
       map((response) => {
         if (response && response.data) {
@@ -87,7 +88,7 @@ export class ExamResultService {
 
     return this.http
       .put<any>(
-        `${API_URL}/exam-result/update-question-marks`,
+        `${this.apiUrl}/exam-result/update-question-marks`,
         {
           studentId: studentId,
           questionNumber: questionNumber,
@@ -115,7 +116,7 @@ export class ExamResultService {
 
     return this.http
       .put<any>(
-        `${API_URL}/exam-result/update-marks`,
+        `${this.apiUrl}/exam-result/update-marks`,
         {
           studentId: studentId,
           marks: questionUpdates,
@@ -155,7 +156,7 @@ export class ExamResultService {
     console.log('API Request:', body);
 
     return this.http
-      .put<any>(`${API_URL}/exam-result/update-question-rubrics`, body, {
+      .put<any>(`${this.apiUrl}/exam-result/update-question-rubrics`, body, {
         headers,
       })
       .pipe(
@@ -174,7 +175,7 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
   ): Observable<Blob> {
-    const url = `${API_URL}/student-answer-sheet/download/${studentId}`;
+    const url = `${this.apiUrl}/student-answer-sheet/download/${studentId}`;
     const params = new HttpParams()
       .set('classId', classId.toString())
       .set('subjectId', subjectId.toString())

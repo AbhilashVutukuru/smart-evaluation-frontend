@@ -1,15 +1,19 @@
 export interface LoginRequest {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface LoginResponse {
-  accessToken: string;
-  refreshToken: string;
-  userName: string;
-  email: string;
-  role: string;
-  requirePasswordChange: boolean; 
+  success: boolean;
+  requirePasswordChange: boolean;
+  accessToken: string; // Will be in HttpOnly cookie
+  refreshToken: string; // Will be in HttpOnly cookie
+  userId?: string; // Optional user info
+  email?: string;
+  role?: string;
+  schoolId?: string;
+  message?: string;
 }
 
 export interface ForgotPasswordRequest {
@@ -17,11 +21,11 @@ export interface ForgotPasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-   email: string; 
+  email: string;
   resetToken: string;
   newPassword: string;
   confirmPassword: string;
-  schoolId:number
+  schoolId: number;
 }
 
 export interface ApiResponse<T = any> {

@@ -1,3 +1,4 @@
+// app.routes.ts - Updated with unauthorized route
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { LayoutComponent } from './shared/components/layout/layout.component';
@@ -8,6 +9,10 @@ export const routes: Routes = [
     redirectTo: '/auth/login',
     pathMatch: 'full',
   },
+  
+  // ============================================================
+  // AUTH ROUTES (No Layout, No Guard)
+  // ============================================================
   {
     path: 'auth/login',
     loadComponent: () =>
@@ -36,6 +41,21 @@ export const routes: Routes = [
         (m) => m.ResetPasswordComponent,
       ),
   },
+  
+  // ============================================================
+  // ✅ UNAUTHORIZED ROUTE (No Layout, No Guard)
+  // ============================================================
+  {
+    path: 'unauthorized',
+    loadComponent: () =>
+      import('./features/auth/unauthorized/unauthorized.component').then(
+        (m) => m.UnauthorizedComponent,
+      ),
+  },
+
+  // ============================================================
+  // PROTECTED ROUTES (With Layout + Auth Guard)
+  // ============================================================
   {
     path: '',
     component: LayoutComponent,
@@ -142,7 +162,8 @@ export const routes: Routes = [
           import('./features/admin/admin-settings/admin-settings.component').then(
             (m) => m.AdminSettingsComponent,
           ),
-      }, {
+      },
+      {
         path: 'results',
         loadComponent: () =>
           import('./features/exams/exam-result/exam-result.component').then(
@@ -151,6 +172,10 @@ export const routes: Routes = [
       },
     ],
   },
+  
+  // ============================================================
+  // WILDCARD ROUTE (Fallback)
+  // ============================================================
   {
     path: '**',
     redirectTo: '/auth/login',

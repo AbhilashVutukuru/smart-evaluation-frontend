@@ -1,3 +1,4 @@
+// login.component.ts - Updated for HttpOnly Cookies
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
@@ -30,7 +31,7 @@ export class LoginComponent {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      rememberMe: [false],
+      rememberMe: [false],  // ✅ Already has Remember Me!
     });
   }
 
@@ -42,32 +43,42 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit(): void {
-    if (this.loginForm.invalid) return;
+onSubmit(): void {
+  if (this.loginForm.invalid) return;
 
-    this.loading = true;
-    this.error = '';
+  this.loading = true;
+  this.error = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          // ✅ FIRST TIME LOGIN
-          if (response.data.requirePasswordChange) {
-            this.router.navigate(['/auth/change-password']); // no sidebar
-          }
-          // ✅ NORMAL LOGIN
-          else {
-            this.router.navigate(['/dashboard']); // with sidebar
-          }
+  this.authService.login(this.loginForm.value).subscribe({
+    next: (response) => {
+      if (response.success && response.data) {
+        console.log('✅ Login successful');
+        
+        // ✅ Update user state from response (NOT from new API call!)
+        this.authService.updateCurrentUser({
+          requirePasswordChange: response.data.requirePasswordChange,
+          accessToken: '',
+          refreshToken: '',
+          userId: response.data.userId,
+          email: response.data.email,
+          role: response.data.role,
+          schoolId: response.data.schoolId,
+          success: false
+        });
+
+        // Navigate
+        if (response.data.requirePasswordChange) {
+          this.router.navigate(['/auth/change-password']);
         } else {
-          this.error = response.message || 'Login failed';
+          this.router.navigate(['/dashboard']);
         }
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Network error. Please try again.';
-        this.loading = false;
-      },
-    });
-  }
+      }
+      this.loading = false;
+    },
+    error: (error) => {
+      this.error = error.error?.message || 'Login failed';
+      this.loading = false;
+    }
+  });
+}
 }

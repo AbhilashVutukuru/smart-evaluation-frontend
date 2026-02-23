@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import {
+  Observable,
+  BehaviorSubject,
+  tap,
+  catchError,
+  throwError,
+  firstValueFrom,
+} from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
+import { LoggerService } from './logger.service'; 
 import {
   LoginRequest,
   LoginResponse,
@@ -10,19 +18,6 @@ import {
   ResetPasswordRequest,
   ApiResponse,
 } from '../models/auth.model';
-
-interface DecodedToken {
-    'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier': string;
-  'UserId': string;
-  'schoolId': string;
-  'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress': string;
-  'http://schemas.microsoft.com/ws/2008/06/identity/claims/role': string;
-  'jti': string;
-  'exp': number;
-  'iss': string;
-  'aud': string;
-  [key: string]: any;
-}
 
 @Injectable({
   providedIn: 'root',
@@ -36,80 +31,132 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-  ) {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      this.currentUserSubject.next(JSON.parse(storedUser));
-      this.startRefreshTokenTimer();
+    private logger: LoggerService,
+  ) {}
+
+  // ============================================================
+  // ✅ Initialize - Called by APP_INITIALIZER
+  // ============================================================
+   async initialize(): Promise<void> {
+    try {
+      
+      const response = await firstValueFrom(
+        this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, {
+          withCredentials: true,
+        }),
+      );
+
+      if (response.success && response.data) {
+        this.logger.info('Session restored');
+        this.currentUserSubject.next({
+          requirePasswordChange: false,
+          accessToken: '',
+          refreshToken: '',
+          ...response.data
+        });
+        this.startRefreshTokenTimer();
+      }
+    } catch (error: any) {
+      this.logger.info('No active session');
+      this.currentUserSubject.next(null);
     }
   }
 
+//  async initialize(): Promise<void> {
+//   try {
+//     console.log('🔄 [INITIALIZE] Calling /auth/me...');
+
+//     const response = await firstValueFrom(
+//       this.http.get<ApiResponse<any>>(
+//         `${this.apiUrl}/auth/me`,
+//         { withCredentials: true }
+//       )
+//     );
+
+//     if (response.success && response.data) {
+//       console.log('✅ Session restored:', response.data.email);
+
+//       this.currentUserSubject.next({
+//         requirePasswordChange: false,
+//         accessToken: '',
+//         refreshToken: '',
+//         ...response.data
+//       });
+
+//       this.startRefreshTokenTimer();
+//     } else {
+//       this.currentUserSubject.next(null);
+//     }
+//   } catch (error) {
+//     console.log('❌ No active session');
+//     this.currentUserSubject.next(null);
+//   }
+// }
+
+  // ============================================================
+  // ✅ Login
+  // ============================================================
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
     return this.http
-      .post<
-        ApiResponse<LoginResponse>
-      >(`${this.apiUrl}/auth/login`, credentials)
+      .post<ApiResponse<LoginResponse>>(
+        `${this.apiUrl}/auth/login`,
+        credentials,
+        { withCredentials: true }
+      )
       .pipe(
         tap((response) => {
           if (response.success && response.data) {
-            // Store tokens first
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
-            localStorage.setItem('accessToken', response.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken);
-            this.currentUserSubject.next(response.data);
-
-            // Check if password change required AFTER storing tokens
-            // if (response.data.requirePasswordChange) {
-            //   this.router.navigate(['/auth/change-password']); // No sidebar route
-            //   return;
-            // }
+            this.logger.info('Login successful');
             this.currentUserSubject.next(response.data);
             this.startRefreshTokenTimer();
           }
         }),
+        catchError((error) => {
+          this.logger.error('Login failed', error);
+          return throwError(() => error);
+        })
       );
   }
 
+  // ============================================================
+  // ✅ Refresh Token
+  // ============================================================
   refreshToken(): Observable<ApiResponse<LoginResponse>> {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      this.logout();
-      return throwError(() => new Error('No refresh token'));
-    }
-
     return this.http
-      .post<
-        ApiResponse<LoginResponse>
-      >(`${this.apiUrl}/auth/refresh`, { refreshToken })
+      .post<ApiResponse<LoginResponse>>(
+        `${this.apiUrl}/auth/refresh-token`,
+        {},
+        { withCredentials: true }
+      )
       .pipe(
         tap((response) => {
           if (response.success && response.data) {
-            localStorage.setItem('currentUser', JSON.stringify(response.data));
-            localStorage.setItem('accessToken', response.data.accessToken);
-            localStorage.setItem('refreshToken', response.data.refreshToken);
+            this.logger.info('Token refreshed');
             this.currentUserSubject.next(response.data);
             this.startRefreshTokenTimer();
           }
         }),
         catchError((error: HttpErrorResponse) => {
+          this.logger.error('Token refresh failed', error);
           this.logout();
           return throwError(() => error);
         }),
       );
   }
 
+  // ============================================================
+  // ✅ Auto-Refresh Timer
+  // ============================================================
   private startRefreshTokenTimer() {
-    const token = this.getToken();
-    if (!token) return;
-
-    // Parse JWT to get expiry
-    const jwtToken = JSON.parse(atob(token.split('.')[1]));
-    const expires = new Date(jwtToken.exp * 1000);
-    const timeout = expires.getTime() - Date.now() - 60 * 1000; // Refresh 1 min before expiry
-
-    this.refreshTokenTimeout = setTimeout(() => {
-      this.refreshToken().subscribe();
-    }, timeout);
+    this.stopRefreshTokenTimer();
+    // Refresh every 50 minutes (token expires in 1 hour)
+    this.refreshTokenTimeout = setTimeout(
+      () => {
+        this.logger.info('Auto-refreshing token...');
+        this.refreshToken().subscribe();
+      },
+      50 * 60 * 1000,
+    );
   }
 
   private stopRefreshTokenTimer() {
@@ -118,6 +165,30 @@ export class AuthService {
     }
   }
 
+  // ============================================================
+  // ✅ Logout
+  // ============================================================
+   logout(): void {
+    this.logger.info('Logging out...');
+    this.stopRefreshTokenTimer();
+    
+    this.http
+      .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
+      .subscribe({
+        complete: () => {
+          this.currentUserSubject.next(null);
+          this.router.navigate(['/auth/login']);
+        },
+        error: () => {
+          this.currentUserSubject.next(null);
+          this.router.navigate(['/auth/login']);
+        },
+      });
+  }
+
+  // ============================================================
+  // Password Management
+  // ============================================================
   forgotPassword(request: ForgotPasswordRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/auth/forgot-password`,
@@ -136,187 +207,86 @@ export class AuthService {
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/auth/change-password`,
       data,
+      { withCredentials: true },
     );
   }
 
-  updateCurrentUser(user: LoginResponse): void {
-    this.currentUserSubject.next(user);
+  // ============================================================
+  // Get Current User
+  // ============================================================
+  getCurrentUser(): Observable<ApiResponse<any>> {
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, {
+      withCredentials: true,
+    });
   }
 
-  logout(): void {
-    this.stopRefreshTokenTimer();
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    this.currentUserSubject.next(null);
-    this.router.navigate(['/auth/login']);
-  }
-
-  getToken(): string | null {
-    return localStorage.getItem('accessToken');
-  }
-
-  getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
-  }
-
+  // ============================================================
+  // Helper Methods
+  // ============================================================
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    return !!this.currentUserValue;
   }
 
   get currentUserValue(): LoginResponse | null {
     return this.currentUserSubject.value;
   }
 
-  // ============================================================
-  // ✅ NEW: ROLE-BASED METHODS
-  // ============================================================
-
-  /**
-   * Decode JWT token and extract claims
-   */
-  private decodeToken(): DecodedToken | null {
-    const token = this.getToken();
-    if (!token) return null;
-
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join(''),
-      );
-      return JSON.parse(jsonPayload);
-    } catch (error) {
-      console.error('Error decoding token:', error);
-      return null;
-    }
+  updateCurrentUser(user: LoginResponse): void {
+    console.log('📝 Updating current user');
+    this.currentUserSubject.next(user);
   }
 
-  /**
-   * Get user role from JWT token
-   */
   getUserRole(): string | null {
-    const decoded = this.decodeToken();
-    if (!decoded) return null;
-
-    // Your JWT uses this claim path for role
-    return (
-      decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ||
-      null
-    );
+    return this.currentUserValue?.role || null;
   }
 
-  /**
-   * Check if user is Admin
-   */
   isAdmin(): boolean {
     return this.getUserRole() === 'Admin';
   }
 
-  /**
-   * Check if user is Teacher
-   */
   isTeacher(): boolean {
     return this.getUserRole() === 'Teacher';
   }
 
-  /**
-   * Check if user is Student
-   */
   isStudent(): boolean {
     return this.getUserRole() === 'Student';
   }
 
-  /**
-   * Check if user has specific role
-   */
   hasRole(role: string): boolean {
     return this.getUserRole() === role;
   }
 
-  /**
-   * Check if user has any of the specified roles
-   */
   hasAnyRole(roles: string[]): boolean {
     const userRole = this.getUserRole();
     return userRole ? roles.includes(userRole) : false;
   }
 
-  /**
-   * Get user ID from JWT token
-   */
   getUserId(): string | null {
-    const decoded = this.decodeToken();
-    return decoded?.UserId || null;
-  }  
+    return this.currentUserValue?.userId?.toString() || null;
+  }
 
-  getNameIdentifier(): string | null {
-  const decoded = this.decodeToken();
-  return decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || null;
-}
-
-  /**
-   * Get school ID from JWT token
-   */
   getSchoolId(): string | null {
-    const decoded = this.decodeToken();
-    return decoded?.schoolId || null;
+    return this.currentUserValue?.schoolId?.toString() || null;
   }
 
-  /**
-   * Get user email from JWT token
-   */
   getUserEmail(): string | null {
-    const decoded = this.decodeToken();
-   if (!decoded) return null;
-    // Your JWT uses this claim for email
-  return decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'] || null;
-  }
-
-  /**
-   * Check if token is expired
-   */
-  isTokenExpired(): boolean {
-    const decoded = this.decodeToken();
-    if (!decoded || !decoded.exp) return true;
-
-    const currentTime = Math.floor(Date.now() / 1000);
-    return decoded.exp < currentTime;
-  }
-
-  /**
-   * Get token expiration date
-   */
-  getTokenExpiration(): Date | null {
-    const decoded = this.decodeToken();
-    if (!decoded || !decoded.exp) return null;
-
-    return new Date(decoded.exp * 1000);
+    return this.currentUserValue?.email || null;
   }
 
   getUserName(): string | null {
     const email = this.getUserEmail();
-  if (!email) return null;
-
-   return email.split('@')[0];
+    return email ? email.split('@')[0] : null;
   }
 
   getUserDisplayName(): string | null {
     const name = this.getUserName();
     if (!name) return null;
-
-     const cleanName = name
-    .replace(/[0-9]/g, '') // Remove numbers: venkatlearning2025 → venkatlearning
-    .replace(/[._-]/g, ' ') // Replace separators with space
-    .trim();
-
-  // Capitalize first letter of each word
-  return cleanName
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    return name
+      .replace(/[0-9]/g, '')
+      .replace(/[._-]/g, ' ')
+      .trim()
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
   }
 }

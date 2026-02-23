@@ -2,42 +2,37 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { delay, catchError, map } from 'rxjs/operators';
-import { 
-  Exam, 
-  QuestionSet, 
+import {
+  Exam,
+  QuestionSet,
   ApiRequest,
   ExamFormData,
-  ExamFilters
-} from "../models/exam";
-import { Class, SubjectItem, ExamType, Section } from '../../shared/models/common';
-
-const API_URL = 'http://localhost:5163/api';
+  ExamFilters,
+} from '../models/exam';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CreateExamService {
-  constructor(
-    private http: HttpClient
-  ) {}
-
- 
+  private readonly apiUrl = environment.apiUrl;
+  constructor(private http: HttpClient) {}
 
   getMockExams(filters: ExamFilters): Observable<Exam[]> {
     const { filterExamClass, filterExamSubject, filterExamExamType } = filters;
-    
+
     if (!filterExamClass || !filterExamSubject || !filterExamExamType) {
       return of([]);
     }
-    
+
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
     });
-    
+
     // Call API to get exams based on filters
     return this.http.get<any>(
-      `${API_URL}/question-papers?classId=${filterExamClass}&subjectId=${filterExamSubject}&examTypeId=${filterExamExamType}`,
+      `${this.apiUrl}/question-papers?classId=${filterExamClass}&subjectId=${filterExamSubject}&examTypeId=${filterExamExamType}`,
       { headers }
     ).pipe(
       map((response: any) => {
@@ -58,27 +53,30 @@ export class CreateExamService {
     );
   }
 
-  generateQuestionSets(numberOfQuestions: number, totalMarks: number): QuestionSet[] {
+  generateQuestionSets(
+    numberOfQuestions: number,
+    totalMarks: number,
+  ): QuestionSet[] {
     const questionSets: QuestionSet[] = [];
     const marksPerQuestion = Math.floor(totalMarks / numberOfQuestions);
     const remainder = totalMarks % numberOfQuestions;
-    
+
     for (let i = 0; i < numberOfQuestions; i++) {
       let questionMarks = marksPerQuestion;
       if (i < remainder) {
         questionMarks += 1;
       }
-      
+
       questionSets.push({
         questionNumber: i + 1,
         questionText: '',
         answerText: '',
         maxMarks: questionMarks,
         validationRulesCount: 1,
-        rubricPoints: [{ description: '', marks: null }]
+        rubricPoints: [{ description: '', marks: null }],
       });
     }
-    
+
     return questionSets;
   }
 
@@ -96,13 +94,21 @@ export class CreateExamService {
 
   validateMarksMatch(questionSet: QuestionSet): boolean {
     if (!questionSet.maxMarks) return false;
-    return questionSet.maxMarks === this.calculateValidationMarksTotal(questionSet);
+    return (
+      questionSet.maxMarks === this.calculateValidationMarksTotal(questionSet)
+    );
   }
 
-  validateQuestionSet(questionSet: QuestionSet): { isValid: boolean; errors: string[] } {
+  validateQuestionSet(questionSet: QuestionSet): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
 
-    if (!questionSet.questionText || questionSet.questionText.trim().length === 0) {
+    if (
+      !questionSet.questionText ||
+      questionSet.questionText.trim().length === 0
+    ) {
       errors.push('Question text field is required');
     }
     if (!questionSet.answerText || questionSet.answerText.trim().length === 0) {
@@ -111,38 +117,49 @@ export class CreateExamService {
     if (!questionSet.maxMarks || questionSet.maxMarks <= 0) {
       errors.push('Maximum marks field is required and must be greater than 0');
     }
-    if (!questionSet.validationRulesCount || questionSet.validationRulesCount < 1) {
+    if (
+      !questionSet.validationRulesCount ||
+      questionSet.validationRulesCount < 1
+    ) {
       errors.push('Validation rules count is required');
     }
-    
+
     const invalidRules = questionSet.rubricPoints.filter(
-      (rule) => !rule.description || rule.description.trim().length === 0 || rule.marks === null || rule.marks < 0
+      (rule) =>
+        !rule.description ||
+        rule.description.trim().length === 0 ||
+        rule.marks === null ||
+        rule.marks < 0,
     );
-    
+
     if (invalidRules.length > 0) {
       invalidRules.forEach((rule) => {
         const ruleNum = questionSet.rubricPoints.indexOf(rule) + 1;
         if (!rule.description || rule.description.trim().length === 0) {
-          errors.push(`Validation Rule ${ruleNum}: Description field is required`);
+          errors.push(
+            `Validation Rule ${ruleNum}: Description field is required`,
+          );
         }
         if (rule.marks === null || rule.marks < 0) {
-          errors.push(`Validation Rule ${ruleNum}: Marks field is required and must be >= 0`);
+          errors.push(
+            `Validation Rule ${ruleNum}: Marks field is required and must be >= 0`,
+          );
         }
       });
     }
 
     return {
       isValid: errors.length === 0,
-      errors: errors
+      errors: errors,
     };
   }
 
   prepareApiRequest(formData: ExamFormData): ApiRequest {
-    const apiQuestions = formData.questionSets.map(questionSet => {
+    const apiQuestions = formData.questionSets.map((questionSet) => {
       const rubrics = questionSet.rubricPoints.map((rule, index) => ({
         criterionOrder: index + 1,
         rubricText: rule.description,
-        maxMarks: rule.marks || 0
+        maxMarks: rule.marks || 0,
       }));
 
       return {
@@ -150,7 +167,7 @@ export class CreateExamService {
         questionText: questionSet.questionText,
         maxMarks: questionSet.maxMarks || 0,
         answerText: questionSet.answerText,
-        rubrics: rubrics
+        rubrics: rubrics,
       };
     });
 
@@ -159,93 +176,107 @@ export class CreateExamService {
       subjectId: parseInt(formData.subjectId) || 0,
       examTypeId: parseInt(formData.examTypeId) || 0,
       totalMarks: formData.totalMarks || 0,
-      questions: apiQuestions
+      questions: apiQuestions,
     };
   }
 
   uploadExam(apiRequest: ApiRequest): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     });
-    
-    return this.http.post(`${API_URL}/question-paper/upload`, apiRequest, { headers }).pipe(
-      catchError(error => {
-        console.error('Upload error:', error);
-        throw error;
-      })
-    );
+
+    return this.http
+      .post(`${this.apiUrl}/question-paper/upload`, apiRequest, { headers })
+      .pipe(
+        catchError((error) => {
+          console.error('Upload error:', error);
+          throw error;
+        }),
+      );
   }
 
   updateExam(examId: number, apiRequest: ApiRequest): Observable<any> {
     const headers = new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      Authorization: `Bearer ${localStorage.getItem('token')}`,
     });
-    
-    return this.http.put(`${API_URL}/exams/${examId}`, apiRequest, { headers }).pipe(
-      catchError(error => {
-        console.error('Update error:', error);
-        throw error;
-      })
-    );
+
+    return this.http
+      .put(`${this.apiUrl}/exams/${examId}`, apiRequest, { headers })
+      .pipe(
+        catchError((error) => {
+          console.error('Update error:', error);
+          throw error;
+        }),
+      );
   }
 
-  validateExamForm(formData: ExamFormData): { isValid: boolean; errors: string[] } {
+  validateExamForm(formData: ExamFormData): {
+    isValid: boolean;
+    errors: string[];
+  } {
     const errors: string[] = [];
-    
+
     if (!formData.classId) {
       errors.push('Class is required');
       return { isValid: false, errors };
     }
-    
+
     if (!formData.subjectId) {
       errors.push('Subject is required');
       return { isValid: false, errors };
     }
-    
+
     if (!formData.examTypeId) {
       errors.push('Exam type is required');
       return { isValid: false, errors };
     }
-    
+
     if (!formData.numberOfQuestions || formData.numberOfQuestions < 1) {
       errors.push('Please enter a valid number of questions (minimum 1)');
       return { isValid: false, errors };
     }
-    
+
     if (!formData.totalMarks || formData.totalMarks < 1) {
       errors.push('Total marks is required and must be greater than 0');
       return { isValid: false, errors };
     }
-    
+
     // Check total marks match
-    const totalQuestionMarks = this.calculateTotalQuestionMarks(formData.questionSets);
+    const totalQuestionMarks = this.calculateTotalQuestionMarks(
+      formData.questionSets,
+    );
     if (totalQuestionMarks !== formData.totalMarks) {
-      errors.push(`Sum of all question marks (${totalQuestionMarks}) must equal total exam marks (${formData.totalMarks})`);
+      errors.push(
+        `Sum of all question marks (${totalQuestionMarks}) must equal total exam marks (${formData.totalMarks})`,
+      );
       return { isValid: false, errors };
     }
-    
+
     // Validate each question
     for (let index = 0; index < formData.questionSets.length; index++) {
       const question = formData.questionSets[index];
       const questionValidation = this.validateQuestionSet(question);
-      
+
       if (!questionValidation.isValid) {
         errors.push(`Question ${index + 1}: ${questionValidation.errors[0]}`);
         return { isValid: false, errors };
       }
-      
+
       if (!this.validateMarksMatch(question)) {
-        const totalValidationMarks = this.calculateValidationMarksTotal(question);
-        errors.push(`Question ${index + 1}: Validation marks (${totalValidationMarks}) don't match question marks (${question.maxMarks})`);
+        const totalValidationMarks =
+          this.calculateValidationMarksTotal(question);
+        errors.push(
+          `Question ${index + 1}: Validation marks (${totalValidationMarks}) don't match question marks (${question.maxMarks})`,
+        );
         return { isValid: false, errors };
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
-      errors: errors
+      errors: errors,
     };
   }
 
@@ -257,7 +288,7 @@ export class CreateExamService {
         lastName: 'Teacher',
         email: 'teacher@school.edu',
         userId: 1,
-        role: 'Teacher'
+        role: 'Teacher',
       };
       localStorage.setItem('userInfo', JSON.stringify(defaultUser));
       return defaultUser;

@@ -49,7 +49,9 @@
       </div>
 
       <div class="col-md-3 mb-3">
-        <label class="form-label">Section <span class="required">*</span></label>
+        <label class="form-label"
+          >Section <span class="required">*</span></label
+        >
         <select
           class="form-control"
           [(ngModel)]="filters.sectionId"
@@ -66,7 +68,9 @@
       </div>
 
       <div class="col-md-3 mb-3">
-        <label class="form-label">Subject <span class="required">*</span></label>
+        <label class="form-label"
+          >Subject <span class="required">*</span></label
+        >
         <select
           class="form-control"
           [(ngModel)]="filters.subjectId"
@@ -83,8 +87,15 @@
       </div>
 
       <div class="col-md-3 mb-3">
-        <label class="form-label">Exam Type <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="filters.examTypeId" [disabled]="!filters.classId" (change)="validateFilters()">
+        <label class="form-label"
+          >Exam Type <span class="required">*</span></label
+        >
+        <select
+          class="form-control"
+          [(ngModel)]="filters.examTypeId"
+          [disabled]="!filters.classId"
+          (change)="validateFilters()"
+        >
           <option value="">Select Exam Type</option>
           <option *ngFor="let exam of examTypes" [value]="exam.id">
             {{ exam.examTypeName }}
@@ -106,15 +117,15 @@
   </div>
 
   <div
-  class="card"
-  *ngIf="showStudentsCard && students && students.length === 0 && !loading"
->
-   <div class="empty-state">
+    class="card"
+    *ngIf="showStudentsCard && students && students.length === 0 && !loading"
+  >
+    <div class="empty-state">
       <i class="fas fa-users-slash"></i>
       <h5>No Students Found</h5>
       <p>No students found for the selected exam details.</p>
     </div>
-</div>
+  </div>
 
   <!-- Students Table -->
   <div class="card" *ngIf="showStudentsCard && students.length > 0">
@@ -208,16 +219,13 @@
             </td>
             <td>
               <!-- Uploaded → Show document name -->
-              <span
-                    *ngIf="student.isUploaded"
-                  class="text-success"
-                >
-                  <i class="fas fa-file-pdf"></i> {{ student.fileName || 'PDF' }}
-                </span>
+              <span *ngIf="student.isUploaded" class="text-success">
+                <i class="fas fa-file-pdf"></i> {{ student.fileName || "PDF" }}
+              </span>
 
-                <!-- Absent → N/A -->
-                <span
-                  *ngIf="!student.isUploaded && student.isAbsent"
+              <!-- Absent → N/A -->
+              <span
+                *ngIf="!student.isUploaded && student.isAbsent"
                 class="text-muted"
               >
                 N/A
@@ -240,16 +248,19 @@
                 <label
                   [for]="'file-' + student.studentId"
                   class="btn btn-sm btn-outline-primary"
-                   [class.disabled]="student.isUploading || student.isAbsent"
+                  [class.disabled]="student.isUploading || student.isAbsent"
                 >
-                    <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
-                    {{ student.isUploading ? "Uploading..." : "Upload" }}
+                  <i
+                    [class]="
+                      student.isUploading
+                        ? 'fas fa-spinner fa-spin'
+                        : 'fas fa-upload'
+                    "
+                  ></i>
+                  {{ student.isUploading ? "Uploading..." : "Upload" }}
                 </label>
 
-                <small
-                  *ngIf="student.answerSheetFile"
-                  class="file-name"
-                >
+                <small *ngIf="student.answerSheetFile" class="file-name">
                   <i class="fas fa-file-pdf"></i>
                   {{ student.answerSheetFile.name }}
                 </small>
@@ -257,16 +268,11 @@
             </td>
 
             <td>
-             <!-- After upload → Show N/A -->
-              <span
-                *ngIf="student.isUploaded"
-                class="text-muted"
-              >
-                N/A
-              </span>
+              <!-- After upload → Show N/A -->
+              <span *ngIf="student.isUploaded" class="text-muted"> N/A </span>
 
-               <!-- Before upload → Show checkbox -->
-                <div *ngIf="!student.isUploaded" class="form-check">
+              <!-- Before upload → Show checkbox -->
+              <div *ngIf="!student.isUploaded" class="form-check">
                 <input
                   type="checkbox"
                   [id]="'absent-' + student.studentId"
@@ -285,13 +291,24 @@
             </td>
 
             <td>
-              <button
-                class="btn btn-sm btn-info"
+              <a
                 *ngIf="student.isUploaded"
-                title="View Details"
+                href="#"
+                class="download-link"
+                [class.disabled]="loading"
+                (click)="
+                  !loading && downloadAnswerSheet(student);
+                  $event.preventDefault()
+                "
               >
-                <i class="fas fa-eye"></i>
-              </button>
+                <i
+                  [class]="
+                    loading ? 'fas fa-spinner fa-spin' : 'fas fa-download'
+                  "
+                ></i>
+
+                {{ loading ? "Downloading..." : "Download" }}
+              </a>
             </td>
           </tr>
           <!-- <tr *ngIf="students.length === 0">
