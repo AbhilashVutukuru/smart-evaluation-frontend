@@ -12,6 +12,8 @@ import {
   SubjectDto,
 } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { RouterModule } from '@angular/router';
+import { ExamResultService } from '../../../core/services/exam-result.service';
 
 interface StudentUploadStatus {
   studentId: number;
@@ -29,7 +31,7 @@ interface StudentUploadStatus {
 @Component({
   selector: 'app-upload-student-marks',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './upload-answer-sheets.component.html',
   styleUrls: ['./upload-answer-sheets.component.css'],
 })
@@ -39,6 +41,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
   private authService = inject(AuthService);
   private masterDataService = inject(MasterDataService);
   private toastService = inject(ToastService);
+  private examResultService = inject(ExamResultService);
 
   // Filters
   filters = {
@@ -54,10 +57,10 @@ export class UploadAnswerSheetsComponent implements OnInit {
   subjects: SubjectDto[] = [];
   examTypes: ExamTypeDto[] = [];
 
-  selectedClass: string = '';
-  selectedSection: string = '';
-  selectedSubject: string = '';
-  selectedExamType: string = '';
+  // selectedClass: string = '';
+  // selectedSection: string = '';
+  // selectedSubject: string = '';
+  // selectedExamType: string = '';
 
   students: StudentUploadStatus[] = [];
   showStudentsCard = false;
@@ -109,9 +112,9 @@ export class UploadAnswerSheetsComponent implements OnInit {
 
   onClassChange(classId: string): void {
     // Reset dependent dropdowns
-    this.selectedSection = '';
-    this.selectedSubject = '';
-    this.selectedExamType = '';
+    // this.selectedSection = '';
+    // this.selectedSubject = '';
+    // this.selectedExamType = '';
     this.sections = [];
     this.subjects = [];
     this.examTypes = [];
@@ -126,8 +129,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (sections) => {
         this.sections = sections;
       },
-      error: (error) => {   
-         this.error = error.error?.message || 'Failed to load sections';    
+      error: (error) => {
+        this.error = error.error?.message || 'Failed to load sections';
       },
     });
 
@@ -136,8 +139,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (subjects) => {
         this.subjects = subjects;
       },
-      error: (error) => {    
-        this.error = error.error?.message || 'Failed to load subjects';  
+      error: (error) => {
+        this.error = error.error?.message || 'Failed to load subjects';
       },
     });
 
@@ -146,8 +149,8 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (examTypes) => {
         this.examTypes = examTypes;
       },
-      error: (error) => {       
-             this.error = error.error?.message || 'Failed to load exam types';  
+      error: (error) => {
+        this.error = error.error?.message || 'Failed to load exam types';
       },
     });
   }
@@ -160,15 +163,22 @@ export class UploadAnswerSheetsComponent implements OnInit {
     this.isEvaluationCompleted = false; // ✅ Reset evaluation status
     this.filters.absentStudentIds = []; // ✅ Clear absent students list when loading new students
 
-    if (!this.filters.classId ||!this.filters.sectionId ||!this.filters.subjectId ||!this.filters.examTypeId) 
-     {
-      this.error ='Please select all required fields';    
+    if (
+      !this.filters.classId ||
+      !this.filters.sectionId ||
+      !this.filters.subjectId ||
+      !this.filters.examTypeId
+    ) {
+      this.error = 'Please select all required fields';
       this.loading = false;
       return;
-    }  
+    }
 
     this.studentAnswerService
-      .getStudentsWithUploadStatus(+this.filters.classId,+this.filters.sectionId,+this.filters.subjectId,  
+      .getStudentsWithUploadStatus(
+        +this.filters.classId,
+        +this.filters.sectionId,
+        +this.filters.subjectId,
         +this.filters.examTypeId,
       )
       .subscribe({
@@ -189,33 +199,37 @@ export class UploadAnswerSheetsComponent implements OnInit {
                   !s.status?.toLowerCase().includes('not'),
                 fileName: s.fileName || s.documentName || '',
               }));
-              
+
               // ✅ Populate absentStudentIds with students already marked as absent
               this.filters.absentStudentIds = this.students
-                .filter(student => student.isAbsent)
-                .map(student => student.studentId);
+                .filter((student) => student.isAbsent)
+                .map((student) => student.studentId);
+
+              if (response.data.pendingCount == 0) {
+                this.isEvaluationCompleted = true;
+              }
             }
             this.showStudentsCard = true;
           }
           this.loading = false;
         },
         error: (error) => {
-          this.error = error.error?.message || 'Failed to load students';          
+          this.error = error.error?.message || 'Failed to load students';
           this.loading = false;
         },
       });
   }
 
   validateFilters(): void {
-  if (
-    this.filters.classId &&
-    this.filters.sectionId &&
-    this.filters.subjectId &&
-    this.filters.examTypeId
-  ) {
-    this.error = '';
+    if (
+      this.filters.classId &&
+      this.filters.sectionId &&
+      this.filters.subjectId &&
+      this.filters.examTypeId
+    ) {
+      this.error = '';
+    }
   }
-}
 
   onFileSelected(event: any, student: StudentUploadStatus): void {
     const file = event.target.files[0];
@@ -310,5 +324,50 @@ export class UploadAnswerSheetsComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  downloadAnswerSheet(student: any): void {
+    if (!student) {
+      this.toastService.showWarning('Warning', 'No student selected');
+      return;
+    }
+
+    this.loading = true;
+
+    this.examResultService
+      .downloadStudentAnswerSheet(
+        student.studentId,
+        parseInt(this.filters.classId),
+        parseInt(this.filters.subjectId),
+        parseInt(this.filters.examTypeId),
+      )
+      .subscribe({
+        next: (blob: Blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `${student.studentName}_AnswerSheet.pdf`;
+
+          document.body.appendChild(link);
+          link.click();
+
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+
+          this.loading = false;
+          this.toastService.showSuccess(
+            'Success',
+            'Answer sheet downloaded successfully',
+          );
+        },
+        error: (error) => {
+          this.loading = false;
+          console.error('Download error:', error);
+          this.toastService.showError(
+            'Error',
+            error.error?.message || 'Failed to download answer sheet',
+          );
+        },
+      });
   }
 }

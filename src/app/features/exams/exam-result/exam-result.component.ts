@@ -486,10 +486,7 @@ export class ExamResultsComponent implements OnInit {
     if (this.currentQuestionIndex < this.totalQuestions - 1) {
       setTimeout(() => this.nextQuestion(), 500);
     }
-  }
-
-
-  
+  }  
 
   saveAndPrevious(): void {
     if (this.hasValidationError(this.currentQuestion!)) {

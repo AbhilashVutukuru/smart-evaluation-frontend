@@ -10,7 +10,7 @@ import { AuthService } from '../../core/services/auth.service';
     <div class="dashboard-container">
       <div class="dashboard-header">
         <h1>Dashboard</h1>
-        <p>Welcome back, {{ currentUser?.userName }}!</p>
+        <!-- <p>Welcome back, {{ currentUser?.userName }}!</p> -->
       </div>
       
       <div class="stats-grid">
