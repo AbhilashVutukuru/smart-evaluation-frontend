@@ -1,3 +1,7 @@
+// ============================================
+// EXAM RESULT INTERFACES
+// ============================================
+
 export interface StudentInfo {
   studentId: number;
   rollNumber: number;
@@ -5,45 +9,41 @@ export interface StudentInfo {
   displayText: string;
   hasUploaded: boolean;
   isAbsent: boolean;
-}
-
-export interface RubricMarks {
-  questionPaperRubricId?: number;
-  criterion?: string;
-  name?: string;
-  marksGiven: number;
-  maxMarks: number;
-  marksAssignedBySystem?: number;
-  marksAssignedByTeacher?: number;
-  remarks?: string;
+  totalMarks?: number;
+  obtainedMarks?: number;
+  marksObtained?: number;
+  evaluationStatus?: string;
+  documentUrl?: string;
+  fileName?: string;
+  documentName?: string;
+  className?: string;
+  sectionName?: string;
 }
 
 export interface Rubric {
-  // Primary ID properties (add these if missing)
+  // Primary ID
   questionPaperRubricId?: number;
-  id?: number;  // ✅ ADD THIS - Sometimes API returns 'id' instead
-  QuestionPaperRubricId?: number;  // ✅ ADD THIS - PascalCase from API
+  id?: number;
   
-  // Name/Criterion properties
+  // Name/Criterion
   name?: string;
   criterion?: string;
-  Criterion?: string;  // ✅ ADD THIS - PascalCase from API
   
-  // Marks properties
+  // Marks
   maxMarks: number;
-  MaxMarks?: number;  // ✅ ADD THIS - PascalCase from API
-  
   marksGiven: number;
-  MarksGiven?: number;  // ✅ ADD THIS - PascalCase from API
-  
   marksAssignedBySystem?: number;
-  MarksAssignedBySystem?: number;  // ✅ ADD THIS
-  
   marksAssignedByTeacher?: number;
-  MarksAssignedByTeacher?: number;  // ✅ ADD THIS
   
+  // Remarks
   remarks?: string;
-  Remarks?: string;  // ✅ ADD THIS
+  
+  // Editing state (UI only)
+  isEditing?: boolean;
+  isSaving?: boolean; 
+  originalMarksGiven?: number;
+  originalRemarks?: string;
+  teacherModified?: boolean;
 }
 
 export interface ExamQuestion {
@@ -52,8 +52,7 @@ export interface ExamQuestion {
   questionText: string;
   officialAnswer: string;
   maxMarks: number;
-  rubrics?: Rubric[];  // From API
-  rubricMarks?: RubricMarks[];  // Legacy, for backward compatibility
+  rubrics?: Rubric[];
   studentAnswer?: string;
   studentAnswerText?: string;
   marksObtained: number;
@@ -67,9 +66,25 @@ export interface ExamResult {
   totalMarks?: number;
   totalMarksObtained?: number;
   maxMarks?: number;
+  marksObtained?: number;
   evaluationStatus?: string;
   isAbsent?: boolean;
   statusMessage?: string;
   answerPdfUrl?: string;
   questions: ExamQuestion[];
+}
+
+export interface StudentStatistics {
+  totalStudents: number;
+  absentCount: number;
+  evaluatedCount: number;
+  notEvaluatedCount: number;
+}
+
+export interface StudentListResponse {
+  statistics: StudentStatistics;
+  students: StudentInfo[];
+  totalMarks: number;
+  totalQuestions: number;
+  questionNumbers: number[];
 }

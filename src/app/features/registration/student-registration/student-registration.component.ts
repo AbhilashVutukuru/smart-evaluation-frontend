@@ -6,13 +6,10 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
+  AbstractControl,
 } from '@angular/forms';
 import { RegistrationService } from '../../../core/services/registration.service';
-import {
-  ClassDropdown,
-  SectionDropdown,
-} from '../../../core/models/registration.model';
-import { ToastService } from '../../../shared/services/toast.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   ClassDto,
   MasterDataService,
@@ -39,104 +36,196 @@ export class StudentRegistrationComponent implements OnInit {
   private toastService = inject(ToastService);
   private masterDataService = inject(MasterDataService);
 
+  // Loading states
   isDownloading = false;
-  isLoadingClasses = false;
-  isLoadingSections = false;
-
-  studentForm!: FormGroup;
   loading = false;
-  error = '';
-  success = '';
+  uploadProgress = false;
+
+  // Form and data
+  studentForm!: FormGroup;
   showBulkUpload = false;
   bulkClassId: number | null = null;
   bulkSectionId: number | null = null;
 
+  // Dropdown data
   classes: ClassDto[] = [];
   sections: SectionDto[] = [];
+  
+  // File upload
   selectedFile: File | null = null;
-  uploadProgress = false;
   uploadResults: UploadResults | null = null;
+
+  //  Track which fields have been touched/blurred
+  touchedFields: Set<string> = new Set();
+
+  // ============================================
+  // Lifecycle
+  // ============================================
 
   ngOnInit(): void {
     this.initForm();
     this.loadClasses();
-
-    const classControl = this.studentForm.get('classId');
-    const sectionControl = this.studentForm.get('sectionId');
-    const rollControl = this.studentForm.get('rollNumber');
-
-    sectionControl?.valueChanges.subscribe((sectionId) => {
-      const classId = classControl?.value;
-
-      // ✅ Always clear previous roll first
-      rollControl?.reset();
-
-      if (classId && sectionId) {
-        this.loadNextRollNumber();
-      }
-    });
+    this.setupFormListeners();
   }
 
-  initForm(): void {
+  // ============================================
+  // Form Initialization
+  // ============================================
+
+  private initForm(): void {
     this.studentForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       address: ['', Validators.required],
       classId: ['', Validators.required],
       sectionId: [{ value: '', disabled: true }, Validators.required],
       rollNumber: [{ value: '', disabled: true }, Validators.required],
       admissionDate: ['', Validators.required],
     });
+  }
 
+  private setupFormListeners(): void {
+    // Class change handler
     this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      const sectionControl = this.studentForm.get('sectionId');
-      const rollControl = this.studentForm.get('rollNumber');
-      if (classId) {
-        sectionControl?.enable();
-        this.loadSections(classId);
-      } else {
-        sectionControl?.disable();
-        sectionControl?.reset();
-        rollControl?.disable();
-        rollControl?.reset();
-        this.sections = [];
-      }
+      this.onClassChangeHandler(classId);
     });
 
+    // Section change handler
     this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
-      const rollControl = this.studentForm.get('rollNumber');
-      if (sectionId) {
-        rollControl?.enable();
-        this.loadNextRollNumber();
-      } else {
-        rollControl?.disable();
-        rollControl?.reset();
-      }
+      this.onSectionChangeHandler(sectionId);
     });
+  }
+
+  private onClassChangeHandler(classId: string): void {
+    const sectionControl = this.studentForm.get('sectionId');
+    const rollControl = this.studentForm.get('rollNumber');
+
+    if (classId) {
+      sectionControl?.enable();
+      this.loadSections(+classId);
+    } else {
+      sectionControl?.disable();
+      sectionControl?.reset();
+      rollControl?.disable();
+      rollControl?.reset();
+      this.sections = [];
+    }
+  }
+
+  private onSectionChangeHandler(sectionId: string): void {
+    const rollControl = this.studentForm.get('rollNumber');
+    
+    if (sectionId) {
+      rollControl?.enable();
+      this.loadNextRollNumber();
+    } else {
+      rollControl?.disable();
+      rollControl?.reset();
+    }
+  }
+
+  // ============================================
+  //  Field Validation on Blur
+  // ============================================
+
+  onFieldBlur(fieldName: string): void {
+    this.touchedFields.add(fieldName);
+    const control = this.studentForm.get(fieldName);
+    
+    if (control) {
+      control.markAsTouched();
+      control.updateValueAndValidity();
+    }
+  }
+
+  shouldShowError(fieldName: string): boolean {
+    const control = this.studentForm.get(fieldName);
+    return !!(control && control.invalid && (control.touched || this.touchedFields.has(fieldName)));
+  }
+
+  getErrorMessage(fieldName: string): string {
+    const control = this.studentForm.get(fieldName);
+    
+    if (!control || !control.errors) return '';
+
+    if (control.errors['required']) {
+      return `${this.getFieldLabel(fieldName)} is required`;
+    }
+    
+    if (control.errors['email']) {
+      return 'Please enter a valid email address';
+    }
+    
+    if (control.errors['pattern'] && fieldName === 'phoneNumber') {
+      return 'Phone number must be exactly 10 digits';
+    }
+    
+    return 'Invalid value';
+  }
+
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      dateOfBirth: 'Date of Birth',
+      gender: 'Gender',
+      email: 'Email',
+      phoneNumber: 'Phone Number',
+      address: 'Address',
+      classId: 'Class',
+      sectionId: 'Section',
+      rollNumber: 'Roll Number',
+      admissionDate: 'Admission Date',
+    };
+    return labels[fieldName] || fieldName;
+  }
+
+  // ============================================
+  // Input Handlers
+  // ============================================
+
+  onPhoneNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+    this.studentForm.get('phoneNumber')?.setValue(input.value, { emitEvent: false });
   }
 
   get isClassSelected(): boolean {
     const classId = this.studentForm.get('classId')?.value;
-    return classId !== '' && classId !== null && classId !== undefined;
+    return !!classId;
   }
 
-  onPhoneNumberInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    // Remove any non-digit characters
-    input.value = input.value.replace(/[^0-9]/g, '');
-    // Limit to 10 digits
-    if (input.value.length > 10) {
-      input.value = input.value.slice(0, 10);
-    }
-    // Update the form control value
-    this.studentForm.get('phoneNumber')?.setValue(input.value, { emitEvent: false });
+  // ============================================
+  // Load Data Methods
+  // ============================================
+
+  private loadClasses(): void {
+    this.masterDataService.getClasses().subscribe({
+      next: (classes) => {
+        this.classes = classes;
+      },
+      error: (error) => {
+        this.handleError('Failed to load classes', error);
+      },
+    });
   }
 
-  loadNextRollNumber(): void {
+  private loadSections(classId: number): void {
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+      },
+      error: (error) => {
+        this.handleError('Failed to load sections', error);
+      },
+    });
+  }
+
+  private loadNextRollNumber(): void {
     const classId = this.studentForm.get('classId')?.value;
     const sectionId = this.studentForm.get('sectionId')?.value;
     const rollControl = this.studentForm.get('rollNumber');
@@ -155,73 +244,57 @@ export class StudentRegistrationComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error('Error loading roll number', error);
+        this.handleError('Failed to load roll number', error);
         rollControl?.reset();
       },
     });
   }
 
-  loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
-      next: (classes) => {
-        this.classes = classes;
-      },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load classes');
-      },
-    });
-  }
-  onClassChange(event: Event): void {
-    const selectedValue = (event.target as HTMLSelectElement).value;
-
-    const classId = Number(selectedValue); // convert to number
-
-    this.studentForm.patchValue({
-      sectionId: null,
-      rollNumber: null,
-    });
-    this.sections = [];
-    if (classId) {
-      this.loadSections(classId);
-    }
-  }
-
-  loadSections(classId: number): void {
-    this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => {
-        this.sections = sections;
-      },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load sections');
-      },
-    });
-  }
+  // ============================================
+  // Form Submission
+  // ============================================
 
   onSubmit(): void {
-    if (this.studentForm.invalid) return;
+    // Mark all fields as touched to show errors
+    Object.keys(this.studentForm.controls).forEach(key => {
+      this.touchedFields.add(key);
+      this.studentForm.get(key)?.markAsTouched();
+    });
+
+    if (this.studentForm.invalid) {
+      this.toastService.showWarning('Validation Error', 'Please fill all required fields correctly');
+      return;
+    }
 
     this.loading = true;
-    this.error = '';
-    this.success = '';
 
     this.registrationService.registerStudent(this.studentForm.value).subscribe({
       next: (response) => {
-        if (response.success) {
-          this.success = 'Student registered successfully!';
-          this.studentForm.reset();
-        } else {
-          this.error = response.message;
-        }
         this.loading = false;
+        
+        if (response.success) {
+          this.toastService.showSuccess('Success', 'Student registered successfully!');
+          this.resetForm();
+        } else {
+          this.toastService.showError('Error', response.message);
+        }
       },
       error: (error) => {
-        this.error = error.error?.message || 'Registration failed';
         this.loading = false;
+        this.handleError('Registration failed', error);
       },
     });
   }
 
-  // ✅✅✅ BULK UPLOAD METHODS - UPDATED WITH VALIDATION ✅✅✅
+   resetForm(): void {
+    this.studentForm.reset();
+    this.touchedFields.clear();
+    this.sections = [];
+  }
+
+  // ============================================
+  // Bulk Upload Methods
+  // ============================================
 
   onBulkClassChange(): void {
     this.bulkSectionId = null;
@@ -231,56 +304,35 @@ export class StudentRegistrationComponent implements OnInit {
       this.loadSections(this.bulkClassId);
     }
 
-    // Clear selected file when class changes
     if (this.selectedFile) {
       this.removeFile();
     }
   }
 
-  // ✅ NEW: Check if user can select file (class and section must be selected)
   canSelectFile(): boolean {
     return !!(this.bulkClassId && this.bulkSectionId);
   }
 
-  // ✅ NEW: Check if user can upload (class, section, and file must be selected)
   canUpload(): boolean {
     return !!(this.bulkClassId && this.bulkSectionId && this.selectedFile);
   }
 
-  // ✅ NEW: Get validation message for upload button
-  getValidationMessage(): string {
-    if (!this.bulkClassId) return 'Please select a class';
-    if (!this.bulkSectionId) return 'Please select a section';
-    if (!this.selectedFile) return 'Please select a file';
-    return '';
-  }
-
-  // ✅ MODIFIED: Validate class/section before accepting file
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (!file) return;
 
-    // ✅ ADD: Validate class and section first
-    if (!this.bulkClassId || !this.bulkSectionId) {
-      this.toastService.showWarning(
-        'Selection Required',
-        'Please select Class and Section first',
-      );
+    if (!this.canSelectFile()) {
+      this.toastService.showWarning('Selection Required', 'Please select Class and Section first');
       event.target.value = '';
       return;
     }
 
     // File type validation
     const validExtensions = ['.xlsx', '.xls'];
-    const fileExtension = file.name
-      .substring(file.name.lastIndexOf('.'))
-      .toLowerCase();
+    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
 
     if (!validExtensions.includes(fileExtension)) {
-      this.toastService.showWarning(
-        'Invalid File',
-        'Please select an Excel file (.xlsx or .xls)',
-      );
+      this.toastService.showWarning('Invalid File', 'Please select an Excel file (.xlsx or .xls)');
       event.target.value = '';
       return;
     }
@@ -288,16 +340,13 @@ export class StudentRegistrationComponent implements OnInit {
     // File size validation (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      this.toastService.showWarning(
-        'File Too Large',
-        'Maximum file size is 5MB',
-      );
+      this.toastService.showWarning('File Too Large', 'Maximum file size is 5MB');
       event.target.value = '';
       return;
     }
 
     this.selectedFile = file;
-    this.uploadResults = null; // Clear previous results
+    this.uploadResults = null;
   }
 
   removeFile(): void {
@@ -306,30 +355,21 @@ export class StudentRegistrationComponent implements OnInit {
     if (fileInput) fileInput.value = '';
   }
 
-  // Enhanced validation before upload
   uploadBulk(): void {
-    // Double-check all requirements
     if (!this.canUpload()) {
-      this.toastService.showWarning(
-        'Required Fields',
-        'Please select class, section, and file',
-      );
+      this.toastService.showWarning('Required Fields', 'Please select class, section, and file');
       return;
     }
 
     this.uploadProgress = true;
-    this.error = '';
-    this.success = '';
     this.uploadResults = null;
 
     this.registrationService
-      .bulkUploadStudents(
-        this.selectedFile!,
-        this.bulkClassId!,
-        this.bulkSectionId!,
-      )
+      .bulkUploadStudents(this.selectedFile!, this.bulkClassId!, this.bulkSectionId!)
       .subscribe({
         next: (response) => {
+          this.uploadProgress = false;
+
           if (response.success) {
             this.uploadResults = {
               success: response.successfulRecords || 0,
@@ -338,36 +378,66 @@ export class StudentRegistrationComponent implements OnInit {
               errors: response.errors || [],
             };
 
-            this.success = `Successfully uploaded ${response.successfulRecords} of ${response.totalRecords} students`;
-
-            if (response.failedRecords > 0) {
-              this.error = `${response.failedRecords} records failed to upload. Check errors below.`;
-            }
-
-            // Clear file after successful upload
-            this.selectedFile = null;
-            const fileInput = document.getElementById(
-              'fileInput',
-            ) as HTMLInputElement;
-            if (fileInput) fileInput.value = '';
-
             this.toastService.showSuccess(
               'Upload Complete',
-              `${response.successfulRecords} students uploaded successfully`,
+              `${response.successfulRecords} students uploaded successfully`
             );
+
+            if (response.failedRecords > 0) {
+              this.toastService.showWarning(
+                'Partial Upload',
+                `${response.failedRecords} records failed. Check errors below.`
+              );
+            }
+
+            this.removeFile();
           } else {
-            this.error = response.message;
             this.toastService.showError('Upload Failed', response.message);
           }
-          this.uploadProgress = false;
         },
         error: (error) => {
-          this.error = error.error?.message || 'Upload failed';
           this.uploadProgress = false;
-          this.toastService.showError('Error', this.error);
+          this.handleError('Upload failed', error);
         },
       });
   }
+
+  // ============================================
+  // Template Download
+  // ============================================
+
+  downloadTemplate(): void {
+    this.isDownloading = true;
+
+    this.registrationService.downloadTemplate('student').subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'StudentUploadTemplate.xlsx';
+        link.style.display = 'none';
+
+        document.body.appendChild(link);
+        link.click();
+
+        setTimeout(() => {
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+        }, 100);
+
+        this.isDownloading = false;
+        this.toastService.showSuccess('Success', 'Template downloaded successfully');
+      },
+      error: (error) => {
+        this.isDownloading = false;
+        this.handleError('Failed to download template', error);
+      },
+    });
+  }
+
+  // ============================================
+  // Helper Methods
+  // ============================================
 
   getClassName(classId: number | null): string {
     if (!classId) return '';
@@ -381,36 +451,49 @@ export class StudentRegistrationComponent implements OnInit {
     return section ? section.sectionName : '';
   }
 
-  downloadTemplate(): void {
-    this.isDownloading = true;
+  // ============================================
+  //  Centralized Error Handling
+  // ============================================
 
-    this.registrationService.downloadTemplate('student').subscribe({
-      next: (blob: Blob) => {
-        // Create a download link
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'StudentUploadTemplate.xlsx';
+  private handleError(userMessage: string, error: any): void {
+    const errorMessage = this.extractErrorMessage(error);
+    
+    if (!this.isProduction()) {
+      console.error('Error Details:', {
+        userMessage,
+        error,
+        errorMessage
+      });
+    }
 
-        // Trigger download
-        document.body.appendChild(link);
-        link.click();
+    this.toastService.showError('Error', errorMessage || userMessage);
+  }
 
-        // Cleanup
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+  private extractErrorMessage(error: any): string {
+    if (error?.error?.message) {
+      return error.error.message;
+    }
+    
+    if (error?.error?.errors && Array.isArray(error.error.errors)) {
+      return error.error.errors.join(', ');
+    }
+    
+    if (error?.message) {
+      return error.message;
+    }
+    
+    if (typeof error?.error === 'string') {
+      return error.error;
+    }
+    
+    if (error?.statusText) {
+      return error.statusText;
+    }
+    
+    return '';
+  }
 
-        this.isDownloading = false;
-        this.toastService.showSuccess(
-          'Success',
-          'Template downloaded successfully',
-        );
-      },
-      error: (error) => {
-        this.isDownloading = false;
-        console.error('Download error:', error);
-        this.toastService.showError('Error', 'Failed to download template');
-      },
-    });
+  private isProduction(): boolean {
+    return false; // Change based on environment
   }
 }

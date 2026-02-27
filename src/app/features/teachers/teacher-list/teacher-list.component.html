@@ -1,4 +1,6 @@
+<!-- Teacher List Component - Complete with Error Handling & Validation -->
 <div class="list-container">
+  <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-chalkboard-teacher"></i> Teachers List</h2>
     <button class="btn btn-primary" (click)="addTeacher()">
@@ -6,29 +8,71 @@
     </button>
   </div>
 
+  <!-- Search & Filter Card -->
   <div class="card">
     <div class="search-section">
-      <div class="search-input-wrapper">
-        <i class="fas fa-search search-icon"></i>
-        <input 
-          type="text" 
-          class="form-control search-input" 
-          placeholder="Search by name, email, employee code..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
-        >
+      <!-- Search Input with Error -->
+      <div class="search-wrapper">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="form-control search-input" 
+            [class.is-invalid]="searchError"
+            placeholder="Search by name, email, employee code..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchInput()"
+            (blur)="onSearchBlur()"
+            (focus)="onSearchFocus()"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            class="clear-search" 
+            (click)="clearSearch()"
+            type="button"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="error-message" *ngIf="searchError">
+          {{ searchError }}
+        </div>
       </div>
+
+      <!-- Refresh Button -->
       <button class="btn btn-secondary" (click)="loadTeachers()">
         <i class="fas fa-sync"></i> Refresh
       </button>
     </div>
 
+    <!-- Loading State -->
     <div *ngIf="loading" class="loading-state">
-      <div class="spinner-border"></div>
+      <div class="spinner"></div>
       <p>Loading teachers...</p>
     </div>
 
-    <div *ngIf="!loading" class="table-responsive">
+    <!-- Empty State - No Teachers -->
+    <div *ngIf="!loading && teachers.length === 0" class="empty-state">
+      <i class="fas fa-users-slash"></i>
+      <h5>No Teachers Found</h5>
+      <p>No teachers are registered in the system yet</p>
+      <button class="btn btn-primary mt-3" (click)="addTeacher()">
+        <i class="fas fa-user-plus"></i> Add First Teacher
+      </button>
+    </div>
+
+    <!-- Empty State - No Search Results -->
+    <div *ngIf="!loading && teachers.length > 0 && filteredTeachers.length === 0" class="empty-state">
+      <i class="fas fa-search"></i>
+      <h5>No Results Found</h5>
+      <p>No teachers match your search criteria</p>
+      <button class="btn btn-secondary mt-3" (click)="clearSearch()">
+        <i class="fas fa-times"></i> Clear Search
+      </button>
+    </div>
+
+    <!-- Teachers Table - Desktop -->
+    <div *ngIf="!loading && filteredTeachers.length > 0" class="table-responsive">
       <table class="table">
         <thead>
           <tr>
@@ -73,13 +117,13 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-view" (click)="viewDetails(teacher.id)" title="View">
+                <button class="btn-action btn-view" (click)="viewDetails(teacher.id)" title="View Details">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="editTeacher(teacher.id)" title="Edit">
+                <button class="btn-action btn-edit" (click)="editTeacher(teacher.id)" title="Edit Teacher">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-action btn-delete" (click)="deleteTeacher(teacher)" title="Delete">
+                <button class="btn-action btn-delete" (click)="deleteTeacher(teacher)" title="Delete Teacher">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -87,20 +131,80 @@
           </tr>
         </tbody>
       </table>
+    </div>
 
-      <div *ngIf="filteredTeachers.length === 0" class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <h5>No teachers found</h5>
-        <p>Try adjusting your search criteria</p>
+    <!-- Teachers Cards - Mobile -->
+    <div *ngIf="!loading && filteredTeachers.length > 0" class="teachers-cards">
+      <div *ngFor="let teacher of filteredTeachers" class="teacher-card">
+        <div class="card-header">
+          <div class="teacher-avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div>
+          <div class="teacher-details">
+            <h4>{{ teacher.firstName }} {{ teacher.lastName }}</h4>
+            <p class="text-muted">{{ teacher.gender }} • {{ teacher.employeeCode }}</p>
+          </div>
+          <span class="badge" [class.badge-success]="teacher.isActive" [class.badge-danger]="!teacher.isActive">
+            {{ teacher.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <i class="fas fa-envelope"></i>
+            <span>{{ teacher.email }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-phone"></i>
+            <span>{{ teacher.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-graduation-cap"></i>
+            <span>{{ teacher.qualification }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-calendar"></i>
+            <span>Joined: {{ teacher.joiningDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="info-row" *ngIf="teacher.subjects && teacher.subjects.length > 0">
+            <i class="fas fa-book"></i>
+            <div class="subjects-list">
+              <span class="subject-badge" *ngFor="let subject of teacher.subjects">
+                {{ subject }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn btn-sm btn-view" (click)="viewDetails(teacher.id)">
+            <i class="fas fa-eye"></i> View
+          </button>
+          <button class="btn btn-sm btn-edit" (click)="editTeacher(teacher.id)">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn btn-sm btn-delete" (click)="deleteTeacher(teacher)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- Results Count -->
+    <div *ngIf="!loading && filteredTeachers.length > 0" class="results-footer">
+      <p>
+        Showing <strong>{{ filteredTeachers.length }}</strong> 
+        of <strong>{{ teachers.length }}</strong> 
+        teacher{{ teachers.length !== 1 ? 's' : '' }}
+      </p>
+    </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation
+    [show]="showDeleteModal"
+    [title]="'Delete Teacher'"
+    [message]="'Are you sure you want to delete this teacher? All associated data will be permanently removed.'"
+    [itemName]="teacherToDelete ? getTeacherFullName(teacherToDelete) : ''"
+    (confirmed)="onDeleteConfirmed()"
+    (cancelled)="onDeleteCancelled()"
+  ></app-delete-confirmation>
 </div>
-<app-delete-confirmation
-  [show]="showDeleteModal"
-  [title]="'Delete Teacher'"
-  [message]="'Are you sure you want to delete this teacher? All associated data will be permanently removed.'"
-  [itemName]="teacherToDelete ? (teacherToDelete.firstName + ' ' + teacherToDelete.lastName) : ''"
-  (confirmed)="onDeleteConfirmed()"
-  (cancelled)="onDeleteCancelled()">
-</app-delete-confirmation>

@@ -3,30 +3,6 @@
   <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-upload"></i> Upload Student Answer Sheets</h2>
-    <!-- <div class="user-badge">
-      <div class="user-avatar">{{ getUserInitial() }}</div>
-      <div class="user-info">
-        <strong>{{ getUserName() }}</strong>
-        <span>{{ getUserEmail() }}</span>
-      </div>
-    </div> -->
-  </div>
-
-  <!-- Success/Error Messages -->
-  <div *ngIf="success" class="alert alert-success">
-    <i class="fas fa-check-circle"></i>
-    <span>{{ success }}</span>
-    <button class="alert-close" (click)="success = ''">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
-
-  <div *ngIf="error" class="alert alert-error">
-    <i class="fas fa-exclamation-circle"></i>
-    <span>{{ error }}</span>
-    <button class="alert-close" (click)="error = ''">
-      <i class="fas fa-times"></i>
-    </button>
   </div>
 
   <!-- Filter Card -->
@@ -38,8 +14,8 @@
         <label class="form-label">Class <span class="required">*</span></label>
         <select
           class="form-control"
-          [(ngModel)]="filters.classId"
-          (change)="onClassChange(filters.classId); validateFilters()"
+          [(ngModel)]="selectedClass"
+          (change)="onClassChange(selectedClass)"
         >
           <option value="">Select Class</option>
           <option *ngFor="let cls of classes" [value]="cls.id">
@@ -54,12 +30,12 @@
         >
         <select
           class="form-control"
-          [(ngModel)]="filters.sectionId"
-          [disabled]="!filters.classId"
-          (change)="validateFilters()"
+          [(ngModel)]="selectedSection"
+          [disabled]="!selectedClass"
+          (change)="onSectionChange()"
         >
           <option value="">
-            {{ filters.classId ? "Select Section" : "Select Class First" }}
+            {{ selectedClass ? "Select Section" : "Select Class First" }}
           </option>
           <option *ngFor="let sec of sections" [value]="sec.id">
             {{ sec.sectionName }}
@@ -73,12 +49,12 @@
         >
         <select
           class="form-control"
-          [(ngModel)]="filters.subjectId"
-          [disabled]="!filters.classId"
-          (change)="validateFilters()"
+          [(ngModel)]="selectedSubject"
+          [disabled]="!selectedClass"
+          (change)="onSubjectChange()"
         >
           <option value="">
-            {{ filters.classId ? "Select Subject" : "Select Class First" }}
+            {{ selectedClass ? "Select Subject" : "Select Class First" }}
           </option>
           <option *ngFor="let sub of subjects" [value]="sub.id">
             {{ sub.subjectName }}
@@ -92,9 +68,9 @@
         >
         <select
           class="form-control"
-          [(ngModel)]="filters.examTypeId"
-          [disabled]="!filters.classId"
-          (change)="validateFilters()"
+          [(ngModel)]="selectedExamType"
+          [disabled]="!selectedClass"
+          (change)="onExamTypeChange()"
         >
           <option value="">Select Exam Type</option>
           <option *ngFor="let exam of examTypes" [value]="exam.id">
@@ -228,7 +204,7 @@
                 *ngIf="!student.isUploaded && student.isAbsent"
                 class="text-muted"
               >
-                N/A
+                -
               </span>
 
               <!-- Pending → Upload (disabled if absent) -->
@@ -269,7 +245,7 @@
 
             <td>
               <!-- After upload → Show N/A -->
-              <span *ngIf="student.isUploaded" class="text-muted"> N/A </span>
+              <span *ngIf="student.isUploaded" class="text-muted"> - </span>
 
               <!-- Before upload → Show checkbox -->
               <div *ngIf="!student.isUploaded" class="form-check">
@@ -278,7 +254,7 @@
                   [id]="'absent-' + student.studentId"
                   [checked]="student.isAbsent"
                   (change)="toggleAbsent(student)"
-                  [disabled]="isEvaluationCompleted && student.isAbsent"
+                  [disabled]="isEvaluationCompleted"
                   class="custom-checkbox"
                 />
                 <label
@@ -293,21 +269,17 @@
             <td>
               <a
                 *ngIf="student.isUploaded"
-                href="#"
+                href="javascript:void(0)"
                 class="download-link"
-                [class.disabled]="loading"
-                (click)="
-                  !loading && downloadAnswerSheet(student);
-                  $event.preventDefault()
-                "
+                [class.disabled]="isViewing"
+                (click)="!isViewing && viewAnswerSheet(student)"
               >
-                <i
-                  [class]="
-                    loading ? 'fas fa-spinner fa-spin' : 'fas fa-download'
-                  "
-                ></i>
+                <span *ngIf="!isViewing"><i class="fas fa-eye"></i>Answer Sheet</span>
 
-                {{ loading ? "Downloading..." : "Download" }}
+                <span *ngIf="isViewing">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Opening...
+                </span>
               </a>
             </td>
           </tr>
@@ -325,13 +297,18 @@
       <button
         class="btn btn-success btn-lg"
         (click)="submitAllStudents()"
-        [disabled]="!canEvaluate || loading || isEvaluationCompleted"
+        [disabled]="!canEvaluate || isSubmittingAll || isEvaluationCompleted"
       >
-        <i class="fas fa-paper-plane"></i> Submit All
+        <i
+          [class]="
+            isSubmittingAll ? 'fas fa-spinner fa-spin' : 'fas fa-paper-plane'
+          "
+        ></i>
+
+        {{ isSubmittingAll ? "Submitting..." : "Submit All" }}
       </button>
     </div>
   </div>
-</div>
 
 <!-- Loading Overlay -->
 <!-- <div class="loading-overlay" *ngIf="loading">
@@ -340,3 +317,7 @@
     <p>Loading...</p>
   </div>
 </div> -->
+
+
+
+

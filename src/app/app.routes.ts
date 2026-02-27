@@ -113,7 +113,7 @@ export const routes: Routes = [
       {
         path: 'upload-answer-sheets',
         loadComponent: () =>
-          import('./features/exams/upload-answer-sheets/upload-answer-sheets.component').then(
+          import('./features/exams/upload-answer-sheets/upload-answer-sheet.component').then(
             (m) => m.UploadAnswerSheetsComponent,
           ),
       },

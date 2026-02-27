@@ -2,14 +2,12 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ExamResultService } from '../../../core/services/exam-result.service';
-import { ToastService } from '../../../shared/services/toast.service';
-import { CreateExamService } from '../../../core/services/create-exam.service';
+import { ToastService } from '../../../core/services/toast.service';
 import {
   StudentInfo,
   ExamResult,
   ExamQuestion,
 } from '../../../core/models/exam-result';
-
 import {
   ClassDto,
   ExamTypeDto,
@@ -17,6 +15,7 @@ import {
   SectionDto,
   SubjectDto,
 } from '../../../core/services/master-data.service';
+import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
 
 @Component({
   selector: 'app-exam-results',
@@ -26,59 +25,88 @@ import {
   styleUrls: ['./exam-result.component.css'],
 })
 export class ExamResultsComponent implements OnInit {
-  private resultsService = inject(ExamResultService);
+  private examResultService = inject(ExamResultService);
   private toastService = inject(ToastService);
-  private teacherUploadService = inject(CreateExamService);
   private masterDataService = inject(MasterDataService);
+  private viewAnswerSheetService = inject(ViewAnswerSheetService);
 
-  selectedClass: string = '';
-  selectedSection: string = '';
-  selectedSubject: string = '';
-  selectedExamType: string = '';
+  // Filter selections
+  selectedClass = '';
+  selectedSection = '';
+  selectedSubject = '';
+  selectedExamType = '';
 
+  // Student data
   students: StudentInfo[] = [];
   selectedStudent: StudentInfo | null = null;
+
+  // Exam metadata
+  totalMarks = 0;
+  totalQuestions = 0;
+  questionNumbers: number[] = [];
+  statistics: any = {
+    totalStudents: 0,
+    absentCount: 0,
+    evaluatedCount: 0,
+    notEvaluatedCount: 0,
+  };
+
+  // Current question data
   currentResults: ExamResult | null = null;
+  currentQuestion: ExamQuestion | null = null;
+  currentQuestionIndex = 0;
 
+  // UI state
   isLoading = false;
-  showStudentCard = false;
+  isLoadingQuestion = false;
+  isViewing = false;
+  showStudentsCard = false;
   showResultsCard = false;
-
   searchCompleted = false;
-  error = '';
-   success = '';
 
+  // Fullscreen modal
+  fullscreenContent: string | null = null;
+  fullscreenType: string | null = null;
+
+  // Dropdown data
   classes: ClassDto[] = [];
   sections: SectionDto[] = [];
   subjects: SubjectDto[] = [];
   examTypes: ExamTypeDto[] = [];
 
-  currentQuestionIndex = 0;
-  totalQuestions = 0;
-  currentQuestion: ExamQuestion | null = null;
-  isLoadingQuestion = false;
-
-  isEditMode = false;
-  originalQuestion: ExamQuestion | null = null;
-  remarks = '';
-  originalRemarks = '';
-
   ngOnInit(): void {
-    this.loadInitialData();
+    this.loadClasses();
   }
 
-  private loadInitialData(): void {
+  // ============================================
+  // Initialization
+  // ============================================
+
+  private loadClasses(): void {
     this.masterDataService.getClasses().subscribe({
       next: (classes) => {
         this.classes = classes;
       },
       error: (error) => {
-        this.toastService.showError('Error', 'Failed to load classes');
+        this.handleError('Failed to load classes', error);
       },
     });
   }
 
+  // ============================================
+  // Dropdown Change Handlers
+  // ============================================
+
   onClassSelected(classId: string): void {
+    this.resetFilters();
+    if (!classId) return;
+
+    this.loadSections(classId);
+    this.loadSubjects(classId);
+    this.loadExamTypes(classId);
+  }
+
+  private resetFilters(): void {
     this.selectedSection = '';
     this.selectedSubject = '';
     this.selectedExamType = '';
@@ -86,179 +114,211 @@ export class ExamResultsComponent implements OnInit {
     this.subjects = [];
     this.examTypes = [];
     this.students = [];
-    this.showStudentCard = false;
+    this.showStudentsCard = false;
     this.showResultsCard = false;
+  }
 
-    if (!classId) return;
-
+  private loadSections(classId: string): void {
     this.masterDataService.getSectionsByClass(classId).subscribe({
       next: (sections) => {
         this.sections = sections;
       },
       error: (error) => {
-      this.error = error.error?.message || 'Failed to load sections';    
+        this.handleError('Failed to load sections', error);
       },
     });
+  }
 
+  private loadSubjects(classId: string): void {
     this.masterDataService.getSubjectsByClass(classId).subscribe({
       next: (subjects) => {
         this.subjects = subjects;
       },
       error: (error) => {
-           this.error = error.error?.message || 'Failed to load subjects';  
+        this.handleError('Failed to load subjects', error);
       },
     });
+  }
 
+  private loadExamTypes(classId: string): void {
     this.masterDataService.getExamTypesByClass(classId).subscribe({
       next: (examTypes) => {
         this.examTypes = examTypes;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to load exam types';  
+        this.handleError('Failed to load exam types', error);
       },
     });
   }
 
-  clearStudentData(): void {
-    this.students = [];
-    this.selectedStudent = null;
-    this.currentResults = null;
-    this.showStudentCard = false;
-    this.showResultsCard = false;
-    this.searchCompleted = false;
-    this.error = '';
-    this.currentQuestion = null;
-    this.currentQuestionIndex = 0;
-    this.totalQuestions = 0;
-    this.isEditMode = false;
-    this.originalQuestion = null;
+  validateFilters(): void {
+    // This method is called from HTML - keeping it for compatibility
   }
+
+  // ============================================
+  // Get Students
+  // ============================================
 
   getStudents(): void {
+    if (!this.validateSelection()) return;
+
     this.isLoading = true;
-    this.error = '';
-    this.success = '';   
-    this.clearStudentData(); 
 
-     if (!this.selectedClass ||!this.selectedSection ||!this.selectedSubject ||!this.selectedExamType) 
-     {
-      this.error ='Please select all required fields';    
-      this.isLoading = false;
-      return;
-    }
-
-    this.resultsService
-      .getStudents(
+    this.examResultService
+      .getStudentListWithStatistics(
         parseInt(this.selectedClass),
         parseInt(this.selectedSection),
         parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType),
+        parseInt(this.selectedExamType)
       )
       .subscribe({
-        next: (data: StudentInfo[]) => {
-          this.students = data;
-          this.showStudentCard = data.length > 0;
-          this.isLoading = false;
-          this.searchCompleted = true;          
-        },
-        error: (err) => {
-          this.isLoading = false;
+        next: (response: any) => {
+          this.students = response.students || [];
+          this.statistics = response.statistics || this.getEmptyStatistics();
+          this.totalMarks = response.totalMarks || 0;
+          this.totalQuestions = response.totalQuestions || 0;
+          this.questionNumbers = response.questionNumbers || [];
+          this.showStudentsCard = true;
+          this.showResultsCard = false;
           this.searchCompleted = true;
-          this.error = err.error?.message || 'Error loading students';          
-        },
-      });
-  }
+          this.isLoading = false;
 
-   validateFilters(): void {
-  if (
-    this.selectedClass &&
-    this.selectedSection &&
-    this.selectedSubject &&
-    this.selectedExamType
-  ) {
-    this.error = '';
-  }
-}
-
-  onStudentChange(): void {
-    if (!this.selectedStudent) {
-      this.showResultsCard = false;
-      this.currentResults = null;
-      return;
-    }
-    this.loadStudentResults();
-  }
-
-  loadStudentResults(): void {
-    if (!this.selectedStudent) {
-      this.showResultsCard = false;
-      return;
-    }
-
-    this.isLoading = true;
-    this.resultsService
-      .getExamResults(
-        this.selectedStudent.studentId,
-        parseInt(this.selectedClass),
-        parseInt(this.selectedSection),
-        parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType),
-      )
-      .subscribe({
-        next: (results: ExamResult) => {
-          this.currentResults = results;
-          this.showResultsCard = true;
-
-          if (!results.isAbsent && results.evaluationStatus === 'Evaluated') {
-            this.totalQuestions = results.questions?.length || 0;
-            this.currentQuestionIndex = 0;
-            if (this.totalQuestions > 0) {
-              this.loadQuestion(0);
-            }
+          if (this.students.length === 0) {
+            this.toastService.showInfo('Info', 'No students found for this selection');
           }
-
-          this.isLoading = false;
-          this.toastService.showSuccess(
-            'Success',
-            'Results loaded successfully',
-          );
         },
-        error: (err) => {
+        error: (error) => {
           this.isLoading = false;
-          this.toastService.showWarning(
-            'Warning',
-            err.error?.message || 'No results found for this student',
-          );
+          this.handleError('Failed to load students', error);
         },
       });
   }
+
+  private validateSelection(): boolean {
+    if (
+      !this.selectedClass ||
+      !this.selectedSection ||
+      !this.selectedSubject ||
+      !this.selectedExamType
+    ) {
+      this.toastService.showWarning('Warning', 'Please select all required fields');
+      return false;
+    }
+    return true;
+  }
+
+  private getEmptyStatistics(): any {
+    return {
+      totalStudents: 0,
+      absentCount: 0,
+      evaluatedCount: 0,
+      notEvaluatedCount: 0,
+    };
+  }
+
+  // ============================================
+  // View Student Results
+  // ============================================
+
+  viewStudentResults(student: StudentInfo): void {
+    if (!student) {
+      this.toastService.showWarning('Warning', 'No student selected');
+      return;
+    }
+
+    this.selectedStudent = student;
+    this.showStudentsCard = false;
+    this.showResultsCard = true;
+    this.currentResults = {
+      studentId: student.studentId,
+      studentName: student.studentName,
+      totalMarks: this.totalMarks,
+      questions: [] as ExamQuestion[],
+      isAbsent: student.isAbsent,
+      evaluationStatus: student.evaluationStatus,
+    };
+
+    this.currentQuestionIndex = 0;
+
+    // Load first question
+    if (this.totalQuestions > 0 && !student.isAbsent) {
+      this.loadQuestion(0);
+    }
+  }
+
+  backToStudentsList(): void {
+    this.showResultsCard = false;
+    this.showStudentsCard = true;
+    this.selectedStudent = null;
+    this.currentResults = null;
+    this.currentQuestion = null;
+    this.currentQuestionIndex = 0;
+  }
+
+  // ============================================
+  // Question Navigation
+  // ============================================
 
   loadQuestion(index: number): void {
-    if (!this.currentResults || !this.selectedStudent) return;
+    if (!this.selectedStudent) {
+      this.toastService.showWarning('Warning', 'No student selected');
+      return;
+    }
+
+    if (index < 0 || index >= this.totalQuestions) {
+      this.toastService.showError('Error', 'Invalid question index');
+      return;
+    }
 
     this.isLoadingQuestion = true;
 
-    this.resultsService
+    this.examResultService
       .getQuestionDetails(
         this.selectedStudent.studentId,
         parseInt(this.selectedClass),
         parseInt(this.selectedSubject),
         parseInt(this.selectedExamType),
-        index + 1,
+        index + 1
       )
       .subscribe({
-        next: (question: ExamQuestion) => {
+        next: (question: any) => {
+          if (!question) {
+            this.toastService.showError('Error', 'Question data is empty');
+            this.isLoadingQuestion = false;
+            return;
+          }
+
           this.currentQuestion = question;
           this.currentQuestionIndex = index;
+          this.initializeRubrics();
           this.isLoadingQuestion = false;
-          this.isEditMode = false;
-          this.originalQuestion = JSON.parse(JSON.stringify(question));
         },
-        error: () => {
+        error: (error) => {
           this.isLoadingQuestion = false;
-          this.toastService.showError('Error', 'Failed to load question');
+          this.handleError('Failed to load question', error);
         },
       });
+  }
+
+  private initializeRubrics(): void {
+    if (!this.currentQuestion?.rubrics) return;
+
+    this.currentQuestion.rubrics.forEach((rubric: any) => {
+      rubric.isEditing = false;
+
+      // Set marks: teacher marks > system marks
+      if (rubric.marksAssignedByTeacher && rubric.marksAssignedByTeacher > 0) {
+        rubric.marksGiven = rubric.marksAssignedByTeacher;
+        rubric.teacherModified = true;
+      } else {
+        rubric.marksGiven = rubric.marksAssignedBySystem || 0;
+        rubric.teacherModified = false;
+      }
+
+      // Store original values
+      rubric.originalMarksGiven = rubric.marksGiven;
+      rubric.originalRemarks = rubric.remarks || '';
+    });
   }
 
   nextQuestion(): void {
@@ -273,370 +333,301 @@ export class ExamResultsComponent implements OnInit {
     }
   }
 
-  goToQuestion(index: number): void {
-    if (index >= 0 && index < this.totalQuestions) {
-      this.loadQuestion(index);
-    }
+  getProgressPercentage(): number {
+    if (this.totalQuestions === 0) return 0;
+    return ((this.currentQuestionIndex + 1) / this.totalQuestions) * 100;
   }
 
-  getTotalMarks(): number {
-    if (!this.currentResults) return 0;
-    return this.currentResults.questions.reduce(
-      (sum, q) => sum + q.marksObtained,
-      0,
-    );
+  // ============================================
+  // Rubric Editing
+  // ============================================
+
+  enableRubricEdit(rubric: any): void {
+    if (!rubric) return;
+
+    rubric.isEditing = true;
+    rubric.originalMarksGiven = rubric.marksGiven;
+    rubric.originalRemarks = rubric.remarks;
   }
 
-  // ✅ FIXED: Calculate max marks from questions if not provided
-  getMaxMarks(): number {
-    if (!this.currentResults) return 0;
+  cancelRubricEdit(rubric: any): void {
+    if (!rubric) return;
 
-    // If maxMarks is set, use it
-    if (
-      this.currentResults.maxMarks !== undefined &&
-      this.currentResults.maxMarks !== null
-    ) {
-      return this.currentResults.maxMarks;
-    }
-
-    // Otherwise calculate from questions
-    if (
-      this.currentResults.questions &&
-      this.currentResults.questions.length > 0
-    ) {
-      return this.currentResults.questions.reduce(
-        (sum, q) => sum + q.maxMarks,
-        0,
-      );
-    }
-
-    return 0;
+    rubric.isEditing = false;
+    rubric.marksGiven = rubric.originalMarksGiven;
+    rubric.remarks = rubric.originalRemarks;
   }
 
-  getPercentage(): number {
-    const maxMarks = this.getMaxMarks();
-    if (!this.currentResults || maxMarks === 0) return 0;
+  isRubricValid(rubric: any): boolean {
+    if (!rubric) return false;
 
-    const total = this.getTotalMarks();
-    return (total / maxMarks) * 100;
-  }
-
-  hasValidationError(question: ExamQuestion | null): boolean {
-    if (!question || !question.rubrics || question.rubrics.length === 0) {
+    // Marks range
+    if (rubric.marksGiven < 0 || rubric.marksGiven > rubric.maxMarks) {
       return false;
     }
 
-    const hasIndividualRubricError = question.rubrics.some(
-      (rubric) => rubric.marksGiven > rubric.maxMarks,
-    );
-
-    const totalRubricMarks = this.getTotalRubricMarks(question);
-    const hasTotalMarksError = totalRubricMarks > question.maxMarks;
-
-    return hasIndividualRubricError || hasTotalMarksError;
-  }
-
-  onRubricMarksChange(rubric: any, question: ExamQuestion): void {
-    if (rubric.marksGiven < 0) {
-      rubric.marksGiven = 0;
+    // Remarks required
+    if (!rubric.remarks || rubric.remarks.trim() === '') {
+      return false;
     }
 
-    if (rubric.marksGiven !== null && rubric.marksGiven !== undefined) {
-      rubric.marksGiven = this.roundToHalfIncrement(rubric.marksGiven);
+    // Max 1 decimal place
+    const marksStr = rubric.marksGiven.toString();
+    if (marksStr.includes('.')) {
+      const decimalPart = marksStr.split('.')[1];
+      if (decimalPart && decimalPart.length > 1) {
+        return false;
+      }
     }
 
-    question.marksObtained = this.getTotalRubricMarks(question);
+    return true;
   }
 
-  onRubricBlur(rubric: any, question: ExamQuestion): void {
-    if (rubric.marksGiven !== null && rubric.marksGiven !== undefined) {
-      const numValue = parseFloat(rubric.marksGiven.toString());
-      rubric.marksGiven = this.roundToHalfIncrement(numValue);
-      question.marksObtained = this.getTotalRubricMarks(question);
-    }
-  }
-
-  getTotalRubricMarks(question: ExamQuestion): number {
-    if (!question.rubrics || question.rubrics.length === 0) return 0;
-    return question.rubrics.reduce(
-      (sum, rubric) => sum + (rubric.marksGiven || 0),
-      0,
-    );
-  }
-
-  updateCurrentQuestionMarks(): void {
+  saveRubric(rubric: any): void {
     if (!this.selectedStudent || !this.currentQuestion) {
       this.toastService.showWarning('Warning', 'No question selected');
       return;
     }
 
-    // ✅ NEW: Validate remarks field when in edit mode
-    if (this.isEditMode && (!this.remarks || this.remarks.trim() === '')) {
-      this.toastService.showError('Validation Error', 'Remarks field is required');
+    if (!rubric) {
+      this.toastService.showError('Error', 'Invalid rubric data');
       return;
     }
 
-    if (this.hasValidationError(this.currentQuestion)) {
-      const totalMarks = this.getTotalRubricMarks(this.currentQuestion);
-      this.toastService.showError(
-        'Cannot Save',
-        `Total marks (${totalMarks}) exceed maximum (${this.currentQuestion.maxMarks})`,
-      );
+    if (!this.isRubricValid(rubric)) {
+      this.toastService.showError('Error', 'Please enter valid marks (0.5 step) and remarks');
       return;
     }
 
-    if (
-      !this.currentQuestion.rubrics ||
-      this.currentQuestion.rubrics.length === 0
-    ) {
-      this.toastService.showWarning(
-        'Warning',
-        'No rubrics found for this question',
-      );
+    if (!this.isRubricChanged(rubric)) {
+      rubric.isEditing = false;
+      this.toastService.showInfo('Info', 'No changes to save');
       return;
     }
 
-    const rubricMarks = this.currentQuestion.rubrics.map((rubric) => {
-      const rubricId =
-        rubric.questionPaperRubricId ||
-        rubric.id ||
-        (rubric as any).QuestionPaperRubricId ||
-        0;
-
-      const marksGiven =
-        rubric.marksGiven ||
-        rubric.marksAssignedByTeacher ||
-        (rubric as any).MarksGiven ||
-        (rubric as any).MarksAssignedByTeacher ||
-        0;
-
-      return {
-        questionPaperRubricId: rubricId,
-        marksGiven: marksGiven,
-      };
-    });
-
-    const invalidRubrics = rubricMarks.filter(
-      (r) => r.questionPaperRubricId === 0,
-    );
-    if (invalidRubrics.length > 0) {
-      this.toastService.showError('Error', 'Invalid rubric data - missing IDs');
-      return;
-    }
-
+    rubric.isSaving = true;
     this.isLoading = true;
 
-    this.resultsService
+    const rubricData = [
+      {
+        questionPaperRubricId: rubric.questionPaperRubricId || rubric.id,
+        teacherAssignedMarks: rubric.marksGiven,
+        teacherRemarks: rubric.remarks.trim(),
+      },
+    ];
+
+    this.examResultService
       .updateQuestionRubrics(
         this.selectedStudent.studentId,
         parseInt(this.selectedClass),
         parseInt(this.selectedSubject),
         parseInt(this.selectedExamType),
         this.currentQuestion.questionNumber,
-        rubricMarks,
+        rubricData
       )
       .subscribe({
         next: () => {
+          rubric.isEditing = false;
+          rubric.teacherModified = true;
+          rubric.originalMarksGiven = rubric.marksGiven;
+          rubric.originalRemarks = rubric.remarks;
+          rubric.isSaving = false;
           this.isLoading = false;
-          this.isEditMode = false;
-
-          if (this.currentQuestion) {
-            this.originalQuestion = JSON.parse(
-              JSON.stringify(this.currentQuestion),
-            );
-          }
-
-          this.toastService.showSuccess(
-            'Success',
-            `Question ${this.currentQuestion?.questionNumber} marks saved!`,
-          );
-
-          if (this.currentResults && this.currentQuestion) {
-            const questionIndex = this.currentResults.questions.findIndex(
-              (q) => q.questionNumber === this.currentQuestion!.questionNumber,
-            );
-            if (questionIndex !== -1) {
-              const totalMarks = this.getTotalRubricMarks(this.currentQuestion);
-              this.currentResults.questions[questionIndex].marksObtained =
-                totalMarks;
-              this.currentQuestion.marksObtained = totalMarks;
-            }
-          }
+          this.toastService.showSuccess('Success', 'Marks saved successfully!');
         },
         error: (error) => {
+          rubric.isSaving = false;
           this.isLoading = false;
-          this.toastService.showError(
-            'Error',
-            'Failed to save marks. Please try again.',
-          );
+          this.handleError('Failed to save marks', error);
         },
       });
   }
 
-  saveAndNext(): void {
-    if (this.hasValidationError(this.currentQuestion!)) {
-      this.toastService.showError(
-        'Cannot Proceed',
-        'Please fix validation errors before moving to next question',
-      );
-      return;
-    }
+  public isRubricChanged(rubric: any): boolean {
+    if (!rubric || !rubric.isEditing) return false;
 
-    this.updateCurrentQuestionMarks();
-    if (this.currentQuestionIndex < this.totalQuestions - 1) {
-      setTimeout(() => this.nextQuestion(), 500);
-    }
-  }  
+    const marksChanged =
+      Number(rubric.marksGiven) !== Number(rubric.originalMarksGiven);
 
-  saveAndPrevious(): void {
-    if (this.hasValidationError(this.currentQuestion!)) {
-      this.toastService.showError(
-        'Cannot Proceed',
-        'Please fix validation errors before moving to previous question',
-      );
-      return;
-    }
+    const remarksChanged =
+      (rubric.remarks || '').trim() !== (rubric.originalRemarks || '').trim();
 
-    this.updateCurrentQuestionMarks();
-    if (this.currentQuestionIndex > 0) {
-      setTimeout(() => this.previousQuestion(), 500);
-    }
+    return marksChanged && remarksChanged;
   }
 
-  limitDecimalInput(event: any): void {
+  // ============================================
+  // Fullscreen Modal
+  // ============================================
 
-  let input = event.target;
-  let value = input.value;
-
-  if (!value) return;
-
-  // Regex: allow only one decimal place
-  const regex = /^\d+(\.\d{0,1})?$/;
-
-  if (!regex.test(value)) {
-
-    // remove last typed character
-    input.value = value.slice(0, -1);
-
+  openFullscreen(type: string): void {
+    this.fullscreenType = type;
+    this.fullscreenContent = type;
+    document.body.style.overflow = 'hidden';
   }
 
-}
-
-
-  updateMarks(): void {
-    if (!this.selectedStudent || !this.currentResults) return;
-
-    const updatedMarks: { [key: number]: number } = {};
-    this.currentResults.questions.forEach((q) => {
-      updatedMarks[q.questionNumber] = q.marksObtained;
-    });
-
-    this.isLoading = true;
-    this.resultsService
-      .updateMarks(this.selectedStudent.studentId, updatedMarks)
-      .subscribe({
-        next: () => {
-          this.isLoading = false;
-          this.toastService.showSuccess(
-            'Success',
-            'All marks updated successfully!',
-          );
-        },
-        error: () => {
-          this.isLoading = false;
-          this.toastService.showError('Error', 'Error updating marks');
-        },
-      });
+  closeFullscreen(): void {
+    this.fullscreenContent = null;
+    this.fullscreenType = null;
+    document.body.style.overflow = 'auto';
   }
 
-  enableEdit(): void {
-    if (this.currentQuestion) {
-      this.originalQuestion = JSON.parse(JSON.stringify(this.currentQuestion));
-      this.originalRemarks = this.remarks;
-      this.remarks = ''; // ✅ Clear remarks when entering edit mode
-      this.isEditMode = true;
+  getFullscreenTitle(): string {
+    switch (this.fullscreenType) {
+      case 'questionText':
+        return 'Question Text';
+      case 'officialAnswer':
+        return 'Official Answer';
+      case 'studentAnswer':
+        return "Student's Answer";
+      default:
+        return '';
     }
   }
 
-  cancelEdit(): void {
-    if (!this.originalQuestion || !this.currentQuestion) {
-      this.isEditMode = false;
-      this.toastService.showInfo('Info', 'No changes to cancel');
-      return;
+  getFullscreenContent(): string {
+    if (!this.currentQuestion) return '';
+
+    switch (this.fullscreenType) {
+      case 'questionText':
+        return this.currentQuestion.questionText;
+      case 'officialAnswer':
+        return this.currentQuestion.officialAnswer;
+      case 'studentAnswer':
+        return this.currentQuestion.studentAnswerText || 'Not answered';
+      default:
+        return '';
     }
-
-    this.currentQuestion.marksObtained = this.originalQuestion.marksObtained;
-    this.remarks = this.originalRemarks;
-
-    if (this.originalQuestion.rubrics && this.currentQuestion.rubrics) {
-      this.currentQuestion.rubrics.forEach((rubric, index) => {
-        const originalRubric = this.originalQuestion?.rubrics?.[index];
-        if (originalRubric) {
-          rubric.marksGiven = originalRubric.marksGiven;
-        }
-      });
-    }
-
-    this.isEditMode = false;
-    this.toastService.showInfo(
-      'Info',
-      'Changes cancelled',
-    );
   }
 
-  isValidHalfIncrement(value: number): boolean {
-    return (value * 2) % 1 === 0;
-  }
+  // ============================================
+  // View Answer Sheet
+  // ============================================
 
-  roundToHalfIncrement(value: number): number {
-    return Math.round(value * 2) / 2;
-  }
-
-  downloadAnswerSheet(): void {
-    if (!this.selectedStudent) {
+  viewAnswerSheet(student: StudentInfo): void {
+    if (!student) {
       this.toastService.showWarning('Warning', 'No student selected');
       return;
     }
 
-    this.isLoading = true;
+    if (!student.documentUrl && !student.fileName) {
+      this.toastService.showWarning('Warning', 'Answer sheet not available');
+      return;
+    }
 
-    this.resultsService
-      .downloadStudentAnswerSheet(
-        this.selectedStudent.studentId,
-        parseInt(this.selectedClass),
-        parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType),
-      )
-      .subscribe({
-        next: (blob: Blob) => {
-          // Create download link
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `${this.selectedStudent?.studentName}_AnswerSheet.pdf`;
+    try {
+      const url = this.viewAnswerSheetService.getAnswerSheetUrl(
+        student.studentId,
+        +this.selectedClass,
+        +this.selectedSubject,
+        +this.selectedExamType
+      );
 
-          // Trigger download
-          document.body.appendChild(link);
-          link.click();
+      const newWindow = window.open(url, '_blank');
 
-          // Cleanup
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
+      if (
+        !newWindow ||
+        newWindow.closed ||
+        typeof newWindow.closed === 'undefined'
+      ) {
+        this.toastService.showWarning(
+          'Popup Blocked',
+          'Please allow popups for this site to view answer sheets'
+        );
+        return;
+      }
 
-          this.isLoading = false;
-          this.toastService.showSuccess(
-            'Success',
-            'Answer sheet downloaded successfully',
-          );
-        },
-        error: (error) => {
-          this.isLoading = false;
-          console.error('Download error:', error);
-          this.toastService.showError(
-            'Error',
-            error.error?.message || 'Failed to download answer sheet',
-          );
-        },
+      newWindow.onerror = (error) => {
+        console.error('Error loading answer sheet:', error);
+        this.toastService.showError('Error', 'Failed to load answer sheet');
+      };
+    } catch (error) {
+      console.error('View error:', error);
+      this.toastService.showError('Error', 'Failed to open answer sheet');
+    }
+  }
+
+  // ============================================
+  // Helper Methods
+  // ============================================
+
+  getPercentage(): number {
+    if (!this.selectedStudent || !this.totalMarks || this.totalMarks === 0) {
+      return 0;
+    }
+    const obtained = this.selectedStudent.obtainedMarks || 0;
+    return Math.round((obtained / this.totalMarks) * 100);
+  }
+
+  isAnyRubricEditing(): boolean {
+    if (!this.currentQuestion?.rubrics) return false;
+    return this.currentQuestion.rubrics.some((r: any) => r.isEditing);
+  }
+
+  getTotalRubricMarks(): number {
+    if (!this.currentQuestion?.rubrics) return 0;
+    return this.currentQuestion.rubrics.reduce(
+      (sum: number, r: any) => sum + (r.marksGiven || 0),
+      0
+    );
+  }
+
+  restrictToHalfStep(event: any): void {
+    const value = event.target.value;
+    const regex = /^\d*(\.(0|5)?)?$/;
+
+    if (!regex.test(value)) {
+      event.target.value = value.slice(0, -1);
+    }
+  }
+
+  // ============================================
+  // ✅ Centralized Error Handling
+  // ============================================
+
+  private handleError(userMessage: string, error: any): void {
+    const errorMessage = this.extractErrorMessage(error);
+    
+    // Log for debugging (only in development)
+    if (!this.isProduction()) {
+      console.error('Error Details:', {
+        userMessage,
+        error,
+        errorMessage
       });
+    }
+
+    // Show toast notification
+    this.toastService.showError('Error', errorMessage || userMessage);
+  }
+
+  private extractErrorMessage(error: any): string {
+    // Try different error formats
+    if (error?.error?.message) {
+      return error.error.message;
+    }
+    
+    if (error?.error?.errors && Array.isArray(error.error.errors)) {
+      return error.error.errors.join(', ');
+    }
+    
+    if (error?.message) {
+      return error.message;
+    }
+    
+    if (typeof error?.error === 'string') {
+      return error.error;
+    }
+    
+    if (error?.statusText) {
+      return error.statusText;
+    }
+    
+    return '';
+  }
+
+  private isProduction(): boolean {
+    // Check environment
+    // return environment.production;
+    return false; // For now, always show console logs
   }
 }

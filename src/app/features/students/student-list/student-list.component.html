@@ -1,4 +1,6 @@
+<!-- Student List Component - Complete with Error Handling & Validation -->
 <div class="list-container">
+  <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-user-graduate"></i> Students List</h2>
     <button class="btn btn-primary" (click)="addStudent()">
@@ -6,46 +8,104 @@
     </button>
   </div>
 
+  <!-- Search & Filter Card -->
   <div class="card">
     <div class="search-section">
-      <div class="search-input-wrapper">
-        <i class="fas fa-search search-icon"></i>
-        <input 
-          type="text" 
-          class="form-control search-input" 
-          placeholder="Search by name, roll number, email..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearch()"
+      <!-- Search Input with Error -->
+      <div class="search-wrapper">
+        <div class="search-input-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input 
+            type="text" 
+            class="form-control search-input" 
+            [class.is-invalid]="searchError"
+            placeholder="Search by name, roll number, email..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchInput()"
+            (blur)="onSearchBlur()"
+            (focus)="onSearchFocus()"
+          />
+          <button 
+            *ngIf="searchTerm" 
+            class="clear-search" 
+            (click)="clearSearch()"
+            type="button"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="error-message" *ngIf="searchError">
+          {{ searchError }}
+        </div>
+      </div>
+
+      <!-- Class Dropdown -->
+      <div class="filter-wrapper">
+        <select 
+          class="form-control" 
+          [(ngModel)]="selectedClass" 
+          (change)="onClassChange()"
         >
-      </div>
-       <div class="col-md-3">
-        <select class="form-control" [(ngModel)]="selectedClass" (change)="onClassChange()">
-          <option value="">All Classes</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">
+            {{ cls.className }}
+          </option>
         </select>
       </div>
-      <div class="col-md-3">
-        <select class="form-control" [(ngModel)]="selectedSection" (change)="onSectionChange()">
-          <option value="">All Sections</option>
-          <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+
+      <!-- Section Dropdown -->
+      <div class="filter-wrapper">
+        <select 
+          class="form-control" 
+          [(ngModel)]="selectedSection" 
+          (change)="onSectionChange()"
+          [disabled]="!selectedClass"
+        >
+          <option value="">
+            {{ selectedClass ? 'Select Section' : 'Select Class First' }}
+          </option>
+          <option *ngFor="let sec of sections" [value]="sec.id">
+            {{ sec.sectionName }}
+          </option>
         </select>
       </div>
-      <!-- <div class="col-md-2">
-        <button class="btn btn-outline w-100" (click)="loadStudents()">
-          <i class="fas fa-sync"></i> Refresh
-        </button>
-      </div> -->
-      <!-- <button class="btn btn-secondary" (click)="loadStudents()">
-        <i class="fas fa-sync"></i> Refresh
-      </button> -->
     </div>
 
+    <!-- Loading State -->
     <div *ngIf="loading" class="loading-state">
-      <div class="spinner-border"></div>
+      <div class="spinner"></div>
       <p>Loading students...</p>
     </div>
 
-    <div *ngIf="!loading" class="table-responsive">
+    <!-- Empty State - No Class/Section Selected -->
+    <div *ngIf="!loading && !selectedClass && students.length === 0" class="empty-state">
+      <i class="fas fa-filter"></i>
+      <h5>Select Filters</h5>
+      <p>Please select a class and section to view students</p>
+    </div>
+
+    <!-- Empty State - No Students Found -->
+    <div *ngIf="!loading && selectedClass && selectedSection && students.length === 0" class="empty-state">
+      <i class="fas fa-users-slash"></i>
+      <h5>No Students Found</h5>
+      <p>No students found for the selected class and section</p>
+      <button class="btn btn-primary mt-3" (click)="addStudent()">
+        <i class="fas fa-user-plus"></i> Add First Student
+      </button>
+    </div>
+
+    <!-- Empty State - No Search Results -->
+    <div *ngIf="!loading && students.length > 0 && filteredStudents.length === 0" class="empty-state">
+      <i class="fas fa-search"></i>
+      <h5>No Results Found</h5>
+      <p>No students match your search criteria</p>
+      <button class="btn btn-secondary mt-3" (click)="clearSearch()">
+        <i class="fas fa-times"></i> Clear Search
+      </button>
+    </div>
+
+    <!-- Students Table - Desktop -->
+    <div *ngIf="!loading && filteredStudents.length > 0" class="table-responsive">
       <table class="table">
         <thead>
           <tr>
@@ -84,13 +144,13 @@
             </td>
             <td>
               <div class="action-buttons">
-                <button class="btn-action btn-view" (click)="viewDetails(student.id)" title="View">
+                <button class="btn-action btn-view" (click)="viewDetails(student.id)" title="View Details">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="editStudent(student.id)" title="Edit">
+                <button class="btn-action btn-edit" (click)="editStudent(student.id)" title="Edit Student">
                   <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn-action btn-delete" (click)="deleteStudent(student)" title="Delete">
+                <button class="btn-action btn-delete" (click)="deleteStudent(student)" title="Delete Student">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
@@ -98,22 +158,72 @@
           </tr>
         </tbody>
       </table>
+    </div>
 
-      <div *ngIf="filteredStudents.length === 0" class="empty-state">
-        <i class="fas fa-inbox"></i>
-        <h5>No students found</h5>
-        <p>Try adjusting your search criteria</p>
+    <!-- Students Cards - Mobile -->
+    <div *ngIf="!loading && filteredStudents.length > 0" class="students-cards">
+      <div *ngFor="let student of filteredStudents" class="student-card">
+        <div class="card-header">
+          <div class="student-avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div>
+          <div class="student-details">
+            <h4>{{ student.firstName }} {{ student.lastName }}</h4>
+            <p class="text-muted">{{ student.gender }} • Roll: {{ student.rollNumber }}</p>
+          </div>
+          <span class="badge" [class.badge-success]="student.isActive" [class.badge-danger]="!student.isActive">
+            {{ student.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <div class="info-row">
+            <i class="fas fa-school"></i>
+            <span>{{ student.className }} - {{ student.sectionName }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-envelope"></i>
+            <span>{{ student.email }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-phone"></i>
+            <span>{{ student.phoneNumber }}</span>
+          </div>
+          <div class="info-row">
+            <i class="fas fa-calendar"></i>
+            <span>Admitted: {{ student.admissionDate | date:'dd/MM/yyyy' }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn btn-sm btn-view" (click)="viewDetails(student.id)">
+            <i class="fas fa-eye"></i> View
+          </button>
+          <button class="btn btn-sm btn-edit" (click)="editStudent(student.id)">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn btn-sm btn-delete" (click)="deleteStudent(student)">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Delete Confirmation Modal -->
-<app-delete-confirmation
-  [show]="showDeleteModal"
-  [title]="'Delete Student'"
-  [message]="'Are you sure you want to delete this student? All associated records will be permanently removed.'"
-  [itemName]="studentToDelete ? (studentToDelete.firstName + ' ' + studentToDelete.lastName + ' (Roll: ' + studentToDelete.rollNumber + ')') : ''"
-  (confirmed)="onDeleteConfirmed()"
-  (cancelled)="onDeleteCancelled()">
-</app-delete-confirmation>
+    <!-- Results Count -->
+    <div *ngIf="!loading && filteredStudents.length > 0" class="results-footer">
+      <p>
+        Showing <strong>{{ filteredStudents.length }}</strong> 
+        of <strong>{{ students.length }}</strong> 
+        student{{ students.length !== 1 ? 's' : '' }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation
+    [show]="showDeleteModal"
+    [title]="'Delete Student'"
+    [message]="'Are you sure you want to delete this student? This action cannot be undone.'"
+    [itemName]="studentToDelete ? getStudentFullName(studentToDelete) : ''"
+    (confirmed)="onDeleteConfirmed()"
+    (cancelled)="onDeleteCancelled()"
+  ></app-delete-confirmation>
+</div>

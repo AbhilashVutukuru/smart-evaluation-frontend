@@ -1,73 +1,77 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { delay, catchError, map } from 'rxjs/operators';
-import { StudentInfo, ExamResult, ExamQuestion } from '../models/exam-result';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExamResultService {
+  private readonly apiUrl = environment.apiUrl;
 
-   private readonly apiUrl = environment.apiUrl;
   constructor(private http: HttpClient) {}
 
-  // Get students from API
-  getStudents(
+  // ============================================
+  // Get Student List with Statistics
+  // ============================================
+
+  getStudentListWithStatistics(
     classId: number,
     sectionId: number,
     subjectId: number,
     examTypeId: number,
-  ): Observable<StudentInfo[]> {
-    const url = `${this.apiUrl}/exam-result/students?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+  ): Observable<any> {
+    const url = `${this.apiUrl}/exam-result/students-with-statistics?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+
     return this.http.get<any>(url).pipe(
       map((response) => {
-        if (response && response.data) {
-          return response.data;
+        if (response?.data) {
+          return {
+            statistics: response.data.statistics,
+            students: response.data.students,
+            totalMarks: response.data.totalMarks,
+            totalQuestions: response.data.totalQuestions,
+            questionNumbers: response.data.questionNumbers,
+          };
         }
-        return [];
+        return this.getEmptyStudentListResponse();
       }),
-      catchError(() => {
-        return of([]);
-      }),
+      catchError(() => of(this.getEmptyStudentListResponse())),
     );
   }
 
-  // Get exam results OVERVIEW for a student (NO full question details)
-  getExamResults(
-    studentId: number,
-    classId: number,
-    sectionId: number,
-    subjectId: number,
-    examTypeId: number,
-  ): Observable<ExamResult> {
-    const url = `${this.apiUrl}/exam-result/student-details?studentId=${studentId}&classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
-    return this.http.get<any>(url).pipe(
-      map((response) => {
-        if (response && response.data) {
-          return response.data;
-        }
-        return { questions: [] };
-      }),
-      catchError(() => {
-        return of({ questions: [] });
-      }),
-    );
+  private getEmptyStudentListResponse() {
+    return {
+      statistics: {
+        totalStudents: 0,
+        absentCount: 0,
+        evaluatedCount: 0,
+        notEvaluatedCount: 0,
+      },
+      students: [],
+      totalMarks: 0,
+      totalQuestions: 0,
+      questionNumbers: [],
+    };
   }
 
-  // Get SINGLE question details (PAGINATION) - NEW METHOD
+  // ============================================
+  // Get Single Question Details
+  // ============================================
+
   getQuestionDetails(
     studentId: number,
     classId: number,
     subjectId: number,
     examTypeId: number,
     questionNumber: number,
-  ): Observable<ExamQuestion> {
+  ): Observable<any> {
     const url = `${this.apiUrl}/exam-result/question-details?studentId=${studentId}&classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}&questionNumber=${questionNumber}`;
+
     return this.http.get<any>(url).pipe(
       map((response) => {
-        if (response && response.data) {
+        if (response?.data) {
           return response.data;
         }
         throw new Error('Question not found');
@@ -75,61 +79,9 @@ export class ExamResultService {
     );
   }
 
-  // Update marks for a SINGLE question - NEW METHOD
-  updateQuestionMarks(
-    studentId: number,
-    questionNumber: number,
-    questionUpdates: { [key: number]: number },
-  ): Observable<boolean> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-    });
-
-    return this.http
-      .put<any>(
-        `${this.apiUrl}/exam-result/update-question-marks`,
-        {
-          studentId: studentId,
-          questionNumber: questionNumber,
-          marks: questionUpdates,
-        },
-        { headers },
-      )
-      .pipe(
-        map(() => true),
-        catchError((error) => {
-          return of(false);
-        }),
-      );
-  }
-
-  // Update marks for ALL questions (final submit)
-  updateMarks(
-    studentId: number,
-    questionUpdates: { [key: number]: number },
-  ): Observable<boolean> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-    });
-
-    return this.http
-      .put<any>(
-        `${this.apiUrl}/exam-result/update-marks`,
-        {
-          studentId: studentId,
-          marks: questionUpdates,
-        },
-        { headers },
-      )
-      .pipe(
-        map(() => true),
-        catchError((error) => {
-          return of(false);
-        }),
-      );
-  }
+  // ============================================
+  // Update Question Rubrics
+  // ============================================
 
   updateQuestionRubrics(
     studentId: number,
@@ -137,53 +89,50 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
     questionNumber: number,
-    rubrics: Array<{ questionPaperRubricId: number; marksGiven: number }>,
+    rubrics: Array<{
+      questionPaperRubricId: number;
+      teacherAssignedMarks: number;
+      teacherRemarks?: string;
+    }>,
   ): Observable<boolean> {
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
-    });
+    // Map to backend expected format
+    const mappedRubrics = rubrics.map((r) => ({
+      questionPaperRubricId: r.questionPaperRubricId,
+      marksGiven: r.teacherAssignedMarks,
+      remarks: r.teacherRemarks || '',
+    }));
 
     const body = {
-      studentId: studentId,
-      classId: classId,
-      subjectId: subjectId,
-      examTypeId: examTypeId,
-      questionNumber: questionNumber,
-      rubrics: rubrics,
+      studentId,
+      classId,
+      subjectId,
+      examTypeId,
+      questionNumber,
+      rubrics: mappedRubrics,
     };
 
-    console.log('API Request:', body);
-
     return this.http
-      .put<any>(`${this.apiUrl}/exam-result/update-question-rubrics`, body, {
-        headers,
-      })
+      .put<any>(`${this.apiUrl}/exam-result/update-question-rubrics`, body)
       .pipe(
-        map((response) => {
-          return true;
-        }),
+        map(() => true),
         catchError((error) => {
-          return of(false);
+          console.error('Update rubrics error:', error);
+          return throwError(() => error);
         }),
       );
   }
 
-  downloadStudentAnswerSheet(
+  // ============================================
+  // Download Answer Sheet
+  // ============================================
+
+  downloadAnswerSheet(
     studentId: number,
     classId: number,
     subjectId: number,
     examTypeId: number,
   ): Observable<Blob> {
-    const url = `${this.apiUrl}/student-answer-sheet/download/${studentId}`;
-    const params = new HttpParams()
-      .set('classId', classId.toString())
-      .set('subjectId', subjectId.toString())
-      .set('examTypeId', examTypeId.toString());
-
-    return this.http.get(url, {
-      params: params,
-      responseType: 'blob',
-    });
+    const url = `${this.apiUrl}/student-answer-sheet/download/${studentId}?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+    return this.http.get(url, { responseType: 'blob' });
   }
 }

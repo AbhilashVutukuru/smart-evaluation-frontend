@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeacherSubjectService } from '../../../core/services/teacher-subject.service';
-import { RegistrationService } from '../../../core/services/registration.service';
 import { TeacherService } from '../../../core/services/teacher.service';
 import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import {
@@ -11,7 +10,7 @@ import {
   SectionDto,
   SubjectDto,
 } from '../../../core/services/master-data.service';
-import { ToastService } from '../../../shared/services/toast.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 interface Assignment {
   classId: number;
@@ -31,7 +30,6 @@ interface Assignment {
 })
 export class AssignTeacherSubjectsComponent implements OnInit {
   private teacherSubjectService = inject(TeacherSubjectService);
-  private registrationService = inject(RegistrationService);
   private teacherService = inject(TeacherService);
   private masterDataService = inject(MasterDataService);
   private toastService = inject(ToastService);
@@ -71,6 +69,9 @@ export class AssignTeacherSubjectsComponent implements OnInit {
         if (response.success && response.data) {
           this.teachers = response.data;
         }
+      },
+      error: (error) => {
+        this.toastService.showError('Error', 'Failed to load teachers');
       },
     });
   }
@@ -121,7 +122,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
         this.subjects = subjects;
       },
       error: (error) => {
-        this.toastService.showError('Error', 'Failed to load sections');
+        this.toastService.showError('Error', 'Failed to load subjects');
       },
     });
   }
@@ -135,6 +136,9 @@ export class AssignTeacherSubjectsComponent implements OnInit {
             this.existingAssignments = response.data;
           }
         },
+        error: (error) => {
+          this.toastService.showError('Error', 'Failed to load existing assignments');
+        },
       });
   }
 
@@ -145,6 +149,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
       !this.selectedSubjectId
     ) {
       this.error = 'Please select class, section and subject';
+      this.toastService.showWarning('Warning', 'Please select class, section and subject');
       return;
     }
 
@@ -177,11 +182,13 @@ export class AssignTeacherSubjectsComponent implements OnInit {
 
     if (exists) {
       this.error = 'This assignment already exists in the list';
+      this.toastService.showWarning('Duplicate', 'This assignment already exists in the list');
       return;
     }
 
     this.assignments.push(assignment);
     this.error = '';
+    this.toastService.showSuccess('Success', 'Assignment added to list');
 
     // Reset selections
     this.selectedClassId = '';
@@ -193,16 +200,19 @@ export class AssignTeacherSubjectsComponent implements OnInit {
 
   removeAssignment(index: number): void {
     this.assignments.splice(index, 1);
+    this.toastService.showInfo('Removed', 'Assignment removed from list');
   }
 
   submitAssignments(): void {
     if (!this.selectedTeacherId) {
       this.error = 'Please select a teacher';
+      this.toastService.showWarning('Warning', 'Please select a teacher');
       return;
     }
 
     if (this.assignments.length === 0) {
       this.error = 'Please add at least one assignment';
+      this.toastService.showWarning('Warning', 'Please add at least one assignment');
       return;
     }
 
@@ -223,33 +233,19 @@ export class AssignTeacherSubjectsComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.success = 'Subjects assigned successfully!';
+          this.toastService.showSuccess('Success', 'Subjects assigned successfully!');
           this.assignments = [];
           this.loadExistingAssignments();
         }
         this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to assign subjects';
+        this.error = error.error?.message ?? 'Failed to assign subjects';
+        this.toastService.showError('Error', error.error?.message ?? 'Failed to assign subjects');
         this.loading = false;
       },
     });
   }
-
-  // removeExistingAssignment(assignmentId: number): void {
-  //   if (!confirm('Are you sure you want to remove this assignment?')) return;
-
-  //   this.teacherSubjectService.removeAssignment(assignmentId).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         this.success = 'Assignment removed successfully';
-  //         this.loadExistingAssignments();
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.error = error.error?.message || 'Failed to remove assignment';
-  //     }
-  //   });
-  // }
 
   openRemoveModal(assignment: any): void {
     this.assignmentToRemove = assignment;
@@ -266,13 +262,15 @@ export class AssignTeacherSubjectsComponent implements OnInit {
         next: (r) => {
           if (r.success) {
             this.success = 'Assignment removed successfully';
+            this.toastService.showSuccess('Success', 'Assignment removed successfully');
             this.loadExistingAssignments();
             this.closeRemoveModal();
           }
           this.removing = false;
         },
         error: (error) => {
-          this.error = error.error?.message || 'Failed to remove assignment';
+          this.error = error.error?.message ?? 'Failed to remove assignment';
+          this.toastService.showError('Error', error.error?.message ?? 'Failed to remove assignment');
           this.removing = false;
         },
       });

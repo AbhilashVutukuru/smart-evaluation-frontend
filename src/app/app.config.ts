@@ -8,11 +8,13 @@ import { inject } from '@angular/core';
 import { routes } from './app.routes';
 import { AuthService } from './core/services/auth.service';
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideAnimations(), 
     provideHttpClient(withInterceptorsFromDi()),  // ✅ Required for class-based interceptors
     
     provideAppInitializer(() => {

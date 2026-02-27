@@ -1,18 +1,16 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TeacherService } from '../../../core/services/teacher.service';
-import { RegistrationService } from '../../../core/services/registration.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
-import { ClassDto, MasterDataService, SubjectDto } from '../../../core/services/master-data.service';
-import { ToastService } from '../../../shared/services/toast.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-teacher-view-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, DeleteConfirmationComponent, CancelConfirmationComponent],
+  imports: [CommonModule, ReactiveFormsModule, DeleteConfirmationComponent, CancelConfirmationComponent],
   templateUrl: './teacher-view-edit.component.html',
   styleUrls: ['./teacher-view-edit.component.css']
 })
@@ -21,30 +19,35 @@ export class TeacherViewEditComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private teacherService = inject(TeacherService);
-  private registrationService = inject(RegistrationService);
-    private masterDataService = inject(MasterDataService);
-    private toastService = inject(ToastService);
+  private toastService = inject(ToastService);
 
+  // Form and Data
   teacherForm!: FormGroup;
   teacherId!: number;
   mode: 'view' | 'edit' = 'view';
   loading = false;
-  error = '';
-  success = '';
 
-  classes: ClassDto[] = [];
-  subjects: SubjectDto[] = [];
+  // Modals
+  showDeleteModal = false;
+  showCancelModal = false;
 
-  // Add properties
-showDeleteModal = false;
-showCancelModal = false;
-teacherToDelete: any = null;
+  // ✅ Validation tracking
+  touchedFields: Set<string> = new Set();
+
+  // ============================================
+  // Lifecycle
+  // ============================================
 
   ngOnInit(): void {
     this.initForm();
-    this.loadClasses();
     
     this.teacherId = +this.route.snapshot.params['id'];
+    if (!this.teacherId) {
+      this.toastService.showError('Error', 'Invalid teacher ID');
+      this.goBack();
+      return;
+    }
+
     this.mode = this.route.snapshot.data['mode'] || 'view';
     
     if (this.mode === 'view') {
@@ -54,58 +57,117 @@ teacherToDelete: any = null;
     this.loadTeacher();
   }
 
-  initForm(): void {
+  // ============================================
+  // Form Initialization
+  // ============================================
+
+  private initForm(): void {
     this.teacherForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', Validators.required],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       address: ['', Validators.required],
       dateOfBirth: ['', Validators.required],
       gender: ['', Validators.required],
       employeeCode: ['', Validators.required],
       qualification: ['', Validators.required],
       experience: [0, [Validators.required, Validators.min(0)]],
-      dateOfJoining: ['', Validators.required],
-      //classId: ['', Validators.required],
-      //subjectIds: [[], Validators.required]
-    });
-
-    this.teacherForm.get('classId')?.valueChanges.subscribe(classId => {
-      if (classId) {
-        this.loadSubjects(+classId);
-      }
+      dateOfJoining: ['', Validators.required]
     });
   }
 
-  loadClasses(): void {
-     this.masterDataService.getClasses().subscribe({
-      next: (classes) => {
-        this.classes = classes;
-      },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load classes');
-      },
-    });
+  // ============================================
+  // ✅ Field Validation on Blur
+  // ============================================
+
+  onFieldBlur(fieldName: string): void {
+    this.touchedFields.add(fieldName);
+    const control = this.teacherForm.get(fieldName);
+    
+    if (control) {
+      control.markAsTouched();
+      control.updateValueAndValidity();
+    }
   }
 
-  loadSubjects(classId: number): void {
-     this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => {
-        this.subjects = subjects;
-      },
-      error: (error) => {
-        this.toastService.showError('Error', 'Failed to load subjects');
-      },
-    });
+  shouldShowError(fieldName: string): boolean {
+    const control = this.teacherForm.get(fieldName);
+    return !!(control && control.invalid && (control.touched || this.touchedFields.has(fieldName)));
   }
 
-  loadTeacher(): void {
+  getErrorMessage(fieldName: string): string {
+    const control = this.teacherForm.get(fieldName);
+    
+    if (!control || !control.errors) return '';
+
+    if (control.errors['required']) {
+      return `${this.getFieldLabel(fieldName)} is required`;
+    }
+    
+    if (control.errors['email']) {
+      return 'Please enter a valid email address';
+    }
+    
+    if (control.errors['pattern'] && fieldName === 'phoneNumber') {
+      return 'Phone number must be exactly 10 digits';
+    }
+
+    if (control.errors['min'] && fieldName === 'experience') {
+      return 'Experience cannot be negative';
+    }
+    
+    return 'Invalid value';
+  }
+
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email',
+      phoneNumber: 'Phone Number',
+      address: 'Address',
+      dateOfBirth: 'Date of Birth',
+      gender: 'Gender',
+      employeeCode: 'Employee Code',
+      qualification: 'Qualification',
+      experience: 'Experience',
+      dateOfJoining: 'Joining Date'
+    };
+    return labels[fieldName] || fieldName;
+  }
+
+  // ============================================
+  // Input Handlers
+  // ============================================
+
+  onPhoneNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/[^0-9]/g, '').slice(0, 10);
+    this.teacherForm.get('phoneNumber')?.setValue(input.value, { emitEvent: false });
+  }
+
+  onExperienceInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value.replace(/[^0-9]/g, '');
+    const value = parseInt(input.value) || 0;
+    this.teacherForm.get('experience')?.setValue(value, { emitEvent: false });
+  }
+
+  // ============================================
+  // Load Data
+  // ============================================
+
+  private loadTeacher(): void {
     this.loading = true;
+
     this.teacherService.getTeacherById(this.teacherId).subscribe({
       next: (response) => {
+        this.loading = false;
+
         if (response.success && response.data) {
           const teacher = response.data;
+          
           this.teacherForm.patchValue({
             firstName: teacher.firstName,
             lastName: teacher.lastName,
@@ -117,80 +179,78 @@ teacherToDelete: any = null;
             employeeCode: teacher.employeeCode,
             qualification: teacher.qualification,
             experience: teacher.experience,
-            dateOfJoining: teacher.dateOfJoining?.split('T')[0],
-            //classId: teacher.classId,
-            //subjectIds: teacher.subjectIds || []
+            dateOfJoining: teacher.dateOfJoining?.split('T')[0]
           });
-          
-          if (teacher.classId) {
-            this.loadSubjects(teacher.classId);
-            setTimeout(() => {
-              this.subjects.forEach(s => {
-                s.selected = teacher.subjectIds?.includes(s.id);
-              });
-            }, 500);
-          }
+        } else {
+          this.toastService.showError('Error', 'Teacher not found');
+          this.goBack();
         }
-        this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to load teacher';
         this.loading = false;
+        this.handleError('Failed to load teacher details', error);
+        setTimeout(() => this.goBack(), 2000);
       }
     });
   }
 
-  onSubjectChange(event: any, subjectId: number): void {
-    const currentSubjects = this.teacherForm.get('subjectIds')?.value || [];
-    if (event.target.checked) {
-      this.teacherForm.patchValue({ subjectIds: [...currentSubjects, subjectId] });
-    } else {
-      this.teacherForm.patchValue({ 
-        subjectIds: currentSubjects.filter((id: number) => id !== subjectId) 
-      });
-    }
-  }
+  // ============================================
+  // Mode Management
+  // ============================================
 
   enableEdit(): void {
     this.mode = 'edit';
     this.teacherForm.enable();
+    this.teacherForm.get('employeeCode')?.disable(); // Keep employee code readonly
+    this.toastService.showInfo('Edit Mode', 'You can now edit teacher details');
   }
 
-  // Update cancelEdit method:
-cancelEdit(): void {
-  if (this.teacherForm.dirty) {
-    this.showCancelModal = true;
-  } else {
+  cancelEdit(): void {
+    if (this.teacherForm.dirty) {
+      this.showCancelModal = true;
+    } else {
+      this.performCancel();
+    }
+  }
+
+  onCancelConfirmed(): void {
     this.performCancel();
+    this.showCancelModal = false;
   }
-}
 
-// Add new methods:
-onCancelConfirmed(): void {
-  this.performCancel();
-}
-
-onCancelCancelled(): void {
-  this.showCancelModal = false;
-}
-
-performCancel(): void {
-  this.showCancelModal = false;
-  if (this.mode === 'edit') {
-    this.mode = 'view';
-    this.teacherForm.disable();
-    this.loadTeacher();
-  } else {
-    this.goBack();
+  onCancelCancelled(): void {
+    this.showCancelModal = false;
   }
-}
+
+  private performCancel(): void {
+    if (this.mode === 'edit') {
+      this.mode = 'view';
+      this.teacherForm.disable();
+      this.touchedFields.clear();
+      this.loadTeacher();
+      this.toastService.showInfo('Cancelled', 'Changes discarded');
+    } else {
+      this.goBack();
+    }
+  }
+
+  // ============================================
+  // Form Submission
+  // ============================================
 
   onSubmit(): void {
-    if (this.teacherForm.invalid) return;
+    // Mark all fields as touched
+    Object.keys(this.teacherForm.controls).forEach(key => {
+      this.touchedFields.add(key);
+      this.teacherForm.get(key)?.markAsTouched();
+    });
+
+    if (this.teacherForm.invalid) {
+      this.toastService.showWarning('Validation Error', 'Please fill all required fields correctly');
+      return;
+    }
 
     this.loading = true;
-    this.error = '';
-    this.success = '';
 
     const payload = {
       id: this.teacherId,
@@ -199,67 +259,131 @@ performCancel(): void {
 
     this.teacherService.updateTeacher(payload).subscribe({
       next: (response) => {
+        this.loading = false;
+
         if (response.success) {
-          this.success = 'Teacher updated successfully!';
+          this.toastService.showSuccess('Success', 'Teacher updated successfully!');
           this.mode = 'view';
           this.teacherForm.disable();
-          setTimeout(() => this.success = '', 3000);
+          this.touchedFields.clear();
+          this.loadTeacher();
+        } else {
+          this.toastService.showError('Error', response.message || 'Failed to update teacher');
         }
-        this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to update teacher';
         this.loading = false;
+        this.handleError('Failed to update teacher', error);
       }
     });
   }
-deleteTeacher(): void {
-  this.showDeleteModal = true;
-}
 
-onDeleteConfirmed(): void {
-  if (this.teacherToDelete) {
-    this.teacherService.deleteTeacher(this.teacherToDelete.id).subscribe({
-      next: () => {
-        this.success = 'Teacher deleted successfully!';
-        setTimeout(() => this.router.navigate(['/teachers']), 1500);
-      },
-      error: (error) => {
-        this.error = error.error?.message || 'Failed to delete teacher';
+  // ============================================
+  // Delete Operations
+  // ============================================
+
+  deleteTeacher(): void {
+    this.showDeleteModal = true;
+  }
+
+  onDeleteConfirmed(): void {
+    if (!this.teacherId) {
+      this.toastService.showError('Error', 'Invalid teacher ID');
+      this.showDeleteModal = false;
+      return;
+    }
+
+    this.teacherService.deleteTeacher(this.teacherId).subscribe({
+      next: (response) => {
         this.showDeleteModal = false;
+
+        if (response.success) {
+          this.toastService.showSuccess('Success', 'Teacher deleted successfully!');
+          setTimeout(() => {
+            this.router.navigate(['/teachers/list']);
+          }, 1500);
+        } else {
+          this.toastService.showError('Error', response.message || 'Failed to delete teacher');
+        }
+      },
+      error: (error) => {
+        this.showDeleteModal = false;
+        this.handleError('Failed to delete teacher', error);
       }
     });
   }
-}
 
-onDeleteCancelled(): void {
-  this.showDeleteModal = false;
-}
+  onDeleteCancelled(): void {
+    this.showDeleteModal = false;
+  }
 
-getTeacherFullName(): string {
-  if (!this.teacherToDelete) return '';
-  return `${this.teacherToDelete.firstName} ${this.teacherToDelete.lastName}`;
-}
-  // deleteTeacher(): void {
-  //   if (!confirm('Are you sure you want to delete this teacher?')) return;
-
-  //   this.loading = true;
-  //   this.teacherService.deleteTeacher(this.teacherId).subscribe({
-  //     next: (response) => {
-  //       if (response.success) {
-  //         this.success = 'Teacher deleted successfully!';
-  //         setTimeout(() => this.router.navigate(['/teachers/list']), 2000);
-  //       }
-  //       this.loading = false;
-  //     },
-  //     error: (error) => {
-  //       this.error = error.error?.message || 'Failed to delete teacher';
-  //       this.loading = false;
-  //     }
-  //   });
-  // }
+  // ============================================
+  // Navigation
+  // ============================================
 
   goBack(): void {
     this.router.navigate(['/teachers/list']);
+  }
+
+  // ============================================
+  // Helper Methods
+  // ============================================
+
+  getTeacherFullName(): string {
+    const firstName = this.teacherForm.get('firstName')?.value || '';
+    const lastName = this.teacherForm.get('lastName')?.value || '';
+    return `${firstName} ${lastName}`.trim();
+  }
+
+  getTeacherInfo(): string {
+    const fullName = this.getTeacherFullName();
+    const employeeCode = this.teacherForm.get('employeeCode')?.value || '';
+    return employeeCode ? `${fullName} (${employeeCode})` : fullName;
+  }
+
+  // ============================================
+  // ✅ Centralized Error Handling
+  // ============================================
+
+  private handleError(userMessage: string, error: any): void {
+    const errorMessage = this.extractErrorMessage(error);
+
+    if (!this.isProduction()) {
+      console.error('Error Details:', {
+        userMessage,
+        error,
+        errorMessage
+      });
+    }
+
+    this.toastService.showError('Error', errorMessage || userMessage);
+  }
+
+  private extractErrorMessage(error: any): string {
+    if (error?.error?.message) {
+      return error.error.message;
+    }
+    
+    if (error?.error?.errors && Array.isArray(error.error.errors)) {
+      return error.error.errors.join(', ');
+    }
+    
+    if (error?.message) {
+      return error.message;
+    }
+    
+    if (typeof error?.error === 'string') {
+      return error.error;
+    }
+    
+    if (error?.statusText) {
+      return error.statusText;
+    }
+    
+    return '';
+  }
+
+  private isProduction(): boolean {
+    return false; // Change based on environment
   }
 }

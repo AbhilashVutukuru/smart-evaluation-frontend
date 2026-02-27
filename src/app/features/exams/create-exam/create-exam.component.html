@@ -1,38 +1,9 @@
-<!-- Create Exam Component -->
+<!-- Create Exam Component - Complete HTML with Fixed Alignment -->
 <div class="exam-container">
   <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-file-alt"></i> Create Exam - Questions & Answers</h2>
-    <!-- <div class="user-badge">
-      <div class="user-avatar">{{ getUserInitial() }}</div>
-      <div class="user-info">
-        <strong>{{ getUserName() }}</strong>
-        <span>{{ getUserEmail() }}</span>
-      </div>
-    </div> -->
   </div>
-
-  <!-- Success/Error Messages -->
-  <!-- <div *ngIf="toast" class="alert" [class.alert-success]="toast.type === 'success'" [class.alert-error]="toast.type === 'error'" [class.alert-warning]="toast.type === 'warning'">
-    <i class="fas" [class.fa-check-circle]="toast.type === 'success'" [class.fa-exclamation-circle]="toast.type === 'error'" [class.fa-exclamation-triangle]="toast.type === 'warning'"></i>
-    <div>
-      <strong>{{ toast.title }}</strong>
-      <p>{{ toast.message }}</p>
-    </div>
-    <button class="alert-close" (click)="closeToast()">
-      <i class="fas fa-times"></i>
-    </button>
-  </div> -->
-
-  <!-- Mode Selection (Commented as per original) -->
-  <!-- <div class="tabs">
-    <button class="tab" [class.active]="examMode === 'upload'" (click)="setExamMode('upload')">
-      <i class="fas fa-upload"></i> Upload New Exam
-    </button>
-    <button class="tab" [class.active]="examMode === 'update'" (click)="setExamMode('update')">
-      <i class="fas fa-edit"></i> Update Existing Exam
-    </button>
-  </div> -->
 
   <!-- UPDATE MODE: Select Exam -->
   <div *ngIf="examMode === 'update'" class="card">
@@ -78,11 +49,11 @@
     <div class="d-flex gap-2">
       <button class="btn btn-primary" (click)="loadExistingExams()" 
               [disabled]="!examFilters.filterExamClass || !examFilters.filterExamSubject || !examFilters.filterExamExamType || isLoading">
-        <i class="fas fa-search"></i> 
+        <i class="fas" [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"></i> 
         <span *ngIf="!isLoading">Load Exams</span>
         <span *ngIf="isLoading">Loading...</span>
       </button>
-      <button class="btn btn-secondary" (click)="examFilters = {filterExamClass: '', filterExamSubject: '', filterExamExamType: ''}; existingExams = []; selectedExamForUpdate = null">
+      <button class="btn btn-secondary" (click)="clearFilters()">
         <i class="fas fa-redo"></i> Clear Filters
       </button>
     </div>
@@ -142,16 +113,16 @@
 
       <div class="col-md-3 mb-3">
         <label class="form-label">Subject <span class="required">*</span></label>
-        <select [(ngModel)]="examFormData.subjectId" [disabled]="examMode === 'update'" required class="form-control">
-          <option value="">Select Subject</option>
+        <select [(ngModel)]="examFormData.subjectId" [disabled]="examMode === 'update' || !examFormData.classId" required class="form-control">
+          <option value="">{{ examFormData.classId ? 'Select Subject' : 'Select Class First' }}</option>
           <option *ngFor="let subject of allSubjects" [value]="subject.id">{{ subject.subjectName }}</option>
         </select>
       </div>
 
       <div class="col-md-3 mb-3">
         <label class="form-label">Exam Type <span class="required">*</span></label>
-        <select [(ngModel)]="examFormData.examTypeId" [disabled]="examMode === 'update'" required class="form-control">
-          <option value="">Select Exam Type</option>
+        <select [(ngModel)]="examFormData.examTypeId" [disabled]="examMode === 'update' || !examFormData.classId" required class="form-control">
+          <option value="">{{ examFormData.classId ? 'Select Exam Type' : 'Select Class First' }}</option>
           <option *ngFor="let examType of allExamTypes" [value]="examType.id">{{ examType.examTypeName }}</option>
         </select>
       </div>
@@ -182,7 +153,7 @@
       <div class="col-md-4 mb-3">
         <label class="form-label">&nbsp;</label>
         <button 
-          class="btn btn-primary btn-block" 
+          class="btn btn-primary w-100" 
           (click)="generateQuestions()"
           [disabled]="!examFormData.classId || !examFormData.subjectId || !examFormData.examTypeId || !examFormData.totalMarks || !examFormData.numberOfQuestions">
           <i class="fas fa-cogs"></i> Set Questions
@@ -230,7 +201,7 @@
         class="form-control"></textarea>
     </div>
 
-    <!-- Marks & Validation Count -->
+    <!-- ✅ FIXED: Marks & Validation Count with Proper Alignment -->
     <div class="row">
       <div class="col-md-4 mb-3">
         <label class="form-label"><strong>Maximum Marks</strong> <span class="required">*</span></label>
@@ -243,31 +214,43 @@
           class="form-control">
       </div>
 
-      <div class="col-md-5 mb-3">
-        <label class="form-label"><strong>Validation Rules Count</strong> <span class="required">*</span></label>
-        <input 
-          type="number" 
-          [(ngModel)]="currentQuestionSet.validationRulesCount"
-          min="1" 
-          max="10" 
-          placeholder="e.g., 3"
-          class="form-control">
+      <!-- ✅ Info message on same line for 1-mark questions -->
+      <div class="col-md-8 mb-3" *ngIf="currentQuestionSet.maxMarks === 1">
+        <label class="form-label">&nbsp;</label>
+        <div class="alert-info-inline">
+          <i class="fas fa-info-circle"></i>
+          <span><strong>1-mark question:</strong> No validation rules needed. Default criterion will be applied automatically.</span>
+        </div>
       </div>
 
-      <div class="col-md-3 mb-3">
-        <label class="form-label">&nbsp;</label>
-        <button class="btn btn-primary btn-block" (click)="generateValidationRules()">
-          <i class="fas fa-list-check"></i> Set Rules
-        </button>
-      </div>
+      <!-- ✅ Validation rules for other marks -->
+      <ng-container *ngIf="currentQuestionSet.maxMarks !== 1">
+        <div class="col-md-5 mb-3">
+          <label class="form-label"><strong>Validation Rules Count</strong> <span class="required">*</span></label>
+          <input 
+            type="number" 
+            [(ngModel)]="currentQuestionSet.validationRulesCount"
+            min="1" 
+            max="10" 
+            placeholder="e.g., 3"
+            class="form-control">
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label class="form-label">&nbsp;</label>
+          <button class="btn btn-primary w-100" (click)="generateValidationRules()">
+            <i class="fas fa-list-check"></i> Set Rules
+          </button>
+        </div>
+      </ng-container>
     </div>
 
-    <!-- Validation Rules Section -->
-    <div class="mb-3">
+    <!-- ✅ Validation Rules Section (Only show if marks > 1) -->
+    <div class="mb-3" *ngIf="shouldShowValidationRules">
       <label class="form-label"><i class="fas fa-chart-bar"></i> Validation Rules <span class="required">*</span></label>
       
       <!-- Marks Summary -->
-      <div class="marks-summary" [class.valid]="validateMarksMatch()" [class.invalid]="!validateMarksMatch() && currentQuestionSet.maxMarks && calculateValidationMarksTotal() > currentQuestionSet.maxMarks">
+      <div class="marks-summary" [class.valid]="validateMarksMatch()" [class.invalid]="!validateMarksMatch() && currentQuestionSet.maxMarks && calculateValidationMarksTotal() > 0">
         <div class="marks-row">
           <div>
             <strong>Maximum Marks:</strong>
@@ -280,11 +263,14 @@
             </span>
           </div>
           <div class="marks-status">
-            <i class="fas fa-check-circle" *ngIf="validateMarksMatch()"></i>
-            <i class="fas fa-exclamation-circle" *ngIf="!validateMarksMatch()"></i>
+            <i class="fas fa-check-circle text-success" *ngIf="validateMarksMatch()"></i>
+            <i class="fas fa-exclamation-circle text-danger" *ngIf="!validateMarksMatch()"></i>
             <span *ngIf="validateMarksMatch()">Marks match!</span>
-            <span *ngIf="!validateMarksMatch() && currentQuestionSet.maxMarks && calculateValidationMarksTotal() > currentQuestionSet.maxMarks">
+            <span *ngIf="!validateMarksMatch() && currentQuestionSet.maxMarks && calculateValidationMarksTotal() > currentQuestionSet.maxMarks" class="text-danger">
               Exceeded by {{ calculateValidationMarksTotal() - currentQuestionSet.maxMarks }}
+            </span>
+            <span *ngIf="!validateMarksMatch() && currentQuestionSet.maxMarks && calculateValidationMarksTotal() < currentQuestionSet.maxMarks" class="text-warning">
+              Short by {{ currentQuestionSet.maxMarks - calculateValidationMarksTotal() }}
             </span>
           </div>
         </div>
@@ -292,7 +278,7 @@
 
       <!-- Rules List -->
       <div class="validation-rules">
-        <div *ngFor="let rule of currentQuestionSet.rubricPoints; let i = index trackBy: trackByIndex" class="validation-rule">
+        <div *ngFor="let rule of currentQuestionSet.rubricPoints; let i = index; trackBy: trackByIndex" class="validation-rule">
           <div class="rule-number">{{ i + 1 }}</div>
           <div class="rule-content">
             <label class="form-label">Rule {{ i + 1 }} <span class="required">*</span></label>
@@ -317,8 +303,8 @@
       </div>
     </div>
 
-    <!-- Validation Errors -->
-    <div *ngIf="getQuestionValidationErrors().length > 0" class="error-box mb-3">
+    <!-- ✅ Validation Errors (Only show if marks > 1) -->
+    <div *ngIf="getQuestionValidationErrors().length > 0 && shouldShowValidationRules" class="error-box mb-3">
       <i class="fas fa-exclamation-triangle"></i>
       <span><strong>{{ getQuestionValidationErrors()[0] }}</strong></span>
     </div>
@@ -335,7 +321,7 @@
         </button>
         
         <button class="btn btn-success" *ngIf="isLastQuestion" (click)="submitExamDocuments()" [disabled]="isSubmitting">
-          <i class="fas fa-check-double"></i>
+          <i class="fas" [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check-double'"></i>
           <span *ngIf="!isSubmitting">Submit All</span>
           <span *ngIf="isSubmitting">Submitting...</span>
         </button>
@@ -354,9 +340,9 @@
     </div>
 
     <!-- Upload Progress -->
-    <div *ngIf="uploadProgress.visible" class="upload-progress">
+    <div *ngIf="uploadProgress.visible" class="upload-progress mt-3">
       <div class="progress-bar-wrapper">
-        <div class="progress-bar" [style.width]="uploadProgress.width"></div>
+        <div class="progress-bar bg-success" [style.width]="uploadProgress.width"></div>
       </div>
       <p class="progress-text">{{ uploadProgress.text }}</p>
     </div>
