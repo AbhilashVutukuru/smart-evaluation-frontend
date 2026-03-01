@@ -64,6 +64,7 @@ export class CreateExamComponent implements OnInit {
     examTypeId: '',
     totalMarks: null,
     numberOfQuestions: null,
+      questionPaperName: '',
     questionSets: [],
   };
 
@@ -180,27 +181,43 @@ export class CreateExamComponent implements OnInit {
   // Generate Questions
   // ============================================
 
-  generateQuestions(): void {
-    if (!this.validateExamBasicInfo()) return;
+generateQuestions(): void {
 
-    try {
-      this.questionSets = this.createExamService.generateQuestionSets(
-        this.examFormData.numberOfQuestions!,
-        this.examFormData.totalMarks!,
-      );
+  // If Question Paper Name is empty → set default as Exam Type
+  if (!this.examFormData.questionPaperName?.trim()) {
 
-      this.examFormData.questionSets = this.questionSets;
-      this.questionsGenerated = true;
-      this.currentQuestionIndex = 0;
+    const selectedExamType = this.allExamTypes.find(
+        e => e.id === +this.examFormData.examTypeId
+    );
 
-      this.toastService.showSuccess(
-        'Questions Generated',
-        `${this.questionSets.length} questions created successfully`,
-      );
-    } catch (error) {
-      this.handleError('Failed to generate questions', error);
+    if (selectedExamType) {
+      this.examFormData.questionPaperName = selectedExamType.examTypeName;
     }
   }
+
+  // Validate form
+  if (!this.validateExamBasicInfo()) return;
+
+  try {
+
+    this.questionSets = this.createExamService.generateQuestionSets(
+      this.examFormData.numberOfQuestions!,
+      this.examFormData.totalMarks!,
+    );
+
+    this.examFormData.questionSets = this.questionSets;
+    this.questionsGenerated = true;
+    this.currentQuestionIndex = 0;
+
+    this.toastService.showSuccess(
+      'Questions Generated',
+      `${this.questionSets.length} questions created successfully`,
+    );
+
+  } catch (error) {
+    this.handleError('Failed to generate questions', error);
+  }
+}
 
   private validateExamBasicInfo(): boolean {
     if (!this.examFormData.classId) {
@@ -379,7 +396,7 @@ get shouldShowValidationRules(): boolean {
       return; // ✅ STOP submission
     }
 
-    // ✅ All validations passed - proceed with submission
+    // All validations passed - proceed with submission
     this.submitToBackend();
   }
 
@@ -580,6 +597,7 @@ get shouldShowValidationRules(): boolean {
       examTypeId: '',
       totalMarks: null,
       numberOfQuestions: null,
+      questionPaperName: '',
       questionSets: [],
     };
 

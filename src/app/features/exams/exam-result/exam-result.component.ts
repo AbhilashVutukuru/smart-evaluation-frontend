@@ -16,6 +16,8 @@ import {
   SubjectDto,
 } from '../../../core/services/master-data.service';
 import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
+import { QuestionPaperDto } from '../../../core/models/exam';
+import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
 
 @Component({
   selector: 'app-exam-results',
@@ -29,12 +31,15 @@ export class ExamResultsComponent implements OnInit {
   private toastService = inject(ToastService);
   private masterDataService = inject(MasterDataService);
   private viewAnswerSheetService = inject(ViewAnswerSheetService);
+  private uploadAnswerSheetService = inject(UploadAnswerSheetService);
 
   // Filter selections
-  selectedClass = '';
-  selectedSection = '';
-  selectedSubject = '';
-  selectedExamType = '';
+  selectedClass: number | null = null;
+  selectedSection: number | null = null;
+  selectedSubject: number | null = null;
+  selectedExamType: number | null = null;
+  questionPapers: QuestionPaperDto[] = [];
+  selectedQuestionPaperId: number | null = null;
 
   // Student data
   students: StudentInfo[] = [];
@@ -63,6 +68,8 @@ export class ExamResultsComponent implements OnInit {
   showStudentsCard = false;
   showResultsCard = false;
   searchCompleted = false;
+  noExamPaperFound = false;
+  showQuestionPaperDropdown = false;
 
   // Fullscreen modal
   fullscreenContent: string | null = null;
@@ -97,9 +104,9 @@ export class ExamResultsComponent implements OnInit {
   // Dropdown Change Handlers
   // ============================================
 
-  onClassSelected(classId: string): void {
+  onClassSelected(classId: number): void {
     this.resetFilters();
-    if (!classId) return;
+    if (classId === null) return;
 
     this.loadSections(classId);
     this.loadSubjects(classId);
@@ -107,18 +114,20 @@ export class ExamResultsComponent implements OnInit {
   }
 
   private resetFilters(): void {
-    this.selectedSection = '';
-    this.selectedSubject = '';
-    this.selectedExamType = '';
+    this.selectedSection = null;
+    this.selectedSubject = null;
+    this.selectedExamType = null;
+
     this.sections = [];
     this.subjects = [];
     this.examTypes = [];
+
     this.students = [];
     this.showStudentsCard = false;
     this.showResultsCard = false;
   }
 
-  private loadSections(classId: string): void {
+  private loadSections(classId: number): void {
     this.masterDataService.getSectionsByClass(classId).subscribe({
       next: (sections) => {
         this.sections = sections;
@@ -129,7 +138,7 @@ export class ExamResultsComponent implements OnInit {
     });
   }
 
-  private loadSubjects(classId: string): void {
+  private loadSubjects(classId: number): void {
     this.masterDataService.getSubjectsByClass(classId).subscribe({
       next: (subjects) => {
         this.subjects = subjects;
@@ -140,7 +149,7 @@ export class ExamResultsComponent implements OnInit {
     });
   }
 
-  private loadExamTypes(classId: string): void {
+  private loadExamTypes(classId: number): void {
     this.masterDataService.getExamTypesByClass(classId).subscribe({
       next: (examTypes) => {
         this.examTypes = examTypes;
@@ -151,45 +160,127 @@ export class ExamResultsComponent implements OnInit {
     });
   }
 
-  validateFilters(): void {
-    // This method is called from HTML - keeping it for compatibility
+  onSectionChange(): void {
+    this.clearData();
+  }
+
+  // Clear students when subject changes
+  onSubjectChange(): void {
+    this.clearData();
+  }
+
+  //  Clear students when exam type changes
+
+  onExamTypeChange(): void {
+    this.clearData();
+    this.questionPapers = [];
+    this.selectedQuestionPaperId = null;
+    this.showQuestionPaperDropdown = false;
+
+    if (
+      this.selectedClass === null ||
+      this.selectedSubject === null ||
+      this.selectedExamType === null
+    ) {
+      return;
+    }
+
+    this.uploadAnswerSheetService
+      .getQuestionPapers(
+        this.selectedClass!,
+        this.selectedSubject!,
+        this.selectedExamType!,
+      )
+      .subscribe({
+        next: (response) => {
+          const papers = response.data ?? [];
+          this.questionPapers = papers;
+
+          if (papers.length === 0) {
+            return;
+          }
+
+          const selectedExam = this.examTypes.find(
+            (e) => e.id === Number(this.selectedExamType),
+          );
+
+          const examTypeName = selectedExam?.examTypeName ?? '';
+
+          //  CASE 1: Only one paper
+          if (papers.length === 1) {
+            const paperName = papers[0].questionPaperName ?? '';
+
+            if (examTypeName === paperName) {
+              // Same name → no dropdown → auto select
+              this.selectedQuestionPaperId = papers[0].id;
+              this.showQuestionPaperDropdown = false;
+            } else {
+              // Different name → show dropdown → user must select
+              this.showQuestionPaperDropdown = true;
+            }
+          }
+
+          //  CASE 2: Multiple papers → always dropdown
+          if (papers.length > 1) {
+            this.showQuestionPaperDropdown = true;
+          }
+        },
+        error: (error) => {
+          this.handleError('Failed to load question papers', error);
+        },
+      });
   }
 
   // ============================================
   // Get Students
   // ============================================
 
-  getStudents(): void {
+  showStudents(): void {
     if (!this.validateSelection()) return;
 
+    // Validate dropdown only if visible
+    if (this.showQuestionPaperDropdown && !this.selectedQuestionPaperId) {
+      this.toastService.showWarning('Warning', 'Please select Question Paper');
+      return;
+    }
+
     this.isLoading = true;
+    this.noExamPaperFound = false;
 
     this.examResultService
       .getStudentListWithStatistics(
-        parseInt(this.selectedClass),
-        parseInt(this.selectedSection),
-        parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType)
+        this.selectedClass!,
+        this.selectedSection!,
+        this.selectedSubject!,
+        this.selectedExamType!,
+        this.selectedQuestionPaperId!,
       )
       .subscribe({
-        next: (response: any) => {
-          this.students = response.students || [];
-          this.statistics = response.statistics || this.getEmptyStatistics();
-          this.totalMarks = response.totalMarks || 0;
-          this.totalQuestions = response.totalQuestions || 0;
-          this.questionNumbers = response.questionNumbers || [];
+        next: (response) => {
+          this.students = response.students;
+          this.statistics = response.statistics;
+          this.totalMarks = response.totalMarks;
+          this.totalQuestions = response.totalQuestions;
+          this.questionNumbers = response.questionNumbers;
+
           this.showStudentsCard = true;
           this.showResultsCard = false;
           this.searchCompleted = true;
           this.isLoading = false;
 
-          if (this.students.length === 0) {
-            this.toastService.showInfo('Info', 'No students found for this selection');
-          }
+          this.noExamPaperFound = this.students.length === 0;
         },
         error: (error) => {
           this.isLoading = false;
-          this.handleError('Failed to load students', error);
+
+          if (error.status === 404) {
+            this.noExamPaperFound = true;
+            this.students = [];
+            this.showStudentsCard = true;
+            this.toastService.showWarning('Warning', error.error.message);
+          } else {
+            this.handleError('Failed to load students', error);
+          }
         },
       });
   }
@@ -201,7 +292,10 @@ export class ExamResultsComponent implements OnInit {
       !this.selectedSubject ||
       !this.selectedExamType
     ) {
-      this.toastService.showWarning('Warning', 'Please select all required fields');
+      this.toastService.showWarning(
+        'Warning',
+        'Please select all required fields',
+      );
       return false;
     }
     return true;
@@ -275,10 +369,10 @@ export class ExamResultsComponent implements OnInit {
     this.examResultService
       .getQuestionDetails(
         this.selectedStudent.studentId,
-        parseInt(this.selectedClass),
-        parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType),
-        index + 1
+        this.selectedClass!,
+        this.selectedSubject!,
+        this.selectedExamType!,
+        index + 1,
       )
       .subscribe({
         next: (question: any) => {
@@ -395,7 +489,10 @@ export class ExamResultsComponent implements OnInit {
     }
 
     if (!this.isRubricValid(rubric)) {
-      this.toastService.showError('Error', 'Please enter valid marks (0.5 step) and remarks');
+      this.toastService.showError(
+        'Error',
+        'Please enter valid marks (0.5 step) and remarks',
+      );
       return;
     }
 
@@ -419,11 +516,11 @@ export class ExamResultsComponent implements OnInit {
     this.examResultService
       .updateQuestionRubrics(
         this.selectedStudent.studentId,
-        parseInt(this.selectedClass),
-        parseInt(this.selectedSubject),
-        parseInt(this.selectedExamType),
+        this.selectedClass!,
+        this.selectedSubject!,
+        this.selectedExamType!,
         this.currentQuestion.questionNumber,
-        rubricData
+        rubricData,
       )
       .subscribe({
         next: () => {
@@ -517,9 +614,9 @@ export class ExamResultsComponent implements OnInit {
     try {
       const url = this.viewAnswerSheetService.getAnswerSheetUrl(
         student.studentId,
-        +this.selectedClass,
-        +this.selectedSubject,
-        +this.selectedExamType
+        this.selectedClass!,
+        this.selectedSubject!,
+        this.selectedExamType!,
       );
 
       const newWindow = window.open(url, '_blank');
@@ -531,7 +628,7 @@ export class ExamResultsComponent implements OnInit {
       ) {
         this.toastService.showWarning(
           'Popup Blocked',
-          'Please allow popups for this site to view answer sheets'
+          'Please allow popups for this site to view answer sheets',
         );
         return;
       }
@@ -567,7 +664,7 @@ export class ExamResultsComponent implements OnInit {
     if (!this.currentQuestion?.rubrics) return 0;
     return this.currentQuestion.rubrics.reduce(
       (sum: number, r: any) => sum + (r.marksGiven || 0),
-      0
+      0,
     );
   }
 
@@ -580,19 +677,35 @@ export class ExamResultsComponent implements OnInit {
     }
   }
 
+  private clearData(): void {
+    this.students = [];
+    this.selectedStudent = null;
+    this.currentResults = null;
+    this.currentQuestion = null;
+    this.showStudentsCard = false;
+    this.showResultsCard = false;
+    this.searchCompleted = false;
+    this.statistics = {
+      totalStudents: 0,
+      absentCount: 0,
+      evaluatedCount: 0,
+      notEvaluatedCount: 0,
+    };
+  }
+
   // ============================================
   // ✅ Centralized Error Handling
   // ============================================
 
   private handleError(userMessage: string, error: any): void {
     const errorMessage = this.extractErrorMessage(error);
-    
+
     // Log for debugging (only in development)
     if (!this.isProduction()) {
       console.error('Error Details:', {
         userMessage,
         error,
-        errorMessage
+        errorMessage,
       });
     }
 
@@ -605,23 +718,23 @@ export class ExamResultsComponent implements OnInit {
     if (error?.error?.message) {
       return error.error.message;
     }
-    
+
     if (error?.error?.errors && Array.isArray(error.error.errors)) {
       return error.error.errors.join(', ');
     }
-    
+
     if (error?.message) {
       return error.message;
     }
-    
+
     if (typeof error?.error === 'string') {
       return error.error;
     }
-    
+
     if (error?.statusText) {
       return error.statusText;
     }
-    
+
     return '';
   }
 

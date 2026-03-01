@@ -16,6 +16,7 @@ import {
 import { ToastService } from '../../../core/services/toast.service';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
 import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
+import { QuestionPaperDto } from '../../../core/models/exam';
 
 interface StudentUploadStatus {
   studentId: number;
@@ -39,9 +40,10 @@ interface StudentUploadStatus {
 })
 export class UploadAnswerSheetsComponent implements OnInit {
   private uploadAnswerSheetService = inject(UploadAnswerSheetService);
+    private viewAnswerSheetService = inject(ViewAnswerSheetService);
   private masterDataService = inject(MasterDataService);
   private toastService = inject(ToastService);
-  private viewAnswerSheetService = inject(ViewAnswerSheetService);
+
 
   // Filter properties
   selectedClass = '';
@@ -49,12 +51,14 @@ export class UploadAnswerSheetsComponent implements OnInit {
   selectedSubject = '';
   selectedExamType = '';
   absentStudentIds: number[] = [];
+  selectedQuestionPaperId: number | null = null;
 
   // Dropdown data
   classes: ClassDto[] = [];
   sections: SectionDto[] = [];
   subjects: SubjectDto[] = [];
   examTypes: ExamTypeDto[] = [];
+  questionPapers: QuestionPaperDto[] = [];
 
   // Student data
   students: StudentUploadStatus[] = [];
@@ -62,9 +66,12 @@ export class UploadAnswerSheetsComponent implements OnInit {
   // UI state
   showStudentsCard = false;
   loading = false;
-  isViewing=false;
+  isViewing = false;
   isSubmittingAll = false;
   isEvaluationCompleted = false;
+  isSubmittedForEvaluation = false;
+  noExamPaperFound = false;
+  showQuestionPaperDropdown = false;
 
   // ============================================
   // Computed Properties (Statistics)
@@ -128,21 +135,83 @@ export class UploadAnswerSheetsComponent implements OnInit {
     this.loadExamTypes(classId);
   }
 
-    onSectionChange(): void {
+  onSectionChange(): void {
     this.students = [];
     this.showStudentsCard = false;
   }
 
-  // Clear students when subject changes
   onSubjectChange(): void {
     this.students = [];
     this.showStudentsCard = false;
+
+    this.questionPapers = [];
+    this.selectedQuestionPaperId = null;
+
+    // If exam type already selected → reload question papers
+    if (this.selectedClass && this.selectedSubject && this.selectedExamType) {
+      this.onExamTypeChange();
+    }
   }
 
-  //  Clear students when exam type changes
   onExamTypeChange(): void {
     this.students = [];
     this.showStudentsCard = false;
+    this.questionPapers = [];
+    this.selectedQuestionPaperId = null;
+    this.showQuestionPaperDropdown = false;
+
+    if (
+      !this.selectedClass ||
+      !this.selectedSubject ||
+      !this.selectedExamType
+    ) {
+      return;
+    }
+
+    this.uploadAnswerSheetService
+      .getQuestionPapers(
+        +this.selectedClass,
+        +this.selectedSubject,
+        +this.selectedExamType,
+      )
+      .subscribe({
+        next: (response) => {
+          const papers = response.data ?? [];
+          this.questionPapers = papers;
+
+          if (papers.length === 0) {
+            return;
+          }
+
+          const selectedExam = this.examTypes.find(
+            (e) => e.id === Number(this.selectedExamType),
+          );
+
+          const examTypeName = selectedExam?.examTypeName ?? '';
+
+          //  CASE 1: Only one paper
+          if (papers.length === 1) {
+            const paperName = papers[0].questionPaperName ?? '';
+
+            if (examTypeName === paperName) {
+              // Same name → no dropdown → auto select
+              this.selectedQuestionPaperId = papers[0].id;
+              this.showQuestionPaperDropdown = false;
+            } else {
+              // Different name → show dropdown → user must select
+              this.showQuestionPaperDropdown = true;
+            }
+          }
+
+          //  CASE 2: Multiple papers → always dropdown
+          if (papers.length > 1) {
+            this.showQuestionPaperDropdown = true;
+          }
+        },
+        error: (error) => {
+          this.handleError('Failed to load question papers', error);
+        },
+      });
   }
 
   private resetDependentDropdowns(): void {
@@ -187,16 +256,18 @@ export class UploadAnswerSheetsComponent implements OnInit {
     });
   }
 
-  // validateFilters(): void {
-  //   // Validation happens in validateFiltersBeforeLoad
-  // }
-
   // ============================================
   // Show Students
   // ============================================
 
   showStudents(): void {
     if (!this.validateFiltersBeforeLoad()) return;
+
+    //  Validate only if dropdown is visible
+    if (this.showQuestionPaperDropdown && !this.selectedQuestionPaperId) {
+      this.toastService.showWarning('Warning', 'Please select Question Paper');
+      return;
+    }
 
     this.resetState();
     this.loading = true;
@@ -207,6 +278,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
         +this.selectedSection,
         +this.selectedSubject,
         +this.selectedExamType,
+        +this.selectedQuestionPaperId!,
       )
       .subscribe({
         next: (response) => {
@@ -214,7 +286,14 @@ export class UploadAnswerSheetsComponent implements OnInit {
         },
         error: (error) => {
           this.loading = false;
-          this.handleError('Failed to load students', error);
+          if (error.status === 404) {
+            this.noExamPaperFound = true;
+            this.students = [];
+            this.showStudentsCard = true;
+            this.toastService.showWarning('Warning', error.error.message);
+          } else {
+            this.handleError('Failed to load students', error);
+          }
         },
       });
   }
@@ -238,29 +317,32 @@ export class UploadAnswerSheetsComponent implements OnInit {
   private resetState(): void {
     this.showStudentsCard = false;
     this.isEvaluationCompleted = false;
+    this.isSubmittedForEvaluation = false;
     this.absentStudentIds = [];
   }
 
   private handleStudentsResponse(response: any): void {
-    if (response.success && Array.isArray(response.data.students)) {
-      const rawStudents = response.data.students;
+    if (response.success && response.data) {
+      const rawStudents = response.data.students ?? [];
 
       if (rawStudents.length > 0) {
         this.students = this.mapStudents(rawStudents);
         this.updateAbsentStudentIds();
 
-        if (response.data.pendingCount === 0) {
-          this.isEvaluationCompleted = true;
-        }
+        this.isSubmittedForEvaluation =
+          response.data.isEvaluationCompleted ?? false;
 
-         this.showStudentsCard = true;
-      this.toastService.showSuccess('Success', 'Students loaded successfully');
+        this.toastService.showSuccess(
+          'Success',
+          'Students loaded successfully',
+        );
+      } else {
+        this.students = [];
       }
-      else{
-        this.toastService.showWarning('Warning', 'No Students found or No question Paper created for that subject or Exam type');
-      }
-     
+
+      this.showStudentsCard = true;
     }
+
     this.loading = false;
   }
 
@@ -289,18 +371,23 @@ export class UploadAnswerSheetsComponent implements OnInit {
   // File Upload
   // ============================================
 
-  onFileSelected(event: any, student: StudentUploadStatus): void {
+  onFileSelected(
+    event: any,
+    student: StudentUploadStatus,
+    isUpdate: boolean = false,
+  ): void {
     const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      student.answerSheetFile = file;
 
-    if (!file) return;
-
-    if (file.type !== 'application/pdf') {
+      if (isUpdate) {
+        this.updateAnswerSheet(student); // ✅ Call update method
+      } else {
+        this.uploadAnswerSheet(student); // ✅ Call upload method
+      }
+    } else {
       this.toastService.showError('Error', 'Please select a PDF file');
-      return;
     }
-
-    student.answerSheetFile = file;
-    this.uploadAnswerSheet(student);
   }
 
   uploadAnswerSheet(student: StudentUploadStatus): void {
@@ -328,6 +415,41 @@ export class UploadAnswerSheetsComponent implements OnInit {
           `Failed to upload answer sheet for ${student.studentName}`,
           error,
         );
+      },
+    });
+  }
+
+  updateAnswerSheet(student: StudentUploadStatus): void {
+    if (!student.answerSheetFile) {
+      this.toastService.showWarning('Warning', 'Please select a file first');
+      return;
+    }
+
+    student.isUploading = true;
+
+    const formData = new FormData();
+    formData.append('StudentAnswerSheetFile', student.answerSheetFile);
+    formData.append('StudentId', student.studentId.toString());
+    formData.append('ClassId', this.selectedClass);
+    formData.append('SectionId', this.selectedSection);
+    formData.append('SubjectId', this.selectedSubject);
+    formData.append('ExamTypeId', this.selectedExamType);
+
+    this.uploadAnswerSheetService.updateAnswerSheet(formData).subscribe({
+      next: (response) => {
+        if (response.success) {
+          student.isUploaded = true;
+          student.fileName = student.answerSheetFile?.name;
+          this.toastService.showSuccess(
+            'Success',
+            `Answer sheet updated for ${student.studentName}`,
+          );
+        }
+        student.isUploading = false;
+      },
+      error: (error) => {
+        this.handleError('Failed to update answer sheet', error);
+        student.isUploading = false;
       },
     });
   }
@@ -399,6 +521,7 @@ export class UploadAnswerSheetsComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.isEvaluationCompleted = true;
+          this.isSubmittedForEvaluation = true;
           this.toastService.showSuccess(
             'Success',
             response.message || 'Evaluation started successfully',
@@ -490,14 +613,14 @@ export class UploadAnswerSheetsComponent implements OnInit {
 
   // ============================================
   // View Answer Sheet
-  // ============================================ 
+  // ============================================
 
   viewAnswerSheet(student: StudentUploadStatus): void {
     // Validation
     if (!student) {
       this.toastService.showWarning('Warning', 'No student selected');
       return;
-    }    
+    }
 
     try {
       // Generate URL
@@ -505,17 +628,21 @@ export class UploadAnswerSheetsComponent implements OnInit {
         student.studentId,
         +this.selectedClass,
         +this.selectedSubject,
-        +this.selectedExamType
+        +this.selectedExamType,
       );
 
       // Open in new tab with error handling
       const newWindow = window.open(url, '_blank');
 
       // Check if popup was blocked
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      if (
+        !newWindow ||
+        newWindow.closed ||
+        typeof newWindow.closed === 'undefined'
+      ) {
         this.toastService.showWarning(
           'Popup Blocked',
-          'Please allow popups for this site to view answer sheets'
+          'Please allow popups for this site to view answer sheets',
         );
         return;
       }
@@ -525,7 +652,6 @@ export class UploadAnswerSheetsComponent implements OnInit {
         console.error('Error loading answer sheet:', error);
         this.toastService.showError('Error', 'Failed to load answer sheet');
       };
-
     } catch (error) {
       console.error('View error:', error);
       this.toastService.showError('Error', 'Failed to open answer sheet');

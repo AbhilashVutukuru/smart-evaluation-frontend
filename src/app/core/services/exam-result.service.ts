@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { StudentListResponse } from '../models/exam-result';
 
 @Injectable({
   providedIn: 'root',
@@ -17,31 +18,33 @@ export class ExamResultService {
   // ============================================
 
   getStudentListWithStatistics(
-    classId: number,
-    sectionId: number,
-    subjectId: number,
-    examTypeId: number,
-  ): Observable<any> {
-    const url = `${this.apiUrl}/exam-result/students-with-statistics?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+  classId: number,
+  sectionId: number,
+  subjectId: number,
+  examTypeId: number,
+  questionPaperId: number
+): Observable<StudentListResponse> {
 
-    return this.http.get<any>(url).pipe(
-      map((response) => {
-        if (response?.data) {
-          return {
-            statistics: response.data.statistics,
-            students: response.data.students,
-            totalMarks: response.data.totalMarks,
-            totalQuestions: response.data.totalQuestions,
-            questionNumbers: response.data.questionNumbers,
-          };
-        }
-        return this.getEmptyStudentListResponse();
-      }),
-      catchError(() => of(this.getEmptyStudentListResponse())),
-    );
-  }
+  return this.http.get<{
+    success: boolean;
+    data: StudentListResponse;
+  }>(
+    `${this.apiUrl}/exam-result/students-with-statistics`,
+    {
+      params: {
+        classId,
+        sectionId,
+        subjectId,
+        examTypeId,
+        questionPaperId
+      }
+    }
+  ).pipe(
+    map(response => response.data ?? this.getEmptyStudentListResponse())
+  );
+}
 
-  private getEmptyStudentListResponse() {
+  private getEmptyStudentListResponse(): StudentListResponse {
     return {
       statistics: {
         totalStudents: 0,

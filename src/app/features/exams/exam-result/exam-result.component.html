@@ -2,7 +2,7 @@
   <!-- Page Header -->
   <div class="page-header">
     <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
-  </div> 
+  </div>
 
   <!-- Filter Card -->
   <div class="card">
@@ -14,10 +14,10 @@
         <select
           class="form-control"
           [(ngModel)]="selectedClass"
-          (change)="onClassSelected(selectedClass)"
+          (change)="onClassSelected(selectedClass!)"
         >
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">
+          <option value="null">Select Class</option>
+          <option *ngFor="let cls of classes" [ngValue]="cls.id">
             {{ cls.classNumber }}
           </option>
         </select>
@@ -29,11 +29,11 @@
         <select
           class="form-control"
           [(ngModel)]="selectedSection"
-          [disabled]="!selectedClass"
-          (change)="validateFilters()"
+          [disabled]="selectedClass === null"
+          (change)="onSectionChange()"
         >
-          <option value="">Select Section</option>
-          <option *ngFor="let section of sections" [value]="section.id">
+          <option value="null">Select Section</option>
+          <option *ngFor="let section of sections" [ngValue]="section.id">
             {{ section.sectionName }}
           </option>
         </select>
@@ -45,11 +45,11 @@
         <select
           class="form-control"
           [(ngModel)]="selectedSubject"
-          [disabled]="!selectedClass"
-          (change)="validateFilters()"
+          [disabled]="selectedClass === null"
+          (change)="onSubjectChange()"
         >
-          <option value="">Select Subject</option>
-          <option *ngFor="let subject of subjects" [value]="subject.id">
+          <option value="null">Select Subject</option>
+          <option *ngFor="let subject of subjects" [ngValue]="subject.id">
             {{ subject.subjectName }}
           </option>
         </select>
@@ -61,42 +61,51 @@
         <select
           class="form-control"
           [(ngModel)]="selectedExamType"
-          [disabled]="!selectedClass"
-          (change)="validateFilters()"
+          [disabled]="selectedClass === null"
+          (change)="onExamTypeChange()"
         >
-          <option value="">Select Exam Type</option>
-          <option *ngFor="let examType of examTypes" [value]="examType.id">
+          <option value="null">Select Exam Type</option>
+          <option *ngFor="let examType of examTypes" [ngValue]="examType.id">
             {{ examType.examTypeName }}
           </option>
         </select>
       </div>
     </div>
 
-    <div class="d-flex">
-      <button
-        class="btn btn-primary"
-        (click)="getStudents()"
-        [disabled]="isLoading"
-      >
-        <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-        {{ isLoading ? "Loading..." : "Show Student Details" }}
-      </button>
+   <div class="row align-items-end">
+      <!-- Question Paper Dropdown -->
+      <div class="col-md-3 mb-3" *ngIf="showQuestionPaperDropdown">
+        <label class="form-label">
+          Question Paper <span class="required">*</span>
+        </label>
+
+        <select class="form-control" [(ngModel)]="selectedQuestionPaperId">
+          <option [ngValue]="null">Select Question Paper</option>
+
+          <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
+            {{ qp.questionPaperName }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Button -->
+      <div class="col-md-2 mb-3">
+        <button
+          class="btn btn-primary"
+          (click)="showStudents()"
+          [disabled]="isLoading"
+        >
+          <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+          {{ isLoading ? "Loading..." : "Show Student Details" }}
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Empty State for No Students Found -->
-  <div
-    class="card"
-    *ngIf="showStudentsCard && students && students.length === 0 && !isLoading"
-  >
-    <div class="empty-state">
-      <i class="fas fa-users-slash"></i>
-      <h5>No Students Found</h5>
-      <p>No students found for the selected exam details.</p>
-    </div>
-  </div>
 
-  <!-- ✅ Students Table with Statistics -->
+
+  <!--  Students Table with Statistics -->
   <div
     class="card"
     *ngIf="showStudentsCard && students.length > 0 && !showResultsCard"
@@ -109,7 +118,7 @@
       >
     </div>
 
-    <!-- ✅ Statistics Cards -->
+    <!--  Statistics Cards -->
     <div class="stats-grid">
       <!-- Total Students -->
       <div class="stat-card stat-total">
@@ -183,18 +192,30 @@
               </span>
 
               <span
-                *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated'"
+                *ngIf="
+                  !student.isAbsent &&
+                  student.evaluationStatus === 'Evaluated' &&
+                  student.hasUploaded
+                "
                 class="badge badge-success"
               >
                 Evaluated
               </span>
 
+              <!-- Not Evaluated -->
               <span
-                *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'"
+                *ngIf="
+                  !student.isAbsent &&
+                  student.evaluationStatus === 'Pending' &&
+                  student.hasUploaded
+                "
                 class="badge badge-warning"
               >
                 Not Evaluated
               </span>
+
+              <!-- Not Uploaded -->
+              <span *ngIf="!student.isAbsent && !student.hasUploaded"> - </span>
             </td>
 
             <td class="text-center align-middle">
@@ -204,7 +225,11 @@
               </ng-container>
 
               <!-- Uploaded -->
-              <ng-container *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated'">
+              <ng-container
+                *ngIf="
+                  !student.isAbsent && student.evaluationStatus === 'Evaluated'
+                "
+              >
                 <button
                   class="btn btn-primary btn-sm"
                   (click)="viewStudentResults(student)"
@@ -214,7 +239,11 @@
               </ng-container>
 
               <!-- Pending -->
-              <ng-container *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'">
+              <ng-container
+                *ngIf="
+                  !student.isAbsent && student.evaluationStatus === 'Pending'
+                "
+              >
                 <span class="text-muted fw-semibold d-block">-</span>
               </ng-container>
             </td>
@@ -273,9 +302,7 @@
         <span class="info-value">{{ getPercentage() }}%</span>
       </div>
       <div class="info-item">
-        <span class="info-label">
-          <i class="fas fa-eye"></i> View:
-        </span>
+        <span class="info-label"> <i class="fas fa-eye"></i> View: </span>
 
         <a
           href="javascript:void(0)"
@@ -343,8 +370,7 @@
           {{ currentQuestion.questionNumber }}
         </h5>
         <span class="marks-badge"
-          >{{ getTotalRubricMarks() }} /
-          {{ currentQuestion.maxMarks }}</span
+          >{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span
         >
       </div>
 

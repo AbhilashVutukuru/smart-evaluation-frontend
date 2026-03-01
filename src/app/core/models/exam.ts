@@ -31,6 +31,7 @@ export interface ExamFormData {
   totalMarks: number | null;
   numberOfQuestions: number | null;
   questionSets: QuestionSet[];
+   questionPaperName:string;
 }
 
 export interface ExamFilters {
@@ -53,10 +54,85 @@ export interface Rubric {
   maxMarks: number;
 }
 
+export interface QuestionPaperDto {
+  id: number;
+  questionPaperName: string;
+}
+
 export interface ApiRequest {
   classId: number;
   subjectId: number;
   examTypeId: number;
   totalMarks: number;
+  questionPaperName: string;
   questions: Question[];
+}
+
+
+
+
+
+
+/**
+ * Student upload status model
+ */
+export interface StudentUploadStatus {
+  studentId: number;
+  rollNumber: string;
+  studentName: string;
+  className: string;
+  sectionName: string;
+  isAbsent: boolean;
+  isUploaded: boolean;
+  isUploading?: boolean;
+  answerSheetFile?: File;
+  fileName?: string;
+}
+
+/**
+ * Student statistics
+ */
+export interface StudentStatistics {
+  totalStudents: number;
+  absentCount: number;
+  uploadedCount: number;
+  pendingCount: number;
+}
+
+/**
+ * Exam statistics
+ */
+export interface ExamStatistics {
+  totalStudents: number;
+  absentCount: number;
+  evaluatedCount: number;
+  notEvaluatedCount: number;
+}
+
+/**
+ * Question paper DTO
+ */
+export interface QuestionPaperDto {
+  id: number;
+  questionPaperName: string;
+}
+
+/**
+ * API Response wrapper
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+/**
+ * Student list summary response
+ */
+export interface StudentListSummaryDto {
+  students: StudentUploadStatus[];
+  totalStudents: number;
+  absentCount: number;
+  uploadedCount: number;
+  pendingCount: number;
 }
