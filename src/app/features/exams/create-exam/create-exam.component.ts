@@ -2,6 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { CreateExamService } from '../../../core/services/create-exam.service';
 import {
   MasterDataService,
@@ -16,6 +17,12 @@ import {
   Exam,
 } from '../../../core/models/exam';
 
+interface UploadProgress {
+  visible: boolean;
+  width: string;
+  text: string;
+}
+
 @Component({
   selector: 'app-exam-upload',
   standalone: true,
@@ -25,38 +32,35 @@ import {
 })
 export class CreateExamComponent implements OnInit {
   private toastService = inject(ToastService);
+  private errorHandler = inject(ErrorHandlerService);
   private createExamService = inject(CreateExamService);
   private masterDataService = inject(MasterDataService);
 
-  // Mode state
+  // ─── Mode state ───────────────────────────────────────────────────────────────
   examMode: 'upload' | 'update' = 'upload';
   questionsGenerated = false;
   currentQuestionIndex = 0;
 
-  // Loading states
+  // ─── Loading states ───────────────────────────────────────────────────────────
   isLoading = false;
   isSubmitting = false;
 
-  // Dropdown data
+  // ─── Dropdown data ────────────────────────────────────────────────────────────
   allClasses: ClassDto[] = [];
   allSubjects: SubjectDto[] = [];
   allExamTypes: ExamTypeDto[] = [];
 
-  // Update mode data
+  // ─── Update mode data ─────────────────────────────────────────────────────────
   existingExams: Exam[] = [];
   selectedExamForUpdate: Exam | null = null;
 
-  // Question sets
+  // ─── Question sets ────────────────────────────────────────────────────────────
   questionSets: QuestionSet[] = [];
 
-  // Upload progress
-  uploadProgress = {
-    visible: false,
-    width: '0%',
-    text: '',
-  };
+  // ─── Upload progress ──────────────────────────────────────────────────────────
+  uploadProgress: UploadProgress = { visible: false, width: '0%', text: '' };
 
-  // Form data
+  // ─── Form data ────────────────────────────────────────────────────────────────
   examFormData: ExamFormData = {
     academicYear: this.createExamService.getCurrentAcademicYear(),
     classId: '',
@@ -64,48 +68,37 @@ export class CreateExamComponent implements OnInit {
     examTypeId: '',
     totalMarks: null,
     numberOfQuestions: null,
-      questionPaperName: '',
+    questionPaperName: '',
     questionSets: [],
   };
 
-  // Filter data (update mode)
+  // ─── Filter data (update mode) ────────────────────────────────────────────────
   examFilters: ExamFilters = {
     filterExamClass: '',
     filterExamSubject: '',
     filterExamExamType: '',
   };
 
-  // ============================================
-  // Lifecycle
-  // ============================================
+  // ─────────────────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     this.loadClasses();
   }
 
-  // ============================================
-  // Load Initial Data
-  // ============================================
+  // ─── Load Initial Data ────────────────────────────────────────────────────────
 
   private loadClasses(): void {
     this.masterDataService.getClasses().subscribe({
-      next: (classes) => {
-        this.allClasses = classes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load classes', error);
-      },
+      next: (classes) => (this.allClasses = classes),
+      error: (error) => this.errorHandler.handle('Failed to load classes', error),
     });
   }
 
-  // ============================================
-  // Dropdown Change Handlers (Upload Mode)
-  // ============================================
+  // ─── Dropdown Change Handlers (Upload Mode) ───────────────────────────────────
 
   onClassSelected(classId: string): void {
     this.resetDependentDropdowns();
     if (!classId) return;
-
     this.loadSubjectsAndExamTypes(classId);
   }
 
@@ -117,35 +110,22 @@ export class CreateExamComponent implements OnInit {
   }
 
   private loadSubjectsAndExamTypes(classId: string): void {
-    // Load subjects
     this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => {
-        this.allSubjects = subjects;
-      },
-      error: (error) => {
-        this.handleError('Failed to load subjects', error);
-      },
+      next: (subjects) => (this.allSubjects = subjects),
+      error: (error) => this.errorHandler.handle('Failed to load subjects', error),
     });
 
-    // Load exam types
     this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => {
-        this.allExamTypes = examTypes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load exam types', error);
-      },
+      next: (examTypes) => (this.allExamTypes = examTypes),
+      error: (error) => this.errorHandler.handle('Failed to load exam types', error),
     });
   }
 
-  // ============================================
-  // Filter Handlers (Update Mode)
-  // ============================================
+  // ─── Filter Handlers (Update Mode) ───────────────────────────────────────────
 
   onFilterClassSelected(classId: string): void {
     this.resetFilterDependents();
     if (!classId) return;
-
     this.loadFilterSubjectsAndExamTypes(classId);
   }
 
@@ -159,107 +139,67 @@ export class CreateExamComponent implements OnInit {
 
   private loadFilterSubjectsAndExamTypes(classId: string): void {
     this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => {
-        this.allSubjects = subjects;
-      },
-      error: (error) => {
-        this.handleError('Failed to load subjects', error);
-      },
+      next: (subjects) => (this.allSubjects = subjects),
+      error: (error) => this.errorHandler.handle('Failed to load subjects', error),
     });
 
     this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => {
-        this.allExamTypes = examTypes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load exam types', error);
-      },
+      next: (examTypes) => (this.allExamTypes = examTypes),
+      error: (error) => this.errorHandler.handle('Failed to load exam types', error),
     });
   }
 
-  // ============================================
-  // Generate Questions
-  // ============================================
+  // ─── Generate Questions ───────────────────────────────────────────────────────
 
-generateQuestions(): void {
+  generateQuestions(): void {
+    if (!this.examFormData.questionPaperName?.trim()) {
+      const selectedExamType = this.allExamTypes.find((e) => e.id === +this.examFormData.examTypeId);
+      if (selectedExamType) {
+        this.examFormData.questionPaperName = selectedExamType.examTypeName;
+      }
+    }
 
-  // If Question Paper Name is empty → set default as Exam Type
-  if (!this.examFormData.questionPaperName?.trim()) {
+    if (!this.validateExamBasicInfo()) return;
 
-    const selectedExamType = this.allExamTypes.find(
-        e => e.id === +this.examFormData.examTypeId
-    );
-
-    if (selectedExamType) {
-      this.examFormData.questionPaperName = selectedExamType.examTypeName;
+    try {
+      this.questionSets = this.createExamService.generateQuestionSets(
+        this.examFormData.numberOfQuestions!,
+        this.examFormData.totalMarks!,
+      );
+      this.examFormData.questionSets = this.questionSets;
+      this.questionsGenerated = true;
+      this.currentQuestionIndex = 0;
+      this.toastService.showSuccess('Questions Generated', `${this.questionSets.length} questions created successfully`);
+    } catch (error) {
+      this.errorHandler.handle('Failed to generate questions', error);
     }
   }
-
-  // Validate form
-  if (!this.validateExamBasicInfo()) return;
-
-  try {
-
-    this.questionSets = this.createExamService.generateQuestionSets(
-      this.examFormData.numberOfQuestions!,
-      this.examFormData.totalMarks!,
-    );
-
-    this.examFormData.questionSets = this.questionSets;
-    this.questionsGenerated = true;
-    this.currentQuestionIndex = 0;
-
-    this.toastService.showSuccess(
-      'Questions Generated',
-      `${this.questionSets.length} questions created successfully`,
-    );
-
-  } catch (error) {
-    this.handleError('Failed to generate questions', error);
-  }
-}
 
   private validateExamBasicInfo(): boolean {
     if (!this.examFormData.classId) {
       this.toastService.showWarning('Warning', 'Please select a class');
       return false;
     }
-
     if (!this.examFormData.subjectId) {
       this.toastService.showWarning('Warning', 'Please select a subject');
       return false;
     }
-
     if (!this.examFormData.examTypeId) {
       this.toastService.showWarning('Warning', 'Please select an exam type');
       return false;
     }
-
     if (!this.examFormData.totalMarks || this.examFormData.totalMarks < 1) {
-      this.toastService.showError(
-        'Error',
-        'Please enter valid total marks (minimum 1)',
-      );
+      this.toastService.showError('Error', 'Please enter valid total marks (minimum 1)');
       return false;
     }
-
-    if (
-      !this.examFormData.numberOfQuestions ||
-      this.examFormData.numberOfQuestions < 1
-    ) {
-      this.toastService.showError(
-        'Error',
-        'Please enter valid number of questions (minimum 1)',
-      );
+    if (!this.examFormData.numberOfQuestions || this.examFormData.numberOfQuestions < 1) {
+      this.toastService.showError('Error', 'Please enter valid number of questions (minimum 1)');
       return false;
     }
-
     return true;
   }
 
-  // ============================================
-  // Question Navigation
-  // ============================================
+  // ─── Question Navigation ──────────────────────────────────────────────────────
 
   get currentQuestionSet(): QuestionSet {
     return this.questionSets[this.currentQuestionIndex];
@@ -269,22 +209,18 @@ generateQuestions(): void {
     return this.currentQuestionIndex === this.questionSets.length - 1;
   }
 
+  get shouldShowValidationRules(): boolean {
+    return !!this.currentQuestionSet && this.currentQuestionSet.maxMarks !== 1;
+  }
+
   goToPreviousQuestion(): void {
-    //  Allow going back without validation (recommended)
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
     }
 
-    // Option 2: Validate before going back (strict mode)
-    // if you want to validate before going back too
-
     const errors = this.getQuestionValidationErrors();
-
     if (errors.length > 0) {
-      this.toastService.showWarning(
-        'Warning',
-        'Please fix current question before navigating',
-      );
+      this.toastService.showWarning('Warning', 'Please fix current question before navigating');
       return;
     }
 
@@ -293,149 +229,92 @@ generateQuestions(): void {
     }
   }
 
- goToNextQuestion(): void {
-  // ✅ STEP 1: Check if this is a 1-mark question
-  if (this.currentQuestionSet.maxMarks === 1) {
-    // ✅ Auto-fill validation rule for 1-mark question
-    this.autoFillOneMarkQuestion();
-  }
-
-  // ✅ STEP 2: Validate current question
-  const errors = this.getQuestionValidationErrors();
-  
-  if (errors.length > 0) {
-    this.toastService.showError('Validation Error', errors[0]);
-    return; // BLOCKED
-  }
-
-  // ✅ STEP 3: Check marks match (only if NOT auto-filled)
-  if (this.currentQuestionSet.maxMarks !== 1 && !this.validateMarksMatch()) {
-    const total = this.calculateValidationMarksTotal();
-    const max = this.currentQuestionSet.maxMarks || 0;
-    
-    if (total > max) {
-      this.toastService.showError(
-        'Validation Error',
-        `Validation marks (${total}) exceed maximum marks (${max}). Please adjust.`
-      );
-    } else if (total < max) {
-      this.toastService.showError(
-        'Validation Error',
-        `Validation marks (${total}) are less than maximum marks (${max}). Please add more.`
-      );
-    }
-    return; // BLOCKED
-  }
-
-  // ✅ STEP 4: Move to next question
-  if (this.currentQuestionIndex < this.questionSets.length - 1) {
-    this.currentQuestionIndex++;
-    
+  goToNextQuestion(): void {
     if (this.currentQuestionSet.maxMarks === 1) {
-      this.toastService.showSuccess('Success', 'Question saved (1 mark - no rubric needed)');
-    } else {
-      this.toastService.showSuccess('Success', 'Question saved! Moving to next question.');
+      this.autoFillOneMarkQuestion();
+    }
+
+    const errors = this.getQuestionValidationErrors();
+    if (errors.length > 0) {
+      this.toastService.showError('Validation Error', errors[0]);
+      return;
+    }
+
+    if (this.currentQuestionSet.maxMarks !== 1 && !this.validateMarksMatch()) {
+      const total = this.calculateValidationMarksTotal();
+      const max = this.currentQuestionSet.maxMarks ?? 0;
+      const message =
+        total > max
+          ? `Validation marks (${total}) exceed maximum marks (${max}). Please adjust.`
+          : `Validation marks (${total}) are less than maximum marks (${max}). Please add more.`;
+      this.toastService.showError('Validation Error', message);
+      return;
+    }
+
+    if (this.currentQuestionIndex < this.questionSets.length - 1) {
+      this.currentQuestionIndex++;
+      const msg = this.currentQuestionSet.maxMarks === 1
+        ? 'Question saved (1 mark - no rubric needed)'
+        : 'Question saved! Moving to next question.';
+      this.toastService.showSuccess('Success', msg);
     }
   }
-}
 
-// ============================================
-//  Auto-fill 1-mark question
-// ============================================
+  private autoFillOneMarkQuestion(): void {
+    this.currentQuestionSet.validationRulesCount = 1;
+    this.currentQuestionSet.rubricPoints = [
+      { description: 'Default criterion for 1-mark question', marks: 1, isAutoGenerated: true },
+    ];
+  }
 
-private autoFillOneMarkQuestion(): void {
-  // Set default values for 1-mark question
-  this.currentQuestionSet.validationRulesCount = 1;
-  this.currentQuestionSet.rubricPoints = [
-    {
-      description: 'Default criterion for 1-mark question',
-      marks: 1,
-      isAutoGenerated: true // ✅ Flag to identify auto-generated rubrics
-    }
-  ];
-}
-
-// ============================================
-// Computed property to check if rubrics should be shown
-// ============================================
-
-get shouldShowValidationRules(): boolean {
-  if (!this.currentQuestionSet) return false;
-  
-  // ✅ Hide validation rules UI for 1-mark questions
-  return this.currentQuestionSet.maxMarks !== 1;
-}
-
-  // ============================================
-  // Submit Exam
-  // ============================================
+  // ─── Submit Exam ──────────────────────────────────────────────────────────────
 
   submitExamDocuments(): void {
-    // ✅ Validate current (last) question
-    const currentQuestionErrors = this.getQuestionValidationErrors();
-    if (currentQuestionErrors.length > 0) {
-      this.toastService.showError('Validation Error', currentQuestionErrors[0]);
-      return; // ✅ STOP submission
+    const currentErrors = this.getQuestionValidationErrors();
+    if (currentErrors.length > 0) {
+      this.toastService.showError('Validation Error', currentErrors[0]);
+      return;
     }
 
-    // ✅ Validate marks match for current question
     if (!this.validateMarksMatch()) {
-      this.toastService.showError(
-        'Validation Error',
-        'Validation marks must match maximum marks',
-      );
-      return; // ✅ STOP submission
+      this.toastService.showError('Validation Error', 'Validation marks must match maximum marks');
+      return;
     }
 
-    // ✅ Validate entire exam form
-    const formValidation = this.createExamService.validateExamForm(
-      this.examFormData,
-    );
+    const formValidation = this.createExamService.validateExamForm(this.examFormData);
     if (!formValidation.isValid) {
       this.toastService.showError('Validation Error', formValidation.errors[0]);
-      return; // ✅ STOP submission
+      return;
     }
 
-    // All validations passed - proceed with submission
     this.submitToBackend();
   }
 
   private submitToBackend(): void {
     this.isSubmitting = true;
-    this.uploadProgress.visible = true;
-    this.uploadProgress.text = 'Uploading exam...';
-    this.uploadProgress.width = '50%';
+    this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
 
-    const apiRequest = this.createExamService.prepareApiRequest(
-      this.examFormData,
-    );
+    const apiRequest = this.createExamService.prepareApiRequest(this.examFormData);
 
     this.createExamService.createExam(apiRequest).subscribe({
-      next: (response) => {
-        this.uploadProgress.width = '100%';
-        this.uploadProgress.text = 'Upload complete!';
-
+      next: () => {
+        this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
         setTimeout(() => {
           this.uploadProgress.visible = false;
           this.isSubmitting = false;
-          this.toastService.showSuccess(
-            'Success',
-            'Exam uploaded successfully',
-          );
+          this.toastService.showSuccess('Success', 'Exam uploaded successfully');
           this.resetForm();
         }, 500);
       },
       error: (error) => {
         this.uploadProgress.visible = false;
         this.isSubmitting = false;
-        this.handleError('Failed to upload exam', error);
+        this.errorHandler.handle('Failed to upload exam', error);
       },
     });
   }
 
-  // ============================================
-  // Load Existing Exams (Update Mode)
-  // ============================================
+  // ─── Load Existing Exams (Update Mode) ───────────────────────────────────────
 
   loadExistingExams(): void {
     if (!this.validateFilters()) return;
@@ -446,22 +325,15 @@ get shouldShowValidationRules(): boolean {
       next: (exams) => {
         this.existingExams = exams;
         this.isLoading = false;
-
         if (exams.length === 0) {
-          this.toastService.showInfo(
-            'Info',
-            'No exams found with selected filters',
-          );
+          this.toastService.showInfo('Info', 'No exams found with selected filters');
         } else {
-          this.toastService.showSuccess(
-            'Success',
-            `${exams.length} exam(s) found`,
-          );
+          this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
         }
       },
       error: (error) => {
         this.isLoading = false;
-        this.handleError('Failed to load exams', error);
+        this.errorHandler.handle('Failed to load exams', error);
       },
     });
   }
@@ -471,28 +343,22 @@ get shouldShowValidationRules(): boolean {
       this.toastService.showWarning('Warning', 'Please select a class');
       return false;
     }
-
     if (!this.examFilters.filterExamSubject) {
       this.toastService.showWarning('Warning', 'Please select a subject');
       return false;
     }
-
     if (!this.examFilters.filterExamExamType) {
       this.toastService.showWarning('Warning', 'Please select an exam type');
       return false;
     }
-
     return true;
   }
 
   selectExamForUpdate(exam: Exam): void {
-    if (!exam) return;
     this.selectedExamForUpdate = exam;
   }
 
-  // ============================================
-  // Validation Rules
-  // ============================================
+  // ─── Validation Rules ─────────────────────────────────────────────────────────
 
   generateValidationRules(): void {
     if (!this.currentQuestionSet) {
@@ -500,40 +366,31 @@ get shouldShowValidationRules(): boolean {
       return;
     }
 
-    const rulesCount = this.currentQuestionSet.validationRulesCount || 1;
+    const rulesCount = this.currentQuestionSet.validationRulesCount ?? 1;
+    const current = this.currentQuestionSet.rubricPoints;
 
-    // Add rules if needed
-    while (this.currentQuestionSet.rubricPoints.length < rulesCount) {
-      this.currentQuestionSet.rubricPoints.push({
-        description: '',
-        marks: null,
-      });
+    while (current.length < rulesCount) {
+      current.push({ description: '', marks: null });
     }
 
-    // Remove excess rules
-    if (this.currentQuestionSet.rubricPoints.length > rulesCount) {
-      this.currentQuestionSet.rubricPoints =
-        this.currentQuestionSet.rubricPoints.slice(0, rulesCount);
+    if (current.length > rulesCount) {
+      this.currentQuestionSet.rubricPoints = current.slice(0, rulesCount);
     }
   }
 
   clearCurrentQuestion(): void {
     if (!this.currentQuestionSet) return;
-
     this.currentQuestionSet.questionText = '';
     this.currentQuestionSet.answerText = '';
     this.currentQuestionSet.maxMarks = null;
     this.currentQuestionSet.validationRulesCount = 1;
     this.currentQuestionSet.rubricPoints = [{ description: '', marks: null }];
-
     this.toastService.showInfo('Info', 'Question cleared');
   }
 
   calculateValidationMarksTotal(): number {
     if (!this.currentQuestionSet) return 0;
-    return this.createExamService.calculateValidationMarksTotal(
-      this.currentQuestionSet,
-    );
+    return this.createExamService.calculateValidationMarksTotal(this.currentQuestionSet);
   }
 
   validateMarksMatch(): boolean {
@@ -543,13 +400,10 @@ get shouldShowValidationRules(): boolean {
 
   getQuestionValidationErrors(): string[] {
     if (!this.currentQuestionSet) return ['No question selected'];
-    return this.createExamService.validateQuestionSet(this.currentQuestionSet)
-      .errors;
+    return this.createExamService.validateQuestionSet(this.currentQuestionSet).errors;
   }
 
-  // ============================================
-  // Mode Management
-  // ============================================
+  // ─── Mode Management ──────────────────────────────────────────────────────────
 
   setExamMode(mode: 'upload' | 'update'): void {
     this.examMode = mode;
@@ -557,30 +411,20 @@ get shouldShowValidationRules(): boolean {
   }
 
   clearFilters(): void {
-    this.examFilters = {
-      filterExamClass: '',
-      filterExamSubject: '',
-      filterExamExamType: '',
-    };
+    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
     this.existingExams = [];
     this.selectedExamForUpdate = null;
   }
 
-  // ============================================
-  // Helper Methods
-  // ============================================
+  // ─── Helpers ──────────────────────────────────────────────────────────────────
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
-
     try {
-      const options: Intl.DateTimeFormatOptions = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      };
-      return new Date(dateString).toLocaleDateString('en-US', options);
-    } catch (error) {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric',
+      });
+    } catch {
       return dateString;
     }
   }
@@ -600,69 +444,13 @@ get shouldShowValidationRules(): boolean {
       questionPaperName: '',
       questionSets: [],
     };
-
     this.questionSets = [];
     this.questionsGenerated = false;
     this.currentQuestionIndex = 0;
     this.existingExams = [];
     this.selectedExamForUpdate = null;
-
-    this.examFilters = {
-      filterExamClass: '',
-      filterExamSubject: '',
-      filterExamExamType: '',
-    };
-
+    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
     this.allSubjects = [];
     this.allExamTypes = [];
-  }
-
-  // ============================================
-  // ✅ Centralized Error Handling
-  // ============================================
-
-  private handleError(userMessage: string, error: any): void {
-    const errorMessage = this.extractErrorMessage(error);
-
-    // Log for debugging (development only)
-    if (!this.isProduction()) {
-      console.error('Error Details:', {
-        userMessage,
-        error,
-        errorMessage,
-      });
-    }
-
-    // Show toast notification
-    this.toastService.showError('Error', errorMessage || userMessage);
-  }
-
-  private extractErrorMessage(error: any): string {
-    if (error?.error?.message) {
-      return error.error.message;
-    }
-
-    if (error?.error?.errors && Array.isArray(error.error.errors)) {
-      return error.error.errors.join(', ');
-    }
-
-    if (error?.message) {
-      return error.message;
-    }
-
-    if (typeof error?.error === 'string') {
-      return error.error;
-    }
-
-    if (error?.statusText) {
-      return error.statusText;
-    }
-
-    return '';
-  }
-
-  private isProduction(): boolean {
-    // return environment.production;
-    return false; // For now, always show console logs
   }
 }

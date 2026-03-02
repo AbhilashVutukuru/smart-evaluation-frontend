@@ -1,77 +1,61 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse } from '../models/auth.model';
-import { QuestionPaperDto } from '../models/exam';
+import { ApiResponse, QuestionPaperDto } from '../models/common.models';
+import {
+  StudentUploadListResponse,
+  SubmitAllPayload,
+} from '../models/upload-answer-sheet.models';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class UploadAnswerSheetService {
   private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   getQuestionPapers(
-  classId: number,
-  subjectId: number,
-  examTypeId: number
-) {
-  return this.http.get<ApiResponse<QuestionPaperDto[]>>(
-    `${this.apiUrl}/student-answer-sheet/question-papers`,
-    {
-      params: {
-        classId: classId,
-        subjectId: subjectId,
-        examTypeId: examTypeId
-      }
-    }
-  );
-}
+    classId: number,
+    subjectId: number,
+    examTypeId: number,
+  ): Observable<ApiResponse<QuestionPaperDto[]>> {
+    return this.http.get<ApiResponse<QuestionPaperDto[]>>(
+      `${this.apiUrl}/student-answer-sheet/question-papers`,
+      { params: { classId, subjectId, examTypeId } },
+    );
+  }
 
   getStudentsWithUploadStatus(
     classId: number,
     sectionId: number,
     subjectId: number,
     examTypeId: number,
-    questionPaperId:number,
-  ): Observable<ApiResponse> {
-    return this.http.get<ApiResponse>(
-      `${this.apiUrl}/student-answer-sheet/students-with-statistics?classId=${classId}&sectionId=${sectionId}&subjectId=${subjectId}&examTypeId=${examTypeId}&questionPaperId=${questionPaperId}`,
+    questionPaperId: number,
+  ): Observable<ApiResponse<StudentUploadListResponse>> {
+    return this.http.get<ApiResponse<StudentUploadListResponse>>(
+      `${this.apiUrl}/student-answer-sheet/students-with-upload-status`,
+      { params: { classId, sectionId, subjectId, examTypeId, questionPaperId } },
     );
   }
 
-  uploadStudentAnswer(formData: FormData): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(
+  uploadStudentAnswer(formData: FormData): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
       `${this.apiUrl}/student-answer-sheet/upload`,
       formData,
     );
   }
-  
-  updateAnswerSheet(formData: FormData): Observable<any> {
-  return this.http.put<any>(
-    `${this.apiUrl}/student-answer-sheet/update`,
-    formData
-  );
-}
 
-  submitAllStudents(data: any): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(
-      `${this.apiUrl}/student-answer-sheet/submit-all`,
-      data,
+  updateAnswerSheet(formData: FormData): Observable<ApiResponse<void>> {
+    return this.http.put<ApiResponse<void>>(
+      `${this.apiUrl}/student-answer-sheet/update`,
+      formData,
     );
   }
 
-  // downloadAnswerSheet(
-  //   studentId: number,
-  //   classId: number,
-  //   subjectId: number,
-  //   examTypeId: number,
-  // ): Observable<HttpResponse<Blob>> {
-  //   const url = `${this.apiUrl}/student-answer-sheet/download/${studentId}?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
-  //   return this.http.get(url, { responseType: 'blob', observe: 'response' });
-  // }
-
-
+  submitAllStudents(payload: SubmitAllPayload): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(
+      `${this.apiUrl}/student-answer-sheet/submit-all`,
+      payload,
+    );
+  }
 }

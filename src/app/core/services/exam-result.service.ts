@@ -1,67 +1,67 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { StudentListResponse } from '../models/exam-result';
+import { ApiResponse } from '../models/common.models';
+import {
+  StudentListResponse,
+  ResultQuestion,
+  EvaluationStatistics,
+} from '../models/exam-result';
 
-@Injectable({
-  providedIn: 'root',
-})
+/** Rubric payload sent to the update endpoint */
+export interface RubricUpdatePayload {
+  questionPaperRubricId: number;
+  marksGiven: number;
+  remarks: string;
+}
+
+/** Request body for the update-question-rubrics endpoint */
+interface UpdateRubricsRequest {
+  studentId: number;
+  classId: number;
+  subjectId: number;
+  examTypeId: number;
+  questionNumber: number;
+    questionPaperId: number;
+  rubrics: RubricUpdatePayload[];
+}
+
+@Injectable({ providedIn: 'root' })
 export class ExamResultService {
   private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  // ============================================
-  // Get Student List with Statistics
-  // ============================================
+  // ─── Student List ────────────────────────────────────────────────────────────
 
   getStudentListWithStatistics(
-  classId: number,
-  sectionId: number,
-  subjectId: number,
-  examTypeId: number,
-  questionPaperId: number
-): Observable<StudentListResponse> {
-
-  return this.http.get<{
-    success: boolean;
-    data: StudentListResponse;
-  }>(
-    `${this.apiUrl}/exam-result/students-with-statistics`,
-    {
-      params: {
-        classId,
-        sectionId,
-        subjectId,
-        examTypeId,
-        questionPaperId
-      }
-    }
-  ).pipe(
-    map(response => response.data ?? this.getEmptyStudentListResponse())
-  );
-}
-
-  private getEmptyStudentListResponse(): StudentListResponse {
-    return {
-      statistics: {
-        totalStudents: 0,
-        absentCount: 0,
-        evaluatedCount: 0,
-        notEvaluatedCount: 0,
-      },
-      students: [],
-      totalMarks: 0,
-      totalQuestions: 0,
-      questionNumbers: [],
-    };
+    classId: number,
+    sectionId: number,
+    subjectId: number,
+    examTypeId: number,
+    questionPaperId: number,
+  ): Observable<StudentListResponse> {
+    return this.http
+      .get<ApiResponse<StudentListResponse>>(
+        `${this.apiUrl}/exam-result/students-with-statistics`,
+        { params: { classId, sectionId, subjectId, examTypeId, questionPaperId } },
+      )
+      .pipe(map((res) => res.data ?? this.emptyStudentListResponse()));
   }
 
-  // ============================================
-  // Get Single Question Details
-  // ============================================
+  private emptyStudentListResponse(): StudentListResponse {
+    const statistics: EvaluationStatistics = {
+      totalStudents: 0,
+      absentCount: 0,
+      evaluatedCount: 0,
+      notEvaluatedCount: 0,
+    };
+    return { statistics, students: [], totalMarks: 0, totalQuestions: 0, questionNumbers: [] };
+  }
+
+  // ─── Question Details ─────────────────────────────────────────────────────────
 
   getQuestionDetails(
     studentId: number,
@@ -69,22 +69,22 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
     questionNumber: number,
-  ): Observable<any> {
-    const url = `${this.apiUrl}/exam-result/question-details?studentId=${studentId}&classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}&questionNumber=${questionNumber}`;
-
-    return this.http.get<any>(url).pipe(
-      map((response) => {
-        if (response?.data) {
-          return response.data;
-        }
-        throw new Error('Question not found');
-      }),
-    );
+    questionPaperId: number,
+  ): Observable<ResultQuestion> {
+    return this.http
+      .get<ApiResponse<ResultQuestion>>(
+        `${this.apiUrl}/exam-result/question-details`,
+        { params: { studentId, classId, subjectId, examTypeId, questionNumber,questionPaperId  } },
+      )
+      .pipe(
+        map((res) => {
+          if (!res?.data) throw new Error('Question not found');
+          return res.data;
+        }),
+      );
   }
 
-  // ============================================
-  // Update Question Rubrics
-  // ============================================
+  // ─── Update Rubrics ───────────────────────────────────────────────────────────
 
   updateQuestionRubrics(
     studentId: number,
@@ -92,30 +92,25 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
     questionNumber: number,
-    rubrics: Array<{
-      questionPaperRubricId: number;
-      teacherAssignedMarks: number;
-      teacherRemarks?: string;
-    }>,
+    questionPaperId: number,   
+    rubrics: Array<{ questionPaperRubricId: number; teacherAssignedMarks: number; teacherRemarks?: string }>,
   ): Observable<boolean> {
-    // Map to backend expected format
-    const mappedRubrics = rubrics.map((r) => ({
-      questionPaperRubricId: r.questionPaperRubricId,
-      marksGiven: r.teacherAssignedMarks,
-      remarks: r.teacherRemarks || '',
-    }));
-
-    const body = {
+    const body: UpdateRubricsRequest = {
       studentId,
       classId,
       subjectId,
       examTypeId,
       questionNumber,
-      rubrics: mappedRubrics,
+      questionPaperId, 
+      rubrics: rubrics.map((r) => ({
+        questionPaperRubricId: r.questionPaperRubricId,
+        marksGiven: r.teacherAssignedMarks,
+        remarks: r.teacherRemarks ?? '',
+      })),
     };
 
     return this.http
-      .put<any>(`${this.apiUrl}/exam-result/update-question-rubrics`, body)
+      .put<ApiResponse<void>>(`${this.apiUrl}/exam-result/update-question-rubrics`, body)
       .pipe(
         map(() => true),
         catchError((error) => {
@@ -125,9 +120,7 @@ export class ExamResultService {
       );
   }
 
-  // ============================================
-  // Download Answer Sheet
-  // ============================================
+  // ─── Download Answer Sheet ────────────────────────────────────────────────────
 
   downloadAnswerSheet(
     studentId: number,
@@ -135,7 +128,9 @@ export class ExamResultService {
     subjectId: number,
     examTypeId: number,
   ): Observable<Blob> {
-    const url = `${this.apiUrl}/student-answer-sheet/download/${studentId}?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
-    return this.http.get(url, { responseType: 'blob' });
+    return this.http.get(
+      `${this.apiUrl}/student-answer-sheet/download/${studentId}`,
+      { params: { classId, subjectId, examTypeId }, responseType: 'blob' },
+    );
   }
 }

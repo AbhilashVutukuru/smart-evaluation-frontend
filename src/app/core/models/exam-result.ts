@@ -1,8 +1,67 @@
 // ============================================
-// EXAM RESULT INTERFACES
+// EXAM RESULT MODELS
 // ============================================
 
-export interface StudentInfo {
+/** Rubric evaluation entry with UI editing state */
+export interface ResultRubric {
+  // Identity
+  questionPaperRubricId?: number;
+  id?: number;
+
+  // Display
+  name?: string;
+  criterion?: string;
+
+  // Marks
+  maxMarks: number;
+  marksGiven: number;
+  marksAssignedBySystem?: number;
+  marksAssignedByTeacher?: number;
+
+  // Remarks
+  remarks?: string;
+
+  // UI-only editing state
+  isEditing?: boolean;
+  isSaving?: boolean;
+  originalMarksGiven?: number;
+  originalRemarks?: string;
+  teacherModified?: boolean;
+}
+
+/** A single question with student and official answers */
+export interface ResultQuestion {
+  questionPaperDetailId?: number;
+  questionNumber: number;
+  questionText: string;
+  officialAnswer: string;
+  maxMarks: number;
+  rubrics?: ResultRubric[];
+  studentAnswer?: string;
+  studentAnswerText?: string;
+  marksObtained: number;
+  confidenceScore?: number;
+  remarks?: string;
+  rubricAdded: boolean; 
+}
+
+/** Exam result summary for a student */
+export interface ExamResult {
+  studentId?: number;
+  studentName?: string;
+  totalMarks?: number;
+  totalMarksObtained?: number;
+  maxMarks?: number;
+  marksObtained?: number;
+  evaluationStatus?: string;
+  isAbsent?: boolean;
+  statusMessage?: string;
+  answerPdfUrl?: string;
+  questions: ResultQuestion[];
+}
+
+/** Student summary shown in the results list */
+export interface StudentResultInfo {
   studentId: number;
   rollNumber: number;
   studentName: string;
@@ -20,70 +79,18 @@ export interface StudentInfo {
   sectionName?: string;
 }
 
-export interface Rubric {
-  // Primary ID
-  questionPaperRubricId?: number;
-  id?: number;
-  
-  // Name/Criterion
-  name?: string;
-  criterion?: string;
-  
-  // Marks
-  maxMarks: number;
-  marksGiven: number;
-  marksAssignedBySystem?: number;
-  marksAssignedByTeacher?: number;
-  
-  // Remarks
-  remarks?: string;
-  
-  // Editing state (UI only)
-  isEditing?: boolean;
-  isSaving?: boolean; 
-  originalMarksGiven?: number;
-  originalRemarks?: string;
-  teacherModified?: boolean;
-}
-
-export interface ExamQuestion {
-  questionPaperDetailId?: number;
-  questionNumber: number;
-  questionText: string;
-  officialAnswer: string;
-  maxMarks: number;
-  rubrics?: Rubric[];
-  studentAnswer?: string;
-  studentAnswerText?: string;
-  marksObtained: number;
-  confidenceScore?: number;
-  remarks?: string;
-}
-
-export interface ExamResult {
-  studentId?: number;
-  studentName?: string;
-  totalMarks?: number;
-  totalMarksObtained?: number;
-  maxMarks?: number;
-  marksObtained?: number;
-  evaluationStatus?: string;
-  isAbsent?: boolean;
-  statusMessage?: string;
-  answerPdfUrl?: string;
-  questions: ExamQuestion[];
-}
-
-export interface StudentStatistics {
+/** Aggregated statistics for evaluated students */
+export interface EvaluationStatistics {
   totalStudents: number;
   absentCount: number;
   evaluatedCount: number;
   notEvaluatedCount: number;
 }
 
+/** Full response from the student-list-with-statistics API */
 export interface StudentListResponse {
-  statistics: StudentStatistics;
-  students: StudentInfo[];
+  statistics: EvaluationStatistics;
+  students: StudentResultInfo[];
   totalMarks: number;
   totalQuestions: number;
   questionNumbers: number[];

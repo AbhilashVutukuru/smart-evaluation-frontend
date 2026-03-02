@@ -4,105 +4,29 @@
     <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
   </div>
 
-  <!-- Filter Card -->
-  <div class="card">
-    <h4><i class="fas fa-filter"></i> Select Exam Details</h4>
-
-    <div class="row">
-      <div class="col-md-3 mb-3">
-        <label class="form-label">Class <span class="required">*</span></label>
-        <select
-          class="form-control"
-          [(ngModel)]="selectedClass"
-          (change)="onClassSelected(selectedClass!)"
-        >
-          <option value="null">Select Class</option>
-          <option *ngFor="let cls of classes" [ngValue]="cls.id">
-            {{ cls.classNumber }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Section <span class="required">*</span></label
-        >
-        <select
-          class="form-control"
-          [(ngModel)]="selectedSection"
-          [disabled]="selectedClass === null"
-          (change)="onSectionChange()"
-        >
-          <option value="null">Select Section</option>
-          <option *ngFor="let section of sections" [ngValue]="section.id">
-            {{ section.sectionName }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Subject <span class="required">*</span></label
-        >
-        <select
-          class="form-control"
-          [(ngModel)]="selectedSubject"
-          [disabled]="selectedClass === null"
-          (change)="onSubjectChange()"
-        >
-          <option value="null">Select Subject</option>
-          <option *ngFor="let subject of subjects" [ngValue]="subject.id">
-            {{ subject.subjectName }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Exam Type <span class="required">*</span></label
-        >
-        <select
-          class="form-control"
-          [(ngModel)]="selectedExamType"
-          [disabled]="selectedClass === null"
-          (change)="onExamTypeChange()"
-        >
-          <option value="null">Select Exam Type</option>
-          <option *ngFor="let examType of examTypes" [ngValue]="examType.id">
-            {{ examType.examTypeName }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-   <div class="row align-items-end">
-      <!-- Question Paper Dropdown -->
-      <div class="col-md-3 mb-3" *ngIf="showQuestionPaperDropdown">
-        <label class="form-label">
-          Question Paper <span class="required">*</span>
-        </label>
-
-        <select class="form-control" [(ngModel)]="selectedQuestionPaperId">
-          <option [ngValue]="null">Select Question Paper</option>
-
-          <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
-            {{ qp.questionPaperName }}
-          </option>
-        </select>
-      </div>
-
-      <!-- Button -->
-      <div class="col-md-2 mb-3">
-        <button
-          class="btn btn-primary"
-          (click)="showStudents()"
-          [disabled]="isLoading"
-        >
-          <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-          {{ isLoading ? "Loading..." : "Show Student Details" }}
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty State for No Students Found -->
+  <app-exam-filter
+    [classes]="classes"
+    [sections]="sections"
+    [subjects]="subjects"
+    [examTypes]="examTypes"
+    [questionPapers]="questionPapers"
+    [(selectedClass)]="selectedClass"
+    [(selectedSection)]="selectedSection"
+    [(selectedSubject)]="selectedSubject"
+    [(selectedExamType)]="selectedExamType"
+    [(selectedQuestionPaperId)]="selectedQuestionPaperId"
+    [showQuestionPaperDropdown]="showQuestionPaperDropdown"
+    [isLoadingPapers]="isLoadingPapers"
+    [isLoading]="isLoading"
+    [canShowStudents]="canShowStudents"
+    [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
+    [noExamPaperFound]="noExamPaperFound"
+    (classChanged)="onClassChange($event)"
+    (sectionChanged)="onSectionChange()"
+    (subjectChanged)="onSubjectChange()"
+    (examTypeChanged)="onExamTypeChange()"
+    (showStudentsClick)="showStudents()"
+  ></app-exam-filter>
 
 
   <!--  Students Table with Statistics -->
@@ -419,8 +343,125 @@
         </div>
       </div>
 
-      <!-- ✅ Rubric Table with Edit/Save/Cancel per row -->
-      <div class="question-section">
+      <!-- rubricAdded = false → same table, no Criterion column, label = Marks -->
+      <div class="question-section" *ngIf="!currentQuestion.rubricAdded">
+        <label class="section-label">
+          <i class="fas fa-list-check"></i> Marks:
+        </label>
+
+        <div class="table-responsive">
+          <table class="table table-bordered rubric-table rubric-table-no-criterion">
+            <thead>
+              <tr>
+                <th>MAX MARKS</th>
+                <th>SYSTEM MARKS</th>
+                <th>
+                  TEACHER MARKS
+                  <i
+                    class="fas fa-info-circle text-info header-info-icon"
+                    title="Blue icon indicates using system-assigned marks"
+                  ></i>
+                </th>
+                <th>REMARKS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
+                <!-- Max Marks -->
+                <td class="text-center">
+                  <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
+                </td>
+
+                <!-- System Marks -->
+                <td class="text-center">
+                  <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- Teacher Marks - compact with inline Edit -->
+                <td class="teacher-marks-cell">
+                  <div class="marks-input-group">
+                    <input
+                      type="number"
+                      [(ngModel)]="rubric.marksGiven"
+                      [disabled]="!rubric.isEditing"
+                      min="0"
+                      [max]="rubric.maxMarks"
+                      step="0.5"
+                      class="form-control form-control-sm marks-input"
+                      (input)="restrictToHalfStep($event)"
+                      placeholder="0"
+                    />
+
+                    <button
+                      *ngIf="!rubric.isEditing"
+                      class="btn btn-edit-inline"
+                      (click)="enableRubricEdit(rubric)"
+                    >
+                      <i class="fas fa-edit"></i>Override
+                    </button>
+
+                    <div *ngIf="rubric.isEditing" class="inline-actions">
+                      <button
+                        class="btn btn-save-inline"
+                        (click)="saveRubric(rubric)"
+                        [disabled]="!isRubricChanged(rubric) || rubric.isSaving"
+                      >
+                        <i *ngIf="!rubric.isSaving" class="fas fa-check"></i>
+                        <i
+                          *ngIf="rubric.isSaving"
+                          class="fas fa-spinner fa-spin"
+                        ></i>
+                      </button>
+                      <button
+                        class="btn btn-cancel-inline"
+                        (click)="cancelRubricEdit(rubric)"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    *ngIf="rubric.marksGiven > rubric.maxMarks"
+                    class="error-text"
+                  >
+                    Max: {{ rubric.maxMarks }}
+                  </div>
+                </td>
+
+                <!-- Remarks -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <input
+                      type="text"
+                      [(ngModel)]="rubric.remarks"
+                      [disabled]="!rubric.isEditing"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        rubric.isEditing &&
+                        (!rubric.remarks || rubric.remarks.trim() === '')
+                      "
+                      placeholder="Add remarks"
+                    />
+                  </div>
+                  <div
+                    *ngIf="
+                      rubric.isEditing &&
+                      (!rubric.remarks || rubric.remarks.trim() === '')
+                    "
+                    class="error-text"
+                  >
+                    Required
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- rubricAdded = true → full rubric table -->
+      <div class="question-section" *ngIf="currentQuestion.rubricAdded">
         <label class="section-label">
           <i class="fas fa-list-check"></i> Rubric Criteria:
         </label>
@@ -444,7 +485,7 @@
             </thead>
             <tbody>
               <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
-                <!--  Criterion with scroll -->
+                <!-- Criterion -->
                 <td class="criterion-cell">
                   <div class="scrollable-criterion">
                     {{ rubric.criterion || rubric.name }}
@@ -461,7 +502,7 @@
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
                 </td>
 
-                <!-- ✅ Teacher Marks - compact with inline Edit -->
+                <!-- Teacher Marks - compact with inline Edit -->
                 <td class="teacher-marks-cell">
                   <div class="marks-input-group">
                     <input
@@ -476,7 +517,7 @@
                       placeholder="0"
                     />
 
-                    <!-- ✅ Edit/Save/Cancel inline -->
+                    <!-- Edit/Save/Cancel inline -->
                     <button
                       *ngIf="!rubric.isEditing"
                       class="btn btn-edit-inline"
@@ -515,7 +556,7 @@
                   </div>
                 </td>
 
-                <!-- ✅ Remarks with scroll -->
+                <!-- Remarks with scroll -->
                 <td class="remarks-cell">
                   <div class="scrollable-remarks">
                     <input

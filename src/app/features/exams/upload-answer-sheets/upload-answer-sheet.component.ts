@@ -1,390 +1,128 @@
-// ============================================
-// IMPROVED ERROR HANDLING
-// ============================================
-
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import {
-  MasterDataService,
-  ClassDto,
-  ExamTypeDto,
-  SectionDto,
-  SubjectDto,
-} from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
-import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
-import { QuestionPaperDto } from '../../../core/models/exam';
 
-interface StudentUploadStatus {
-  studentId: number;
-  rollNumber: string;
-  studentName: string;
-  className: string;
-  sectionName: string;
-  isAbsent: boolean;
-  isUploaded: boolean;
-  isUploading?: boolean;
-  answerSheetFile?: File;
-  fileName?: string;
-}
+import {
+  StudentUploadStatus,
+  SubmitAllPayload,
+} from '../../../core/models/upload-answer-sheet.models';
+import { ExamFilterComponent } from '../exam-filter/exam-filter.componenet';
+import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 
 @Component({
   selector: 'app-upload-student-marks',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, ExamFilterComponent],
   templateUrl: './upload-answer-sheet.component.html',
   styleUrls: ['./upload-answer-sheet.component.css'],
 })
-export class UploadAnswerSheetsComponent implements OnInit {
-  private uploadAnswerSheetService = inject(UploadAnswerSheetService);
-    private viewAnswerSheetService = inject(ViewAnswerSheetService);
-  private masterDataService = inject(MasterDataService);
-  private toastService = inject(ToastService);
+export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
+  private uploadService = inject(UploadAnswerSheetService);
 
-
-  // Filter properties
-  selectedClass = '';
-  selectedSection = '';
-  selectedSubject = '';
-  selectedExamType = '';
-  absentStudentIds: number[] = [];
-  selectedQuestionPaperId: number | null = null;
-
-  // Dropdown data
-  classes: ClassDto[] = [];
-  sections: SectionDto[] = [];
-  subjects: SubjectDto[] = [];
-  examTypes: ExamTypeDto[] = [];
-  questionPapers: QuestionPaperDto[] = [];
-
-  // Student data
+  // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];
+  absentStudentIds: number[] = [];
 
-  // UI state
-  showStudentsCard = false;
+  // ─── UI state ─────────────────────────────────────────────────────────────────
   loading = false;
   isViewing = false;
   isSubmittingAll = false;
-  isEvaluationCompleted = false;
-  isSubmittedForEvaluation = false;
-  noExamPaperFound = false;
-  showQuestionPaperDropdown = false;
+  isSubmittedForEvaluation = false;  // set locally after successful submit
 
-  // ============================================
-  // Computed Properties (Statistics)
-  // ============================================
+  // ─── Computed statistics ──────────────────────────────────────────────────────
+  get totalStudents(): number { return this.students.length; }
+  get absentCount():   number { return this.students.filter((s) => s.isAbsent).length; }
+  get uploadedCount(): number { return this.students.filter((s) => s.isUploaded).length; }
+  get pendingCount():  number { return this.students.filter((s) => !s.isUploaded && !s.isAbsent).length; }
+  get canEvaluate():  boolean { return this.students.length > 0 && this.students.every((s) => s.isUploaded || s.isAbsent); }
 
-  get totalStudents(): number {
-    return this.students.length;
-  }
+  // ─── Exposed from base ────────────────────────────────────────────────────────
+  override get canShowStudents(): boolean { return super.canShowStudents; }
 
-  get absentCount(): number {
-    return this.students.filter((s) => s.isAbsent).length;
-  }
-
-  get uploadedCount(): number {
-    return this.students.filter((s) => s.isUploaded).length;
-  }
-
-  get pendingCount(): number {
-    return this.students.filter((s) => !s.isUploaded && !s.isAbsent).length;
-  }
-
-  get canEvaluate(): boolean {
-    if (!this.students || this.students.length === 0) return false;
-    return this.students.every((s) => s.isUploaded || s.isAbsent);
-  }
-
-  // ============================================
-  // Lifecycle
-  // ============================================
-
-  ngOnInit(): void {
-    this.loadClasses();
-  }
-
-  // ============================================
-  // Load Initial Data
-  // ============================================
-
-  private loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
-      next: (classes) => {
-        this.classes = classes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load classes', error);
-      },
-    });
-  }
-
-  // ============================================
-  // Dropdown Change Handlers
-  // ============================================
-
-  onClassChange(classId: string): void {
-    this.showStudentsCard = false;
-    this.resetDependentDropdowns();
-    if (!classId) return;
-
-    this.loadSections(classId);
-    this.loadSubjects(classId);
-    this.loadExamTypes(classId);
-  }
-
-  onSectionChange(): void {
+  // ─── Abstract implementation ──────────────────────────────────────────────────
+  protected override clearStudents(): void {
     this.students = [];
     this.showStudentsCard = false;
   }
 
-  onSubjectChange(): void {
-    this.students = [];
+  // ─── Show Students ────────────────────────────────────────────────────────────
+
+ showStudents(): void {
+    if (!this.validateSelection()) return;
+
+    this.noExamPaperFound = false;
     this.showStudentsCard = false;
-
-    this.questionPapers = [];
-    this.selectedQuestionPaperId = null;
-
-    // If exam type already selected → reload question papers
-    if (this.selectedClass && this.selectedSubject && this.selectedExamType) {
-      this.onExamTypeChange();
-    }
-  }
-
-  onExamTypeChange(): void {
+    this.isSubmittedForEvaluation = false;
+    this.absentStudentIds = [];
     this.students = [];
-    this.showStudentsCard = false;
-    this.questionPapers = [];
-    this.selectedQuestionPaperId = null;
-    this.showQuestionPaperDropdown = false;
-
-    if (
-      !this.selectedClass ||
-      !this.selectedSubject ||
-      !this.selectedExamType
-    ) {
-      return;
-    }
-
-    this.uploadAnswerSheetService
-      .getQuestionPapers(
-        +this.selectedClass,
-        +this.selectedSubject,
-        +this.selectedExamType,
-      )
-      .subscribe({
-        next: (response) => {
-          const papers = response.data ?? [];
-          this.questionPapers = papers;
-
-          if (papers.length === 0) {
-            return;
-          }
-
-          const selectedExam = this.examTypes.find(
-            (e) => e.id === Number(this.selectedExamType),
-          );
-
-          const examTypeName = selectedExam?.examTypeName ?? '';
-
-          //  CASE 1: Only one paper
-          if (papers.length === 1) {
-            const paperName = papers[0].questionPaperName ?? '';
-
-            if (examTypeName === paperName) {
-              // Same name → no dropdown → auto select
-              this.selectedQuestionPaperId = papers[0].id;
-              this.showQuestionPaperDropdown = false;
-            } else {
-              // Different name → show dropdown → user must select
-              this.showQuestionPaperDropdown = true;
-            }
-          }
-
-          //  CASE 2: Multiple papers → always dropdown
-          if (papers.length > 1) {
-            this.showQuestionPaperDropdown = true;
-          }
-        },
-        error: (error) => {
-          this.handleError('Failed to load question papers', error);
-        },
-      });
-  }
-
-  private resetDependentDropdowns(): void {
-    this.selectedSection = '';
-    this.selectedSubject = '';
-    this.selectedExamType = '';
-    this.sections = [];
-    this.subjects = [];
-    this.examTypes = [];
-  }
-
-  private loadSections(classId: string): void {
-    this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => {
-        this.sections = sections;
-      },
-      error: (error) => {
-        this.handleError('Failed to load sections', error);
-      },
-    });
-  }
-
-  private loadSubjects(classId: string): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => {
-        this.subjects = subjects;
-      },
-      error: (error) => {
-        this.handleError('Failed to load subjects', error);
-      },
-    });
-  }
-
-  private loadExamTypes(classId: string): void {
-    this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => {
-        this.examTypes = examTypes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load exam types', error);
-      },
-    });
-  }
-
-  // ============================================
-  // Show Students
-  // ============================================
-
-  showStudents(): void {
-    if (!this.validateFiltersBeforeLoad()) return;
-
-    //  Validate only if dropdown is visible
-    if (this.showQuestionPaperDropdown && !this.selectedQuestionPaperId) {
-      this.toastService.showWarning('Warning', 'Please select Question Paper');
-      return;
-    }
-
-    this.resetState();
     this.loading = true;
 
-    this.uploadAnswerSheetService
+    this.uploadService
       .getStudentsWithUploadStatus(
         +this.selectedClass,
         +this.selectedSection,
         +this.selectedSubject,
         +this.selectedExamType,
-        +this.selectedQuestionPaperId!,
+        this.selectedQuestionPaperId!,
       )
       .subscribe({
         next: (response) => {
-          this.handleStudentsResponse(response);
+          if (response.success && response.data) {
+            this.isSubmittedForEvaluation = response.data.isEvaluationSubmitted ?? false;
+            const rawStudents = response.data.students ?? [];
+            if (rawStudents.length > 0) {
+              this.students = this.mapStudents(rawStudents);
+              this.absentStudentIds = this.students
+                .filter((s) => s.isAbsent)
+                .map((s) => s.studentId);
+              this.toastService.showSuccess('Success', 'Students loaded successfully');
+            } else {
+              this.students = [];
+            }
+            this.showStudentsCard = true;
+          }
+          this.loading = false;
         },
         error: (error) => {
           this.loading = false;
-          if (error.status === 404) {
+          this.errorHandler.handleHttpError(error, 'Failed to load students', () => {
             this.noExamPaperFound = true;
             this.students = [];
             this.showStudentsCard = true;
-            this.toastService.showWarning('Warning', error.error.message);
-          } else {
-            this.handleError('Failed to load students', error);
-          }
+          });
         },
       });
   }
 
-  private validateFiltersBeforeLoad(): boolean {
-    if (
-      !this.selectedClass ||
-      !this.selectedSection ||
-      !this.selectedSubject ||
-      !this.selectedExamType
-    ) {
-      this.toastService.showWarning(
-        'Warning',
-        'Please select all required fields',
-      );
-      return false;
-    }
-    return true;
+  private mapStudents(raw: unknown[]): StudentUploadStatus[] {
+    return raw.map((item) => {
+      const s = item as Record<string, unknown>;
+      return {
+        studentId:   s['studentId']   as number,
+        rollNumber:  s['rollNumber']  as string,
+        studentName: s['studentName'] as string,
+        className:   s['className']   as string,
+        sectionName: s['sectionName'] as string,
+        isAbsent:    (s['isAbsent']   as boolean) ?? false,
+        isUploaded:
+          typeof s['status'] === 'string' &&
+          s['status'].toLowerCase().includes('uploaded') &&
+          !s['status'].toLowerCase().includes('not'),
+        fileName: (s['fileName'] as string) || (s['documentName'] as string) || '',
+      };
+    });
   }
 
-  private resetState(): void {
-    this.showStudentsCard = false;
-    this.isEvaluationCompleted = false;
-    this.isSubmittedForEvaluation = false;
-    this.absentStudentIds = [];
-  }
+  // ─── File Upload ──────────────────────────────────────────────────────────────
 
-  private handleStudentsResponse(response: any): void {
-    if (response.success && response.data) {
-      const rawStudents = response.data.students ?? [];
-
-      if (rawStudents.length > 0) {
-        this.students = this.mapStudents(rawStudents);
-        this.updateAbsentStudentIds();
-
-        this.isSubmittedForEvaluation =
-          response.data.isEvaluationCompleted ?? false;
-
-        this.toastService.showSuccess(
-          'Success',
-          'Students loaded successfully',
-        );
-      } else {
-        this.students = [];
-      }
-
-      this.showStudentsCard = true;
-    }
-
-    this.loading = false;
-  }
-
-  private mapStudents(rawStudents: any[]): StudentUploadStatus[] {
-    return rawStudents.map((s: any) => ({
-      studentId: s.studentId,
-      rollNumber: s.rollNumber,
-      studentName: s.studentName,
-      className: s.className,
-      sectionName: s.sectionName,
-      isAbsent: s.isAbsent ?? false,
-      isUploaded:
-        s.status?.toLowerCase().includes('uploaded') === true &&
-        !s.status?.toLowerCase().includes('not'),
-      fileName: s.fileName || s.documentName || '',
-    }));
-  }
-
-  private updateAbsentStudentIds(): void {
-    this.absentStudentIds = this.students
-      .filter((student) => student.isAbsent)
-      .map((student) => student.studentId);
-  }
-
-  // ============================================
-  // File Upload
-  // ============================================
-
-  onFileSelected(
-    event: any,
-    student: StudentUploadStatus,
-    isUpdate: boolean = false,
-  ): void {
-    const file = event.target.files[0];
-    if (file && file.type === 'application/pdf') {
+  onFileSelected(event: Event, student: StudentUploadStatus, isUpdate: boolean): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file?.type === 'application/pdf') {
       student.answerSheetFile = file;
-
-      if (isUpdate) {
-        this.updateAnswerSheet(student); // ✅ Call update method
-      } else {
-        this.uploadAnswerSheet(student); // ✅ Call upload method
-      }
+      isUpdate ? this.updateAnswerSheet(student) : this.uploadAnswerSheet(student);
     } else {
       this.toastService.showError('Error', 'Please select a PDF file');
     }
@@ -392,29 +130,20 @@ export class UploadAnswerSheetsComponent implements OnInit {
 
   uploadAnswerSheet(student: StudentUploadStatus): void {
     if (!student.answerSheetFile) return;
-
     student.isUploading = true;
 
-    const formData = this.createUploadFormData(student);
-
-    this.uploadAnswerSheetService.uploadStudentAnswer(formData).subscribe({
+    this.uploadService.uploadStudentAnswer(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
           student.isUploaded = true;
           student.fileName = student.answerSheetFile?.name;
-          this.toastService.showSuccess(
-            'Success',
-            `Answer sheet uploaded for ${student.studentName}`,
-          );
+          this.toastService.showSuccess('Success', `Answer sheet uploaded for ${student.studentName}`);
         }
         student.isUploading = false;
       },
       error: (error) => {
         student.isUploading = false;
-        this.handleError(
-          `Failed to upload answer sheet for ${student.studentName}`,
-          error,
-        );
+        this.errorHandler.handle(`Failed to upload answer sheet for ${student.studentName}`, error);
       },
     });
   }
@@ -424,289 +153,98 @@ export class UploadAnswerSheetsComponent implements OnInit {
       this.toastService.showWarning('Warning', 'Please select a file first');
       return;
     }
-
     student.isUploading = true;
 
-    const formData = new FormData();
-    formData.append('StudentAnswerSheetFile', student.answerSheetFile);
-    formData.append('StudentId', student.studentId.toString());
-    formData.append('ClassId', this.selectedClass);
-    formData.append('SectionId', this.selectedSection);
-    formData.append('SubjectId', this.selectedSubject);
-    formData.append('ExamTypeId', this.selectedExamType);
-
-    this.uploadAnswerSheetService.updateAnswerSheet(formData).subscribe({
+    this.uploadService.updateAnswerSheet(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
           student.isUploaded = true;
           student.fileName = student.answerSheetFile?.name;
-          this.toastService.showSuccess(
-            'Success',
-            `Answer sheet updated for ${student.studentName}`,
-          );
+          this.toastService.showSuccess('Success', `Answer sheet updated for ${student.studentName}`);
         }
         student.isUploading = false;
       },
       error: (error) => {
-        this.handleError('Failed to update answer sheet', error);
         student.isUploading = false;
+        this.errorHandler.handle('Failed to update answer sheet', error);
       },
     });
   }
 
-  private createUploadFormData(student: StudentUploadStatus): FormData {
-    const formData = new FormData();
-    formData.append('StudentAnswerSheetFile', student.answerSheetFile!);
-    formData.append('StudentId', student.studentId.toString());
-    formData.append('ClassId', this.selectedClass);
-    formData.append('SectionId', this.selectedSection);
-    formData.append('SubjectId', this.selectedSubject);
-    formData.append('ExamTypeId', this.selectedExamType);
-    return formData;
+  private buildFormData(student: StudentUploadStatus): FormData {
+    const fd = new FormData();
+    fd.append('StudentAnswerSheetFile', student.answerSheetFile!);
+    fd.append('StudentId',        student.studentId.toString());
+    fd.append('ClassId',          this.selectedClass);
+    fd.append('SectionId',        this.selectedSection);
+    fd.append('SubjectId',        this.selectedSubject);
+    fd.append('ExamTypeId',       this.selectedExamType);
+    fd.append('QuestionPaperId',  this.selectedQuestionPaperId!.toString());
+    return fd;
   }
 
-  // ============================================
-  // Toggle Absent
-  // ============================================
+  // ─── Toggle Absent ────────────────────────────────────────────────────────────
 
   toggleAbsent(student: StudentUploadStatus): void {
     student.isAbsent = !student.isAbsent;
-
     if (student.isAbsent) {
-      this.markStudentAsAbsent(student);
+      student.isUploaded = false;
+      student.answerSheetFile = undefined;
+      if (!this.absentStudentIds.includes(student.studentId)) {
+        this.absentStudentIds.push(student.studentId);
+      }
     } else {
-      this.unmarkStudentAsAbsent(student);
+      this.absentStudentIds = this.absentStudentIds.filter((id) => id !== student.studentId);
     }
   }
 
-  private markStudentAsAbsent(student: StudentUploadStatus): void {
-    student.isUploaded = false;
-    student.answerSheetFile = undefined;
-
-    if (!this.absentStudentIds.includes(student.studentId)) {
-      this.absentStudentIds.push(student.studentId);
-    }
-  }
-
-  private unmarkStudentAsAbsent(student: StudentUploadStatus): void {
-    this.absentStudentIds = this.absentStudentIds.filter(
-      (id) => id !== student.studentId,
-    );
-  }
-
-  // ============================================
-  // Submit All Students
-  // ============================================
+  // ─── Submit All ───────────────────────────────────────────────────────────────
 
   submitAllStudents(): void {
     if (!this.canEvaluate) {
-      this.toastService.showWarning(
-        'Warning',
-        'Please upload answer sheets for all students or mark them as absent',
-      );
+      this.toastService.showWarning('Warning', 'Please upload answer sheets for all students or mark them as absent');
       return;
     }
 
     this.isSubmittingAll = true;
 
-    const payload = {
-      classId: +this.selectedClass,
-      sectionId: +this.selectedSection,
-      subjectId: +this.selectedSubject,
-      examTypeId: +this.selectedExamType,
+    const payload: SubmitAllPayload = {
+      classId:          +this.selectedClass,
+      sectionId:        +this.selectedSection,
+      subjectId:        +this.selectedSubject,
+      examTypeId:       +this.selectedExamType,
+      questionPaperId:  this.selectedQuestionPaperId!,
       absentStudentIds: this.absentStudentIds,
     };
 
-    this.uploadAnswerSheetService.submitAllStudents(payload).subscribe({
+    this.uploadService.submitAllStudents(payload).subscribe({
       next: (response) => {
         if (response.success) {
-          this.isEvaluationCompleted = true;
           this.isSubmittedForEvaluation = true;
-          this.toastService.showSuccess(
-            'Success',
-            response.message || 'Evaluation started successfully',
-          );
-        }
-        this.isSubmittingAll = false;
+          this.toastService.showSuccess('Success', response.message ?? 'Evaluation started successfully');
+           this.isSubmittingAll = false;
+        } 
       },
       error: (error) => {
         this.isSubmittingAll = false;
-        this.handleError('Failed to start evaluation', error);
+        this.errorHandler.handle('Failed to start evaluation', error);
       },
     });
   }
 
-  // ============================================
-  // Download Answer Sheet
-  // ============================================
-
-  // downloadAnswerSheet(student: StudentUploadStatus): void {
-  //   if (!student) {
-  //     this.toastService.showWarning('Warning', 'No student selected');
-  //     return;
-  //   }
-
-  //   this.loading = true;
-
-  //   this.uploadAnswerSheetService
-  //     .downloadAnswerSheet(
-  //       student.studentId,
-  //       parseInt(this.selectedClass),
-  //       parseInt(this.selectedSubject),
-  //       parseInt(this.selectedExamType),
-  //     )
-  //     .subscribe({
-  //       next: (response) => {
-  //         const blob = response.body as Blob;
-
-  //         // Extract filename from header
-  //         const contentDisposition = response.headers.get(
-  //           'content-disposition',
-  //         );
-  //         let fileName = 'AnswerSheet.pdf';
-
-  //         if (contentDisposition) {
-  //           //  First try filename* (UTF-8 standard)
-  //           const utf8Match = contentDisposition.match(
-  //             /filename\*=UTF-8''([^;]+)/,
-  //           );
-
-  //           if (utf8Match && utf8Match[1]) {
-  //             fileName = decodeURIComponent(utf8Match[1]);
-  //           } else {
-  //             // Fallback to normal filename=
-  //             const normalMatch = contentDisposition.match(/filename=([^;]+)/);
-
-  //             if (normalMatch && normalMatch[1]) {
-  //               fileName = normalMatch[1].replace(/"/g, '').trim();
-  //             }
-  //           }
-  //         }
-
-  //         this.downloadFile(blob, fileName);
-  //         this.loading = false;
-  //         this.toastService.showSuccess(
-  //           'Success',
-  //           'Answer sheet downloaded successfully',
-  //         );
-  //       },
-  //       error: (error) => {
-  //         this.loading = false;
-  //         this.handleError('Failed to download answer sheet', error);
-  //       },
-  //     });
-  // }
-
-  // private downloadFile(blob: Blob, fileName: string): void {
-  //   const url = window.URL.createObjectURL(blob);
-  //   const link = document.createElement('a');
-
-  //   link.href = url;
-  //   link.download = fileName; //  Use backend filename
-
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-
-  //   window.URL.revokeObjectURL(url);
-  // }
-
-  // ============================================
-  // View Answer Sheet
-  // ============================================
+  // ─── View Answer Sheet ────────────────────────────────────────────────────────
 
   viewAnswerSheet(student: StudentUploadStatus): void {
-    // Validation
-    if (!student) {
-      this.toastService.showWarning('Warning', 'No student selected');
-      return;
-    }
-
-    try {
-      // Generate URL
-      const url = this.viewAnswerSheetService.getAnswerSheetUrl(
-        student.studentId,
-        +this.selectedClass,
-        +this.selectedSubject,
-        +this.selectedExamType,
-      );
-
-      // Open in new tab with error handling
-      const newWindow = window.open(url, '_blank');
-
-      // Check if popup was blocked
-      if (
-        !newWindow ||
-        newWindow.closed ||
-        typeof newWindow.closed === 'undefined'
-      ) {
-        this.toastService.showWarning(
-          'Popup Blocked',
-          'Please allow popups for this site to view answer sheets',
-        );
-        return;
-      }
-
-      //  Handle new window errors
-      newWindow.onerror = (error) => {
-        console.error('Error loading answer sheet:', error);
-        this.toastService.showError('Error', 'Failed to load answer sheet');
-      };
-    } catch (error) {
-      console.error('View error:', error);
-      this.toastService.showError('Error', 'Failed to open answer sheet');
-    }
-  }
-
-  // ============================================
-  //  CENTRALIZED ERROR HANDLING
-  // ============================================
-
-  private handleError(userMessage: string, error: any): void {
-    // Extract error message from different error formats
-    const errorMessage = this.extractErrorMessage(error);
-
-    // Log to console for debugging (only in development)
-    if (!this.isProduction()) {
-      console.error('Error Details:', {
-        userMessage,
-        error,
-        errorMessage,
-      });
-    }
-
-    // Show toast notification
-    this.toastService.showError('Error', errorMessage || userMessage);
-  }
-
-  private extractErrorMessage(error: any): string {
-    // Try different error formats
-    if (error?.error?.message) {
-      return error.error.message;
-    }
-
-    if (error?.error?.errors && Array.isArray(error.error.errors)) {
-      return error.error.errors.join(', ');
-    }
-
-    if (error?.message) {
-      return error.message;
-    }
-
-    if (typeof error?.error === 'string') {
-      return error.error;
-    }
-
-    if (error?.statusText) {
-      return error.statusText;
-    }
-
-    return '';
-  }
-
-  private isProduction(): boolean {
-    // You can check environment here
-    // return environment.production;
-    return false; // For now, always show console logs
+    this.openAnswerSheet(student.studentId);
   }
 }
+
+
+
+
+
+
+
+
+
+
