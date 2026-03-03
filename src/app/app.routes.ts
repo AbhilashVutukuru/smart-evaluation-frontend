@@ -99,8 +99,15 @@ export const routes: Routes = [
       {
         path: 'create/exam',
         loadComponent: () =>
-          import('./features/exams/create-exam/create-exam.component').then(
+          import('./features/exams/create-question-paper/create-question-paper.component').then(
             (m) => m.CreateExamComponent,
+          ),
+      },
+         {
+        path: 'view/exam',
+        loadComponent: () =>
+          import('./features/exams/view-question-paper/view-question-paper.component').then(
+            (m) => m.ViewQuestionPaperComponent,
           ),
       },
       {
@@ -113,7 +120,7 @@ export const routes: Routes = [
       {
         path: 'upload-answer-sheets',
         loadComponent: () =>
-          import('./features/exams/upload-answer-sheets/upload-answer-sheet.component').then(
+          import('./features/exams/upload-answer-sheet/upload-answer-sheet.component').then(
             (m) => m.UploadAnswerSheetsComponent,
           ),
       },

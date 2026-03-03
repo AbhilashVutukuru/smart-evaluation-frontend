@@ -1,0 +1,290 @@
+<div class="result-container">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2><i class="fas fa-file-alt"></i> View Question Paper</h2>
+  </div>
+
+  <!-- Filter Card -->
+  <div class="card">
+    <h4><i class="fas fa-filter"></i> Select Question Paper</h4>
+
+    <div class="row">
+
+      <!-- Class -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Class <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedClass" (change)="onClassChange(selectedClass)">
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+        </select>
+      </div>
+
+      <!-- Subject -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Subject <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedSubject"
+          [disabled]="!selectedClass || isLoadingSubjects"
+          (change)="onSubjectChange()">
+          <option value="">
+            {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'Select Subject' }}
+          </option>
+          <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
+        </select>
+      </div>
+
+      <!-- Exam Type -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Exam Type <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedExamType"
+          [disabled]="!selectedClass || isLoadingExamTypes"
+          (change)="onExamTypeChange()">
+          <option value="">
+            {{ isLoadingExamTypes ? 'Loading...' : !selectedClass ? 'Select Class First' : 'Select Exam Type' }}
+          </option>
+          <option *ngFor="let et of examTypes" [value]="et.id">{{ et.examTypeName }}</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Row 2: Question Paper + button (shown when papers loaded or loading) -->
+    <div class="row align-items-end" *ngIf="showQuestionPaperDropdown || isLoadingPapers">
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Question Paper <span class="required">*</span></label>
+
+        <!-- Loading -->
+        <div *ngIf="isLoadingPapers" class="form-control qp-loading">
+          <i class="fas fa-spinner fa-spin"></i> Loading...
+        </div>
+
+        <!-- Single paper → readonly input with info icon -->
+        <ng-container *ngIf="!isLoadingPapers && questionPapers.length === 1">
+          <div class="qp-readonly-wrapper">
+            <input
+              type="text"
+              class="form-control qp-readonly-input"
+              [value]="questionPapers[0].questionPaperName"
+              readonly
+              disabled
+            />
+            <i
+              class="fas fa-info-circle qp-info-icon"
+              title="Question paper name is same as the selected Exam Type by default"
+            ></i>
+          </div>
+        </ng-container>
+
+        <!-- Multiple papers → dropdown -->
+        <select
+          *ngIf="!isLoadingPapers && questionPapers.length > 1"
+          class="form-control"
+          [(ngModel)]="selectedQuestionPaperId"
+        >
+          <option [ngValue]="null">Select Question Paper</option>
+          <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">{{ qp.questionPaperName }}</option>
+        </select>
+      </div>
+
+      <!-- View Paper button -->
+      <div class="col-md-2 mb-3">
+        <button class="btn btn-primary" (click)="loadQuestionPaper()" [disabled]="!canLoad || isLoadingPaper">
+          <i [class]="isLoadingPaper ? 'fas fa-spinner fa-spin' : 'fas fa-eye'"></i>
+          {{ isLoadingPaper ? 'Loading...' : 'View Paper' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Empty State: no exam paper found -->
+  <div class="card" *ngIf="noExamPaperFound">
+    <div class="empty-state">
+      <i class="fas fa-file-alt text-warning"></i>
+      <h5>No Exam Paper Found</h5>
+      <p>No exam paper has been created for the selected class, subject and exam type.</p>
+    </div>
+  </div>
+
+  <!-- Question Paper View -->
+  <div class="card" *ngIf="questionPaper">
+
+    <!-- Paper Header -->
+    <div class="paper-header">
+      <div class="paper-meta-grid">
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-file-alt"></i> Paper Name</span>
+          <span class="meta-value">{{ questionPaper.questionPaperName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-chalkboard"></i> Class</span>
+          <span class="meta-value">{{ questionPaper.className }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-book"></i> Subject</span>
+          <span class="meta-value">{{ questionPaper.subjectName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-pen-to-square"></i> Exam Type</span>
+          <span class="meta-value">{{ questionPaper.examTypeName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-calendar"></i> Academic Year</span>
+          <span class="meta-value">{{ questionPaper.academicYear }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label"><i class="fas fa-star"></i> Total Marks</span>
+          <span class="meta-value marks-highlight">{{ questionPaper.totalMarks }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <label class="section-label">
+        <i class="fas fa-tasks"></i> Question Progress:
+      </label>
+      <div class="progress-bar-container">
+        <div class="progress">
+          <div class="progress-bar" [style.width.%]="getProgressPercentage()" role="progressbar">
+            {{ currentQuestionIndex + 1 }} / {{ questionPaper.totalQuestions }}
+          </div>
+        </div>
+        <span class="progress-text">
+          {{ currentQuestionIndex + 1 }} of {{ questionPaper.totalQuestions }} Questions
+        </span>
+      </div>
+    </div>
+
+    <!-- Question Number Buttons -->
+    <div class="question-selector">
+      <label class="section-label">
+        <i class="fas fa-list-ol"></i> Quick Jump:
+      </label>
+      <div class="question-buttons">
+        <button
+          *ngFor="let q of questionPaper.questions; let i = index"
+          class="question-number-btn"
+          [class.active]="i === currentQuestionIndex"
+          (click)="loadQuestion(i)">
+          Q{{ q.questionNumber }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Current Question -->
+    <div *ngIf="currentQuestion">
+
+      <!-- Question Header with Marks -->
+      <div class="question-header-with-marks">
+        <h5>
+          <i class="fas fa-question-circle"></i>
+          Question {{ currentQuestion.questionNumber }}
+        </h5>
+        <span class="marks-badge">{{ currentQuestion.maxMarks }} Marks</span>
+      </div>
+
+      <!-- Question Text -->
+      <div class="question-section">
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-clipboard-question"></i> Question Text:
+          </label>
+          <button class="btn-expand" (click)="openFullscreen('questionText')">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div class="scrollable-text">{{ currentQuestion.questionText }}</div>
+      </div>
+
+      <!-- Official Answer -->
+      <div class="question-section">
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-check-circle"></i> Official Answer:
+          </label>
+          <button class="btn-expand" (click)="openFullscreen('officialAnswer')">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div class="scrollable-text official-answer">{{ currentQuestion.officialAnswer }}</div>
+      </div>
+
+      <!-- Rubric Table -->
+      <div class="question-section">
+        <label class="section-label">
+          <i class="fas fa-list-check"></i>
+          {{ currentQuestion.rubricAdded ? 'Rubric Criteria:' : 'Marks:' }}
+        </label>
+
+        <div class="table-responsive">
+          <table class="table table-bordered rubric-table" *ngIf="currentQuestion.rubricAdded; else simpleMarks">
+            <thead>
+              <tr>
+                <th>CRITERION</th>
+                <th>ORDER</th>
+                <th>MAX MARKS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rubric of currentQuestion.rubrics">
+                <td class="criterion-cell">
+                  <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
+                </td>
+                <td class="text-center">{{ rubric.criterionOrder }}</td>
+                <td class="text-center">
+                  <span class="badge badge-primary">{{ rubric.maxMarks }}</span>
+                </td>
+              </tr>
+              <tr class="totals-row">
+                <td colspan="2" class="text-right"><strong>Total Rubric Marks:</strong></td>
+                <td class="text-center">
+                  <span class="marks-badge-sm" [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
+                    {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #simpleMarks>
+            <div class="simple-marks-display">
+              <span class="marks-label">Max Marks:</span>
+              <span class="marks-badge">{{ currentQuestion.maxMarks }}</span>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="navigation-buttons">
+        <button class="btn btn-secondary btn-lg"
+          (click)="previousQuestion()"
+          [disabled]="currentQuestionIndex === 0">
+          <i class="fas fa-arrow-left"></i> Previous
+        </button>
+        <button class="btn btn-secondary btn-lg"
+          (click)="nextQuestion()"
+          [disabled]="currentQuestionIndex === questionPaper.totalQuestions - 1">
+          Next <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Fullscreen Modal -->
+<div class="fullscreen-modal" *ngIf="fullscreenContent" (click)="closeFullscreen()">
+  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+    <div class="fullscreen-header">
+      <h4>{{ getFullscreenTitle() }}</h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="fullscreen-body">{{ getFullscreenContent() }}</div>
+  </div>
+</div>

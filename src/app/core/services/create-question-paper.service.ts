@@ -12,7 +12,9 @@ import {
   ExamRubric,
   QuestionSet,
   RubricPoint,
+  QuestionPaperDto,
 } from '../models/exam';
+import { ApiResponse } from './master-data.service';
 
 /** Shape of a single exam returned by the question-papers API */
 interface ExamApiItem {
@@ -33,43 +35,54 @@ export interface ValidationResult {
 }
 
 @Injectable({ providedIn: 'root' })
-export class CreateExamService {
+export class CreateQuestionPaperService {
   private readonly apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
-  // ─── Fetch Exams ──────────────────────────────────────────────────────────────
-
-  getMockExams(filters: ExamFilters): Observable<Exam[]> {
-    const { filterExamClass, filterExamSubject, filterExamExamType } = filters;
-
-    if (!filterExamClass || !filterExamSubject || !filterExamExamType) {
-      return of([]);
+  getQuestionPapers(
+      classId: number,
+      subjectId: number,
+      examTypeId: number,
+    ): Observable<ApiResponse<QuestionPaperDto[]>> {
+      return this.http.get<ApiResponse<QuestionPaperDto[]>>(
+        `${this.apiUrl}/question-paper/all`,
+        { params: { classId, subjectId, examTypeId } },
+      );
     }
 
-    return this.http
-      .get<{ data?: ExamApiItem[] }>(
-        `${this.apiUrl}/question-papers`,
-        { params: { classId: filterExamClass, subjectId: filterExamSubject, examTypeId: filterExamExamType } },
-      )
-      .pipe(
-        map((response) =>
-          (response.data ?? []).map((exam) => ({
-            questionPaperId: exam.id,
-            examTitle: exam.title ?? exam.examTitle ?? '',
-            examTypeName: exam.examTypeName ?? '',
-            examDate: exam.examDate ?? '',
-            sectionName: exam.sectionName ?? '',
-            academicYear: exam.academicYear ?? '',
-            classId: exam.classId ?? 0,
-          })),
-        ),
-        catchError((error) => {
-          console.error('Error fetching exams:', error);
-          return of([]);
-        }),
-      );
-  }
+  // ─── Fetch Exams ──────────────────────────────────────────────────────────────
+
+  // getMockExams(filters: ExamFilters): Observable<Exam[]> {
+  //   const { filterExamClass, filterExamSubject, filterExamExamType } = filters;
+
+  //   if (!filterExamClass || !filterExamSubject || !filterExamExamType) {
+  //     return of([]);
+  //   }
+
+  //   return this.http
+  //     .get<{ data?: ExamApiItem[] }>(
+  //       `${this.apiUrl}/question-papers`,
+  //       { params: { classId: filterExamClass, subjectId: filterExamSubject, examTypeId: filterExamExamType } },
+  //     )
+  //     .pipe(
+  //       map((response) =>
+  //         (response.data ?? []).map((exam) => ({
+  //           questionPaperId: exam.id,
+  //           examTitle: exam.title ?? exam.examTitle ?? '',
+  //           examTypeName: exam.examTypeName ?? '',
+  //           examDate: exam.examDate ?? '',
+  //           sectionName: exam.sectionName ?? '',
+  //           academicYear: exam.academicYear ?? '',
+  //           classId: exam.classId ?? 0,
+  //         })),
+  //       ),
+  //       catchError((error) => {
+  //         console.error('Error fetching exams:', error);
+  //         return of([]);
+  //       }),
+  //     );
+  // }
 
   // ─── Generate Question Sets ───────────────────────────────────────────────────
 

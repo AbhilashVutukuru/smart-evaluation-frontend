@@ -6,20 +6,16 @@ import {
   Validators,
   ReactiveFormsModule,
   FormsModule,
-  AbstractControl,
 } from '@angular/forms';
 import { RegistrationService } from '../../../core/services/registration.service';
 import { ToastService } from '../../../core/services/toast.service';
-import {
-  ClassDto,
-  MasterDataService,
-  SectionDto,
-} from '../../../core/services/master-data.service';
+import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 interface UploadResults {
   success: number;
-  failed: number;
-  total: number;
+  failed:  number;
+  total:   number;
   errors?: string[];
 }
 
@@ -31,31 +27,32 @@ interface UploadResults {
   styleUrls: ['./student-registration.component.css'],
 })
 export class StudentRegistrationComponent implements OnInit {
-  private fb = inject(FormBuilder);
+  private fb                  = inject(FormBuilder);
   private registrationService = inject(RegistrationService);
-  private toastService = inject(ToastService);
-  private masterDataService = inject(MasterDataService);
+  private toastService        = inject(ToastService);
+  private masterDataService   = inject(MasterDataService);
+  private errorHandler        = inject(ErrorHandlerService);
 
   // Loading states
-  isDownloading = false;
-  loading = false;
+  isDownloading  = false;
+  loading        = false;
   uploadProgress = false;
 
   // Form and data
-  studentForm!: FormGroup;
+  studentForm!:  FormGroup;
   showBulkUpload = false;
-  bulkClassId: number | null = null;
+  bulkClassId:   number | null = null;
   bulkSectionId: number | null = null;
 
   // Dropdown data
-  classes: ClassDto[] = [];
+  classes:  ClassDto[]   = [];
   sections: SectionDto[] = [];
-  
+
   // File upload
-  selectedFile: File | null = null;
+  selectedFile:  File | null          = null;
   uploadResults: UploadResults | null = null;
 
-  //  Track which fields have been touched/blurred
+  // Validation tracking
   touchedFields: Set<string> = new Set();
 
   // ============================================
@@ -74,35 +71,28 @@ export class StudentRegistrationComponent implements OnInit {
 
   private initForm(): void {
     this.studentForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
-      gender: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-      address: ['', Validators.required],
-      classId: ['', Validators.required],
-      sectionId: [{ value: '', disabled: true }, Validators.required],
-      rollNumber: [{ value: '', disabled: true }, Validators.required],
+      firstName:     ['', Validators.required],
+      lastName:      ['', Validators.required],
+      dateOfBirth:   ['', Validators.required],
+      gender:        ['', Validators.required],
+      email:         ['', [Validators.required, Validators.email]],
+      phoneNumber:   ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      address:       ['', Validators.required],
+      classId:       ['', Validators.required],
+      sectionId:     [{ value: '', disabled: true }, Validators.required],
+      rollNumber:    [{ value: '', disabled: true }, Validators.required],
       admissionDate: ['', Validators.required],
     });
   }
 
   private setupFormListeners(): void {
-    // Class change handler
-    this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      this.onClassChangeHandler(classId);
-    });
-
-    // Section change handler
-    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
-      this.onSectionChangeHandler(sectionId);
-    });
+    this.studentForm.get('classId')?.valueChanges.subscribe((classId) => this.onClassChangeHandler(classId));
+    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => this.onSectionChangeHandler(sectionId));
   }
 
   private onClassChangeHandler(classId: string): void {
     const sectionControl = this.studentForm.get('sectionId');
-    const rollControl = this.studentForm.get('rollNumber');
+    const rollControl    = this.studentForm.get('rollNumber');
 
     if (classId) {
       sectionControl?.enable();
@@ -118,7 +108,6 @@ export class StudentRegistrationComponent implements OnInit {
 
   private onSectionChangeHandler(sectionId: string): void {
     const rollControl = this.studentForm.get('rollNumber');
-    
     if (sectionId) {
       rollControl?.enable();
       this.loadNextRollNumber();
@@ -129,13 +118,12 @@ export class StudentRegistrationComponent implements OnInit {
   }
 
   // ============================================
-  //  Field Validation on Blur
+  // Field Validation
   // ============================================
 
   onFieldBlur(fieldName: string): void {
     this.touchedFields.add(fieldName);
     const control = this.studentForm.get(fieldName);
-    
     if (control) {
       control.markAsTouched();
       control.updateValueAndValidity();
@@ -149,36 +137,27 @@ export class StudentRegistrationComponent implements OnInit {
 
   getErrorMessage(fieldName: string): string {
     const control = this.studentForm.get(fieldName);
-    
     if (!control || !control.errors) return '';
 
-    if (control.errors['required']) {
-      return `${this.getFieldLabel(fieldName)} is required`;
-    }
-    
-    if (control.errors['email']) {
-      return 'Please enter a valid email address';
-    }
-    
-    if (control.errors['pattern'] && fieldName === 'phoneNumber') {
-      return 'Phone number must be exactly 10 digits';
-    }
-    
+    if (control.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
+    if (control.errors['email'])    return 'Please enter a valid email address';
+    if (control.errors['pattern'] && fieldName === 'phoneNumber') return 'Phone number must be exactly 10 digits';
+
     return 'Invalid value';
   }
 
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      firstName: 'First Name',
-      lastName: 'Last Name',
-      dateOfBirth: 'Date of Birth',
-      gender: 'Gender',
-      email: 'Email',
-      phoneNumber: 'Phone Number',
-      address: 'Address',
-      classId: 'Class',
-      sectionId: 'Section',
-      rollNumber: 'Roll Number',
+    const labels: Record<string, string> = {
+      firstName:     'First Name',
+      lastName:      'Last Name',
+      dateOfBirth:   'Date of Birth',
+      gender:        'Gender',
+      email:         'Email',
+      phoneNumber:   'Phone Number',
+      address:       'Address',
+      classId:       'Class',
+      sectionId:     'Section',
+      rollNumber:    'Roll Number',
       admissionDate: 'Admission Date',
     };
     return labels[fieldName] || fieldName;
@@ -195,45 +174,33 @@ export class StudentRegistrationComponent implements OnInit {
   }
 
   get isClassSelected(): boolean {
-    const classId = this.studentForm.get('classId')?.value;
-    return !!classId;
+    return !!this.studentForm.get('classId')?.value;
   }
 
   // ============================================
-  // Load Data Methods
+  // Load Data
   // ============================================
 
   private loadClasses(): void {
     this.masterDataService.getClasses().subscribe({
-      next: (classes) => {
-        this.classes = classes;
-      },
-      error: (error) => {
-        this.handleError('Failed to load classes', error);
-      },
+      next:  (classes) => (this.classes = classes),
+      error: (error)   => this.errorHandler.handle('Failed to load classes', error),
     });
   }
 
   private loadSections(classId: number): void {
     this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => {
-        this.sections = sections;
-      },
-      error: (error) => {
-        this.handleError('Failed to load sections', error);
-      },
+      next:  (sections) => (this.sections = sections),
+      error: (error)    => this.errorHandler.handle('Failed to load sections', error),
     });
   }
 
   private loadNextRollNumber(): void {
-    const classId = this.studentForm.get('classId')?.value;
+    const classId   = this.studentForm.get('classId')?.value;
     const sectionId = this.studentForm.get('sectionId')?.value;
     const rollControl = this.studentForm.get('rollNumber');
 
-    if (!classId || !sectionId) {
-      rollControl?.reset();
-      return;
-    }
+    if (!classId || !sectionId) { rollControl?.reset(); return; }
 
     this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
       next: (response) => {
@@ -244,7 +211,7 @@ export class StudentRegistrationComponent implements OnInit {
         }
       },
       error: (error) => {
-        this.handleError('Failed to load roll number', error);
+        this.errorHandler.handle('Failed to load roll number', error);
         rollControl?.reset();
       },
     });
@@ -255,8 +222,7 @@ export class StudentRegistrationComponent implements OnInit {
   // ============================================
 
   onSubmit(): void {
-    // Mark all fields as touched to show errors
-    Object.keys(this.studentForm.controls).forEach(key => {
+    Object.keys(this.studentForm.controls).forEach((key) => {
       this.touchedFields.add(key);
       this.studentForm.get(key)?.markAsTouched();
     });
@@ -271,7 +237,6 @@ export class StudentRegistrationComponent implements OnInit {
     this.registrationService.registerStudent(this.studentForm.value).subscribe({
       next: (response) => {
         this.loading = false;
-        
         if (response.success) {
           this.toastService.showSuccess('Success', 'Student registered successfully!');
           this.resetForm();
@@ -281,32 +246,26 @@ export class StudentRegistrationComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.handleError('Registration failed', error);
+        this.errorHandler.handle('Registration failed', error);
       },
     });
   }
 
-   resetForm(): void {
+  resetForm(): void {
     this.studentForm.reset();
     this.touchedFields.clear();
     this.sections = [];
   }
 
   // ============================================
-  // Bulk Upload Methods
+  // Bulk Upload
   // ============================================
 
   onBulkClassChange(): void {
     this.bulkSectionId = null;
-    this.sections = [];
-
-    if (this.bulkClassId) {
-      this.loadSections(this.bulkClassId);
-    }
-
-    if (this.selectedFile) {
-      this.removeFile();
-    }
+    this.sections      = [];
+    if (this.bulkClassId) this.loadSections(this.bulkClassId);
+    if (this.selectedFile) this.removeFile();
   }
 
   canSelectFile(): boolean {
@@ -317,35 +276,30 @@ export class StudentRegistrationComponent implements OnInit {
     return !!(this.bulkClassId && this.bulkSectionId && this.selectedFile);
   }
 
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
+  onFileSelected(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
     if (!this.canSelectFile()) {
       this.toastService.showWarning('Selection Required', 'Please select Class and Section first');
-      event.target.value = '';
+      (event.target as HTMLInputElement).value = '';
       return;
     }
 
-    // File type validation
-    const validExtensions = ['.xlsx', '.xls'];
-    const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
-
-    if (!validExtensions.includes(fileExtension)) {
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!['.xlsx', '.xls'].includes(ext)) {
       this.toastService.showWarning('Invalid File', 'Please select an Excel file (.xlsx or .xls)');
-      event.target.value = '';
+      (event.target as HTMLInputElement).value = '';
       return;
     }
 
-    // File size validation (5MB max)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
+    if (file.size > 5 * 1024 * 1024) {
       this.toastService.showWarning('File Too Large', 'Maximum file size is 5MB');
-      event.target.value = '';
+      (event.target as HTMLInputElement).value = '';
       return;
     }
 
-    this.selectedFile = file;
+    this.selectedFile  = file;
     this.uploadResults = null;
   }
 
@@ -362,7 +316,7 @@ export class StudentRegistrationComponent implements OnInit {
     }
 
     this.uploadProgress = true;
-    this.uploadResults = null;
+    this.uploadResults  = null;
 
     this.registrationService
       .bulkUploadStudents(this.selectedFile!, this.bulkClassId!, this.bulkSectionId!)
@@ -373,21 +327,15 @@ export class StudentRegistrationComponent implements OnInit {
           if (response.success) {
             this.uploadResults = {
               success: response.successfulRecords || 0,
-              failed: response.failedRecords || 0,
-              total: response.totalRecords || 0,
-              errors: response.errors || [],
+              failed:  response.failedRecords     || 0,
+              total:   response.totalRecords      || 0,
+              errors:  response.errors            || [],
             };
 
-            this.toastService.showSuccess(
-              'Upload Complete',
-              `${response.successfulRecords} students uploaded successfully`
-            );
+            this.toastService.showSuccess('Upload Complete', `${response.successfulRecords} students uploaded successfully`);
 
             if (response.failedRecords > 0) {
-              this.toastService.showWarning(
-                'Partial Upload',
-                `${response.failedRecords} records failed. Check errors below.`
-              );
+              this.toastService.showWarning('Partial Upload', `${response.failedRecords} records failed. Check errors below.`);
             }
 
             this.removeFile();
@@ -397,7 +345,7 @@ export class StudentRegistrationComponent implements OnInit {
         },
         error: (error) => {
           this.uploadProgress = false;
-          this.handleError('Upload failed', error);
+          this.errorHandler.handle('Upload failed', error);
         },
       });
   }
@@ -411,15 +359,13 @@ export class StudentRegistrationComponent implements OnInit {
 
     this.registrationService.downloadTemplate('student').subscribe({
       next: (blob: Blob) => {
-        const url = window.URL.createObjectURL(blob);
+        const url  = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
-        link.href = url;
+        link.href     = url;
         link.download = 'StudentUploadTemplate.xlsx';
         link.style.display = 'none';
-
         document.body.appendChild(link);
         link.click();
-
         setTimeout(() => {
           document.body.removeChild(link);
           window.URL.revokeObjectURL(url);
@@ -430,70 +376,22 @@ export class StudentRegistrationComponent implements OnInit {
       },
       error: (error) => {
         this.isDownloading = false;
-        this.handleError('Failed to download template', error);
+        this.errorHandler.handle('Failed to download template', error);
       },
     });
   }
 
   // ============================================
-  // Helper Methods
+  // Helpers
   // ============================================
 
   getClassName(classId: number | null): string {
     if (!classId) return '';
-    const cls = this.classes.find((c) => c.id === classId);
-    return cls ? cls.className : '';
+    return this.classes.find((c) => c.id === classId)?.className ?? '';
   }
 
   getSectionName(sectionId: number | null): string {
     if (!sectionId) return '';
-    const section = this.sections.find((s) => s.id === sectionId);
-    return section ? section.sectionName : '';
-  }
-
-  // ============================================
-  //  Centralized Error Handling
-  // ============================================
-
-  private handleError(userMessage: string, error: any): void {
-    const errorMessage = this.extractErrorMessage(error);
-    
-    if (!this.isProduction()) {
-      console.error('Error Details:', {
-        userMessage,
-        error,
-        errorMessage
-      });
-    }
-
-    this.toastService.showError('Error', errorMessage || userMessage);
-  }
-
-  private extractErrorMessage(error: any): string {
-    if (error?.error?.message) {
-      return error.error.message;
-    }
-    
-    if (error?.error?.errors && Array.isArray(error.error.errors)) {
-      return error.error.errors.join(', ');
-    }
-    
-    if (error?.message) {
-      return error.message;
-    }
-    
-    if (typeof error?.error === 'string') {
-      return error.error;
-    }
-    
-    if (error?.statusText) {
-      return error.statusText;
-    }
-    
-    return '';
-  }
-
-  private isProduction(): boolean {
-    return false; // Change based on environment
+    return this.sections.find((s) => s.id === sectionId)?.sectionName ?? '';
   }
 }

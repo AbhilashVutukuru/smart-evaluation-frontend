@@ -11,6 +11,7 @@ import { AdminSettingsService } from '../../../core/services/admin-settings.serv
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { MasterDataService } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-admin-settings',
@@ -29,6 +30,7 @@ export class AdminSettingsComponent implements OnInit {
   private svc = inject(AdminSettingsService);
   private masterDataService = inject(MasterDataService);
   private toastService = inject(ToastService);
+  private errorHandler  = inject(ErrorHandlerService);
 
   // ── Tab state ──────────────────────────────────────────────
   mainTab: 'master' | 'assign' | 'academic' | 'admin' = 'master';
@@ -294,12 +296,12 @@ export class AdminSettingsComponent implements OnInit {
           this.classForm.reset();
           this.loadClasses();
         } else {
-          this.showError(r.message ?? 'Failed to create class');
+          this.toastService.showError('Error', r.message ?? 'Failed to create class');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to create class');
+        this.errorHandler.handle('Failed to create class', e);
         this.loading = false;
       },
     });
@@ -315,12 +317,12 @@ export class AdminSettingsComponent implements OnInit {
           this.sectionForm.reset();
           this.loadMasterSections();
         } else {
-          this.showError(r.message ?? 'Failed to create section');
+          this.toastService.showError('Error', r.message ?? 'Failed to create section');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to create section');
+        this.errorHandler.handle('Failed to create section', e);
         this.loading = false;
       },
     });
@@ -336,12 +338,12 @@ export class AdminSettingsComponent implements OnInit {
           this.subjectForm.reset();
           this.loadMasterSubjects();
         } else {
-          this.showError(r.message ?? 'Failed to create subject');
+          this.toastService.showError('Error', r.message ?? 'Failed to create subject');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to create subject');
+        this.errorHandler.handle('Failed to create subject', e);
         this.loading = false;
       },
     });
@@ -357,12 +359,12 @@ export class AdminSettingsComponent implements OnInit {
           this.examTypeForm.reset();
           this.loadMasterExamTypes();
         } else {
-          this.showError(r.message ?? 'Failed to create exam type');
+          this.toastService.showError('Error', r.message ?? 'Failed to create exam type');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to create exam type');
+        this.errorHandler.handle('Failed to create exam type', e);
         this.loading = false;
       },
     });
@@ -379,12 +381,12 @@ export class AdminSettingsComponent implements OnInit {
           this.assignSectionForm.reset();
           this.loadAssignedSections();
         } else {
-          this.showError(r.message ?? 'Failed to assign section');
+          this.toastService.showError('Error', r.message ?? 'Failed to assign section');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to assign section');
+        this.errorHandler.handle('Failed to assign section', e);
         this.loading = false;
       },
     });
@@ -400,12 +402,12 @@ export class AdminSettingsComponent implements OnInit {
           this.assignSubjectForm.reset();
           this.loadAssignedSubjects();
         } else {
-          this.showError(r.message ?? 'Failed to assign subject');
+          this.toastService.showError('Error', r.message ?? 'Failed to assign subject');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to assign subject');
+        this.errorHandler.handle('Failed to assign subject', e);
         this.loading = false;
       },
     });
@@ -421,12 +423,12 @@ export class AdminSettingsComponent implements OnInit {
           this.assignExamTypeForm.reset();
           this.loadAssignedExamTypes();
         } else {
-          this.showError(r.message ?? 'Failed to assign exam type');
+          this.toastService.showError('Error', r.message ?? 'Failed to assign exam type');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to assign exam type');
+        this.errorHandler.handle('Failed to assign exam type', e);
         this.loading = false;
       },
     });
@@ -468,7 +470,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to delete');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
@@ -480,7 +482,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to delete');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
@@ -492,7 +494,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to delete');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
@@ -504,7 +506,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to delete');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
@@ -517,7 +519,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to remove');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -530,7 +532,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to remove');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -543,7 +545,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message ?? 'Failed to remove');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -623,7 +625,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to create academic year');
+        this.errorHandler.handle('Failed to create academic year', e);
         this.loading = false;
       },
     });
@@ -648,7 +650,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to set active year');
+        this.errorHandler.handle('Failed to set active year', e);
         this.loading = false;
       },
     });
@@ -666,7 +668,7 @@ export class AdminSettingsComponent implements OnInit {
       toYear &&
       new Date(fromYear.startDate) >= new Date(toYear.startDate)
     ) {
-      this.showError(
+      this.toastService.showError('Error',
         `Cannot promote backward. "${toYear.yearName}" starts before "${fromYear.yearName}".`,
       );
       return;
@@ -690,7 +692,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to promote students');
+        this.errorHandler.handle('Failed to promote students', e);
         this.loading = false;
       },
     });
@@ -736,7 +738,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to assign admin');
+        this.errorHandler.handle('Failed to assign admin', e);
         this.loading = false;
       },
     });
@@ -766,7 +768,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message ?? 'Failed to remove admin');
+        this.errorHandler.handle('Failed to remove admin', e);
         this.loading = false;
       },
     });
@@ -790,7 +792,4 @@ export class AdminSettingsComponent implements OnInit {
     this.toastService.showSuccess('Success', msg); 
   }
 
-  private showError(msg: string): void {  
-    this.toastService.showError('Error', msg);  
-  }
 }

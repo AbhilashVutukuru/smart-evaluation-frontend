@@ -12,18 +12,7 @@ import {
 export class UploadAnswerSheetService {
   private readonly apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
-
-  getQuestionPapers(
-    classId: number,
-    subjectId: number,
-    examTypeId: number,
-  ): Observable<ApiResponse<QuestionPaperDto[]>> {
-    return this.http.get<ApiResponse<QuestionPaperDto[]>>(
-      `${this.apiUrl}/student-answer-sheet/question-papers`,
-      { params: { classId, subjectId, examTypeId } },
-    );
-  }
+  constructor(private http: HttpClient) {}  
 
   getStudentsWithUploadStatus(
     classId: number,

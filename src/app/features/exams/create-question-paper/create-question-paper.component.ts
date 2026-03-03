@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
-import { CreateExamService } from '../../../core/services/create-exam.service';
+import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
 import {
   MasterDataService,
   ClassDto,
@@ -27,13 +27,13 @@ interface UploadProgress {
   selector: 'app-exam-upload',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './create-exam.component.html',
-  styleUrls: ['./create-exam.component.css'],
+  templateUrl: './create-question-paper.component.html',
+  styleUrls: ['./create-question-paper.component.css'],
 })
 export class CreateExamComponent implements OnInit {
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandlerService);
-  private createExamService = inject(CreateExamService);
+  private createQuestionPaperService = inject(CreateQuestionPaperService);
   private masterDataService = inject(MasterDataService);
 
   // ─── Mode state ───────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ export class CreateExamComponent implements OnInit {
 
   // ─── Form data ────────────────────────────────────────────────────────────────
   examFormData: ExamFormData = {
-    academicYear: this.createExamService.getCurrentAcademicYear(),
+    academicYear: this.createQuestionPaperService.getCurrentAcademicYear(),
     classId: '',
     subjectId: '',
     examTypeId: '',
@@ -162,7 +162,7 @@ export class CreateExamComponent implements OnInit {
     if (!this.validateExamBasicInfo()) return;
 
     try {
-      this.questionSets = this.createExamService.generateQuestionSets(
+      this.questionSets = this.createQuestionPaperService.generateQuestionSets(
         this.examFormData.numberOfQuestions!,
         this.examFormData.totalMarks!,
       );
@@ -281,7 +281,7 @@ export class CreateExamComponent implements OnInit {
       return;
     }
 
-    const formValidation = this.createExamService.validateExamForm(this.examFormData);
+    const formValidation = this.createQuestionPaperService.validateExamForm(this.examFormData);
     if (!formValidation.isValid) {
       this.toastService.showError('Validation Error', formValidation.errors[0]);
       return;
@@ -294,9 +294,9 @@ export class CreateExamComponent implements OnInit {
     this.isSubmitting = true;
     this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
 
-    const apiRequest = this.createExamService.prepareApiRequest(this.examFormData);
+    const apiRequest = this.createQuestionPaperService.prepareApiRequest(this.examFormData);
 
-    this.createExamService.createExam(apiRequest).subscribe({
+    this.createQuestionPaperService.createExam(apiRequest).subscribe({
       next: () => {
         this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
         setTimeout(() => {
@@ -314,29 +314,29 @@ export class CreateExamComponent implements OnInit {
     });
   }
 
-  // ─── Load Existing Exams (Update Mode) ───────────────────────────────────────
+  // // ─── Load Existing Exams (Update Mode) ───────────────────────────────────────
 
-  loadExistingExams(): void {
-    if (!this.validateFilters()) return;
+  // loadExistingExams(): void {
+  //   if (!this.validateFilters()) return;
 
-    this.isLoading = true;
+  //   this.isLoading = true;
 
-    this.createExamService.getMockExams(this.examFilters).subscribe({
-      next: (exams) => {
-        this.existingExams = exams;
-        this.isLoading = false;
-        if (exams.length === 0) {
-          this.toastService.showInfo('Info', 'No exams found with selected filters');
-        } else {
-          this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
-        }
-      },
-      error: (error) => {
-        this.isLoading = false;
-        this.errorHandler.handle('Failed to load exams', error);
-      },
-    });
-  }
+  //   this.createQuestionPaperService.getMockExams(this.examFilters).subscribe({
+  //     next: (exams) => {
+  //       this.existingExams = exams;
+  //       this.isLoading = false;
+  //       if (exams.length === 0) {
+  //         this.toastService.showInfo('Info', 'No exams found with selected filters');
+  //       } else {
+  //         this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
+  //       }
+  //     },
+  //     error: (error) => {
+  //       this.isLoading = false;
+  //       this.errorHandler.handle('Failed to load exams', error);
+  //     },
+  //   });
+  // }
 
   private validateFilters(): boolean {
     if (!this.examFilters.filterExamClass) {
@@ -390,17 +390,17 @@ export class CreateExamComponent implements OnInit {
 
   calculateValidationMarksTotal(): number {
     if (!this.currentQuestionSet) return 0;
-    return this.createExamService.calculateValidationMarksTotal(this.currentQuestionSet);
+    return this.createQuestionPaperService.calculateValidationMarksTotal(this.currentQuestionSet);
   }
 
   validateMarksMatch(): boolean {
     if (!this.currentQuestionSet) return false;
-    return this.createExamService.validateMarksMatch(this.currentQuestionSet);
+    return this.createQuestionPaperService.validateMarksMatch(this.currentQuestionSet);
   }
 
   getQuestionValidationErrors(): string[] {
     if (!this.currentQuestionSet) return ['No question selected'];
-    return this.createExamService.validateQuestionSet(this.currentQuestionSet).errors;
+    return this.createQuestionPaperService.validateQuestionSet(this.currentQuestionSet).errors;
   }
 
   // ─── Mode Management ──────────────────────────────────────────────────────────
@@ -435,7 +435,7 @@ export class CreateExamComponent implements OnInit {
 
   private resetForm(): void {
     this.examFormData = {
-      academicYear: this.createExamService.getCurrentAcademicYear(),
+      academicYear: this.createQuestionPaperService.getCurrentAcademicYear(),
       classId: '',
       subjectId: '',
       examTypeId: '',

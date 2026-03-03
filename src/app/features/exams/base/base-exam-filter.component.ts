@@ -11,14 +11,16 @@ import { ClassDto, ExamTypeDto, MasterDataService, SectionDto, SubjectDto } from
 import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
 import { QuestionPaperDto } from '../../../core/models/common.models';
+import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
 
 @Directive()
 export abstract class BaseExamFilterComponent implements OnInit {
-  protected toastService             = inject(ToastService);
-  protected errorHandler             = inject(ErrorHandlerService);
-  protected masterDataService        = inject(MasterDataService);
-  protected viewAnswerSheetService   = inject(ViewAnswerSheetService);
-  protected uploadAnswerSheetService = inject(UploadAnswerSheetService);
+  protected toastService               = inject(ToastService);
+  protected errorHandler               = inject(ErrorHandlerService);
+  protected masterDataService          = inject(MasterDataService);
+  protected viewAnswerSheetService     = inject(ViewAnswerSheetService);
+  protected uploadAnswerSheetService   = inject(UploadAnswerSheetService);
+  protected createQuestionPaperService = inject(CreateQuestionPaperService);
 
   // Filter selections
   selectedClass    = '';
@@ -92,7 +94,7 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
     this.isLoadingPapers = true;
 
-    this.uploadAnswerSheetService
+    this.createQuestionPaperService
       .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
       .subscribe({
         next: (response) => {

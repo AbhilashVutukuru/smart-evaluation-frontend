@@ -81,19 +81,25 @@ export class SidebarComponent implements OnInit {
     },
     {
       icon: 'fas fa-file-alt',
-      label: 'Create Exam',
+      label: 'Create Question Paper',
       route: '/create/exam',
+      roles: ['Admin', 'Teacher'],
+    },
+       {
+      icon: 'fas fa-file-alt',
+      label: 'View Question Paper',
+      route: '/view/exam',
       roles: ['Admin', 'Teacher'],
     },
     {
       icon: 'fas fa-upload',
-      label: 'Upload Answer Sheets',
+      label: 'Upload Answer Sheet',
       route: '/upload-answer-sheets',
       roles: ['Admin', 'Teacher'],
     },
     {
       icon: 'fas fa-chart-bar',
-      label: 'Exam Results',
+      label: 'View Exam Result',
       route: '/results',
       roles: ['Admin', 'Teacher', 'Student'],
     },

@@ -6,6 +6,7 @@ import { TeacherService } from '../../../core/services/teacher.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
 import { ToastService } from '../../../core/services/toast.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-teacher-view-edit',
@@ -15,11 +16,12 @@ import { ToastService } from '../../../core/services/toast.service';
   styleUrls: ['./teacher-view-edit.component.css']
 })
 export class TeacherViewEditComponent implements OnInit {
-  private fb = inject(FormBuilder);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
+  private fb             = inject(FormBuilder);
+  private route          = inject(ActivatedRoute);
+  private router         = inject(Router);
   private teacherService = inject(TeacherService);
-  private toastService = inject(ToastService);
+  private toastService   = inject(ToastService);
+  private errorHandler   = inject(ErrorHandlerService);
 
   // Form and Data
   teacherForm!: FormGroup;
@@ -31,7 +33,7 @@ export class TeacherViewEditComponent implements OnInit {
   showDeleteModal = false;
   showCancelModal = false;
 
-  // ✅ Validation tracking
+  // Validation tracking
   touchedFields: Set<string> = new Set();
 
   // ============================================
@@ -40,7 +42,7 @@ export class TeacherViewEditComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    
+
     this.teacherId = +this.route.snapshot.params['id'];
     if (!this.teacherId) {
       this.toastService.showError('Error', 'Invalid teacher ID');
@@ -49,11 +51,11 @@ export class TeacherViewEditComponent implements OnInit {
     }
 
     this.mode = this.route.snapshot.data['mode'] || 'view';
-    
+
     if (this.mode === 'view') {
       this.teacherForm.disable();
     }
-    
+
     this.loadTeacher();
   }
 
@@ -63,28 +65,27 @@ export class TeacherViewEditComponent implements OnInit {
 
   private initForm(): void {
     this.teacherForm = this.fb.group({
-      firstName: ['', Validators.required],
-      lastName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      phoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
-      address: ['', Validators.required],
-      dateOfBirth: ['', Validators.required],
-      gender: ['', Validators.required],
-      employeeCode: ['', Validators.required],
+      firstName:     ['', Validators.required],
+      lastName:      ['', Validators.required],
+      email:         ['', [Validators.required, Validators.email]],
+      phoneNumber:   ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
+      address:       ['', Validators.required],
+      dateOfBirth:   ['', Validators.required],
+      gender:        ['', Validators.required],
+      employeeCode:  ['', Validators.required],
       qualification: ['', Validators.required],
-      experience: [0, [Validators.required, Validators.min(0)]],
-      dateOfJoining: ['', Validators.required]
+      experience:    [0, [Validators.required, Validators.min(0)]],
+      dateOfJoining: ['', Validators.required],
     });
   }
 
   // ============================================
-  // ✅ Field Validation on Blur
+  // Field Validation
   // ============================================
 
   onFieldBlur(fieldName: string): void {
     this.touchedFields.add(fieldName);
     const control = this.teacherForm.get(fieldName);
-    
     if (control) {
       control.markAsTouched();
       control.updateValueAndValidity();
@@ -98,41 +99,29 @@ export class TeacherViewEditComponent implements OnInit {
 
   getErrorMessage(fieldName: string): string {
     const control = this.teacherForm.get(fieldName);
-    
     if (!control || !control.errors) return '';
 
-    if (control.errors['required']) {
-      return `${this.getFieldLabel(fieldName)} is required`;
-    }
-    
-    if (control.errors['email']) {
-      return 'Please enter a valid email address';
-    }
-    
-    if (control.errors['pattern'] && fieldName === 'phoneNumber') {
-      return 'Phone number must be exactly 10 digits';
-    }
+    if (control.errors['required'])  return `${this.getFieldLabel(fieldName)} is required`;
+    if (control.errors['email'])     return 'Please enter a valid email address';
+    if (control.errors['pattern'] && fieldName === 'phoneNumber') return 'Phone number must be exactly 10 digits';
+    if (control.errors['min']     && fieldName === 'experience')  return 'Experience cannot be negative';
 
-    if (control.errors['min'] && fieldName === 'experience') {
-      return 'Experience cannot be negative';
-    }
-    
     return 'Invalid value';
   }
 
   private getFieldLabel(fieldName: string): string {
-    const labels: { [key: string]: string } = {
-      firstName: 'First Name',
-      lastName: 'Last Name',
-      email: 'Email',
-      phoneNumber: 'Phone Number',
-      address: 'Address',
-      dateOfBirth: 'Date of Birth',
-      gender: 'Gender',
-      employeeCode: 'Employee Code',
+    const labels: Record<string, string> = {
+      firstName:     'First Name',
+      lastName:      'Last Name',
+      email:         'Email',
+      phoneNumber:   'Phone Number',
+      address:       'Address',
+      dateOfBirth:   'Date of Birth',
+      gender:        'Gender',
+      employeeCode:  'Employee Code',
       qualification: 'Qualification',
-      experience: 'Experience',
-      dateOfJoining: 'Joining Date'
+      experience:    'Experience',
+      dateOfJoining: 'Joining Date',
     };
     return labels[fieldName] || fieldName;
   }
@@ -166,20 +155,19 @@ export class TeacherViewEditComponent implements OnInit {
         this.loading = false;
 
         if (response.success && response.data) {
-          const teacher = response.data;
-          
+          const t = response.data;
           this.teacherForm.patchValue({
-            firstName: teacher.firstName,
-            lastName: teacher.lastName,
-            email: teacher.email,
-            phoneNumber: teacher.phoneNumber,
-            address: teacher.address,
-            dateOfBirth: teacher.dateOfBirth?.split('T')[0],
-            gender: teacher.gender,
-            employeeCode: teacher.employeeCode,
-            qualification: teacher.qualification,
-            experience: teacher.experience,
-            dateOfJoining: teacher.dateOfJoining?.split('T')[0]
+            firstName:     t.firstName,
+            lastName:      t.lastName,
+            email:         t.email,
+            phoneNumber:   t.phoneNumber,
+            address:       t.address,
+            dateOfBirth:   t.dateOfBirth?.split('T')[0],
+            gender:        t.gender,
+            employeeCode:  t.employeeCode,
+            qualification: t.qualification,
+            experience:    t.experience,
+            dateOfJoining: t.dateOfJoining?.split('T')[0],
           });
         } else {
           this.toastService.showError('Error', 'Teacher not found');
@@ -188,9 +176,9 @@ export class TeacherViewEditComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.handleError('Failed to load teacher details', error);
+        this.errorHandler.handle('Failed to load teacher details', error);
         setTimeout(() => this.goBack(), 2000);
-      }
+      },
     });
   }
 
@@ -201,7 +189,7 @@ export class TeacherViewEditComponent implements OnInit {
   enableEdit(): void {
     this.mode = 'edit';
     this.teacherForm.enable();
-    this.teacherForm.get('employeeCode')?.disable(); // Keep employee code readonly
+    this.teacherForm.get('employeeCode')?.disable();
     this.toastService.showInfo('Edit Mode', 'You can now edit teacher details');
   }
 
@@ -239,8 +227,7 @@ export class TeacherViewEditComponent implements OnInit {
   // ============================================
 
   onSubmit(): void {
-    // Mark all fields as touched
-    Object.keys(this.teacherForm.controls).forEach(key => {
+    Object.keys(this.teacherForm.controls).forEach((key) => {
       this.touchedFields.add(key);
       this.teacherForm.get(key)?.markAsTouched();
     });
@@ -252,10 +239,7 @@ export class TeacherViewEditComponent implements OnInit {
 
     this.loading = true;
 
-    const payload = {
-      id: this.teacherId,
-      ...this.teacherForm.value
-    };
+    const payload = { id: this.teacherId, ...this.teacherForm.value };
 
     this.teacherService.updateTeacher(payload).subscribe({
       next: (response) => {
@@ -273,8 +257,8 @@ export class TeacherViewEditComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-        this.handleError('Failed to update teacher', error);
-      }
+        this.errorHandler.handle('Failed to update teacher', error);
+      },
     });
   }
 
@@ -299,17 +283,15 @@ export class TeacherViewEditComponent implements OnInit {
 
         if (response.success) {
           this.toastService.showSuccess('Success', 'Teacher deleted successfully!');
-          setTimeout(() => {
-            this.router.navigate(['/teachers/list']);
-          }, 1500);
+          setTimeout(() => this.router.navigate(['/teachers/list']), 1500);
         } else {
           this.toastService.showError('Error', response.message || 'Failed to delete teacher');
         }
       },
       error: (error) => {
         this.showDeleteModal = false;
-        this.handleError('Failed to delete teacher', error);
-      }
+        this.errorHandler.handle('Failed to delete teacher', error);
+      },
     });
   }
 
@@ -318,72 +300,22 @@ export class TeacherViewEditComponent implements OnInit {
   }
 
   // ============================================
-  // Navigation
+  // Navigation & Helpers
   // ============================================
 
   goBack(): void {
     this.router.navigate(['/teachers/list']);
   }
 
-  // ============================================
-  // Helper Methods
-  // ============================================
-
   getTeacherFullName(): string {
-    const firstName = this.teacherForm.get('firstName')?.value || '';
-    const lastName = this.teacherForm.get('lastName')?.value || '';
-    return `${firstName} ${lastName}`.trim();
+    const first = this.teacherForm.get('firstName')?.value || '';
+    const last  = this.teacherForm.get('lastName')?.value  || '';
+    return `${first} ${last}`.trim();
   }
 
   getTeacherInfo(): string {
-    const fullName = this.getTeacherFullName();
+    const fullName     = this.getTeacherFullName();
     const employeeCode = this.teacherForm.get('employeeCode')?.value || '';
     return employeeCode ? `${fullName} (${employeeCode})` : fullName;
-  }
-
-  // ============================================
-  // ✅ Centralized Error Handling
-  // ============================================
-
-  private handleError(userMessage: string, error: any): void {
-    const errorMessage = this.extractErrorMessage(error);
-
-    if (!this.isProduction()) {
-      console.error('Error Details:', {
-        userMessage,
-        error,
-        errorMessage
-      });
-    }
-
-    this.toastService.showError('Error', errorMessage || userMessage);
-  }
-
-  private extractErrorMessage(error: any): string {
-    if (error?.error?.message) {
-      return error.error.message;
-    }
-    
-    if (error?.error?.errors && Array.isArray(error.error.errors)) {
-      return error.error.errors.join(', ');
-    }
-    
-    if (error?.message) {
-      return error.message;
-    }
-    
-    if (typeof error?.error === 'string') {
-      return error.error;
-    }
-    
-    if (error?.statusText) {
-      return error.statusText;
-    }
-    
-    return '';
-  }
-
-  private isProduction(): boolean {
-    return false; // Change based on environment
   }
 }
