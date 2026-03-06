@@ -241,7 +241,7 @@
                 (click)="!isViewing && viewAnswerSheet(student)"
               >
                 <span *ngIf="!isViewing"
-                  ><i class="fas fa-eye"></i>Answer Sheet</span
+                  ><i class="fas fa-eye"></i> View Answer Sheet</span
                 >
 
                 <span *ngIf="isViewing">
@@ -273,7 +273,7 @@
           "
         ></i>
 
-        {{ isSubmittingAll ? "Submitting..." : "Submit All" }}
+        {{ isSubmittingAll ? "Submitting..." : "Submit All For Evaluation" }}
       </button>
     </div>
   </div>

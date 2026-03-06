@@ -145,6 +145,16 @@ export class CreateQuestionPaperService {
     if (!formData.subjectId) { return { isValid: false, errors: ['Subject is required'] }; }
     if (!formData.examTypeId){ return { isValid: false, errors: ['Exam type is required'] }; }
 
+    // examDate is optional — only validate if provided
+    if (formData.examDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const [y, m, d] = formData.examDate.split('-').map(Number);
+      const selected = new Date(y, m - 1, d);
+      if (selected < today)
+        return { isValid: false, errors: ['Exam date cannot be in the past'] };
+    }
+
     if (!formData.numberOfQuestions || formData.numberOfQuestions < 1)
       return { isValid: false, errors: ['Please enter a valid number of questions (minimum 1)'] };
 
@@ -204,6 +214,8 @@ export class CreateQuestionPaperService {
       examTypeId: parseInt(formData.examTypeId) || 0,
       totalMarks: formData.totalMarks ?? 0,
       questionPaperName: formData.questionPaperName?.trim() ?? '',
+      // Send as UTC midnight ISO string, or null if not set
+      examDate: formData.examDate ? `${formData.examDate}T00:00:00Z` : null,
       questions,
     };
   }

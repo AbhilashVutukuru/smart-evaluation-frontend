@@ -1,6 +1,4 @@
-// login.component.ts - FINAL VERSION with Remember Me Checkbox Persistence
-
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -18,19 +16,18 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-
 export class LoginComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   loginForm: FormGroup;
   loading = false;
   error = '';
   showPassword = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -39,11 +36,12 @@ export class LoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const savedRememberMe = localStorage.getItem('rememberMePreference');
-    if (savedRememberMe === 'true') {
+    // Restore remember me preference
+    if (localStorage.getItem('rememberMePreference') === 'true') {
       this.loginForm.patchValue({ rememberMe: true });
     }
 
+    // Already logged in → redirect
     if (this.authService.isAuthenticated()) {
       const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
       this.router.navigate([returnUrl]);
@@ -58,11 +56,8 @@ export class LoginComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  // ✅ Clear error when user starts typing
   clearError(): void {
-    if (this.error) {
-      this.error = '';
-    }
+    if (this.error) this.error = '';
   }
 
   onSubmit(): void {
@@ -71,38 +66,44 @@ export class LoginComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    localStorage.setItem('rememberMePreference', this.loginForm.value.rememberMe.toString());
+    localStorage.setItem(
+      'rememberMePreference',
+      this.loginForm.value.rememberMe.toString(),
+    );
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
+        // ✅ Always reset loading before any navigation
+        this.loading = false;
+
         if (response.success && response.data) {
           this.authService.updateCurrentUser(response.data);
 
-          const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-          
           if (response.data.requirePasswordChange) {
             this.router.navigate(['/auth/change-password']);
           } else {
+            const returnUrl =
+              this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
             this.router.navigate([returnUrl]);
           }
         } else {
           this.error = response.message || 'Login failed';
         }
-        this.loading = false;
       },
       error: (error) => {
+        this.loading = false;
+
         if (error.status === 401) {
           this.error = 'Invalid email or password';
         } else if (error.status === 403) {
           this.error = 'Your account has been suspended';
-        } else if (error.status === 0) {
-          this.error = 'Network error. Please check your connection.';
         } else if (error.status === 429) {
           this.error = 'Too many login attempts. Please try again later.';
+        } else if (error.status === 0) {
+          this.error = 'Network error. Please check your connection.';
         } else {
           this.error = error.error?.message || 'An error occurred. Please try again.';
         }
-        this.loading = false;
       },
     });
   }

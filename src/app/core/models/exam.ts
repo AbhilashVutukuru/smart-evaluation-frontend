@@ -38,6 +38,8 @@ export interface ExamFormData {
   numberOfQuestions: number | null;
   questionSets: QuestionSet[];
   questionPaperName: string;
+  /** Optional exam date — YYYY-MM-DD string or null */
+  examDate: string | null;
 }
 
 export interface ExamFilters {
@@ -70,5 +72,7 @@ export interface ExamApiRequest {
   examTypeId: number;
   totalMarks: number;
   questionPaperName: string;
+  /** Optional exam date sent as ISO UTC string or null */
+  examDate: string | null;
   questions: ExamQuestion[];
 }

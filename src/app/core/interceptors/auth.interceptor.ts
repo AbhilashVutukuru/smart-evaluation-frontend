@@ -84,14 +84,14 @@ export class AuthInterceptor implements HttpInterceptor {
             return next.handle(request.clone({ withCredentials: true }));
           } else {
             this.logger.warn('Token refresh failed');
-            this.authService.logout();
+            this.authService.logoutLocal();
             return throwError(() => new Error('Token refresh failed'));
           }
         }),
         catchError((error) => {
           this.isRefreshing = false;
           this.logger.error('Token refresh error', error);
-          this.authService.logout();
+          this.authService.logoutLocal();
           return throwError(() => error);
         }),
       );

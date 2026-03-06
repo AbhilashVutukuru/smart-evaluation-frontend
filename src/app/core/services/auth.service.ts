@@ -54,7 +54,8 @@ export class AuthService {
           refreshToken: '',
           ...response.data
         });
-        this.startRefreshTokenTimer();
+        // Pass expiry so the timer fires at the right time, not always 50 min from now
+        this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
       }
     } catch (error: any) {
       this.logger.info('No active session');
@@ -108,7 +109,7 @@ export class AuthService {
           if (response.success && response.data) {
             this.logger.info('Login successful');
             this.currentUserSubject.next(response.data);
-            this.startRefreshTokenTimer();
+            this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
           }
         }),
         catchError((error) => {
@@ -133,12 +134,12 @@ export class AuthService {
           if (response.success && response.data) {
             this.logger.info('Token refreshed');
             this.currentUserSubject.next(response.data);
-            this.startRefreshTokenTimer();
+            this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
           }
         }),
         catchError((error: HttpErrorResponse) => {
           this.logger.error('Token refresh failed', error);
-          this.logout();
+          this.logoutLocal();
           return throwError(() => error);
         }),
       );
@@ -147,16 +148,26 @@ export class AuthService {
   // ============================================================
   // ✅ Auto-Refresh Timer
   // ============================================================
-  private startRefreshTokenTimer() {
+  private startRefreshTokenTimer(expiresAt?: string | Date) {
     this.stopRefreshTokenTimer();
-    // Refresh every 50 minutes (token expires in 1 hour)
-    this.refreshTokenTimeout = setTimeout(
-      () => {
-        this.logger.info('Auto-refreshing token...');
-        this.refreshToken().subscribe();
-      },
-      50 * 60 * 1000,
-    );
+
+    // Calculate ms until 1 minute before the token actually expires.
+    // Falls back to 55 minutes if no expiry is provided (should not happen).
+    let msUntilRefresh = 55 * 60 * 1000;
+
+    if (expiresAt) {
+      const expiryMs = new Date(expiresAt).getTime();
+      const nowMs    = Date.now();
+      // Refresh 60 seconds before expiry; clamp to at least 5 seconds
+      msUntilRefresh = Math.max(expiryMs - nowMs - 60_000, 5_000);
+    }
+
+    this.logger.info(`Token refresh scheduled in ${Math.round(msUntilRefresh / 1000)}s`);
+
+    this.refreshTokenTimeout = setTimeout(() => {
+      this.logger.info('Auto-refreshing token...');
+      this.refreshToken().subscribe({ error: () => {} }); // logoutLocal called in catchError
+    }, msUntilRefresh);
   }
 
   private stopRefreshTokenTimer() {
@@ -184,6 +195,15 @@ export class AuthService {
           this.router.navigate(['/auth/login']);
         },
       });
+  }
+
+  // Clear local auth state and navigate to login — no API call.
+  // Used by the interceptor on refresh failure to avoid double logout.
+  logoutLocal(): void {
+    this.logger.info('Clearing local session...');
+    this.stopRefreshTokenTimer();
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/auth/login']);
   }
 
   // ============================================================

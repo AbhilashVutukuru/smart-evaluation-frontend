@@ -69,8 +69,25 @@ export class CreateExamComponent implements OnInit {
     totalMarks: null,
     numberOfQuestions: null,
     questionPaperName: '',
+    examDate: null,
     questionSets: [],
   };
+
+  // ─── Date helpers ─────────────────────────────────────────────────────────────
+  /** Today as YYYY-MM-DD — used as the min attribute on the date input */
+  get todayIso(): string {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  /** True when the supplied YYYY-MM-DD string is strictly before today (local) */
+  isExamDateInPast(dateStr: string | null): boolean {
+    if (!dateStr) return false;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const selected = new Date(y, m - 1, d);   // local midnight — no TZ shift
+    const today    = new Date();
+    today.setHours(0, 0, 0, 0);
+    return selected < today;
+  }
 
   // ─── Filter data (update mode) ────────────────────────────────────────────────
   examFilters: ExamFilters = {
@@ -442,6 +459,7 @@ export class CreateExamComponent implements OnInit {
       totalMarks: null,
       numberOfQuestions: null,
       questionPaperName: '',
+      examDate: null,
       questionSets: [],
     };
     this.questionSets = [];

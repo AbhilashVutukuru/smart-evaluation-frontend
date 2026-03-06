@@ -6,8 +6,8 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-change-password',
@@ -50,7 +50,7 @@ export class ChangePasswordComponent implements OnInit {
     this.changePasswordForm
       .get('newPassword')
       ?.valueChanges.subscribe((password) => {
-        this.checkPasswordStrength(password);
+        this.checkPasswordStrength(password ?? '');
       });
   }
 
@@ -64,8 +64,8 @@ export class ChangePasswordComponent implements OnInit {
 
   passwordMatchValidator(group: FormGroup) {
     const password = group.get('newPassword')?.value;
-    const confirmPassword = group.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { passwordMismatch: true };
+    const confirm = group.get('confirmPassword')?.value;
+    return password === confirm ? null : { passwordMismatch: true };
   }
 
   togglePassword(field: string): void {
@@ -83,6 +83,10 @@ export class ChangePasswordComponent implements OnInit {
     };
   }
 
+  goToLogin(): void {
+    this.router.navigate(['/auth/login']);
+  }
+
   onSubmit(): void {
     if (this.changePasswordForm.invalid) return;
 
@@ -92,26 +96,23 @@ export class ChangePasswordComponent implements OnInit {
 
     this.authService.changePassword(this.changePasswordForm.value).subscribe({
       next: (response) => {
+        this.loading = false;
         if (response.success) {
-          this.success = 'Password changed successfully!';
+          this.success = 'Password changed successfully! Redirecting to login…';
           this.changePasswordForm.reset();
 
-          const user = this.authService.currentUserValue;
-          if (user) {
-            user.requirePasswordChange = false;
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            this.authService.updateCurrentUser(user);
-          }
+          // ✅ Clear auth state so guard doesn't redirect to dashboard
+          this.authService.logoutLocal();
 
-          setTimeout(() => this.router.navigate(['/dashboard']), 2000);
+          // ✅ Always navigate to login after password change
+          setTimeout(() => this.router.navigate(['/auth/login']), 2000);
         } else {
-          this.error = response.message;
+          this.error = response.message || 'Failed to change password';
         }
-        this.loading = false;
       },
       error: (error) => {
-        this.error = error.error?.message || 'Failed to change password';
         this.loading = false;
+        this.error = error.error?.message || 'Failed to change password';
       },
     });
   }

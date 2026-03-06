@@ -103,6 +103,12 @@
 
 .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
 .btn-primary  { background: #6366f1; color: white; }
 .btn-primary:hover:not(:disabled) { background: #4f46e5; }
 
@@ -501,4 +507,428 @@
   align-items: center;
   gap: 0.5rem;
   background: #f9fafb;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   EDIT MODE — new styles (appended)
+════════════════════════════════════════════════════════════════════ */
+
+/* Paper header row: meta grid + action buttons side-by-side */
+.paper-header {
+  margin-bottom: 1.5rem;
+}
+
+.paper-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Locked badge */
+.badge-locked {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
+  padding: 0.4rem 0.85rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* Edit Paper button */
+.btn-edit-paper {
+  padding: 0.5rem 1.1rem;
+  background: #ede9fe;
+  color: #6366f1;
+  border: 1.5px solid #c4b5fd;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.btn-edit-paper:hover {
+  background: #ddd6fe;
+  border-color: #a78bfa;
+  transform: translateY(-1px);
+}
+
+/* Cancel edit button */
+.btn-cancel-edit {
+  padding: 0.5rem 1.1rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1.5px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.btn-cancel-edit:hover:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.btn-cancel-edit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Edit mode info banner */
+.edit-mode-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: #eff6ff;
+  border: 1.5px solid #93c5fd;
+  border-radius: 0.5rem;
+  color: #1d4ed8;
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+}
+
+.edit-mode-banner i {
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* Editable paper name / total marks inputs in the meta grid */
+.meta-edit-input {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  border-color: #a78bfa;
+}
+
+.meta-edit-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Marks edit group in question header */
+.marks-edit-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.marks-edit-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.marks-edit-input {
+  width: 80px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-color: #a78bfa;
+}
+
+.marks-edit-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Edit textareas */
+.edit-textarea {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  border-color: #d1d5db;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.edit-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.official-answer-edit {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.official-answer-edit:focus {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* Rubric edit header: label + running total */
+.rubric-edit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.rubric-total-badge {
+  background: #ede9fe;
+  color: #6366f1;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.rubric-total-badge.marks-mismatch {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+/* Rubric row: text textarea */
+.rubric-text-edit {
+  font-size: 0.8125rem;
+  resize: vertical;
+  min-height: 2.5rem;
+}
+
+.rubric-text-edit:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Rubric marks input */
+.rubric-marks-input {
+  width: 72px;
+  text-align: center;
+  font-weight: 600;
+  margin: 0 auto;
+  display: block;
+}
+
+.rubric-marks-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+}
+
+/* Mismatch highlight on totals badge */
+.marks-badge-sm.marks-mismatch {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* Error text */
+.error-text {
+  font-size: 0.8rem;
+  color: #dc2626;
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* ── Add / Remove rubric buttons ──────────────────────────────────── */
+.btn-add-rubric,
+.btn-remove-rubric {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.btn-add-rubric {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.btn-add-rubric:hover {
+  background: #a7f3d0;
+  transform: scale(1.1);
+}
+
+.btn-remove-rubric {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.btn-remove-rubric:hover:not(:disabled) {
+  background: #fecaca;
+  transform: scale(1.1);
+}
+
+.btn-remove-rubric:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ms-2 { margin-left: 0.5rem; }
+
+/* ── All-subjects summary table ───────────────────────────────────── */
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.badge-primary {
+  background: #ede9fe;
+  color: #6366f1;
+  padding: 0.35rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-locked-sm {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.25rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.badge-editable {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 0.25rem 0.6rem;
+  border-radius: 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Highlight the row whose paper is currently open below */
+.active-row {
+  background: #f5f3ff !important;
+  border-left: 3px solid #6366f1;
+}
+
+/* Loading state */
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Back button ──────────────────────────────────────────────────── */
+.btn-back {
+  padding: 0.5rem 1.1rem;
+  background: white;
+  color: #6b7280;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  transition: all 0.2s;
+}
+
+.btn-back:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+}
+
+/* ── No rubric empty state ────────────────────────────────────────── */
+.no-rubric-state {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* ── Exam Date edit group ──────────────────────────────────────────────────── */
+.exam-date-edit-group {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.exam-date-edit-group .meta-edit-input {
+  flex: 1;
+}
+
+.btn-clear-date {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 0.375rem;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.btn-clear-date:hover {
+  background: #fecaca;
+}
+
+/* ── Optional label suffix ────────────────────────────────────────────────── */
+.meta-optional {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  font-weight: 400;
+  margin-left: 0.25rem;
+}
+
+/* ── Exam date past-date error ────────────────────────────────────────────── */
+.input-date-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.exam-date-error {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #ef4444;
+  margin-top: 0.25rem;
 }

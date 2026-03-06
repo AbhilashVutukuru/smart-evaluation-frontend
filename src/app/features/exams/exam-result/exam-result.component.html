@@ -226,7 +226,7 @@
         <span class="info-value">{{ getPercentage() }}%</span>
       </div>
       <div class="info-item">
-        <span class="info-label"> <i class="fas fa-eye"></i> View: </span>
+        <span class="info-label"> <i class="fas fa-eye"></i></span>
 
         <a
           href="javascript:void(0)"
@@ -234,7 +234,7 @@
           [class.disabled]="isViewing"
           (click)="!isViewing && viewAnswerSheet(selectedStudent)"
         >
-          <span *ngIf="!isViewing">Answer Sheet</span>
+          <span *ngIf="!isViewing">View Answer Sheet</span>
 
           <span *ngIf="isViewing">
             <i class="fas fa-spinner fa-spin"></i>

@@ -660,6 +660,56 @@ textarea.form-control {
   }
 }
 
+/* ===== Exam Date Input Group ===== */
+.exam-date-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.exam-date-input-group .form-control {
+  padding-right: 2.25rem; /* room for the clear button */
+}
+
+.btn-clear-date {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.15s;
+}
+
+.btn-clear-date:hover {
+  background: #fee2e2;
+}
+
+.input-date-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.exam-date-error {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.3rem;
+}
+
+.exam-date-error i {
+  font-size: 0.75rem;
+}
+
 /* ===== Print Styles ===== */
 @media print {
   .exam-container {
@@ -692,4 +742,16 @@ textarea.form-control {
 
 .card {
   animation: slideDown 0.3s ease;
+}
+
+.qp-name-info-icon {
+  color: #0284c7;
+  font-size: 0.8rem;
+  margin-left: 0.25rem;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.qp-name-info-icon:hover {
+  color: #0369a1;
 }

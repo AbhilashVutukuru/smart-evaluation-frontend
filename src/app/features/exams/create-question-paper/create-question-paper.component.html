@@ -265,11 +265,15 @@
           class="form-control"
         />
       </div>
+
       <!-- Question Paper Name -->
       <div class="col-md-3 mb-3">
         <label class="form-label">
           Question Paper Name
           <small class="text-muted">(Optional)</small>
+            <i class="fas fa-info-circle qp-name-info-icon"
+     title="If left empty, the Exam Type name will be used automatically.">
+  </i>
         </label>
         <input
           type="text"
@@ -279,6 +283,37 @@
           class="form-control"
         />
       </div>
+
+      <!-- Exam Date (Optional) -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">
+          Exam Date
+          <small class="text-muted">(Optional)</small>
+        </label>
+        <div class="exam-date-input-group">
+          <input
+            type="date"
+            [(ngModel)]="examFormData.examDate"
+            [min]="todayIso"
+            class="form-control"
+            [class.input-date-error]="isExamDateInPast(examFormData.examDate)"
+          />
+          <button
+            *ngIf="examFormData.examDate"
+            class="btn-clear-date"
+            (click)="examFormData.examDate = null"
+            title="Clear date"
+            type="button"
+          >&#x2715;</button>
+        </div>
+        <div
+          *ngIf="isExamDateInPast(examFormData.examDate)"
+          class="exam-date-error"
+        >
+          <i class="fas fa-exclamation-circle"></i> Date cannot be in the past
+        </div>
+      </div>
+
       <!-- Set Questions Button -->
       <div class="col-md-3 mb-3">
         <label class="form-label">&nbsp;</label>
@@ -290,7 +325,8 @@
             !examFormData.subjectId ||
             !examFormData.examTypeId ||
             !examFormData.totalMarks ||
-            !examFormData.numberOfQuestions
+            !examFormData.numberOfQuestions ||
+            isExamDateInPast(examFormData.examDate)
           "
         >
           <i class="fas fa-cogs"></i> Set Questions
