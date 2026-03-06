@@ -1,0 +1,641 @@
+<!-- Create Exam Component - Complete HTML with Fixed Alignment -->
+<div class="exam-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2><i class="fas fa-file-alt"></i> Create Exam - Questions & Answers</h2>
+  </div>
+
+  <!-- UPDATE MODE: Select Exam -->
+  <div *ngIf="examMode === 'update'" class="card">
+    <h4><i class="fas fa-clipboard-list"></i> Step 2: Select Exam to Update</h4>
+
+    <div class="info-box">
+      <i class="fas fa-info-circle"></i>
+      <span
+        ><strong>Sequential Selection Required:</strong> Select Class first,
+        then Subject, then Exam Type.</span
+      >
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label"
+          >Filter by Class <span class="required">*</span></label
+        >
+        <select
+          [(ngModel)]="examFilters.filterExamClass"
+          (change)="onFilterClassSelected(examFilters.filterExamClass)"
+          class="form-control"
+        >
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of allClasses" [value]="cls.id">
+            {{ cls.className }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label"
+          >Filter by Subject <span class="required">*</span></label
+        >
+        <select
+          [(ngModel)]="examFilters.filterExamSubject"
+          [disabled]="!examFilters.filterExamClass"
+          (change)="examFilters.filterExamExamType = ''; existingExams = []"
+          class="form-control"
+        >
+          <option value="">
+            {{
+              examFilters.filterExamClass
+                ? "Select Subject"
+                : "Select Class First"
+            }}
+          </option>
+          <option *ngFor="let subject of allSubjects" [value]="subject.id">
+            {{ subject.subjectName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label"
+          >Filter by Exam Type <span class="required">*</span></label
+        >
+        <select
+          [(ngModel)]="examFilters.filterExamExamType"
+          [disabled]="!examFilters.filterExamSubject"
+          (change)="existingExams = []"
+          class="form-control"
+        >
+          <option value="">
+            {{
+              examFilters.filterExamSubject
+                ? "Select Exam Type"
+                : "Select Subject First"
+            }}
+          </option>
+          <option *ngFor="let examType of allExamTypes" [value]="examType.id">
+            {{ examType.examTypeName }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- <div class="d-flex gap-2">
+      <button
+        class="btn btn-primary"
+        (click)="loadExistingExams()"
+        [disabled]="
+          !examFilters.filterExamClass ||
+          !examFilters.filterExamSubject ||
+          !examFilters.filterExamExamType ||
+          isLoading
+        "
+      >
+        <i
+          class="fas"
+          [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"
+        ></i>
+        <span *ngIf="!isLoading">Load Exams</span>
+        <span *ngIf="isLoading">Loading...</span>
+      </button>
+      <button class="btn btn-secondary" (click)="clearFilters()">
+        <i class="fas fa-redo"></i> Clear Filters
+      </button>
+    </div> -->
+
+    <!-- Exams List -->
+    <div *ngIf="existingExams.length > 0" class="mt-4">
+      <h5 class="mb-3">Select Exam to Update:</h5>
+      <div class="exams-grid">
+        <div
+          *ngFor="let exam of existingExams"
+          class="exam-card"
+          [class.selected]="
+            selectedExamForUpdate?.questionPaperId === exam.questionPaperId
+          "
+          (click)="selectExamForUpdate(exam)"
+        >
+          <h5>{{ exam.examTitle }}</h5>
+          <p class="exam-meta">
+            <span><i class="fas fa-tag"></i> {{ exam.examTypeName }}</span>
+            <span
+              ><i class="fas fa-calendar"></i>
+              {{ formatDate(exam.examDate) }}</span
+            >
+          </p>
+          <p class="exam-meta" *ngIf="exam.sectionName || exam.academicYear">
+            <span *ngIf="exam.sectionName"
+              ><i class="fas fa-users"></i> {{ exam.sectionName }}</span
+            >
+            <span
+              ><i class="fas fa-graduation-cap"></i>
+              {{ exam.academicYear }}</span
+            >
+          </p>
+          <i
+            class="fas fa-check-circle check-icon"
+            *ngIf="
+              selectedExamForUpdate?.questionPaperId === exam.questionPaperId
+            "
+          ></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM FORM -->
+  <div class="card">
+    <h4>
+      <i class="fas fa-clipboard-list"></i>
+      {{
+        examMode === "upload"
+          ? "Exam Information"
+          : "Step 3: Update Exam Information"
+      }}
+    </h4>
+
+    <div
+      *ngIf="examMode === 'update' && selectedExamForUpdate"
+      class="info-box"
+    >
+      <i class="fas fa-info-circle"></i>
+      <div>
+        <strong>Updating:</strong> {{ selectedExamForUpdate.examTitle }}
+        <p class="mb-0">
+          You can update question paper, answer scheme, or exam date. Leave
+          fields empty to keep existing content.
+        </p>
+      </div>
+    </div>
+
+    <div *ngIf="examMode === 'upload'" class="info-box">
+      <i class="fas fa-info-circle"></i>
+      <span
+        ><strong>Note:</strong> All questions, answers, and validation rules are
+        required.</span
+      >
+    </div>
+
+    <!-- Form Fields -->
+    <div class="row">
+      <div class="col-md-3 mb-3">
+        <label class="form-label">Class <span class="required">*</span></label>
+        <select
+          [(ngModel)]="examFormData.classId"
+          (change)="onClassSelected(examFormData.classId)"
+          [disabled]="examMode === 'update'"
+          required
+          class="form-control"
+        >
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of allClasses" [value]="cls.id">
+            {{ cls.className }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label"
+          >Subject <span class="required">*</span></label
+        >
+        <select
+          [(ngModel)]="examFormData.subjectId"
+          [disabled]="examMode === 'update' || !examFormData.classId"
+          required
+          class="form-control"
+        >
+          <option value="">
+            {{ examFormData.classId ? "Select Subject" : "Select Class First" }}
+          </option>
+          <option *ngFor="let subject of allSubjects" [value]="subject.id">
+            {{ subject.subjectName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label"
+          >Exam Type <span class="required">*</span></label
+        >
+        <select
+          [(ngModel)]="examFormData.examTypeId"
+          [disabled]="examMode === 'update' || !examFormData.classId"
+          required
+          class="form-control"
+        >
+          <option value="">
+            {{
+              examFormData.classId ? "Select Exam Type" : "Select Class First"
+            }}
+          </option>
+          <option *ngFor="let examType of allExamTypes" [value]="examType.id">
+            {{ examType.examTypeName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label"
+          >Total Marks <span class="required">*</span></label
+        >
+        <input
+          type="number"
+          [(ngModel)]="examFormData.totalMarks"
+          min="1"
+          max="500"
+          placeholder="e.g., 100"
+          class="form-control"
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Number of Questions -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label"
+          >Number of Questions <span class="required">*</span></label
+        >
+        <input
+          type="number"
+          [(ngModel)]="examFormData.numberOfQuestions"
+          min="1"
+          max="100"
+          placeholder="e.g., 10"
+          class="form-control"
+        />
+      </div>
+
+      <!-- Question Paper Name -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">
+          Question Paper Name
+          <small class="text-muted">(Optional)</small>
+            <i class="fas fa-info-circle qp-name-info-icon"
+     title="If left empty, the Exam Type name will be used automatically.">
+  </i>
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="examFormData.questionPaperName"
+          maxlength="200"
+          placeholder="e.g., Mid Term 1"
+          class="form-control"
+        />
+      </div>
+
+      <!-- Exam Date (Optional) -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">
+          Exam Date
+          <small class="text-muted">(Optional)</small>
+        </label>
+        <div class="exam-date-input-group">
+          <input
+            type="date"
+            [(ngModel)]="examFormData.examDate"
+            [min]="todayIso"
+            class="form-control"
+            [class.input-date-error]="isExamDateInPast(examFormData.examDate)"
+          />
+          <button
+            *ngIf="examFormData.examDate"
+            class="btn-clear-date"
+            (click)="examFormData.examDate = null"
+            title="Clear date"
+            type="button"
+          >&#x2715;</button>
+        </div>
+        <div
+          *ngIf="isExamDateInPast(examFormData.examDate)"
+          class="exam-date-error"
+        >
+          <i class="fas fa-exclamation-circle"></i> Date cannot be in the past
+        </div>
+      </div>
+
+      <!-- Set Questions Button -->
+      <div class="col-md-3 mb-3">
+        <label class="form-label">&nbsp;</label>
+        <button
+          class="btn btn-primary w-100"
+          (click)="generateQuestions()"
+          [disabled]="
+            !examFormData.classId ||
+            !examFormData.subjectId ||
+            !examFormData.examTypeId ||
+            !examFormData.totalMarks ||
+            !examFormData.numberOfQuestions ||
+            isExamDateInPast(examFormData.examDate)
+          "
+        >
+          <i class="fas fa-cogs"></i> Set Questions
+        </button>
+      </div>
+    </div>
+
+    <!-- Generate Questions Prompt -->
+    <div
+      *ngIf="examMode === 'upload' && !questionsGenerated"
+      class="warning-box"
+    >
+      <i class="fas fa-exclamation-triangle"></i>
+      <span
+        ><strong
+          >Please select all fields above and click "Set Questions" to
+          begin.</strong
+        ></span
+      >
+    </div>
+  </div>
+
+  <!-- QUESTIONS SECTION -->
+  <div *ngIf="questionsGenerated" class="card">
+    <!-- Question Header -->
+    <div class="question-header">
+      <div class="question-badge">
+        <i class="fas fa-question-circle"></i>
+        Question {{ currentQuestionIndex + 1 }} of {{ questionSets.length }}
+      </div>
+      <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()">
+        <i class="fas fa-trash"></i> Clear
+      </button>
+    </div>
+
+    <!-- Question Text -->
+    <div class="mb-3">
+      <label class="form-label"
+        ><i class="fas fa-question"></i> Question
+        <span class="required">*</span></label
+      >
+      <textarea
+        [(ngModel)]="currentQuestionSet.questionText"
+        placeholder="Enter question text here..."
+        rows="3"
+        class="form-control"
+      ></textarea>
+    </div>
+
+    <!-- Answer Text -->
+    <div class="mb-3">
+      <label class="form-label"
+        ><i class="fas fa-check-circle"></i> Answer
+        <span class="required">*</span></label
+      >
+      <textarea
+        [(ngModel)]="currentQuestionSet.answerText"
+        placeholder="Enter answer text here..."
+        rows="6"
+        class="form-control"
+      ></textarea>
+    </div>
+
+    <!--  FIXED: Marks & Validation Count with Proper Alignment -->
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label"
+          ><strong>Maximum Marks</strong> <span class="required">*</span></label
+        >
+        <input
+          type="number"
+          [(ngModel)]="currentQuestionSet.maxMarks"
+          min="1"
+          max="200"
+          placeholder="e.g., 10"
+          class="form-control"
+        />
+      </div>
+
+      <!--  Info message on same line for 1-mark questions -->
+      <div class="col-md-8 mb-3" *ngIf="currentQuestionSet.maxMarks === 1">
+        <label class="form-label">&nbsp;</label>
+        <div class="alert-info-inline">
+          <i class="fas fa-info-circle"></i>
+          <span
+            ><strong>1-mark question:</strong> No validation rules needed.
+            Default criterion will be applied automatically.</span
+          >
+        </div>
+      </div>
+
+      <!-- ✅ Validation rules for other marks -->
+      <ng-container *ngIf="currentQuestionSet.maxMarks !== 1">
+        <div class="col-md-5 mb-3">
+          <label class="form-label"
+            ><strong>Validation Rules Count</strong>
+            <span class="required">*</span></label
+          >
+          <input
+            type="number"
+            [(ngModel)]="currentQuestionSet.validationRulesCount"
+            min="1"
+            max="10"
+            placeholder="e.g., 3"
+            class="form-control"
+          />
+        </div>
+
+        <div class="col-md-3 mb-3">
+          <label class="form-label">&nbsp;</label>
+          <button
+            class="btn btn-primary w-100"
+            (click)="generateValidationRules()"
+          >
+            <i class="fas fa-list-check"></i> Set Rules
+          </button>
+        </div>
+      </ng-container>
+    </div>
+
+    <!-- ✅ Validation Rules Section (Only show if marks > 1) -->
+    <div class="mb-3" *ngIf="shouldShowValidationRules">
+      <label class="form-label"
+        ><i class="fas fa-chart-bar"></i> Validation Rules
+        <span class="required">*</span></label
+      >
+
+      <!-- Marks Summary -->
+      <div
+        class="marks-summary"
+        [class.valid]="validateMarksMatch()"
+        [class.invalid]="
+          !validateMarksMatch() &&
+          currentQuestionSet.maxMarks &&
+          calculateValidationMarksTotal() > 0
+        "
+      >
+        <div class="marks-row">
+          <div>
+            <strong>Maximum Marks:</strong>
+            <span class="marks-value">{{
+              currentQuestionSet.maxMarks || 0
+            }}</span>
+          </div>
+          <div>
+            <strong>Validation Total:</strong>
+            <span
+              class="marks-value"
+              [class.text-success]="validateMarksMatch()"
+              [class.text-danger]="!validateMarksMatch()"
+            >
+              {{ calculateValidationMarksTotal() }}
+            </span>
+          </div>
+          <div class="marks-status">
+            <i
+              class="fas fa-check-circle text-success"
+              *ngIf="validateMarksMatch()"
+            ></i>
+            <i
+              class="fas fa-exclamation-circle text-danger"
+              *ngIf="!validateMarksMatch()"
+            ></i>
+            <span *ngIf="validateMarksMatch()">Marks match!</span>
+            <span
+              *ngIf="
+                !validateMarksMatch() &&
+                currentQuestionSet.maxMarks &&
+                calculateValidationMarksTotal() > currentQuestionSet.maxMarks
+              "
+              class="text-danger"
+            >
+              Exceeded by
+              {{
+                calculateValidationMarksTotal() - currentQuestionSet.maxMarks
+              }}
+            </span>
+            <span
+              *ngIf="
+                !validateMarksMatch() &&
+                currentQuestionSet.maxMarks &&
+                calculateValidationMarksTotal() < currentQuestionSet.maxMarks
+              "
+              class="text-warning"
+            >
+              Short by
+              {{
+                currentQuestionSet.maxMarks - calculateValidationMarksTotal()
+              }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules List -->
+      <div class="validation-rules">
+        <div
+          *ngFor="
+            let rule of currentQuestionSet.rubricPoints;
+            let i = index;
+            trackBy: trackByIndex
+          "
+          class="validation-rule"
+        >
+          <div class="rule-number">{{ i + 1 }}</div>
+          <div class="rule-content">
+            <label class="form-label"
+              >Rule {{ i + 1 }} <span class="required">*</span></label
+            >
+            <textarea
+              [(ngModel)]="rule.description"
+              placeholder="Enter validation rule..."
+              rows="2"
+              class="form-control"
+            ></textarea>
+          </div>
+          <div class="rule-marks">
+            <label class="form-label"
+              >Marks <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              [(ngModel)]="rule.marks"
+              min="0"
+              max="100"
+              step="0.5"
+              placeholder="e.g., 3"
+              class="form-control"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✅ Validation Errors (Only show if marks > 1) -->
+    <div
+      *ngIf="
+        getQuestionValidationErrors().length > 0 && shouldShowValidationRules
+      "
+      class="error-box mb-3"
+    >
+      <i class="fas fa-exclamation-triangle"></i>
+      <span
+        ><strong>{{ getQuestionValidationErrors()[0] }}</strong></span
+      >
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+      <button
+        class="btn btn-secondary"
+        *ngIf="currentQuestionIndex > 0"
+        (click)="goToPreviousQuestion()"
+      >
+        <i class="fas fa-arrow-left"></i> Previous
+      </button>
+
+      <div class="d-flex gap-2">
+        <button
+          class="btn btn-primary"
+          *ngIf="!isLastQuestion"
+          (click)="goToNextQuestion()"
+        >
+          Save & Next <i class="fas fa-arrow-right"></i>
+        </button>
+
+        <button
+          class="btn btn-success"
+          *ngIf="isLastQuestion"
+          (click)="submitExamDocuments()"
+          [disabled]="isSubmitting"
+        >
+          <i
+            class="fas"
+            [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check-double'"
+          ></i>
+          <span *ngIf="!isSubmitting">Submit All</span>
+          <span *ngIf="isSubmitting">Submitting...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-section">
+      <div class="progress-bar-wrapper">
+        <div
+          class="progress-bar"
+          [style.width]="
+            ((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'
+          "
+        ></div>
+      </div>
+      <p class="progress-text">
+        <strong>Progress:</strong> {{ currentQuestionIndex + 1 }} /
+        {{ questionSets.length }} questions ({{
+          (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0)
+        }}%)
+      </p>
+    </div>
+
+    <!-- Upload Progress -->
+    <div *ngIf="uploadProgress.visible" class="upload-progress mt-3">
+      <div class="progress-bar-wrapper">
+        <div
+          class="progress-bar bg-success"
+          [style.width]="uploadProgress.width"
+        ></div>
+      </div>
+      <p class="progress-text">{{ uploadProgress.text }}</p>
+    </div>
+  </div>
+</div>

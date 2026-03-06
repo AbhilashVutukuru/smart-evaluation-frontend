@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { TeacherService } from '../../../core/services/teacher.service';
 import { Router } from '@angular/router';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
+import { ToastService } from '../../../core/services/toast.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-teacher-list',
@@ -14,93 +16,169 @@ import { DeleteConfirmationComponent } from '../../../shared/components/delete-c
 })
 export class TeacherListComponent implements OnInit {
   private teacherService = inject(TeacherService);
-  private router = inject(Router);
+  private router         = inject(Router);
+  private toastService   = inject(ToastService);
+  private errorHandler   = inject(ErrorHandlerService);
 
-  teachers: any[] = [];
+  // Data
+  teachers:         any[] = [];
   filteredTeachers: any[] = [];
-  loading = false;
+
+  // State
+  loading    = false;
   searchTerm = '';
 
-   // Delete modal
-  showDeleteModal = false;
+  // Delete modal
+  showDeleteModal  = false;
   teacherToDelete: any = null;
+
+  // Validation
+  touchedFields: Set<string> = new Set();
+  searchError = '';
+
+  // ============================================
+  // Lifecycle
+  // ============================================
 
   ngOnInit(): void {
     this.loadTeachers();
   }
 
+  // ============================================
+  // Load Data
+  // ============================================
+
   loadTeachers(): void {
     this.loading = true;
+
     this.teacherService.getTeachers().subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          this.teachers = response.data;
-          this.filteredTeachers = response.data;
-        }
         this.loading = false;
+
+        if (response.success && response.data) {
+          this.teachers         = response.data;
+          this.filteredTeachers = response.data;
+
+          if (this.teachers.length === 0) {
+            this.toastService.showInfo('No Teachers', 'No teachers found in the system');
+          }
+        } else {
+          this.teachers         = [];
+          this.filteredTeachers = [];
+          this.toastService.showInfo('No Data', response.message || 'No teachers found');
+        }
       },
       error: (error) => {
-        console.error('Error loading teachers', error);
-        this.loading = false;
+        this.loading          = false;
+        this.teachers         = [];
+        this.filteredTeachers = [];
+        this.errorHandler.handle('Failed to load teachers', error);
       },
     });
   }
 
-  onSearch(): void {
-    this.filteredTeachers = this.teachers.filter(
-      (t) =>
-        t.firstName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        t.lastName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        t.employeeCode.toLowerCase().includes(this.searchTerm.toLowerCase()), //||
-      //t.email.toLowerCase().includes(this.searchTerm.toLowerCase())
-    );
+  // ============================================
+  // Search
+  // ============================================
+
+  onSearchInput(): void {
+    if (this.searchTerm.trim()) {
+      this.searchError = '';
+      this.filteredTeachers = this.teachers.filter((t) =>
+        t.firstName?.toLowerCase().includes(this.searchTerm.toLowerCase())   ||
+        t.lastName?.toLowerCase().includes(this.searchTerm.toLowerCase())    ||
+        t.employeeCode?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        t.email?.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    } else {
+      this.filteredTeachers = this.teachers;
+    }
   }
+
+  onSearchBlur(): void {
+    this.touchedFields.add('search');
+    this.searchError =
+      this.touchedFields.has('search') && !this.searchTerm.trim() && this.teachers.length > 0
+        ? 'Search term cannot be empty'
+        : '';
+  }
+
+  onSearchFocus(): void {
+    this.searchError = '';
+  }
+
+  clearSearch(): void {
+    this.searchTerm       = '';
+    this.searchError      = '';
+    this.filteredTeachers = this.teachers;
+    this.touchedFields.delete('search');
+  }
+
+  // ============================================
+  // Navigation
+  // ============================================
 
   addTeacher(): void {
     this.router.navigate(['/registration/teacher']);
   }
 
   viewDetails(id: number): void {
-   this.router.navigate(['/teachers/view', id]);
+    if (!id) { this.toastService.showWarning('Invalid Action', 'Teacher ID is missing'); return; }
+    this.router.navigate(['/teachers/view', id]);
   }
 
   editTeacher(id: number): void {
-     this.router.navigate(['/teachers/edit', id]);
+    if (!id) { this.toastService.showWarning('Invalid Action', 'Teacher ID is missing'); return; }
+    this.router.navigate(['/teachers/edit', id]);
   }
 
+  // ============================================
+  // Delete Operations
+  // ============================================
+
   deleteTeacher(teacher: any): void {
+    if (!teacher?.id) {
+      this.toastService.showWarning('Invalid Action', 'Cannot delete: Invalid teacher data');
+      return;
+    }
     this.teacherToDelete = teacher;
     this.showDeleteModal = true;
   }
 
-  // deleteTeacher(teacher: any): void {
-  //   if (confirm(`Delete ${teacher.firstName} ${teacher.lastName}?`)) {
-  //     this.teacherService.deleteTeacher(teacher.id).subscribe({
-  //       next: () => this.loadTeachers(),
-  //       error: (error) => console.error('Delete error', error),
-  //     });
-  //   }
-  // }
-
   onDeleteConfirmed(): void {
-    if (this.teacherToDelete) {
-      this.teacherService.deleteTeacher(this.teacherToDelete.id).subscribe({
-        next: () => {
+    if (!this.teacherToDelete) return;
+
+    this.teacherService.deleteTeacher(this.teacherToDelete.id).subscribe({
+      next: (response) => {
+        this.showDeleteModal = false;
+        this.teacherToDelete = null;
+
+        if (response.success) {
+          this.toastService.showSuccess('Success', 'Teacher deleted successfully');
           this.loadTeachers();
-          this.showDeleteModal = false;
-          this.teacherToDelete = null;
-        },
-        error: (error) => {
-          console.error('Delete error', error);
-          this.showDeleteModal = false;
-          this.teacherToDelete = null;
+        } else {
+          this.toastService.showError('Error', response.message || 'Failed to delete teacher');
         }
-      });
-    }
+      },
+      error: (error) => {
+        this.showDeleteModal = false;
+        this.teacherToDelete = null;
+        this.errorHandler.handle('Failed to delete teacher', error);
+      },
+    });
   }
 
-   onDeleteCancelled(): void {
-    this.showDeleteModal = false;
-    this.teacherToDelete = null;
+  onDeleteCancelled(): void {
+    this.showDeleteModal  = false;
+    this.teacherToDelete  = null;
+  }
+
+  // ============================================
+  // Helpers
+  // ============================================
+
+  getTeacherFullName(teacher: any): string {
+    if (!teacher) return '';
+    return `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim();
   }
 }

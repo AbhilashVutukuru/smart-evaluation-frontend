@@ -9,6 +9,7 @@ export interface LoginResponse {
   requirePasswordChange: boolean;
   accessToken: string; // Will be in HttpOnly cookie
   refreshToken: string; // Will be in HttpOnly cookie
+  accessTokenExpiresAt:  string;
   userId?: string; // Optional user info
   email?: string;
   role?: string;

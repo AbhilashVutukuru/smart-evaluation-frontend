@@ -1,75 +1,97 @@
-export interface StudentInfo {
-  studentId: number;
-  rollNumber: number;
-  studentName: string;
-  displayText: string;
-  hasUploaded: boolean;
-  isAbsent: boolean;
-}
+// ============================================
+// EXAM RESULT MODELS
+// ============================================
 
-export interface RubricMarks {
+/** Rubric evaluation entry with UI editing state */
+export interface ResultRubric {
+  // Identity
   questionPaperRubricId?: number;
-  criterion?: string;
-  name?: string;
-  marksGiven: number;
-  maxMarks: number;
-  marksAssignedBySystem?: number;
-  marksAssignedByTeacher?: number;
-  remarks?: string;
-}
+  id?: number;
 
-export interface Rubric {
-  // Primary ID properties (add these if missing)
-  questionPaperRubricId?: number;
-  id?: number;  // ✅ ADD THIS - Sometimes API returns 'id' instead
-  QuestionPaperRubricId?: number;  // ✅ ADD THIS - PascalCase from API
-  
-  // Name/Criterion properties
+  // Display
   name?: string;
   criterion?: string;
-  Criterion?: string;  // ✅ ADD THIS - PascalCase from API
-  
-  // Marks properties
+
+  // Marks
   maxMarks: number;
-  MaxMarks?: number;  // ✅ ADD THIS - PascalCase from API
-  
   marksGiven: number;
-  MarksGiven?: number;  // ✅ ADD THIS - PascalCase from API
-  
   marksAssignedBySystem?: number;
-  MarksAssignedBySystem?: number;  // ✅ ADD THIS
-  
   marksAssignedByTeacher?: number;
-  MarksAssignedByTeacher?: number;  // ✅ ADD THIS
-  
+
+  // Remarks
   remarks?: string;
-  Remarks?: string;  // ✅ ADD THIS
+
+  // UI-only editing state
+  isEditing?: boolean;
+  isSaving?: boolean;
+  originalMarksGiven?: number;
+  originalRemarks?: string;
+  teacherModified?: boolean;
 }
 
-export interface ExamQuestion {
+/** A single question with student and official answers */
+export interface ResultQuestion {
   questionPaperDetailId?: number;
   questionNumber: number;
   questionText: string;
   officialAnswer: string;
   maxMarks: number;
-  rubrics?: Rubric[];  // From API
-  rubricMarks?: RubricMarks[];  // Legacy, for backward compatibility
+  rubrics?: ResultRubric[];
   studentAnswer?: string;
   studentAnswerText?: string;
   marksObtained: number;
   confidenceScore?: number;
   remarks?: string;
+  rubricAdded: boolean; 
 }
 
+/** Exam result summary for a student */
 export interface ExamResult {
   studentId?: number;
   studentName?: string;
   totalMarks?: number;
   totalMarksObtained?: number;
   maxMarks?: number;
+  marksObtained?: number;
   evaluationStatus?: string;
   isAbsent?: boolean;
   statusMessage?: string;
   answerPdfUrl?: string;
-  questions: ExamQuestion[];
+  questions: ResultQuestion[];
+}
+
+/** Student summary shown in the results list */
+export interface StudentResultInfo {
+  studentId: number;
+  rollNumber: number;
+  studentName: string;
+  displayText: string;
+  hasUploaded: boolean;
+  isAbsent: boolean;
+  totalMarks?: number;
+  obtainedMarks?: number;
+  marksObtained?: number;
+  evaluationStatus?: string;
+  documentUrl?: string;
+  fileName?: string;
+  documentName?: string;
+  className?: string;
+  sectionName?: string;
+}
+
+/** Aggregated statistics for evaluated students */
+export interface EvaluationStatistics {
+  totalStudents: number;
+  absentCount: number;
+  evaluatedCount: number;
+  notEvaluatedCount: number;
+}
+
+/** Full response from the student-list-with-statistics API */
+export interface StudentListResponse {
+  statistics: EvaluationStatistics;
+  students: StudentResultInfo[];
+  totalMarks: number;
+  totalQuestions: number;
+  questionNumbers: number[];
 }

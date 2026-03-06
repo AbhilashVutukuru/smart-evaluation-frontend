@@ -8,6 +8,7 @@
       <p>Sign in to continue to School Portal</p>
     </div>
 
+    <!-- Error Alert -->
     <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
       <i class="fas fa-exclamation-circle me-2"></i>
       {{ error }}
@@ -15,6 +16,8 @@
     </div>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Email Field -->
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
         <div class="input-group">
@@ -27,7 +30,9 @@
             id="email" 
             formControlName="email"
             placeholder="teacher@school.edu"
+            (input)="clearError()"
             [class.is-invalid]="f['email'].invalid && f['email'].touched"
+            autocomplete="email"
           >
         </div>
         <div *ngIf="f['email'].invalid && f['email'].touched" class="text-danger small mt-1">
@@ -36,6 +41,7 @@
         </div>
       </div>
 
+      <!-- Password Field -->
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
         <div class="input-group">
@@ -48,9 +54,11 @@
             id="password"
             formControlName="password"
             placeholder="Enter your password"
+            (input)="clearError()"
             [class.is-invalid]="f['password'].invalid && f['password'].touched"
+            autocomplete="current-password"
           >
-          <span class="input-group-text toggle-password" (click)="togglePassword()">
+          <span class="input-group-text toggle-password" (click)="togglePassword()" role="button" tabindex="0">
             <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
           </span>
         </div>
@@ -59,6 +67,7 @@
         </div>
       </div>
 
+      <!-- Remember Me & Forgot Password -->
       <div class="row mb-3">
         <div class="col-6">
           <div class="form-check">
@@ -68,7 +77,7 @@
               id="rememberMe"
               formControlName="rememberMe"
             >
-            <label class="form-check-label" for="rememberMe">
+            <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
               Remember me
             </label>
           </div>
@@ -78,12 +87,14 @@
         </div>
       </div>
 
-      <button type="submit" class="btn btn-submit" [disabled]="loading">
+      <!-- Submit Button -->
+      <button type="submit" class="btn btn-submit" [disabled]="loading || loginForm.invalid">
         <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
         {{ loading ? 'Signing in...' : 'Sign In' }}
       </button>
     </form>
 
+    <!-- Optional: Registration Link (commented out) -->
     <!-- <div class="divider">
       <span>or</span>
     </div>

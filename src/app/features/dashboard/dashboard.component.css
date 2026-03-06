@@ -1,0 +1,380 @@
+/* ── Container ───────────────────────────────────────────────────────────────── */
+.dashboard-container {
+  padding: 2rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+/* ── Page Header ─────────────────────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-left h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.25rem;
+}
+
+.header-left p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.academic-year-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #ede9fe;
+  color: #6366f1;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid #c4b5fd;
+}
+
+/* ── Cards ───────────────────────────────────────────────────────────────────── */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card h4 i {
+  color: #6366f1;
+}
+
+/* ── Stats Grid ──────────────────────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1280px) {
+  .stats-grid     { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid-4   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .stats-grid,
+  .stats-grid-4   { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stats-grid,
+  .stats-grid-4   { grid-template-columns: 1fr; }
+}
+
+/* ── Stat Card ───────────────────────────────────────────────────────────────── */
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.stat-number {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Colour variants */
+.stat-purple .stat-icon { background: #ede9fe; color: #7c3aed; }
+.stat-blue   .stat-icon { background: #dbeafe; color: #2563eb; }
+.stat-teal   .stat-icon { background: #ccfbf1; color: #0d9488; }
+.stat-indigo .stat-icon { background: #e0e7ff; color: #4338ca; }
+.stat-orange .stat-icon { background: #ffedd5; color: #ea580c; }
+.stat-green  .stat-icon { background: #dcfce7; color: #16a34a; }
+
+/* ── Progress Bar ────────────────────────────────────────────────────────────── */
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+}
+
+.progress-percent {
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.progress-bar-track {
+  width: 100%;
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.progress-bar-sm {
+  height: 6px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 5px;
+  transition: width 0.6s ease;
+}
+
+/* ── Quick Actions ───────────────────────────────────────────────────────────── */
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+
+.action-purple { background: #ede9fe; color: #7c3aed; }
+.action-purple:hover { background: #ddd6fe; }
+.action-blue   { background: #dbeafe; color: #2563eb; }
+.action-blue:hover   { background: #bfdbfe; }
+.action-indigo { background: #e0e7ff; color: #4338ca; }
+.action-indigo:hover { background: #c7d2fe; }
+.action-teal   { background: #ccfbf1; color: #0d9488; }
+.action-teal:hover   { background: #99f6e4; }
+
+/* ── Table ───────────────────────────────────────────────────────────────────── */
+.table-responsive { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead {
+  background: #f9fafb;
+}
+
+.table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+}
+
+.table tbody tr:hover { background: #f9fafb; }
+.table .text-center   { text-align: center; }
+
+/* ── Badges ──────────────────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #dcfce7; color: #16a34a; }
+.badge-warning { background: #fef3c7; color: #d97706; }
+
+/* ── Score Badge ─────────────────────────────────────────────────────────────── */
+.score-badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.score-high { background: #dcfce7; color: #16a34a; }
+.score-mid  { background: #fef3c7; color: #d97706; }
+.score-low  { background: #fee2e2; color: #dc2626; }
+
+/* ── Empty State ─────────────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: #9ca3af;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.empty-state h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin: 0 0 0.25rem;
+}
+
+.empty-state p {
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* ── Loading / Error State ───────────────────────────────────────────────────── */
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem;
+  color: #6b7280;
+  gap: 1rem;
+}
+
+.error-state i {
+  font-size: 3rem;
+  color: #ef4444;
+}
+
+.spinner {
+  width: 3rem;
+  height: 3rem;
+  border: 3px solid #e5e7eb;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.text-muted { color: #9ca3af; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .dashboard-container { padding: 1rem; }
+  .stat-number         { font-size: 1.4rem; }
+  .quick-actions       { flex-direction: column; }
+  .action-btn          { width: 100%; justify-content: center; }
+}
+/* ── Class Breakdown Table ───────────────────────────────────────────────────── */
+
+.breakdown-table td,
+.breakdown-table th {
+  white-space: nowrap;
+}
+
+/* Row status tints */
+.breakdown-table tr.row-complete td { background: #f0fdf4; }
+.breakdown-table tr.row-partial  td { background: #fffbeb; }
+.breakdown-table tr.row-low      td { background: #fff7f7; }
+
+/* Count badges inside breakdown table */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.count-total     { background: #e0e7ff; color: #4338ca; }
+.count-uploaded  { background: #dbeafe; color: #2563eb; }
+.count-evaluated { background: #dcfce7; color: #16a34a; }
+.count-pending   { background: #fef3c7; color: #d97706; }
+.count-absent    { background: #fee2e2; color: #dc2626; }
+
+/* Inline progress + percentage label */
+.breakdown-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.breakdown-pct {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6366f1;
+  white-space: nowrap;
+}

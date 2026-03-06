@@ -4,549 +4,639 @@
     <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
   </div>
 
-   <!-- Success/Error Messages -->
-  <div *ngIf="success" class="alert alert-success">
-    <i class="fas fa-check-circle"></i>
-    <span>{{ success }}</span>
-    <button class="alert-close" (click)="success = ''">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
+  <app-exam-filter
+    [classes]="classes"
+    [sections]="sections"
+    [subjects]="subjects"
+    [examTypes]="examTypes"
+    [questionPapers]="questionPapers"
+    [(selectedClass)]="selectedClass"
+    [(selectedSection)]="selectedSection"
+    [(selectedSubject)]="selectedSubject"
+    [(selectedExamType)]="selectedExamType"
+    [(selectedQuestionPaperId)]="selectedQuestionPaperId"
+    [showQuestionPaperDropdown]="showQuestionPaperDropdown"
+    [isLoadingPapers]="isLoadingPapers"
+    [isLoading]="isLoading"
+    [canShowStudents]="canShowStudents"
+    [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
+    [noExamPaperFound]="noExamPaperFound"
+    (classChanged)="onClassChange($event)"
+    (sectionChanged)="onSectionChange()"
+    (subjectChanged)="onSubjectChange()"
+    (examTypeChanged)="onExamTypeChange()"
+    (showStudentsClick)="showStudents()"
+  ></app-exam-filter>
 
-  <div class="alert alert-error" *ngIf="error">
-    <i class="fas fa-exclamation-circle"></i>
-    <span>{{ error }}</span>
-    <button class="alert-close" (click)="error = ''">
-      <i class="fas fa-times"></i>
-    </button>
-  </div>
 
-  <!-- Filter Card -->
-  <div class="card">
-    <h4><i class="fas fa-filter"></i> Select Exam Details</h4>
-
-    <div class="row">
-      <div class="col-md-3 mb-3">
-        <label class="form-label">Class <span class="required">*</span></label>
-        <select
-          class="form-control"
-          [(ngModel)]="selectedClass"
-          (change)="onClassSelected(selectedClass)"
-        >
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">
-            {{ cls.classNumber }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Section <span class="required">*</span></label
-        >
-        <select class="form-control" [(ngModel)]="selectedSection" [disabled]="!selectedClass"
-          (change)="validateFilters()">
-          <option value="">Select Section</option>
-          <option *ngFor="let section of sections" [value]="section.id">
-            {{ section.sectionName }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Subject <span class="required">*</span></label
-        >
-        <select class="form-control" [(ngModel)]="selectedSubject" [disabled]="!selectedClass"
-          (change)="validateFilters()">
-          <option value="">Select Subject</option>
-          <option *ngFor="let subject of subjects" [value]="subject.id">
-            {{ subject.subjectName }}
-          </option>
-        </select>
-      </div>
-      <div class="col-md-3 mb-3">
-        <label class="form-label"
-          >Exam Type <span class="required">*</span></label
-        >
-        <select class="form-control" [(ngModel)]="selectedExamType" [disabled]="!selectedClass"
-          (change)="validateFilters()">
-          <option value="">Select Exam Type</option>
-          <option *ngFor="let examType of examTypes" [value]="examType.id">
-            {{ examType.examTypeName }}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <div class="d-flex">
-      <button
-        class="btn btn-primary"
-        (click)="getStudents()"
-        [disabled]="isLoading"
-      >
-        <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-        {{ isLoading ? "Loading..." : "Get Students" }}
-      </button>
-    </div>
-  </div>
-
-  <!-- Select Student Card -->
-  <div class="card" *ngIf="students && students.length > 0">
-    <h4><i class="fas fa-user-graduate"></i> Select Student</h4>
-
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label class="form-label"
-          >Student <span class="required">*</span></label
-        >
-        <select
-          class="form-control"
-          [(ngModel)]="selectedStudent"
-          (change)="onStudentChange()"
-        >
-          <option [ngValue]="null">Select Student</option>
-          <option *ngFor="let student of students" [ngValue]="student">
-            {{ student.displayText }}
-          </option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty State -->
+  <!--  Students Table with Statistics -->
   <div
     class="card"
-    *ngIf="searchCompleted && (!students || students.length === 0) && !error"
+    *ngIf="showStudentsCard && students.length > 0 && !showResultsCard"
   >
-    <div class="empty-state">
-      <i class="fas fa-users-slash"></i>
-      <h5>No Students Found</h5>
-      <p>No students found for the selected exam details.</p>
+    <!-- Header -->
+    <div class="card-header-flex">
+      <h4><i class="fas fa-users"></i> Students List</h4>
+      <span class="badge badge-primary"
+        >{{ statistics.totalStudents }} Students</span
+      >
+    </div>
+
+    <!--  Statistics Cards -->
+    <div class="stats-grid">
+      <!-- Total Students -->
+      <div class="stat-card stat-total">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-content">
+          <h3>{{ statistics.totalStudents }}</h3>
+          <p>Total Students</p>
+        </div>
+      </div>
+
+      <!-- Absent -->
+      <div class="stat-card stat-absent">
+        <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
+        <div class="stat-content">
+          <h3>{{ statistics.absentCount }}</h3>
+          <p>Absent</p>
+        </div>
+      </div>
+
+      <!-- Uploaded/Evaluated -->
+      <div class="stat-card stat-uploaded">
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-content">
+          <h3>{{ statistics.evaluatedCount }}</h3>
+          <p>Evaluated</p>
+        </div>
+      </div>
+
+      <!-- Pending/Not Evaluated -->
+      <div class="stat-card stat-pending">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-content">
+          <h3>{{ statistics.notEvaluatedCount }}</h3>
+          <p>Not Evaluated</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Students Table -->
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Total Marks</th>
+            <th>Obtained Marks</th>
+            <th>Status</th>
+            <th class="text-center align-middle">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of students">
+            <td>
+              <strong class="roll-number">{{ student.rollNumber }}</strong>
+            </td>
+            <td>{{ student.studentName }}</td>
+            <td>{{ totalMarks || "-" }}</td>
+            <td>
+              {{
+                student.isAbsent
+                  ? "-"
+                  : !student.hasUploaded
+                    ? "-"
+                    : student.obtainedMarks
+              }}
+            </td>
+            <td>
+              <span *ngIf="student.isAbsent" class="badge badge-danger">
+                Absent
+              </span>
+
+              <span
+                *ngIf="
+                  !student.isAbsent &&
+                  student.evaluationStatus === 'Evaluated' &&
+                  student.hasUploaded
+                "
+                class="badge badge-success"
+              >
+                Evaluated
+              </span>
+
+              <!-- Not Evaluated -->
+              <span
+                *ngIf="
+                  !student.isAbsent &&
+                  student.evaluationStatus === 'Pending' &&
+                  student.hasUploaded
+                "
+                class="badge badge-warning"
+              >
+                Not Evaluated
+              </span>
+
+              <!-- Not Uploaded -->
+              <span *ngIf="!student.isAbsent && !student.hasUploaded"> - </span>
+            </td>
+
+            <td class="text-center align-middle">
+              <!-- Absent -->
+              <ng-container *ngIf="student.isAbsent">
+                <span class="text-muted fw-semibold d-block">-</span>
+              </ng-container>
+
+              <!-- Uploaded -->
+              <ng-container
+                *ngIf="
+                  !student.isAbsent && student.evaluationStatus === 'Evaluated'
+                "
+              >
+                <button
+                  class="btn btn-primary btn-sm"
+                  (click)="viewStudentResults(student)"
+                >
+                  <i class="fas fa-eye"></i> View Results
+                </button>
+              </ng-container>
+
+              <!-- Pending -->
+              <ng-container
+                *ngIf="
+                  !student.isAbsent && student.evaluationStatus === 'Pending'
+                "
+              >
+                <span class="text-muted fw-semibold d-block">-</span>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 
-  <!-- Results Display Card -->
+  <!-- ✅ Student Exam Results (NEW PAGE) -->
   <div
     class="card"
     *ngIf="showResultsCard && currentResults && selectedStudent"
   >
-    <div class="card-header-flex">
-      <h4><i class="fas fa-clipboard-check"></i> Student Exam Results</h4>
-      <div class="header-badges">
-        <span class="badge badge-danger" *ngIf="currentResults.isAbsent">
-          <i class="fas fa-user-slash"></i> Absent
-        </span>
-        <span
-          class="badge badge-warning"
-          *ngIf="
-            !currentResults.isAbsent &&
-            currentResults.evaluationStatus === 'Pending'
-          "
-        >
-          <i class="fas fa-hourglass-half"></i> Pending Evaluation
-        </span>
-        <div
-          *ngIf="
-            !currentResults.isAbsent &&
-            currentResults.evaluationStatus !== 'Pending'
-          "
-          class="score-badges"
-        >
-          <span class="badge badge-info">
-            Total: {{ getTotalMarks() | number: "1.1-1" }}/{{ getMaxMarks() }}
-          </span>
-          <span class="badge badge-success">
-            {{ getPercentage() | number: "1.1-1" }}%
-          </span>
-        </div>
-      </div>
-    </div>
+    <!-- Back Button -->
+    <button class="btn btn-back" (click)="backToStudentsList()">
+      <i class="fas fa-arrow-left"></i> Back to Students List
+    </button>
 
-    <!-- Student Info Box -->
-    <div class="info-box">
-      <div class="info-group">
-        <!-- Header Row -->
-        <div class="info-column">
-          <strong>Roll No</strong>
-          <span>{{ selectedStudent.rollNumber }}</span>
-        </div>
-        <div class="info-column">
-          <strong>Name</strong>
-          <span>{{ selectedStudent.studentName }}</span>
-        </div>
-        <div class="info-column">
-          <strong>Status</strong>
-          <div class="status-badges">
-            <span class="badge badge-danger" *ngIf="selectedStudent.isAbsent"
-              >Absent</span
-            >
-            <span
-              class="badge badge-success"
-              style="color: white"
-              *ngIf="!selectedStudent.isAbsent && selectedStudent.hasUploaded"
-              >Uploaded</span
-            >
-            <span
-              class="badge badge-warning"
-              *ngIf="!selectedStudent.isAbsent && !selectedStudent.hasUploaded"
-              >Not Uploaded</span
-            >
-          </div>
-        </div>
-      </div>
-
-      <!-- Download Button -->
-      <div
-        class="download-item"
+    <!-- Header -->
+    <div class="results-page-header">
+      <h3><i class="fas fa-clipboard-check"></i> Student Exam Results</h3>
+      <span
+        class="badge badge-success"
         *ngIf="
           !currentResults.isAbsent &&
-          currentResults.evaluationStatus !== 'Pending' &&
-          selectedStudent.hasUploaded
+          currentResults.evaluationStatus === 'Evaluated'
         "
       >
-        <button
-          class="btn btn-download"
-          (click)="downloadAnswerSheet()"
-          [disabled]="isLoading"
+        <i class="fas fa-check-circle"></i> Evaluated
+      </span>
+    </div>
+
+    <!-- Student Info -->
+    <div class="student-info-grid">
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-id-badge"></i> Roll No:</span>
+        <span class="info-value">{{ selectedStudent.rollNumber }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"
+          ><i class="fas fa-user-graduate"></i> Student Name:</span
         >
-          <i
-            [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-download'"
-          ></i>
-          {{ isLoading ? "Downloading..." : "Download Answer Sheet" }}
-        </button>
+        <span class="info-value">{{ selectedStudent.studentName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-star"></i> Total Marks:</span>
+        <span class="info-value"
+          >{{ selectedStudent.obtainedMarks ?? 0 }} / {{ totalMarks }}</span
+        >
+      </div>
+      <div class="info-item">
+        <span class="info-label"
+          ><i class="fas fa-percentage"></i> Percentage:</span
+        >
+        <span class="info-value">{{ getPercentage() }}%</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"> <i class="fas fa-eye"></i></span>
+
+        <a
+          href="javascript:void(0)"
+          class="download-link"
+          [class.disabled]="isViewing"
+          (click)="!isViewing && viewAnswerSheet(selectedStudent)"
+        >
+          <span *ngIf="!isViewing">View Answer Sheet</span>
+
+          <span *ngIf="isViewing">
+            <i class="fas fa-spinner fa-spin"></i>
+            Opening...
+          </span>
+        </a>
       </div>
     </div>
 
-    <!-- Absent Status -->
-    <div *ngIf="currentResults.isAbsent" class="status-message status-absent">
-      <i class="fas fa-user-slash"></i>
-      <h5>Student Absent</h5>
-      <p>{{ currentResults.statusMessage }}</p>
-      <small>No evaluation conducted for absent students.</small>
-    </div>
-
-    <!-- Pending Evaluation Status -->
-    <div
-      *ngIf="
-        !currentResults.isAbsent &&
-        currentResults.evaluationStatus === 'Pending'
-      "
-      class="status-message status-pending"
-    >
-      <i class="fas fa-hourglass-half"></i>
-      <h5>Evaluation in Progress</h5>
-      <p>{{ currentResults.statusMessage }}</p>
-      <small
-        >Please check back later for the detailed evaluation results.</small
-      >
-      <div class="spinner-border"></div>
+    <!-- ✅ Progress Bar -->
+    <div class="progress-section" *ngIf="totalQuestions > 0">
+      <label class="section-label">
+        <i class="fas fa-tasks"></i> Question Progress:
+      </label>
+      <div class="progress-bar-container">
+        <div class="progress">
+          <div
+            class="progress-bar"
+            [style.width.%]="getProgressPercentage()"
+            role="progressbar"
+          >
+            {{ currentQuestionIndex + 1 }} / {{ totalQuestions }}
+          </div>
+        </div>
+        <span class="progress-text"
+          >{{ currentQuestionIndex + 1 }} of
+          {{ totalQuestions }} Questions</span
+        >
+      </div>
     </div>
 
     <!-- Question Navigation -->
-    <div
-      *ngIf="
-        !currentResults.isAbsent &&
-        currentResults.evaluationStatus !== 'Pending' &&
-        totalQuestions > 0
-      "
-    >
-      <!-- Progress Bar -->
-      <div class="progress-section">
-        <div class="progress-info">
-          <span class="progress-label"
-            >Question {{ currentQuestionIndex + 1 }} of
-            {{ totalQuestions }}</span
-          >
-          <span class="progress-percentage"
-            >{{
-              ((currentQuestionIndex + 1) / totalQuestions) * 100
-                | number: "1.0-0"
-            }}% Complete</span
-          >
-        </div>
-        <div class="progress-bar-container">
-          <div
-            class="progress-bar-fill"
-            [style.width.%]="
-              ((currentQuestionIndex + 1) / totalQuestions) * 100
-            "
-          ></div>
-        </div>
-      </div>
+    <div class="question-selector" *ngIf="questionNumbers.length">
+      <label class="section-label">
+        <i class="fas fa-list-ol"></i> Quick Jump:
+      </label>
 
-      <!-- Question Numbers Navigation -->
-      <div class="question-nav">
+      <div class="question-buttons">
         <button
-          *ngFor="let q of currentResults.questions; let i = index"
-          class="question-nav-btn"
+          *ngFor="let q of questionNumbers; let i = index"
+          class="question-number-btn"
           [class.active]="i === currentQuestionIndex"
-          [class.completed]="q.marksObtained > 0"
-          (click)="goToQuestion(i)"
-          [disabled]="isEditMode"
+          (click)="loadQuestion(i)"
+          [disabled]="isAnyRubricEditing()"
         >
-          <span class="question-number">{{ i + 1 }}</span>
-          <!-- <i *ngIf="q.marksObtained > 0" class="fas fa-check question-check"></i> -->
-          <i
-            *ngIf="i === currentQuestionIndex"
-            class="fas fa-check question-check"
-          ></i>
+          Q{{ q }}
         </button>
       </div>
+    </div>
 
-      <!-- Loading Question -->
-      <div *ngIf="isLoadingQuestion" class="loading-question">
-        <div class="spinner-border"></div>
-        <p>Loading question...</p>
+    <!-- Current Question -->
+    <div *ngIf="currentQuestion && !isLoadingQuestion">
+      <!-- ✅ Question Header with Marks -->
+      <div class="question-header-with-marks">
+        <h5>
+          <i class="fas fa-question-circle"></i> Question
+          {{ currentQuestion.questionNumber }}
+        </h5>
+        <span class="marks-badge"
+          >{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span
+        >
       </div>
 
-      <!-- Current Question Display -->
-      <div *ngIf="!isLoadingQuestion && currentQuestion" class="question-card">
-        <div class="question-header">
-          <h5>
-            <i class="fas fa-question-circle"></i> Question
-            {{ currentQuestion.questionNumber }}
-          </h5>
-          <span class="badge badge-primary"
-            >Max: {{ currentQuestion.maxMarks }}</span
-          >
-        </div>
-
-        <div class="question-section">
+      <!-- Question Text -->
+      <div class="question-section">
+        <div class="section-header">
           <label class="section-label">
             <i class="fas fa-clipboard-question"></i> Question Text:
           </label>
-          <div class="readonly-text">{{ currentQuestion.questionText }}</div>
+          <button class="btn-expand" (click)="openFullscreen('questionText')">
+            <i class="fas fa-expand"></i>
+          </button>
         </div>
-
-        <div class="question-section">
-          <label class="section-label">
-            <i class="fas fa-check-circle"></i> Official Answer:
-          </label>
-          <div class="readonly-text official-answer">
-            {{ currentQuestion.officialAnswer }}
-          </div>
-        </div>
-
-        <div class="question-section">
-          <label class="section-label">
-            <i class="fas fa-user-edit"></i> Student's Answer:
-          </label>
-          <div class="readonly-text student-answer">
-            {{ currentQuestion.studentAnswerText || "Not answered" }}
-          </div>
-        </div>
-
-        <!-- Rubric Table -->
-        <div class="question-section">
-          <label class="section-label">
-            <i class="fas fa-list-check"></i> Rubric Criteria:
-          </label>
-          <div class="table-responsive">
-            <table class="table table-bordered">
-              <thead>
-                <tr>
-                  <th>CRITERION</th>
-                  <th>MARKS GIVEN</th>
-                  <th>MAX MARKS</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  *ngFor="let rubric of currentQuestion.rubrics; let i = index"
-                >
-                  <td>{{ rubric.criterion || rubric.name }}</td>
-                  <td>
-                    <input
-  type="number"
-  [(ngModel)]="rubric.marksGiven"
-  (input)="limitDecimalInput($event)"
-  (ngModelChange)="onRubricMarksChange(rubric, currentQuestion)"
-  (blur)="onRubricBlur(rubric, currentQuestion)"
-  [disabled]="!isEditMode"
-  min="0"
-  [max]="rubric.maxMarks"
-  step="0.5"
-  class="form-control"
-  [class.is-invalid]="rubric.marksGiven > rubric.maxMarks"
-  [class.is-valid]="
-    rubric.marksGiven > 0 &&
-    rubric.marksGiven <= rubric.maxMarks
-  "
-/>
-
-                    <div
-                      *ngIf="rubric.marksGiven > rubric.maxMarks"
-                      class="invalid-feedback d-block"
-                    >
-                      <i class="fas fa-exclamation-circle"></i>
-                      Marks cannot exceed {{ rubric.maxMarks }}
-                    </div>
-                  </td>
-                  <td>
-                    <span class="badge bg-secondary">{{
-                      rubric.maxMarks
-                    }}</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <!-- Marks Section -->
-        <div
-          class="marks-section"
-          [class.marks-error]="hasValidationError(currentQuestion)"
-          [class.marks-success]="!hasValidationError(currentQuestion)"
-        >
-          <label class="section-label">
-            <i class="fas fa-star"></i> Marks Obtained (Auto-calculated):
-          </label>
-          <div class="marks-display">
-            <input
-              type="number"
-              class="marks-input"
-              [class.error-input]="hasValidationError(currentQuestion)"
-              [value]="getTotalRubricMarks(currentQuestion)"
-              disabled
-            />
-            <span class="marks-max">/ {{ currentQuestion.maxMarks }}</span>
-          </div>
-
-          <!-- Error Message -->
-          <div
-            *ngIf="hasValidationError(currentQuestion)"
-            class="alert alert-danger mt-3 mb-0 py-2"
-          >
-            <i class="fas fa-times-circle"></i>
-            <strong>Error:</strong> Total marks ({{
-              getTotalRubricMarks(currentQuestion)
-            }}) exceed maximum ({{ currentQuestion.maxMarks }}). Please adjust
-            the rubric marks before saving.
-          </div>
-
-          <!-- Success Message -->
-          <div
-            *ngIf="
-              !hasValidationError(currentQuestion) &&
-              getTotalRubricMarks(currentQuestion) > 0
-            "
-            class="alert alert-success mt-3 mb-0 py-2"
-          >
-            <i class="fas fa-check-circle"></i>
-            <strong>Valid:</strong> Total marks are within the allowed limit.
-          </div>
-
-          <small class="text-muted mt-2"
-            >Automatically calculated from rubric marks</small
-          >
-        </div>
-
-        <!-- Remarks Section - Only visible in Edit Mode -->
-        <div class="question-section mt-4" *ngIf="isEditMode">
-          <label class="section-label">
-            <i class="fas fa-comments"></i> Remarks:
-          </label>
-          <textarea
-            [(ngModel)]="remarks"
-            placeholder="Add any remarks or comments for the student..."
-            rows="4"
-            class="form-control"
-          ></textarea>
+        <div class="scrollable-text">
+          {{ currentQuestion.questionText }}
         </div>
       </div>
 
-      <!-- NAVIGATION BUTTONS -->
+      <!-- Official Answer -->
+      <div class="question-section">
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-check-circle"></i> Official Answer:
+          </label>
+          <button class="btn-expand" (click)="openFullscreen('officialAnswer')">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div class="scrollable-text official-answer">
+          {{ currentQuestion.officialAnswer }}
+        </div>
+      </div>
+
+      <!-- Student's Answer -->
+      <div class="question-section">
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-user-edit"></i> Student's Answer:
+          </label>
+          <button class="btn-expand" (click)="openFullscreen('studentAnswer')">
+            <i class="fas fa-expand"></i>
+          </button>
+        </div>
+        <div class="scrollable-text student-answer">
+          {{ currentQuestion.studentAnswerText || "Not answered" }}
+        </div>
+      </div>
+
+      <!-- rubricAdded = false → same table, no Criterion column, label = Marks -->
+      <div class="question-section" *ngIf="!currentQuestion.rubricAdded">
+        <label class="section-label">
+          <i class="fas fa-list-check"></i> Marks:
+        </label>
+
+        <div class="table-responsive">
+          <table class="table table-bordered rubric-table rubric-table-no-criterion">
+            <thead>
+              <tr>
+                <th>MAX MARKS</th>
+                <th>SYSTEM MARKS</th>
+                <th>
+                  TEACHER MARKS
+                  <i
+                    class="fas fa-info-circle text-info header-info-icon"
+                    title="Blue icon indicates using system-assigned marks"
+                  ></i>
+                </th>
+                <th>REMARKS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
+                <!-- Max Marks -->
+                <td class="text-center">
+                  <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
+                </td>
+
+                <!-- System Marks -->
+                <td class="text-center">
+                  <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- Teacher Marks - compact with inline Edit -->
+                <td class="teacher-marks-cell">
+                  <div class="marks-input-group">
+                    <input
+                      type="number"
+                      [(ngModel)]="rubric.marksGiven"
+                      [disabled]="!rubric.isEditing"
+                      min="0"
+                      [max]="rubric.maxMarks"
+                      step="0.5"
+                      class="form-control form-control-sm marks-input"
+                      (input)="restrictToHalfStep($event)"
+                      placeholder="0"
+                    />
+
+                    <button
+                      *ngIf="!rubric.isEditing"
+                      class="btn btn-edit-inline"
+                      (click)="enableRubricEdit(rubric)"
+                    >
+                      <i class="fas fa-edit"></i>Override
+                    </button>
+
+                    <div *ngIf="rubric.isEditing" class="inline-actions">
+                      <button
+                        class="btn btn-save-inline"
+                        (click)="saveRubric(rubric)"
+                        [disabled]="!isRubricChanged(rubric) || rubric.isSaving"
+                      >
+                        <i *ngIf="!rubric.isSaving" class="fas fa-check"></i>
+                        <i
+                          *ngIf="rubric.isSaving"
+                          class="fas fa-spinner fa-spin"
+                        ></i>
+                      </button>
+                      <button
+                        class="btn btn-cancel-inline"
+                        (click)="cancelRubricEdit(rubric)"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div
+                    *ngIf="rubric.marksGiven > rubric.maxMarks"
+                    class="error-text"
+                  >
+                    Max: {{ rubric.maxMarks }}
+                  </div>
+                </td>
+
+                <!-- Remarks -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <input
+                      type="text"
+                      [(ngModel)]="rubric.remarks"
+                      [disabled]="!rubric.isEditing"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        rubric.isEditing &&
+                        (!rubric.remarks || rubric.remarks.trim() === '')
+                      "
+                      placeholder="Add remarks"
+                    />
+                  </div>
+                  <div
+                    *ngIf="
+                      rubric.isEditing &&
+                      (!rubric.remarks || rubric.remarks.trim() === '')
+                    "
+                    class="error-text"
+                  >
+                    Required
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- rubricAdded = true → full rubric table -->
+      <div class="question-section" *ngIf="currentQuestion.rubricAdded">
+        <label class="section-label">
+          <i class="fas fa-list-check"></i> Rubric Criteria:
+        </label>
+
+        <div class="table-responsive">
+          <table class="table table-bordered rubric-table">
+            <thead>
+              <tr>
+                <th>CRITERION</th>
+                <th>MAX MARKS</th>
+                <th>SYSTEM MARKS</th>
+                <th>
+                  TEACHER MARKS
+                  <i
+                    class="fas fa-info-circle text-info header-info-icon"
+                    title="Blue icon indicates using system-assigned marks"
+                  ></i>
+                </th>
+                <th>REMARKS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
+                <!-- Criterion -->
+                <td class="criterion-cell">
+                  <div class="scrollable-criterion">
+                    {{ rubric.criterion || rubric.name }}
+                  </div>
+                </td>
+
+                <!-- Max Marks -->
+                <td class="text-center">
+                  <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
+                </td>
+
+                <!-- System Marks -->
+                <td class="text-center">
+                  <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- Teacher Marks - compact with inline Edit -->
+                <td class="teacher-marks-cell">
+                  <div class="marks-input-group">
+                    <input
+                      type="number"
+                      [(ngModel)]="rubric.marksGiven"
+                      [disabled]="!rubric.isEditing"
+                      min="0"
+                      [max]="rubric.maxMarks"
+                      step="0.5"
+                      class="form-control form-control-sm marks-input"
+                      (input)="restrictToHalfStep($event)"
+                      placeholder="0"
+                    />
+
+                    <!-- Edit/Save/Cancel inline -->
+                    <button
+                      *ngIf="!rubric.isEditing"
+                      class="btn btn-edit-inline"
+                      (click)="enableRubricEdit(rubric)"
+                    >
+                      <i class="fas fa-edit"></i>Override
+                    </button>
+
+                    <div *ngIf="rubric.isEditing" class="inline-actions">
+                      <button
+                        class="btn btn-save-inline"
+                        (click)="saveRubric(rubric)"
+                        [disabled]="!isRubricChanged(rubric) || rubric.isSaving"
+                      >
+                        <i *ngIf="!rubric.isSaving" class="fas fa-check"></i>
+                        <i
+                          *ngIf="rubric.isSaving"
+                          class="fas fa-spinner fa-spin"
+                        ></i>
+                      </button>
+                      <button
+                        class="btn btn-cancel-inline"
+                        (click)="cancelRubricEdit(rubric)"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Validation -->
+                  <div
+                    *ngIf="rubric.marksGiven > rubric.maxMarks"
+                    class="error-text"
+                  >
+                    Max: {{ rubric.maxMarks }}
+                  </div>
+                </td>
+
+                <!-- Remarks with scroll -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <input
+                      type="text"
+                      [(ngModel)]="rubric.remarks"
+                      [disabled]="!rubric.isEditing"
+                      class="form-control form-control-sm"
+                      [class.is-invalid]="
+                        rubric.isEditing &&
+                        (!rubric.remarks || rubric.remarks.trim() === '')
+                      "
+                      placeholder="Add remarks"
+                    />
+                  </div>
+                  <div
+                    *ngIf="
+                      rubric.isEditing &&
+                      (!rubric.remarks || rubric.remarks.trim() === '')
+                    "
+                    class="error-text"
+                  >
+                    Required
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
       <div class="navigation-buttons">
-        <!-- Previous Button - DISABLED when editing -->
         <button
           class="btn btn-secondary btn-lg"
           (click)="previousQuestion()"
-          [disabled]="currentQuestionIndex === 0 || isLoading || isEditMode"
+          [disabled]="
+            currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
+          "
         >
           <i class="fas fa-arrow-left"></i> Previous
         </button>
 
-        <!-- Middle Buttons - Edit Mode Toggle -->
-        <div class="middle-buttons">
-          <!-- Default: Show Edit Button -->
-          <button
-            *ngIf="!isEditMode"
-            class="btn btn-primary btn-lg"
-            (click)="enableEdit()"
-            [disabled]="isLoading"
-          >
-            <i class="fas fa-edit"></i> Edit
-          </button>
-
-          <!-- Edit Mode: Show Cancel and Save -->
-          <div *ngIf="isEditMode" class="edit-mode-buttons">
-            <button
-              class="btn btn-secondary btn-lg"
-              (click)="cancelEdit()"
-              [disabled]="isLoading"
-            >
-              <i class="fas fa-times"></i> Cancel
-            </button>
-
-            <button
-              class="btn btn-success btn-lg"
-              (click)="updateCurrentQuestionMarks()"
-              [disabled]="isLoading || hasValidationError(currentQuestion)"
-            >
-              <i
-                [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"
-              ></i>
-              {{ isLoading ? "Saving..." : "Save" }}
-            </button>
-          </div>
-        </div>
-
-        <!-- Next Button - DISABLED when editing -->
         <button
           class="btn btn-secondary btn-lg"
           (click)="nextQuestion()"
           [disabled]="
             currentQuestionIndex === totalQuestions - 1 ||
             isLoading ||
-            isEditMode
+            isAnyRubricEditing()
           "
         >
           Next <i class="fas fa-arrow-right"></i>
         </button>
       </div>
+    </div>
 
-      <!-- Helper Text -->
-      <div
-        *ngIf="isEditMode && !hasValidationError(currentQuestion)"
-        class="text-center mt-3"
-      >
-        <small class="text-info">
-          <i class="fas fa-info-circle"></i>
-          Previous and Next buttons are disabled during editing. Please Save or
-          Cancel first.
-        </small>
-      </div>
+    <!-- Loading Question -->
+    <div *ngIf="isLoadingQuestion" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading question...</p>
+    </div>
+  </div>
+</div>
 
-      <div *ngIf="hasValidationError(currentQuestion)" class="text-center mt-3">
-        <small class="text-danger">
-          <i class="fas fa-lock"></i>
-          Save button is disabled until validation errors are resolved
-        </small>
-      </div>
-
-      <!-- No Questions Message -->
-      <div
-        *ngIf="
-          !currentResults.isAbsent &&
-          currentResults.evaluationStatus !== 'Pending' &&
-          totalQuestions === 0
-        "
-        class="empty-state"
-      >
-        <i class="fas fa-inbox"></i>
-        <h5>No Questions Found</h5>
-        <p>No questions found for this evaluation.</p>
-      </div>
+<!-- FULL SCREEN OVERLAY -->
+<!-- ✅ Fullscreen Modal -->
+<div
+  class="fullscreen-modal"
+  *ngIf="fullscreenContent"
+  (click)="closeFullscreen()"
+>
+  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+    <div class="fullscreen-header">
+      <h4>{{ getFullscreenTitle() }}</h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="fullscreen-body">
+      {{ getFullscreenContent() }}
     </div>
   </div>
 </div>

@@ -1,0 +1,288 @@
+<!-- Upload Answer Sheets Component -->
+<div class="upload-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h2><i class="fas fa-upload"></i> Upload Student Answer Sheets</h2>
+  </div>
+
+ <app-exam-filter
+    [classes]="classes"
+    [sections]="sections"
+    [subjects]="subjects"
+    [examTypes]="examTypes"
+    [questionPapers]="questionPapers"
+    [(selectedClass)]="selectedClass"
+    [(selectedSection)]="selectedSection"
+    [(selectedSubject)]="selectedSubject"
+    [(selectedExamType)]="selectedExamType"
+    [(selectedQuestionPaperId)]="selectedQuestionPaperId"
+    [showQuestionPaperDropdown]="showQuestionPaperDropdown"
+    [isLoadingPapers]="isLoadingPapers"
+    [isLoading]="loading"
+    [canShowStudents]="canShowStudents"
+    [showEmptyState]="showStudentsCard && students.length === 0 && !loading"
+    [noExamPaperFound]="noExamPaperFound"
+    (classChanged)="onClassChange($event)"
+    (sectionChanged)="onSectionChange()"
+    (subjectChanged)="onSubjectChange()"
+    (examTypeChanged)="onExamTypeChange()"
+    (showStudentsClick)="showStudents()"
+  ></app-exam-filter>
+
+  <!-- Students Table -->
+  <div class="card" *ngIf="showStudentsCard && students.length > 0">
+    <div class="card-header-flex">
+      <h4><i class="fas fa-users"></i> Students List</h4>
+      <span class="badge badge-primary">{{ totalStudents }} Students</span>
+    </div>
+
+    <!-- Statistics Summary -->
+    <div class="stats-grid">
+      <div class="stat-card stat-total">
+        <div class="stat-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ totalStudents }}</h3>
+          <p>Total Students</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-absent">
+        <div class="stat-icon">
+          <i class="fas fa-user-slash"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ absentCount }}</h3>
+          <p>Absent</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-uploaded">
+        <div class="stat-icon">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ uploadedCount }}</h3>
+          <p>Uploaded</p>
+        </div>
+      </div>
+
+      <div class="stat-card stat-pending">
+        <div class="stat-icon">
+          <i class="fas fa-clock"></i>
+        </div>
+        <div class="stat-content">
+          <h3>{{ pendingCount }}</h3>
+          <p>Pending</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Class</th>
+            <th>Section</th>
+            <th>Status</th>
+            <th>Document</th>
+            <th>Mark Absent</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of students">
+            <td>
+              <strong class="roll-number">{{ student.rollNumber }}</strong>
+            </td>
+            <td>{{ student.studentName }}</td>
+            <td>{{ student.className }}</td>
+            <td>{{ student.sectionName }}</td>
+            <td>
+              <span *ngIf="student.isAbsent" class="badge badge-warning">
+                <i class="fas fa-user-slash"></i> Absent
+              </span>
+              <span
+                *ngIf="!student.isAbsent && student.isUploaded"
+                class="badge badge-success"
+              >
+                <i class="fas fa-check-circle"></i> Uploaded
+              </span>
+              <span
+                *ngIf="!student.isAbsent && !student.isUploaded"
+                class="badge badge-secondary"
+              >
+                <i class="fas fa-clock"></i> Pending
+              </span>
+            </td>
+            <td>
+              <!-- 1. UPLOADED: Show PDF name + Update button -->
+              <div
+                *ngIf="student.isUploaded && !student.isAbsent"
+                class="document-display"
+              >
+                <span class="pdf-info">
+                  <i class="fas fa-file-pdf text-danger"></i>
+                  <span class="pdf-name">{{ student.fileName || "PDF" }}</span>
+                </span>
+
+                <!-- Update button (only if not submitted) -->
+                <input
+                  *ngIf="!isSubmittedForEvaluation"
+                  type="file"
+                  [id]="'file-update-' + student.studentId"
+                  accept=".pdf"
+                  (change)="onFileSelected($event, student, true)"
+                  [disabled]="student.isUploading"
+                  style="display: none"
+                />
+
+                <label
+                  *ngIf="!isSubmittedForEvaluation"
+                  [for]="'file-update-' + student.studentId"
+                  class="btn btn-xs btn-warning"
+                  [class.disabled]="student.isUploading"
+                  title="{{
+                    student.isUploading ? 'Updating...' : 'Update PDF'
+                  }}"
+                >
+                  <i
+                    [class]="
+                      student.isUploading
+                        ? 'fas fa-spinner fa-spin'
+                        : 'fas fa-sync-alt'
+                    "
+                  ></i>
+                  {{ student.isUploading ? "Updating..." : " Update" }}
+                </label>
+              </div>
+
+              <!-- 2. PENDING: Show Upload button -->
+              <div
+                *ngIf="
+                  !student.isUploaded &&
+                  !student.isAbsent &&
+                  !isSubmittedForEvaluation
+                "
+                class="upload-section"
+              >
+                <input
+                  type="file"
+                  [id]="'file-' + student.studentId"
+                  accept=".pdf"
+                  (change)="onFileSelected($event, student, false)"
+                  [disabled]="student.isUploading"
+                  style="display: none"
+                />
+
+                <label
+                  [for]="'file-' + student.studentId"
+                  class="btn btn-sm btn-primary"
+                  [class.disabled]="student.isUploading"
+                  title="{{
+                    student.isUploading ? 'Uploading...' : 'Upload PDF'
+                  }}"
+                >
+                  <i
+                    [class]="
+                      student.isUploading
+                        ? 'fas fa-spinner fa-spin'
+                        : 'fas fa-upload'
+                    "
+                  ></i>
+                  {{ student.isUploading ? "Uploading..." : " Upload" }}
+                </label>
+              </div>
+
+              <!-- 3. ABSENT: Show dash -->
+              <span *ngIf="student.isAbsent" class="text-muted">-</span>
+
+              <!-- 4. SUBMITTED FOR EVALUATION: Show dash -->
+              <span
+                *ngIf="isSubmittedForEvaluation && !student.isAbsent"
+                class="text-muted"
+                >-</span
+              >
+            </td>
+
+            <td>
+              <!-- After upload → Show N/A -->
+              <span *ngIf="student.isUploaded" class="text-muted"> - </span>
+
+              <!-- Before upload → Show checkbox -->
+              <div *ngIf="!student.isUploaded" class="form-check">
+                <input
+                  type="checkbox"
+                  [id]="'absent-' + student.studentId"
+                  [checked]="student.isAbsent"
+                  (change)="toggleAbsent(student)"
+                  [disabled]="isSubmittedForEvaluation"
+                  class="custom-checkbox"
+                />
+                <label
+                  [for]="'absent-' + student.studentId"
+                  class="checkbox-label"
+                >
+                  Mark Absent
+                </label>
+              </div>
+            </td>
+
+            <td>
+              <a
+                *ngIf="student.isUploaded"
+                href="javascript:void(0)"
+                class="download-link"
+                [class.disabled]="isViewing"
+                (click)="!isViewing && viewAnswerSheet(student)"
+              >
+                <span *ngIf="!isViewing"
+                  ><i class="fas fa-eye"></i> View Answer Sheet</span
+                >
+
+                <span *ngIf="isViewing">
+                  <i class="fas fa-spinner fa-spin"></i>
+                  Opening...
+                </span>
+              </a>
+            </td>
+          </tr>
+          <!-- <tr *ngIf="students.length === 0">
+            <td colspan="8" class="text-center text-muted">
+              No students found
+            </td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="submit-section">
+      <button
+        class="btn btn-success btn-lg"
+        (click)="submitAllStudents()"
+     [disabled]="!canEvaluate || isSubmittingAll || isSubmittedForEvaluation"
+      >
+        <i
+          [class]="
+            isSubmittingAll ? 'fas fa-spinner fa-spin' : 'fas fa-paper-plane'
+          "
+        ></i>
+
+        {{ isSubmittingAll ? "Submitting..." : "Submit All For Evaluation" }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <!-- <div class="loading-overlay" *ngIf="loading">
+  <div class="spinner">
+    <div class="spinner-border"></div>
+    <p>Loading...</p>
+  </div>
+</div> -->
+</div>

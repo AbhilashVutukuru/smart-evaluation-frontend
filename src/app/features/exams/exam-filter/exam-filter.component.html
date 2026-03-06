@@ -1,0 +1,149 @@
+<!-- Filter Card -->
+<div class="card">
+  <h4><i class="fas fa-filter"></i> Select Exam Details</h4>
+
+  <div class="row">
+    <!-- Class -->
+    <div class="col-md-3 mb-3">
+      <label class="form-label">Class <span class="required">*</span></label>
+      <select
+        class="form-control"
+        [(ngModel)]="selectedClass"
+        (change)="onClassChange(selectedClass)"
+      >
+        <option value="">Select Class</option>
+        <option *ngFor="let cls of classes" [value]="cls.id">
+          {{ cls.className }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Section -->
+    <div class="col-md-3 mb-3">
+      <label class="form-label">Section <span class="required">*</span></label>
+      <select
+        class="form-control"
+        [(ngModel)]="selectedSection"
+        [disabled]="!selectedClass"
+        (change)="onSectionChange()"
+      >
+        <option value="">{{ selectedClass ? "Select Section" : "Select Class First" }}</option>
+        <option *ngFor="let sec of sections" [value]="sec.id">
+          {{ sec.sectionName }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Subject -->
+    <div class="col-md-3 mb-3">
+      <label class="form-label">Subject <span class="required">*</span></label>
+      <select
+        class="form-control"
+        [(ngModel)]="selectedSubject"
+        [disabled]="!selectedClass"
+        (change)="onSubjectChange()"
+      >
+        <option value="">{{ selectedClass ? "Select Subject" : "Select Class First" }}</option>
+        <option *ngFor="let sub of subjects" [value]="sub.id">
+          {{ sub.subjectName }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Exam Type -->
+    <div class="col-md-3 mb-3">
+      <label class="form-label">Exam Type <span class="required">*</span></label>
+
+      <!-- Loading spinner -->
+      <div *ngIf="isLoadingExamTypes" class="form-control field-loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading...
+      </div>
+
+      <select
+        *ngIf="!isLoadingExamTypes"
+        class="form-control"
+        [(ngModel)]="selectedExamType"
+        [disabled]="!selectedClass || !selectedSubject"
+        (change)="onExamTypeChange()"
+      >
+        <option value="">{{ selectedSubject ? 'Select Exam Type' : 'Select Subject First' }}</option>
+        <option *ngFor="let exam of examTypes" [value]="exam.id">
+          {{ exam.examTypeName }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div class="row align-items-end">
+    <!-- Question Paper (conditional) -->
+    <div class="col-md-3 mb-3" *ngIf="showQuestionPaperDropdown || isLoadingPapers">
+      <label class="form-label">
+        Question Paper <span class="required">*</span>
+      </label>
+
+      <!-- Loading spinner -->
+      <div *ngIf="isLoadingPapers" class="form-control qp-loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading...
+      </div>
+
+      <!-- length === 1 → readonly textbox with info icon -->
+      <ng-container *ngIf="!isLoadingPapers && questionPapers.length === 1">
+        <div class="qp-readonly-wrapper">
+          <input
+            type="text"
+            class="form-control qp-readonly-input"
+            [value]="questionPapers[0].questionPaperName"
+            readonly
+            disabled
+          />
+          <i
+            class="fas fa-info-circle qp-info-icon"
+            title="Question paper name is same as the selected Exam Type by default"
+          ></i>
+        </div>
+      </ng-container>
+
+      <!-- length > 1 → dropdown -->
+      <select
+        *ngIf="!isLoadingPapers && questionPapers.length > 1"
+        class="form-control"
+        [(ngModel)]="selectedQuestionPaperId"
+        (change)="onQuestionPaperChange()"
+      >
+        <option [ngValue]="null">Select Question Paper</option>
+        <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
+          {{ qp.questionPaperName }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Button -->
+    <div class="col-md-2 mb-3">
+      <button
+        class="btn btn-primary"
+        (click)="showStudentsClick.emit()"
+        [disabled]="!canShowStudents || isLoading"
+      >
+        <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+        {{ isLoading ? loadingLabel : buttonLabel }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Empty State: shown immediately when exam paper not found (on ExamType change) OR after Show Students with no results -->
+<div class="card" *ngIf="noExamPaperFound || showEmptyState">
+  <div class="empty-state">
+    <ng-container *ngIf="noExamPaperFound; else noStudents">
+      <i class="fas fa-file-alt text-warning"></i>
+      <h5>No Exam Paper Found</h5>
+      <p>No exam paper has been created for the selected class, subject and exam type.</p>
+    </ng-container>
+
+    <ng-template #noStudents>
+      <i class="fas fa-users-slash"></i>
+      <h5>No Students Found</h5>
+      <p>No students found for the selected criteria.</p>
+    </ng-template>
+  </div>
+</div>

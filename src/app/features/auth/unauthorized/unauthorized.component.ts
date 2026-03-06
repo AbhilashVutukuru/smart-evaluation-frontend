@@ -1,5 +1,5 @@
 // unauthorized.component.ts
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -12,19 +12,8 @@ import { AuthService } from '../../../core/services/auth.service';
   styleUrls: ['./unauthorized.component.css']
 })
 export class UnauthorizedComponent {
-  constructor(
-    private router: Router,
-    private authService: AuthService
-  ) {}
-
-  goBack(): void {
-    // Go back to previous page or dashboard
-    this.router.navigate(['/dashboard']);
-  }
-
-  logout(): void {
-    this.authService.logout();
-  }
+  private router = inject(Router);
+  private authService = inject(AuthService);
 
   get userEmail(): string | null {
     return this.authService.getUserEmail();
@@ -32,5 +21,13 @@ export class UnauthorizedComponent {
 
   get userRole(): string | null {
     return this.authService.getUserRole();
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

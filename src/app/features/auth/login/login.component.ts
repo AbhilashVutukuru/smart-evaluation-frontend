@@ -1,5 +1,4 @@
-// login.component.ts - Updated for HttpOnly Cookies
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -7,7 +6,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -17,22 +16,36 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
   loginForm: FormGroup;
   loading = false;
   error = '';
   showPassword = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-  ) {
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
-      rememberMe: [false],  // ✅ Already has Remember Me!
+      rememberMe: [false],
     });
+  }
+
+  ngOnInit(): void {
+    // Restore remember me preference
+    if (localStorage.getItem('rememberMePreference') === 'true') {
+      this.loginForm.patchValue({ rememberMe: true });
+    }
+
+    // Already logged in → redirect
+    if (this.authService.isAuthenticated()) {
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+      this.router.navigate([returnUrl]);
+    }
   }
 
   get f() {
@@ -43,42 +56,55 @@ export class LoginComponent {
     this.showPassword = !this.showPassword;
   }
 
-onSubmit(): void {
-  if (this.loginForm.invalid) return;
+  clearError(): void {
+    if (this.error) this.error = '';
+  }
 
-  this.loading = true;
-  this.error = '';
+  onSubmit(): void {
+    if (this.loginForm.invalid) return;
 
-  this.authService.login(this.loginForm.value).subscribe({
-    next: (response) => {
-      if (response.success && response.data) {
-        console.log('✅ Login successful');
-        
-        // ✅ Update user state from response (NOT from new API call!)
-        this.authService.updateCurrentUser({
-          requirePasswordChange: response.data.requirePasswordChange,
-          accessToken: '',
-          refreshToken: '',
-          userId: response.data.userId,
-          email: response.data.email,
-          role: response.data.role,
-          schoolId: response.data.schoolId,
-          success: false
-        });
+    this.loading = true;
+    this.error = '';
 
-        // Navigate
-        if (response.data.requirePasswordChange) {
-          this.router.navigate(['/auth/change-password']);
+    localStorage.setItem(
+      'rememberMePreference',
+      this.loginForm.value.rememberMe.toString(),
+    );
+
+    this.authService.login(this.loginForm.value).subscribe({
+      next: (response) => {
+        // ✅ Always reset loading before any navigation
+        this.loading = false;
+
+        if (response.success && response.data) {
+          this.authService.updateCurrentUser(response.data);
+
+          if (response.data.requirePasswordChange) {
+            this.router.navigate(['/auth/change-password']);
+          } else {
+            const returnUrl =
+              this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+            this.router.navigate([returnUrl]);
+          }
         } else {
-          this.router.navigate(['/dashboard']);
+          this.error = response.message || 'Login failed';
         }
-      }
-      this.loading = false;
-    },
-    error: (error) => {
-      this.error = error.error?.message || 'Login failed';
-      this.loading = false;
-    }
-  });
-}
+      },
+      error: (error) => {
+        this.loading = false;
+
+        if (error.status === 401) {
+          this.error = 'Invalid email or password';
+        } else if (error.status === 403) {
+          this.error = 'Your account has been suspended';
+        } else if (error.status === 429) {
+          this.error = 'Too many login attempts. Please try again later.';
+        } else if (error.status === 0) {
+          this.error = 'Network error. Please check your connection.';
+        } else {
+          this.error = error.error?.message || 'An error occurred. Please try again.';
+        }
+      },
+    });
+  }
 }

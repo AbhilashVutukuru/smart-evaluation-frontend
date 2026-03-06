@@ -1,90 +1,65 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AuthService } from '../../core/services/auth.service';
+import { RouterLink } from '@angular/router';
+import { DashboardService } from '../../core/services/dashboard.service';
+import { DashboardSummary } from '../../core/models/dashboard-summary';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="dashboard-container">
-      <div class="dashboard-header">
-        <h1>Dashboard</h1>
-        <!-- <p>Welcome back, {{ currentUser?.userName }}!</p> -->
-      </div>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <i class="fas fa-user-graduate"></i>
-          <h3>Total Students</h3>
-          <p class="stat-number">1,234</p>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-chalkboard-teacher"></i>
-          <h3>Total Teachers</h3>
-          <p class="stat-number">56</p>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-file-alt"></i>
-          <h3>Active Exams</h3>
-          <p class="stat-number">12</p>
-        </div>
-        <div class="stat-card">
-          <i class="fas fa-check-circle"></i>
-          <h3>Completed</h3>
-          <p class="stat-number">89</p>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .dashboard-container {
-      padding: 40px;
-    }
-    .dashboard-header h1 {
-      color: #1f2937;
-      font-weight: 600;
-      margin-bottom: 5px;
-    }
-    .dashboard-header p {
-      color: #6b7280;
-      font-size: 1.1rem;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-      margin-top: 30px;
-    }
-    .stat-card {
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-    .stat-card i {
-      font-size: 3rem;
-      color: #6366f1;
-      margin-bottom: 15px;
-    }
-    .stat-card h3 {
-      color: #6b7280;
-      font-size: 1rem;
-      margin-bottom: 10px;
-    }
-    .stat-number {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #1f2937;
-      margin: 0;
-    }
-  `]
+  imports: [CommonModule, RouterLink],
+  templateUrl: './dashboard.component.html',
+  styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent {
-  private authService = inject(AuthService);
+export class DashboardComponent implements OnInit {
+  private dashboardService = inject(DashboardService);
 
-  get currentUser() {
-    return this.authService.currentUserValue;
+  summary: DashboardSummary | null = null;
+  isLoading = true;
+  error: string | null = null;
+
+  ngOnInit(): void {
+    this.dashboardService.getSummary().subscribe({
+      next: (data) => {
+        this.summary = data;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load dashboard data.';
+        this.isLoading = false;
+      },
+    });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  get isAdmin():   boolean { return this.summary?.role === 'Admin'; }
+  get isTeacher(): boolean { return this.summary?.role === 'Teacher'; }
+  get isStudent(): boolean { return this.summary?.role === 'Student'; }
+
+  getProgressWidth(value: number, total: number): string {
+    if (!total) return '0%';
+    return `${Math.min(Math.round((value / total) * 100), 100)}%`;
+  }
+
+  getScoreColor(percentage: number): string {
+    if (percentage >= 75) return 'score-high';
+    if (percentage >= 50) return 'score-mid';
+    return 'score-low';
+  }
+
+  formatDate(dateStr: string): string {
+    return new Date(dateStr).toLocaleDateString('en-IN', {
+      day: '2-digit', month: 'short', year: 'numeric',
+    });
+  }
+
+  // Returns CSS class based on how complete the evaluation is
+  getBreakdownRowClass(evaluated: number, total: number): string {
+    if (total === 0) return '';
+    const pct = (evaluated / total) * 100;
+    if (pct === 100) return 'row-complete';
+    if (pct >= 50)   return 'row-partial';
+    return 'row-low';
   }
 }

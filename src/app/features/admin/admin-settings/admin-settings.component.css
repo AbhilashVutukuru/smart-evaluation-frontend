@@ -1,11 +1,25 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: none;
+}
+
 /* ============================================================
-   ADMIN SETTINGS — COMPONENT STYLES
+   ADMIN SETTINGS — COMPONENT STYLES 
    ============================================================ */
 
 .settings-container {
+  /* ✅ MODIFIED ONLY THESE 4 LINES FOR AUTO-FIT */
+  /* width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(-50vw + 50%) !important;
+  margin-right: calc(-50vw + 50%) !important; */
+
+    width: 100%;
   padding: 28px;
-  max-width: 1300px;
-  margin: 0 auto;
+  box-sizing: border-box;
+  /* ⬇️ ORIGINAL LINES BELOW ⬇️ */
+  padding: 28px;
   font-family: 'Segoe UI', system-ui, sans-serif;
 }
 

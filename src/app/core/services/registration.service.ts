@@ -6,9 +6,6 @@ import {
   StudentRegisterRequest,
   TeacherRegisterRequest,
   BulkUploadResponse,
-  ClassDropdown,
-  SectionDropdown,
-  SubjectDropdown,
   ApiResponse,
   NextRollNumber,
 } from '../models/registration.model';
@@ -33,8 +30,8 @@ export class RegistrationService {
       `${this.apiUrl}/bulk-registration/${urlType}-template`,
       {
         headers: headers,
-        responseType: 'blob', // ✅ Important: responseType must be 'blob'
-      },
+        responseType: 'blob',
+      }
     );
   }
 
@@ -42,14 +39,14 @@ export class RegistrationService {
   registerStudent(data: StudentRegisterRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/registration/student`,
-      data,
+      data
     );
   }
 
   bulkUploadStudents(
     file: File,
     classId: number,
-    sectionId: number,
+    sectionId: number
   ): Observable<BulkUploadResponse> {
     const formData = new FormData();
     formData.append('ExcelFile', file);
@@ -57,7 +54,7 @@ export class RegistrationService {
     formData.append('SectionId', sectionId.toString());
     return this.http.post<BulkUploadResponse>(
       `${this.apiUrl}/bulk-registration/upload-students`,
-      formData,
+      formData
     );
   }
 
@@ -65,7 +62,7 @@ export class RegistrationService {
   registerTeacher(data: TeacherRegisterRequest): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
       `${this.apiUrl}/registration/teacher`,
-      data,
+      data
     );
   }
 
@@ -74,43 +71,17 @@ export class RegistrationService {
     formData.append('ExcelFile', file);
     return this.http.post<BulkUploadResponse>(
       `${this.apiUrl}/bulk-registration/upload-teachers`,
-      formData,
+      formData
     );
   }
 
-  // Dropdowns
-  // getClasses(): Observable<ApiResponse<ClassDropdown[]>> {
-  //   return this.http.get<ApiResponse<ClassDropdown[]>>(
-  //     `${this.apiUrl}/master-data/classes`,
-  //   );
-  // }
-
-  // getSections(classId: number): Observable<ApiResponse<SectionDropdown[]>> {
-  //   return this.http.get<ApiResponse<SectionDropdown[]>>(
-  //     `${this.apiUrl}/master-data/sections?classId=${classId}`,
-  //   );
-  // }
-
-  // getAllSubjects(): Observable<ApiResponse<SubjectDropdown[]>> {
-  //   return this.http.get<ApiResponse<SubjectDropdown[]>>(
-  //     `${this.apiUrl}/master-data/subjects`,
-  //   );
-  // }
-
-  // getSubjects(classId: number): Observable<ApiResponse<SubjectDropdown[]>> {
-  //   return this.http.get<ApiResponse<SubjectDropdown[]>>(
-  //     `${this.apiUrl}/master-data/classes/${classId}/subjects`,
-  //   );
-  // }
-
+  // Get Next Roll Number
   getNextRollNumber(
     classId: number,
-    sectionId: number,
+    sectionId: number
   ): Observable<ApiResponse<NextRollNumber>> {
     return this.http.get<ApiResponse<NextRollNumber>>(
-      `${this.apiUrl}/student/next-roll-number?classId=${classId}&sectionId=${sectionId}`,
+      `${this.apiUrl}/student/next-roll-number?classId=${classId}&sectionId=${sectionId}`
     );
   }
-
-  var = 10;
 }

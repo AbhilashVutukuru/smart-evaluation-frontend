@@ -10,6 +10,8 @@ import {
 import { AdminSettingsService } from '../../../core/services/admin-settings.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { MasterDataService } from '../../../core/services/master-data.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
 @Component({
   selector: 'app-admin-settings',
@@ -27,6 +29,8 @@ export class AdminSettingsComponent implements OnInit {
   private fb = inject(FormBuilder);
   private svc = inject(AdminSettingsService);
   private masterDataService = inject(MasterDataService);
+  private toastService = inject(ToastService);
+  private errorHandler  = inject(ErrorHandlerService);
 
   // ── Tab state ──────────────────────────────────────────────
   mainTab: 'master' | 'assign' | 'academic' | 'admin' = 'master';
@@ -36,14 +40,14 @@ export class AdminSettingsComponent implements OnInit {
 
   // ── Master data lists ──────────────────────────────────────
   classes: any[] = [];
-  masterSections: any[] = []; // stand-alone section names (A, B, C …)
-  masterSubjects: any[] = []; // stand-alone subject names
-  masterExamTypes: any[] = []; // stand-alone exam type names
+  masterSections: any[] = [];
+  masterSubjects: any[] = [];
+  masterExamTypes: any[] = [];
 
   // ── Assignment lists ───────────────────────────────────────
-  assignedSections: any[] = []; // class ↔ section links
-  assignedSubjects: any[] = []; // class ↔ section ↔ subject links
-  assignedExamTypes: any[] = []; // class ↔ section ↔ examtype links
+  assignedSections: any[] = [];
+  assignedSubjects: any[] = [];
+  assignedExamTypes: any[] = [];
 
   // ── Academic Year & Admin lists ───────────────────────────
   academicYears: any[] = [];
@@ -71,8 +75,8 @@ export class AdminSettingsComponent implements OnInit {
 
   // ── UI state ───────────────────────────────────────────────
   loading = false;
-  success = '';
-  error = '';
+  // success = '';
+  // error = '';
 
   // ── Filters ───────────────────────────────────────────────
   classFilter = '';
@@ -123,13 +127,11 @@ export class AdminSettingsComponent implements OnInit {
 
     this.assignSubjectForm = this.fb.group({
       classId: ['', Validators.required],
-      //sectionId: ['', Validators.required],
       subjectId: ['', Validators.required],
     });
 
     this.assignExamTypeForm = this.fb.group({
       classId: ['', Validators.required],
-      //sectionId:  ['', Validators.required],
       examTypeId: ['', Validators.required],
     });
 
@@ -273,22 +275,17 @@ export class AdminSettingsComponent implements OnInit {
   // ── Tab navigation ────────────────────────────────────────
   setMainTab(tab: 'master' | 'assign' | 'academic' | 'admin'): void {
     this.mainTab = tab;
-    this.clearMessages();
   }
 
   setMasterTab(tab: 'class' | 'section' | 'subject' | 'examtype'): void {
     this.masterTab = tab;
-    this.clearMessages();
   }
 
-  setAssignTab(
-    tab: 'assign-section' | 'assign-subject' | 'assign-examtype',
-  ): void {
+  setAssignTab(tab: 'assign-section' | 'assign-subject' | 'assign-examtype'): void {
     this.assignTab = tab;
-    this.clearMessages();
   }
 
-  // ── MASTER: Create ────────────────────────────────────────
+  // ══════════ MASTER DATA CREATE ══════════
   createClass(): void {
     if (this.classForm.invalid) return;
     this.loading = true;
@@ -298,11 +295,13 @@ export class AdminSettingsComponent implements OnInit {
           this.showSuccess('Class created successfully!');
           this.classForm.reset();
           this.loadClasses();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to create class');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to create class');
+        this.errorHandler.handle('Failed to create class', e);
         this.loading = false;
       },
     });
@@ -317,11 +316,13 @@ export class AdminSettingsComponent implements OnInit {
           this.showSuccess('Section created successfully!');
           this.sectionForm.reset();
           this.loadMasterSections();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to create section');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to create section');
+        this.errorHandler.handle('Failed to create section', e);
         this.loading = false;
       },
     });
@@ -336,11 +337,13 @@ export class AdminSettingsComponent implements OnInit {
           this.showSuccess('Subject created successfully!');
           this.subjectForm.reset();
           this.loadMasterSubjects();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to create subject');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to create subject');
+        this.errorHandler.handle('Failed to create subject', e);
         this.loading = false;
       },
     });
@@ -352,20 +355,22 @@ export class AdminSettingsComponent implements OnInit {
     this.svc.createMasterExamType(this.examTypeForm.value).subscribe({
       next: (r) => {
         if (r.success) {
-          this.showSuccess('Exam Type created successfully!');
+          this.showSuccess('Exam type created successfully!');
           this.examTypeForm.reset();
           this.loadMasterExamTypes();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to create exam type');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to create exam type');
+        this.errorHandler.handle('Failed to create exam type', e);
         this.loading = false;
       },
     });
   }
 
-  // ── ASSIGNMENTS: Create ───────────────────────────────────
+  // ══════════ ASSIGNMENTS ══════════
   assignSection(): void {
     if (this.assignSectionForm.invalid) return;
     this.loading = true;
@@ -375,12 +380,13 @@ export class AdminSettingsComponent implements OnInit {
           this.showSuccess('Section assigned successfully!');
           this.assignSectionForm.reset();
           this.loadAssignedSections();
-          this.loadMasterSections();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to assign section');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to assign section');
+        this.errorHandler.handle('Failed to assign section', e);
         this.loading = false;
       },
     });
@@ -394,14 +400,14 @@ export class AdminSettingsComponent implements OnInit {
         if (r.success) {
           this.showSuccess('Subject assigned successfully!');
           this.assignSubjectForm.reset();
-          this.sectionsForAssignSubject = [];
           this.loadAssignedSubjects();
-          this.loadMasterSubjects();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to assign subject');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to assign subject');
+        this.errorHandler.handle('Failed to assign subject', e);
         this.loading = false;
       },
     });
@@ -413,75 +419,49 @@ export class AdminSettingsComponent implements OnInit {
     this.svc.assignExamType(this.assignExamTypeForm.value).subscribe({
       next: (r) => {
         if (r.success) {
-          this.showSuccess('Exam Type assigned successfully!');
+          this.showSuccess('Exam type assigned successfully!');
           this.assignExamTypeForm.reset();
-          this.sectionsForAssignExamType = [];
           this.loadAssignedExamTypes();
-          this.loadMasterExamTypes();
+        } else {
+          this.toastService.showError('Error', r.message ?? 'Failed to assign exam type');
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to assign exam type');
+        this.errorHandler.handle('Failed to assign exam type', e);
         this.loading = false;
       },
     });
   }
 
-  // ── Delete modal ──────────────────────────────────────────
+  // ══════════ DELETE ══════════
   openDeleteModal(type: string, item: any): void {
     this.deleteType = type;
     this.itemToDelete = item;
-    const titles: Record<string, [string, string, string]> = {
-      class: ['Delete Class', 'Delete this class?', item.className ?? ''],
-      'master-section': [
-        'Delete Section',
-        'Delete this section?',
-        item.sectionName ?? '',
-      ],
-      'master-subject': [
-        'Delete Subject',
-        'Delete this subject?',
-        item.subjectName ?? '',
-      ],
-      'master-examtype': [
-        'Delete Exam Type',
-        'Delete this exam type?',
-        item.examTypeName ?? '',
-      ],
-      'assigned-section': [
-        'Remove Assignment',
-        'Remove section assignment?',
-        `Class ${item.classNumber} → ${item.sectionName}`,
-      ],
-      'assigned-subject': [
-        'Remove Assignment',
-        'Remove subject assignment?',
-        `Class ${item.classNumber}  → ${item.subjectName}`,
-      ],
-      'assigned-examtype': [
-        'Remove Assignment',
-        'Remove exam type assignment?',
-        `Class ${item.classNumber}  → ${item.examTypeName}`,
-      ],
+    //this.deleteItemName = itemName;
+
+    const titles: any = {
+      class: 'Delete Class',
+      section: 'Delete Section',
+      subject: 'Delete Subject',
+      examtype: 'Delete Exam Type',
+      'assigned-section': 'Remove Section Assignment',
+      'assigned-subject': 'Remove Subject Assignment',
+      'assigned-examtype': 'Remove Exam Type Assignment',
     };
-    const [title, message, name] = titles[type] ?? [
-      'Delete',
-      'Confirm delete?',
-      '',
-    ];
-    this.deleteModalTitle = title;
-    this.deleteModalMessage = message;
-    this.deleteItemName = name;
+
+    this.deleteModalTitle = titles[type] || 'Delete Item';
+    this.deleteModalMessage = type.startsWith('assigned')
+      ? 'Are you sure you want to remove this assignment?'
+      : 'Are you sure you want to delete this item? This action cannot be undone.';
     this.showDeleteModal = true;
   }
 
   onDeleteConfirmed(): void {
     if (!this.itemToDelete) return;
-    this.loading = true;
     const id = this.itemToDelete.id;
 
-    const actions: Record<string, () => void> = {
+    const actions: any = {
       class: () =>
         this.svc.deleteClass(id).subscribe({
           next: () => {
@@ -490,11 +470,11 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
-      'master-section': () =>
+      section: () =>
         this.svc.deleteMasterSection(id).subscribe({
           next: () => {
             this.showSuccess('Section deleted!');
@@ -502,11 +482,11 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
-      'master-subject': () =>
+      subject: () =>
         this.svc.deleteMasterSubject(id).subscribe({
           next: () => {
             this.showSuccess('Subject deleted!');
@@ -514,11 +494,11 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
-      'master-examtype': () =>
+      examtype: () =>
         this.svc.deleteMasterExamType(id).subscribe({
           next: () => {
             this.showSuccess('Exam type deleted!');
@@ -526,7 +506,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to delete', e);
             this.resetDeleteModal();
           },
         }),
@@ -539,7 +519,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -552,7 +532,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -565,7 +545,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
           error: (e) => {
-            this.showError(e.error?.message || 'Failed');
+            this.errorHandler.handle('Failed to remove', e);
             this.resetDeleteModal();
           },
         }),
@@ -645,7 +625,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to create academic year');
+        this.errorHandler.handle('Failed to create academic year', e);
         this.loading = false;
       },
     });
@@ -654,7 +634,6 @@ export class AdminSettingsComponent implements OnInit {
   setActiveAcademicYear(id: number): void {
     this.loading = true;
 
-    // ✅ Find the year object from your list
     const selectedYear = this.academicYears.find(year => year.id === id);
 
     this.svc.setActiveAcademicYear(id).subscribe({
@@ -671,7 +650,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to set active year');
+        this.errorHandler.handle('Failed to set active year', e);
         this.loading = false;
       },
     });
@@ -689,7 +668,7 @@ export class AdminSettingsComponent implements OnInit {
       toYear &&
       new Date(fromYear.startDate) >= new Date(toYear.startDate)
     ) {
-      this.showError(
+      this.toastService.showError('Error',
         `Cannot promote backward. "${toYear.yearName}" starts before "${fromYear.yearName}".`,
       );
       return;
@@ -706,14 +685,14 @@ export class AdminSettingsComponent implements OnInit {
     this.svc.promoteStudents({ fromYearId, toYearId }).subscribe({
       next: (r) => {
         if (r.success) {
-          this.showSuccess(r.message || 'Students promoted successfully!');
+          this.showSuccess(r.message ?? 'Students promoted successfully!');
           this.promoteStudentsForm.reset();
           this.loadAcademicYears();
         }
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to promote students');
+        this.errorHandler.handle('Failed to promote students', e);
         this.loading = false;
       },
     });
@@ -759,7 +738,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to assign admin');
+        this.errorHandler.handle('Failed to assign admin', e);
         this.loading = false;
       },
     });
@@ -789,7 +768,7 @@ export class AdminSettingsComponent implements OnInit {
         this.loading = false;
       },
       error: (e) => {
-        this.showError(e.error?.message || 'Failed to remove admin');
+        this.errorHandler.handle('Failed to remove admin', e);
         this.loading = false;
       },
     });
@@ -809,20 +788,8 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   // ── Helpers ───────────────────────────────────────────────
-  private showSuccess(msg: string): void {
-    this.success = msg;
-    this.error = '';
-    setTimeout(() => (this.success = ''), 3500);
+  private showSuccess(msg: string): void {   
+    this.toastService.showSuccess('Success', msg); 
   }
 
-  private showError(msg: string): void {
-    this.error = msg;
-    this.success = '';
-    setTimeout(() => (this.error = ''), 4000);
-  }
-
-  clearMessages(): void {
-    this.success = '';
-    this.error = '';
-  }
 }
