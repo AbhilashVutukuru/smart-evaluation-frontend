@@ -80,7 +80,8 @@ export class ViewQuestionPaperComponent implements OnInit {
   isSaving            = false;
 
   // ─── "All Subjects" summary list ─────────────────────────────────────────
-  allPapersList: QuestionPaperSummaryDto[] = [];
+  allPapersList:      QuestionPaperSummaryDto[] = [];
+  showAllPapersList = false;   // true only after "Show Papers" is clicked
 
   // ─── View state ───────────────────────────────────────────────────────────
   questionPaper:            QuestionPaperViewDto | null = null;
@@ -175,9 +176,8 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.clearPapers();
 
     if (this.selectedSubject === this.ALL_SUBJECTS) {
-      // Hide exam type / QP dropdowns and load the full list
+      // Hide exam type / QP dropdowns — wait for "Show Papers" button click
       this.selectedExamType = '';
-      this.loadAllPapers();
       return;
     }
 
@@ -187,6 +187,13 @@ export class ViewQuestionPaperComponent implements OnInit {
   onExamTypeChange(): void {
     this.clearPapers();
     this.tryLoadPapers();
+  }
+
+  // Button click — show the All Subjects list
+  showPapers(): void {
+    if (!this.selectedClass) return;
+    this.showAllPapersList = true;
+    this.loadAllPapers();
   }
 
   // ─── All-subjects list ────────────────────────────────────────────────────
@@ -595,6 +602,7 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.isEditMode                = false;
     this.draft                     = null;
     this.allPapersList             = [];
+    this.showAllPapersList         = false;
   }
 
   private resetAll(): void {

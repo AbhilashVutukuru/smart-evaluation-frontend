@@ -2,7 +2,7 @@
 
   <!-- Page Header -->
   <div class="page-header">
-    <h2><i class="fas fa-file-alt"></i> View Question Paper</h2>
+    <h2><i class="fas fa-file-alt"></i> View Question Papers</h2>
   </div>
 
   <!-- ══ FILTER / LIST VIEW (hidden when detail page is open) ══ -->
@@ -53,11 +53,21 @@
 
     </div>
 
+    <!-- Show Papers button — only when All Subjects is chosen -->
+    <div class="row" *ngIf="isAllSubjects">
+      <div class="col-md-2 mb-3">
+        <button class="btn btn-primary" (click)="showPapers()" [disabled]="isLoadingAllPapers">
+          <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+          {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
+        </button>
+      </div>
+    </div>
+
     <!-- Row 2: Question Paper + View button (single-subject mode only) -->
     <div class="row align-items-end"
       *ngIf="!isAllSubjects && (showQuestionPaperDropdown || isLoadingPapers)">
 
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label class="form-label">Question Paper <span class="required">*</span></label>
 
         <div *ngIf="isLoadingPapers" class="form-control qp-loading">
@@ -102,7 +112,7 @@
   <!-- ══════════════════════════════════════════════════════════════════════════
        ALL SUBJECTS — summary table
   ══════════════════════════════════════════════════════════════════════════ -->
-  <div class="card" *ngIf="isAllSubjects">
+  <div class="card" *ngIf="isAllSubjects && showAllPapersList">
 
     <div class="card-header-flex">
       <h4><i class="fas fa-list-alt"></i> All Question Papers</h4>
@@ -137,6 +147,7 @@
             <th class="text-center">Questions</th>
             <th class="text-center">Exam Date</th>
             <th class="text-center">Status</th>
+            <th class="text-center">Description</th>
             <th class="text-center">Action</th>
           </tr>
         </thead>
@@ -160,18 +171,22 @@
               </ng-template>
             </td>
             <td class="text-center">
-              <!-- Locked by answer sheets submitted (priority) -->
-              <span *ngIf="paper.isLocked && paper.answerSheetsSubmitted" class="badge badge-locked-sm">
+              <span *ngIf="paper.isLocked" class="badge badge-locked-sm">
                 <i class="fas fa-lock"></i> Locked
               </span>
-              <!-- Locked by exam date passed (only when not submitted) -->
-              <span *ngIf="paper.isLocked && !paper.answerSheetsSubmitted" class="badge badge-locked-sm">
-                <i class="fas fa-calendar-times"></i> Locked
-              </span>
-              <!-- Editable -->
               <span *ngIf="!paper.isLocked" class="badge badge-editable">
                 <i class="fas fa-unlock-alt"></i> Editable
               </span>
+            </td>
+            <!-- Description: reason for lock, dash if editable -->
+            <td class="text-center">
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'" class="lock-reason date-passed">
+                <i class="fas fa-calendar-times"></i> Date Passed
+              </span>
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'" class="lock-reason sheet-submitted">
+                <i class="fas fa-file-upload"></i> Answer Sheet Submitted
+              </span>
+              <span *ngIf="!paper.isLocked" class="text-muted">—</span>
             </td>
             <td class="text-center">
               <button class="btn btn-primary btn-sm"
