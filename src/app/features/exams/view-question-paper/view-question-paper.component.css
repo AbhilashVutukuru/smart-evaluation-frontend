@@ -1035,3 +1035,25 @@
   color: #1a1a1a;
   font-weight: 600;
 }
+/* ─── Empty State ────────────────────────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+.empty-state i {
+  font-size: 4rem;
+  color: #f59e0b;
+  margin-bottom: 1rem;
+  display: block;
+}
+.empty-state h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+.empty-state p {
+  color: #6b7280;
+  margin: 0;
+  font-size: 0.875rem;
+}

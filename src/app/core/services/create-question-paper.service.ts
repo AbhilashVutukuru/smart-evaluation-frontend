@@ -40,6 +40,22 @@ export class CreateQuestionPaperService {
 
   constructor(private http: HttpClient) {}
 
+  /** Check before Set Questions whether a paper already exists for this combination. */
+  checkQuestionPaperExists(
+    classId:           number,
+    subjectId:         number,
+    examTypeId:        number,
+    questionPaperName: string | null,
+  ): Observable<boolean> {
+    const params: Record<string, string | number> = { classId, subjectId, examTypeId };
+    if (questionPaperName?.trim()) {
+      params['questionPaperName'] = questionPaperName.trim();
+    }
+    return this.http
+      .get<ApiResponse<boolean>>(`${this.apiUrl}/question-paper/exists`, { params })
+      .pipe(map((r) => r.data ?? false));
+  }
+
   getQuestionPapers(
       classId: number,
       subjectId: number,

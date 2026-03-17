@@ -1472,3 +1472,30 @@
 .btn-back-pill:hover i {
   transform: translateX(-3px);
 }
+/* ─── Download / action link — matches Upload Answer Sheet style ─────────── */
+.download-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.2s;
+}
+.download-link:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+.download-link i {
+  font-size: 1rem;
+  color: inherit;
+}
+.download-link.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+/* Ensure all icons inside table action links inherit link color */
+.table td a i {
+  color: inherit;
+}
