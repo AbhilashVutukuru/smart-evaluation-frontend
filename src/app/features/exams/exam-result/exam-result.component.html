@@ -606,14 +606,65 @@
   </div>
 </div>
 
-<!-- FULL SCREEN OVERLAY -->
-<!-- ✅ Fullscreen Modal -->
+<!-- FULLSCREEN MODAL -->
 <div
   class="fullscreen-modal"
   *ngIf="fullscreenContent"
   (click)="closeFullscreen()"
 >
-  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+  <!-- ── COMPARE MODE: Official Answer + Student's Answer side-by-side ── -->
+  <div
+    class="fullscreen-content fullscreen-content--split"
+    *ngIf="fullscreenType === 'officialAnswer' || fullscreenType === 'studentAnswer'"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Shared header -->
+    <div class="fullscreen-header">
+      <h4><i class="fas fa-columns"></i> Answer Comparison</h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Two-panel body -->
+    <div class="fullscreen-split-body">
+      <!-- Official Answer panel -->
+      <div
+        class="split-panel split-panel--official"
+        [class.split-panel--active]="fullscreenType === 'officialAnswer'"
+      >
+        <div class="split-panel-label">
+          <i class="fas fa-check-circle"></i> Official Answer
+        </div>
+        <div class="split-panel-text">
+          {{ currentQuestion?.officialAnswer || '—' }}
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="split-divider"></div>
+
+      <!-- Student's Answer panel -->
+      <div
+        class="split-panel split-panel--student"
+        [class.split-panel--active]="fullscreenType === 'studentAnswer'"
+      >
+        <div class="split-panel-label">
+          <i class="fas fa-user-edit"></i> Student's Answer
+        </div>
+        <div class="split-panel-text">
+          {{ currentQuestion?.studentAnswerText || 'Not answered' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SINGLE MODE: Question Text ── -->
+  <div
+    class="fullscreen-content"
+    *ngIf="fullscreenType === 'questionText'"
+    (click)="$event.stopPropagation()"
+  >
     <div class="fullscreen-header">
       <h4>{{ getFullscreenTitle() }}</h4>
       <button class="btn-close-fullscreen" (click)="closeFullscreen()">
