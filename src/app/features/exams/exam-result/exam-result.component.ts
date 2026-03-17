@@ -138,7 +138,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
 
   // ─── Question Navigation ──────────────────────────────────────────────────────
 
-  loadQuestion(index: number): void {
+  loadQuestion(index: number, scroll = false): void {
     if (!this.selectedStudent) return;
     if (index < 0 || index >= this.totalQuestions) {
       this.toastService.showError('Error', 'Invalid question index');
@@ -162,6 +162,16 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
           this.currentQuestionIndex = index;
           this.initializeRubrics();
           this.isLoadingQuestion = false;
+          // Only scroll when navigating (Next/Previous/QuickJump), not on first load
+          if (scroll) {
+            setTimeout(() => {
+              const el = document.getElementById('question-top');
+              if (el) {
+                const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                window.scrollTo({ top: y, behavior: 'smooth' });
+              }
+            }, 50);
+          }
         },
         error: (error) => {
           this.isLoadingQuestion = false;
@@ -191,13 +201,13 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
 
   nextQuestion(): void {
     if (this.currentQuestionIndex < this.totalQuestions - 1) {
-      this.loadQuestion(this.currentQuestionIndex + 1);
+      this.loadQuestion(this.currentQuestionIndex + 1, true);
     }
   }
 
   previousQuestion(): void {
     if (this.currentQuestionIndex > 0) {
-      this.loadQuestion(this.currentQuestionIndex - 1);
+      this.loadQuestion(this.currentQuestionIndex - 1, true);
     }
   }
 

@@ -49,6 +49,7 @@ export interface QuestionPaperSummaryDto {
   answerSheetsSubmitted: boolean;
   examDate:              string | null;  // ISO date string, null if not set
   isLocked:              boolean;        // computed by backend
+  lockReason:            string | null;  // 'Date Passed' | 'Answer Sheet Submitted' | null
 }
 
 // ─── Service ──────────────────────────────────────────────────────────────────
@@ -83,6 +84,7 @@ export class ViewQuestionPaperService {
         answerSheetsSubmitted: d.answerSheetsSubmitted ?? d.AnswerSheetsSubmitted ?? false,
         examDate:              d.examDate              ?? d.ExamDate              ?? null,
         isLocked:              d.isLocked              ?? d.IsLocked              ?? false,
+        lockReason:            d.lockReason            ?? d.LockReason            ?? null,
       } as QuestionPaperSummaryDto))));
   }
 }

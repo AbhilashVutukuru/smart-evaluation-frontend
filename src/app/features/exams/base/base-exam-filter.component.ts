@@ -98,8 +98,8 @@ export abstract class BaseExamFilterComponent implements OnInit {
       .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
       .subscribe({
         next: (response) => {
-          this.isLoadingPapers = false;
           this.handleQuestionPapersResponse(response.data ?? []);
+          this.isLoadingPapers = false;
         },
         error: (error) => {
           this.isLoadingPapers  = false;
@@ -113,16 +113,25 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
   private handleQuestionPapersResponse(papers: QuestionPaperDto[]): void {
     this.questionPapers = papers;
-
+ 
     if (!papers.length) {
       this.toastService.showWarning('Warning', 'No exam paper found for selected combination');
       this.noExamPaperFound = true;
       return;
     }
-
-    this.noExamPaperFound          = false;
-    this.selectedQuestionPaperId   = papers.length === 1 ? papers[0].id : null;
-    this.showQuestionPaperDropdown = true;
+ 
+    this.noExamPaperFound = false;
+ 
+    if (papers.length === 1) {
+      // Always auto-select the single paper.
+      // Only show the dropdown when the paper has a distinct name the user needs to see.
+      this.selectedQuestionPaperId   = papers[0].id;
+      this.showQuestionPaperDropdown = !!papers[0].questionPaperName?.trim();
+    } else {
+      // Multiple papers — always show dropdown
+      this.selectedQuestionPaperId   = null;
+      this.showQuestionPaperDropdown = true;
+    }
   }
 
   protected resetDependentDropdowns(): void {
@@ -214,22 +223,3 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
   protected abstract clearStudents(): void;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

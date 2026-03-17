@@ -68,7 +68,7 @@ export class CreateExamComponent implements OnInit {
     examTypeId: '',
     totalMarks: null,
     numberOfQuestions: null,
-    questionPaperName: '',
+    questionPaperName: null,
     examDate: null,
     questionSets: [],
   };
@@ -169,27 +169,47 @@ export class CreateExamComponent implements OnInit {
   // ─── Generate Questions ───────────────────────────────────────────────────────
 
   generateQuestions(): void {
-    if (!this.examFormData.questionPaperName?.trim()) {
-      const selectedExamType = this.allExamTypes.find((e) => e.id === +this.examFormData.examTypeId);
-      if (selectedExamType) {
-        this.examFormData.questionPaperName = selectedExamType.examTypeName;
-      }
-    }
-
     if (!this.validateExamBasicInfo()) return;
 
-    try {
-      this.questionSets = this.createQuestionPaperService.generateQuestionSets(
-        this.examFormData.numberOfQuestions!,
-        this.examFormData.totalMarks!,
-      );
-      this.examFormData.questionSets = this.questionSets;
-      this.questionsGenerated = true;
-      this.currentQuestionIndex = 0;
-      this.toastService.showSuccess('Questions Generated', `${this.questionSets.length} questions created successfully`);
-    } catch (error) {
-      this.errorHandler.handle('Failed to generate questions', error);
-    }
+    this.isLoading = true;
+
+    // Check backend whether a paper with same class/subject/examType/name already exists
+    this.createQuestionPaperService
+      .checkQuestionPaperExists(
+        +this.examFormData.classId,
+        +this.examFormData.subjectId,
+        +this.examFormData.examTypeId,
+        this.examFormData.questionPaperName?.trim() ?? null,
+      )
+      .subscribe({
+        next: (exists) => {
+          this.isLoading = false;
+          if (exists) {
+            this.toastService.showError(
+              'Already Exists',
+              'A question paper with this name already exists for the selected class, subject and exam type.',
+            );
+            return;
+          }
+          // Not a duplicate — generate question sets
+          try {
+            this.questionSets = this.createQuestionPaperService.generateQuestionSets(
+              this.examFormData.numberOfQuestions!,
+              this.examFormData.totalMarks!,
+            );
+            this.examFormData.questionSets = this.questionSets;
+            this.questionsGenerated = true;
+            this.currentQuestionIndex = 0;
+            this.toastService.showSuccess('Questions Generated', `${this.questionSets.length} questions created successfully`);
+          } catch (error) {
+            this.errorHandler.handle('Failed to generate questions', error);
+          }
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.errorHandler.handle('Failed to check question paper', error);
+        },
+      });
   }
 
   private validateExamBasicInfo(): boolean {
@@ -203,6 +223,10 @@ export class CreateExamComponent implements OnInit {
     }
     if (!this.examFormData.examTypeId) {
       this.toastService.showWarning('Warning', 'Please select an exam type');
+      return false;
+    }
+    if (!this.examFormData.questionPaperName?.trim()) {
+      this.toastService.showWarning('Warning', 'Please enter a Question Paper Name');
       return false;
     }
     if (!this.examFormData.totalMarks || this.examFormData.totalMarks < 1) {
@@ -286,7 +310,7 @@ export class CreateExamComponent implements OnInit {
 
   // ─── Submit Exam ──────────────────────────────────────────────────────────────
 
-  submitExamDocuments(): void {
+  submitAll(): void {
     const currentErrors = this.getQuestionValidationErrors();
     if (currentErrors.length > 0) {
       this.toastService.showError('Validation Error', currentErrors[0]);
@@ -458,7 +482,7 @@ export class CreateExamComponent implements OnInit {
       examTypeId: '',
       totalMarks: null,
       numberOfQuestions: null,
-      questionPaperName: '',
+      questionPaperName: null,
       examDate: null,
       questionSets: [],
     };

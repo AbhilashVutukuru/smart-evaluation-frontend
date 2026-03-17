@@ -5,6 +5,7 @@
   </div>
 
   <app-exam-filter
+    *ngIf="!showResultsCard"
     [classes]="classes"
     [sections]="sections"
     [subjects]="subjects"
@@ -16,7 +17,7 @@
     [(selectedExamType)]="selectedExamType"
     [(selectedQuestionPaperId)]="selectedQuestionPaperId"
     [showQuestionPaperDropdown]="showQuestionPaperDropdown"
-    [isLoadingPapers]="isLoadingPapers"
+    [isLoadingPapers]="isLoadingPapers"   
     [isLoading]="isLoading"
     [canShowStudents]="canShowStudents"
     [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
@@ -36,7 +37,7 @@
   >
     <!-- Header -->
     <div class="card-header-flex">
-      <h4><i class="fas fa-users"></i> Students List</h4>
+      <h4><i class="fas fa-users"></i> Back to List</h4>
       <span class="badge badge-primary"
         >{{ statistics.totalStudents }} Students</span
       >
@@ -91,7 +92,7 @@
             <th>Total Marks</th>
             <th>Obtained Marks</th>
             <th>Status</th>
-            <th class="text-center align-middle">Action</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -142,34 +143,22 @@
               <span *ngIf="!student.isAbsent && !student.hasUploaded"> - </span>
             </td>
 
-            <td class="text-center align-middle">
+            <td>
               <!-- Absent -->
-              <ng-container *ngIf="student.isAbsent">
-                <span class="text-muted fw-semibold d-block">-</span>
-              </ng-container>
+              <span *ngIf="student.isAbsent" class="text-muted">-</span>
 
-              <!-- Uploaded -->
-              <ng-container
-                *ngIf="
-                  !student.isAbsent && student.evaluationStatus === 'Evaluated'
-                "
+              <!-- Evaluated — link style matching upload answer sheet -->
+              <a
+                *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated'"
+                href="javascript:void(0)"
+                class="download-link"
+                (click)="viewStudentResults(student)"
               >
-                <button
-                  class="btn btn-primary btn-sm"
-                  (click)="viewStudentResults(student)"
-                >
-                  <i class="fas fa-eye"></i> View Results
-                </button>
-              </ng-container>
+                <i class="fas fa-eye"></i> View Results
+              </a>
 
               <!-- Pending -->
-              <ng-container
-                *ngIf="
-                  !student.isAbsent && student.evaluationStatus === 'Pending'
-                "
-              >
-                <span class="text-muted fw-semibold d-block">-</span>
-              </ng-container>
+              <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'" class="text-muted">-</span>
             </td>
           </tr>
         </tbody>
@@ -177,15 +166,18 @@
     </div>
   </div>
 
+  <!-- Back button — outside card so it never stretches -->
+  <div *ngIf="showResultsCard && currentResults && selectedStudent" class="back-btn-row">
+    <button class="btn-back-pill" (click)="backToStudentsList()">
+      <i class="fas fa-chevron-left"></i> Back to List
+    </button>
+  </div>
+
   <!-- ✅ Student Exam Results (NEW PAGE) -->
   <div
     class="card"
     *ngIf="showResultsCard && currentResults && selectedStudent"
   >
-    <!-- Back Button -->
-    <button class="btn btn-back" (click)="backToStudentsList()">
-      <i class="fas fa-arrow-left"></i> Back to Students List
-    </button>
 
     <!-- Header -->
     <div class="results-page-header">
@@ -204,41 +196,32 @@
     <!-- Student Info -->
     <div class="student-info-grid">
       <div class="info-item">
-        <span class="info-label"><i class="fas fa-id-badge"></i> Roll No:</span>
+        <span class="info-label"><i class="fas fa-hashtag"></i> Roll No:</span>
         <span class="info-value">{{ selectedStudent.rollNumber }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"
-          ><i class="fas fa-user-graduate"></i> Student Name:</span
-        >
+        <span class="info-label"><i class="fas fa-user-graduate"></i> Student Name:</span>
         <span class="info-value">{{ selectedStudent.studentName }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"><i class="fas fa-star"></i> Total Marks:</span>
-        <span class="info-value"
-          >{{ selectedStudent.obtainedMarks ?? 0 }} / {{ totalMarks }}</span
-        >
+        <span class="info-label"><i class="fas fa-trophy"></i> Total Marks:</span>
+        <span class="info-value">{{ selectedStudent.obtainedMarks ?? 0 }} / {{ totalMarks }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"
-          ><i class="fas fa-percentage"></i> Percentage:</span
-        >
+        <span class="info-label"><i class="fas fa-percentage"></i> Percentage:</span>
         <span class="info-value">{{ getPercentage() }}%</span>
       </div>
       <div class="info-item">
-        <span class="info-label"> <i class="fas fa-eye"></i></span>
-
+        <span class="info-label"><i class="fas fa-file-pdf"></i> Answer Sheet:</span>
         <a
           href="javascript:void(0)"
           class="download-link"
           [class.disabled]="isViewing"
           (click)="!isViewing && viewAnswerSheet(selectedStudent)"
         >
-          <span *ngIf="!isViewing">View Answer Sheet</span>
-
+          <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
           <span *ngIf="isViewing">
-            <i class="fas fa-spinner fa-spin"></i>
-            Opening...
+            <i class="fas fa-spinner fa-spin"></i> Opening...
           </span>
         </a>
       </div>
@@ -277,7 +260,7 @@
           *ngFor="let q of questionNumbers; let i = index"
           class="question-number-btn"
           [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i)"
+          (click)="loadQuestion(i, true)"
           [disabled]="isAnyRubricEditing()"
         >
           Q{{ q }}
@@ -287,15 +270,16 @@
 
     <!-- Current Question -->
     <div *ngIf="currentQuestion && !isLoadingQuestion">
-      <!-- ✅ Question Header with Marks -->
-      <div class="question-header-with-marks">
+      <!-- Question Header with Marks -->
+      <div class="question-header-with-marks" id="question-top">
         <h5>
           <i class="fas fa-question-circle"></i> Question
           {{ currentQuestion.questionNumber }}
         </h5>
-        <span class="marks-badge"
-          >{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span
-        >
+        <div class="marks-badge-group">
+          <span class="marks-badge">{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span>
+          <span class="marks-label-text">Obtained / Total Marks</span>
+        </div>
       </div>
 
       <!-- Question Text -->
@@ -313,33 +297,34 @@
         </div>
       </div>
 
-      <!-- Official Answer -->
-      <div class="question-section">
-        <div class="section-header">
-          <label class="section-label">
-            <i class="fas fa-check-circle"></i> Official Answer:
-          </label>
-          <button class="btn-expand" (click)="openFullscreen('officialAnswer')">
-            <i class="fas fa-expand"></i>
-          </button>
+      <!-- Official Answer and Student's Answer — side by side -->
+      <div class="answers-row">
+        <div class="answer-col">
+          <div class="section-header">
+            <label class="section-label">
+              <i class="fas fa-check-circle"></i> Official Answer:
+            </label>
+            <button class="btn-expand" (click)="openFullscreen('officialAnswer')">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+          <div class="scrollable-text official-answer">
+            {{ currentQuestion.officialAnswer }}
+          </div>
         </div>
-        <div class="scrollable-text official-answer">
-          {{ currentQuestion.officialAnswer }}
-        </div>
-      </div>
 
-      <!-- Student's Answer -->
-      <div class="question-section">
-        <div class="section-header">
-          <label class="section-label">
-            <i class="fas fa-user-edit"></i> Student's Answer:
-          </label>
-          <button class="btn-expand" (click)="openFullscreen('studentAnswer')">
-            <i class="fas fa-expand"></i>
-          </button>
-        </div>
-        <div class="scrollable-text student-answer">
-          {{ currentQuestion.studentAnswerText || "Not answered" }}
+        <div class="answer-col">
+          <div class="section-header">
+            <label class="section-label">
+              <i class="fas fa-user-edit"></i> Student's Answer:
+            </label>
+            <button class="btn-expand" (click)="openFullscreen('studentAnswer')">
+              <i class="fas fa-expand"></i>
+            </button>
+          </div>
+          <div class="scrollable-text student-answer">
+            {{ currentQuestion.studentAnswerText || "Not answered" }}
+          </div>
         </div>
       </div>
 
@@ -621,14 +606,65 @@
   </div>
 </div>
 
-<!-- FULL SCREEN OVERLAY -->
-<!-- ✅ Fullscreen Modal -->
+<!-- FULLSCREEN MODAL -->
 <div
   class="fullscreen-modal"
   *ngIf="fullscreenContent"
   (click)="closeFullscreen()"
 >
-  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+  <!-- ── COMPARE MODE: Official Answer + Student's Answer side-by-side ── -->
+  <div
+    class="fullscreen-content fullscreen-content--split"
+    *ngIf="fullscreenType === 'officialAnswer' || fullscreenType === 'studentAnswer'"
+    (click)="$event.stopPropagation()"
+  >
+    <!-- Shared header -->
+    <div class="fullscreen-header">
+      <h4><i class="fas fa-columns"></i> Answer Comparison</h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Two-panel body -->
+    <div class="fullscreen-split-body">
+      <!-- Official Answer panel -->
+      <div
+        class="split-panel split-panel--official"
+        [class.split-panel--active]="fullscreenType === 'officialAnswer'"
+      >
+        <div class="split-panel-label">
+          <i class="fas fa-check-circle"></i> Official Answer
+        </div>
+        <div class="split-panel-text">
+          {{ currentQuestion?.officialAnswer || '—' }}
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="split-divider"></div>
+
+      <!-- Student's Answer panel -->
+      <div
+        class="split-panel split-panel--student"
+        [class.split-panel--active]="fullscreenType === 'studentAnswer'"
+      >
+        <div class="split-panel-label">
+          <i class="fas fa-user-edit"></i> Student's Answer
+        </div>
+        <div class="split-panel-text">
+          {{ currentQuestion?.studentAnswerText || 'Not answered' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SINGLE MODE: Question Text ── -->
+  <div
+    class="fullscreen-content"
+    *ngIf="fullscreenType === 'questionText'"
+    (click)="$event.stopPropagation()"
+  >
     <div class="fullscreen-header">
       <h4>{{ getFullscreenTitle() }}</h4>
       <button class="btn-close-fullscreen" (click)="closeFullscreen()">

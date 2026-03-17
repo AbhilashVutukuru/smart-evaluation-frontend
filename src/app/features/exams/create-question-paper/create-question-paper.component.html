@@ -269,17 +269,13 @@
       <!-- Question Paper Name -->
       <div class="col-md-3 mb-3">
         <label class="form-label">
-          Question Paper Name
-          <small class="text-muted">(Optional)</small>
-            <i class="fas fa-info-circle qp-name-info-icon"
-     title="If left empty, the Exam Type name will be used automatically.">
-  </i>
+          Question Paper Name <span class="required">*</span>
         </label>
         <input
           type="text"
           [(ngModel)]="examFormData.questionPaperName"
           maxlength="200"
-          placeholder="e.g., Mid Term 1"
+          placeholder="e.g., Mid Term-1"
           class="form-control"
         />
       </div>
@@ -324,12 +320,15 @@
             !examFormData.classId ||
             !examFormData.subjectId ||
             !examFormData.examTypeId ||
+            !examFormData.questionPaperName?.trim() ||
             !examFormData.totalMarks ||
             !examFormData.numberOfQuestions ||
-            isExamDateInPast(examFormData.examDate)
+            isExamDateInPast(examFormData.examDate) ||
+            isLoading
           "
         >
-          <i class="fas fa-cogs"></i> Set Questions
+          <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-cogs'"></i>
+          {{ isLoading ? 'Checking...' : 'Set Questions' }}
         </button>
       </div>
     </div>
@@ -596,7 +595,7 @@
         <button
           class="btn btn-success"
           *ngIf="isLastQuestion"
-          (click)="submitExamDocuments()"
+          (click)="submitAll()"
           [disabled]="isSubmitting"
         >
           <i

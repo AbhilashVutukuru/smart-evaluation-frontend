@@ -75,59 +75,57 @@
   </div>
 
   <div class="row align-items-end">
-    <!-- Question Paper (conditional) -->
-    <div class="col-md-3 mb-3" *ngIf="showQuestionPaperDropdown || isLoadingPapers">
-      <label class="form-label">
-        Question Paper <span class="required">*</span>
-      </label>
 
-      <!-- Loading spinner -->
-      <div *ngIf="isLoadingPapers" class="form-control qp-loading">
-        <i class="fas fa-spinner fa-spin"></i> Loading...
-      </div>
+    <!-- QP section: visible as soon as loading begins, never flickers -->
+    <ng-container *ngIf="showQpSection">
+      <ng-container *ngIf="!isLoadingPapers; else qpLoading">
 
-      <!-- length === 1 → readonly textbox with info icon -->
-      <ng-container *ngIf="!isLoadingPapers && questionPapers.length === 1">
-        <div class="qp-readonly-wrapper">
-          <input
-            type="text"
-            class="form-control qp-readonly-input"
-            [value]="questionPapers[0].questionPaperName"
-            readonly
-            disabled
-          />
-          <i
-            class="fas fa-info-circle qp-info-icon"
-            title="Question paper name is same as the selected Exam Type by default"
-          ></i>
+        <!-- Single paper WITH a name — readonly -->
+        <div class="col-md-3 mb-3"
+          *ngIf="showQuestionPaperDropdown && questionPapers.length === 1 && questionPapers[0].questionPaperName">
+          <label class="form-label">Question Paper <span class="required">*</span></label>
+          <div class="qp-readonly-wrapper">
+            <input type="text" class="form-control qp-readonly-input"
+              [value]="questionPapers[0].questionPaperName" readonly disabled />
+          </div>
         </div>
+
+        <!-- Multiple papers — dropdown -->
+        <div class="col-md-3 mb-3"
+          *ngIf="showQuestionPaperDropdown && questionPapers.length > 1">
+          <label class="form-label">Question Paper <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="selectedQuestionPaperId"
+            (change)="onQuestionPaperChange()">
+            <option [ngValue]="null">Select Question Paper</option>
+            <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
+              {{ qp.questionPaperName || '(Unnamed)' }}
+            </option>
+          </select>
+        </div>
+
       </ng-container>
 
-      <!-- length > 1 → dropdown -->
-      <select
-        *ngIf="!isLoadingPapers && questionPapers.length > 1"
-        class="form-control"
-        [(ngModel)]="selectedQuestionPaperId"
-        (change)="onQuestionPaperChange()"
-      >
-        <option [ngValue]="null">Select Question Paper</option>
-        <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
-          {{ qp.questionPaperName }}
-        </option>
-      </select>
-    </div>
+      <!-- Spinner shown while loading — same column slot, no layout shift -->
+      <ng-template #qpLoading>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Question Paper <span class="required">*</span></label>
+          <div class="form-control qp-loading">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+        </div>
+      </ng-template>
+    </ng-container>
 
     <!-- Button -->
     <div class="col-md-2 mb-3">
-      <button
-        class="btn btn-primary"
+      <button class="btn btn-primary"
         (click)="showStudentsClick.emit()"
-        [disabled]="!canShowStudents || isLoading"
-      >
+        [disabled]="!canShowStudents || isLoading">
         <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
         {{ isLoading ? loadingLabel : buttonLabel }}
       </button>
     </div>
+
   </div>
 </div>
 
