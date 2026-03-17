@@ -42,6 +42,12 @@ export class ExamFilterComponent {
   @Input() loadingLabel              = 'Loading...';
   @Input() buttonLabel               = 'Show Student Details';
 
+  // True as soon as loading starts OR papers have arrived — never goes false mid-request.
+  // Computed purely from inputs already in this component so it updates in the same cycle.
+  get showQpSection(): boolean {
+    return this.isLoadingPapers || this.questionPapers.length > 0 || this.showQuestionPaperDropdown;
+  }
+
   // ─── Empty state ──────────────────────────────────────────────────────────────
   @Input() showEmptyState   = false;
   @Input() noExamPaperFound = false;

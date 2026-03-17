@@ -68,7 +68,7 @@ export class CreateExamComponent implements OnInit {
     examTypeId: '',
     totalMarks: null,
     numberOfQuestions: null,
-    questionPaperName: '',
+    questionPaperName: null,
     examDate: null,
     questionSets: [],
   };
@@ -169,12 +169,12 @@ export class CreateExamComponent implements OnInit {
   // ─── Generate Questions ───────────────────────────────────────────────────────
 
   generateQuestions(): void {
-    if (!this.examFormData.questionPaperName?.trim()) {
-      const selectedExamType = this.allExamTypes.find((e) => e.id === +this.examFormData.examTypeId);
-      if (selectedExamType) {
-        this.examFormData.questionPaperName = selectedExamType.examTypeName;
-      }
-    }
+    // if (!this.examFormData.questionPaperName?.trim()) {
+    //   const selectedExamType = this.allExamTypes.find((e) => e.id === +this.examFormData.examTypeId);
+    //   if (selectedExamType) {
+    //     this.examFormData.questionPaperName = selectedExamType.examTypeName;
+    //   }
+    // }
 
     if (!this.validateExamBasicInfo()) return;
 
@@ -286,7 +286,7 @@ export class CreateExamComponent implements OnInit {
 
   // ─── Submit Exam ──────────────────────────────────────────────────────────────
 
-  submitExamDocuments(): void {
+  submitAll(): void {
     const currentErrors = this.getQuestionValidationErrors();
     if (currentErrors.length > 0) {
       this.toastService.showError('Validation Error', currentErrors[0]);
@@ -458,7 +458,7 @@ export class CreateExamComponent implements OnInit {
       examTypeId: '',
       totalMarks: null,
       numberOfQuestions: null,
-      questionPaperName: '',
+      questionPaperName: null,
       examDate: null,
       questionSets: [],
     };

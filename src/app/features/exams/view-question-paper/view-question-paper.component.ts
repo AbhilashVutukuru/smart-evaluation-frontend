@@ -58,19 +58,19 @@ export class ViewQuestionPaperComponent implements OnInit {
   private apiUrl        = environment.apiUrl;
 
   readonly ALL_SUBJECTS = 'ALL';
-
+ 
   // ─── Filter selections ────────────────────────────────────────────────────
   selectedClass:           string        = '';
   selectedSubject:         string        = '';
   selectedExamType:        string        = '';
   selectedQuestionPaperId: number | null = null;
-
+ 
   // ─── Dropdown data ────────────────────────────────────────────────────────
   classes:        ClassDto[]         = [];
   subjects:       SubjectDto[]       = [];
   examTypes:      ExamTypeDto[]      = [];
   questionPapers: QuestionPaperDto[] = [];
-
+ 
   // ─── Loading flags ────────────────────────────────────────────────────────
   isLoadingSubjects   = false;
   isLoadingExamTypes  = false;
@@ -78,11 +78,11 @@ export class ViewQuestionPaperComponent implements OnInit {
   isLoadingPaper      = false;
   isLoadingAllPapers  = false;
   isSaving            = false;
-
+ 
   // ─── "All Subjects" summary list ─────────────────────────────────────────
   allPapersList:      QuestionPaperSummaryDto[] = [];
   showAllPapersList = false;   // true only after "Show Papers" is clicked
-
+ 
   // ─── View state ───────────────────────────────────────────────────────────
   questionPaper:            QuestionPaperViewDto | null = null;
   currentQuestion:          QuestionPaperDetailDto | null = null;
@@ -90,38 +90,38 @@ export class ViewQuestionPaperComponent implements OnInit {
   showQuestionPaperDropdown = false;
   noExamPaperFound          = false;
   showDetailPage            = false;  // true = show paper detail, hide list/filters
-
+ 
   // ─── Edit state ───────────────────────────────────────────────────────────
   isEditMode     = false;
   questionsEdited = false;   // true only when a question field is actually changed
   draft:       PaperDraft | null = null;
-
+ 
   get currentDraftQuestion(): QuestionDraft | null {
     return this.draft?.questions[this.currentQuestionIndex] ?? null;
   }
-
+ 
   // ─── Fullscreen ───────────────────────────────────────────────────────────
   fullscreenType:    string | null = null;
   fullscreenContent: string | null = null;
-
+ 
   // ─── Computed helpers ─────────────────────────────────────────────────────
-
+ 
   get isAllSubjects(): boolean {
     return this.selectedSubject === this.ALL_SUBJECTS;
   }
-
+ 
   // Locked when: ExamDate is set and has passed (checked server-side),
   // OR when AnswerSheetsSubmitted is true (if no ExamDate).
   // Backend computes and sends IsLocked — we just read it.
   get isLocked(): boolean {
     return this.questionPaper?.isLocked ?? false;
   }
-
+ 
   // Minimum selectable date for the exam date picker — today in YYYY-MM-DD (HTML date input format)
   get todayIso(): string {
     return new Date().toISOString().split('T')[0];
   }
-
+ 
   // Returns true if the given YYYY-MM-DD string is strictly before today (local date).
   // Parses manually to avoid browser timezone shifts from Date("YYYY-MM-DD").
   isExamDateInPast(dateStr: string): boolean {
@@ -131,10 +131,10 @@ export class ViewQuestionPaperComponent implements OnInit {
     today.setHours(0, 0, 0, 0);
     return selected < today;
   }
-
+ 
   /** @deprecated use isLocked — kept to avoid template rename churn */
   get isSubmitted(): boolean { return this.isLocked; }
-
+ 
   get canLoad(): boolean {
     return !!this.selectedClass &&
            !!this.selectedSubject &&
@@ -142,73 +142,73 @@ export class ViewQuestionPaperComponent implements OnInit {
            !!this.selectedQuestionPaperId &&
            !this.isLoadingPapers;
   }
-
+ 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
-
+ 
   ngOnInit(): void {
     this.masterData.getClasses().subscribe({
       next: (classes) => (this.classes = classes),
       error: (err)    => this.errorHandler.handle('Failed to load classes', err),
     });
   }
-
+ 
   // ─── Dropdown handlers ────────────────────────────────────────────────────
-
+ 
   onClassChange(classId: string): void {
     this.resetAll();
     if (!classId) return;
-
+ 
     this.isLoadingSubjects  = true;
     this.isLoadingExamTypes = true;
-
+ 
     this.masterData.getSubjectsByClass(classId).subscribe({
       next: (s) => { this.subjects = s; this.isLoadingSubjects = false; },
       error: (e) => { this.isLoadingSubjects = false; this.errorHandler.handle('Failed to load subjects', e); },
     });
-
+ 
     this.masterData.getExamTypesByClass(classId).subscribe({
       next: (e) => { this.examTypes = e; this.isLoadingExamTypes = false; },
       error: (e) => { this.isLoadingExamTypes = false; this.errorHandler.handle('Failed to load exam types', e); },
     });
   }
-
+ 
   onSubjectChange(): void {
     this.clearPapers();
-
+ 
     if (this.selectedSubject === this.ALL_SUBJECTS) {
       // Hide exam type / QP dropdowns — wait for "Show Papers" button click
       this.selectedExamType = '';
       return;
     }
-
+ 
     this.tryLoadPapers();
   }
-
+ 
   onExamTypeChange(): void {
     this.clearPapers();
     this.tryLoadPapers();
   }
-
+ 
   // Button click — show the All Subjects list
   showPapers(): void {
     if (!this.selectedClass) return;
     this.showAllPapersList = true;
     this.loadAllPapers();
   }
-
+ 
   // ─── All-subjects list ────────────────────────────────────────────────────
-
+ 
   private loadAllPapers(): void {
     if (!this.selectedClass) return;
-
+ 
     this.isLoadingAllPapers = true;
     this.allPapersList      = [];
-
+ 
     this.viewService.getAllPapersByClass(+this.selectedClass).subscribe({
       next: (papers) => {
         this.allPapersList      = papers;
         this.isLoadingAllPapers = false;
-
+ 
         if (!papers.length) {
           this.toastService.showWarning('Warning', 'No question papers found for this class');
         }
@@ -219,7 +219,7 @@ export class ViewQuestionPaperComponent implements OnInit {
       },
     });
   }
-
+ 
   // Open a paper from the summary table row
   viewPaperFromList(paperId: number): void {
     this.isLoadingPaper  = true;
@@ -227,7 +227,7 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.currentQuestion = null;
     this.isEditMode      = false;
     this.draft           = null;
-
+ 
     this.viewService.getQuestionPaper(paperId).subscribe({
       next: (paper) => {
         this.questionPaper        = paper;
@@ -244,14 +244,14 @@ export class ViewQuestionPaperComponent implements OnInit {
       },
     });
   }
-
+ 
   // ─── Single-subject flow ──────────────────────────────────────────────────
-
+ 
   private tryLoadPapers(): void {
     if (!this.selectedClass || !this.selectedSubject || !this.selectedExamType) return;
-
+ 
     this.isLoadingPapers = true;
-
+ 
     this.questionPaperService
       .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
       .subscribe({
@@ -259,13 +259,13 @@ export class ViewQuestionPaperComponent implements OnInit {
           this.isLoadingPapers = false;
           const papers = res.data ?? [];
           this.questionPapers = papers;
-
+ 
           if (!papers.length) {
             this.toastService.showWarning('Warning', 'No question paper found for selected combination');
             this.noExamPaperFound = true;
             return;
           }
-
+ 
           this.noExamPaperFound          = false;
           this.selectedQuestionPaperId   = papers.length === 1 ? papers[0].id : null;
           this.showQuestionPaperDropdown = true;
@@ -277,19 +277,19 @@ export class ViewQuestionPaperComponent implements OnInit {
         },
       });
   }
-
+ 
   loadQuestionPaper(): void {
     if (!this.selectedQuestionPaperId) {
       this.toastService.showWarning('Warning', 'Please select a question paper');
       return;
     }
-
+ 
     this.isLoadingPaper  = true;
     this.questionPaper   = null;
     this.currentQuestion = null;
     this.isEditMode      = false;
     this.draft           = null;
-
+ 
     this.viewService.getQuestionPaper(this.selectedQuestionPaperId).subscribe({
       next: (paper) => {
         this.questionPaper        = paper;
@@ -306,49 +306,58 @@ export class ViewQuestionPaperComponent implements OnInit {
       },
     });
   }
-
+ 
   // ─── Question navigation ──────────────────────────────────────────────────
-
+ 
   loadQuestion(index: number): void {
     if (!this.questionPaper) return;
-
+ 
     // In edit mode validate current question before navigating away
     if (this.isEditMode && this.draft) {
       const err = this.validateDraftQuestion(this.draft.questions[this.currentQuestionIndex]);
       if (err) { this.toastService.showError('Validation Error', err); return; }
     }
-
+ 
     this.currentQuestionIndex = index;
     this.currentQuestion      = this.questionPaper.questions[index];
-  }
 
+    // Scroll directly to question header — no page-top detour
+    setTimeout(() => {
+      const el = document.getElementById('question-top');
+      if (el) {
+        const y = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+      }
+    }, 50);
+  }
+ 
   nextQuestion(): void {
     if (this.questionPaper && this.currentQuestionIndex < this.questionPaper.totalQuestions - 1) {
       this.loadQuestion(this.currentQuestionIndex + 1);
     }
   }
-
+ 
   previousQuestion(): void {
     if (this.currentQuestionIndex > 0) {
       this.loadQuestion(this.currentQuestionIndex - 1);
     }
   }
-
+ 
   getProgressPercentage(): number {
     if (!this.questionPaper?.totalQuestions) return 0;
     return ((this.currentQuestionIndex + 1) / this.questionPaper.totalQuestions) * 100;
   }
-
+ 
   getTotalRubricMarks(): number {
     return this.currentQuestion?.rubrics.reduce((s, r) => s + r.maxMarks, 0) ?? 0;
   }
-
+ 
   getDraftTotalRubricMarks(): number {
     return this.currentDraftQuestion?.rubrics.reduce((s, r) => s + r.maxMarks, 0) ?? 0;
   }
-
+ 
   // ─── Rubric add / remove ──────────────────────────────────────────────────
-
+ 
   addRubric(): void {
     if (!this.currentDraftQuestion) return;
     const q = this.currentDraftQuestion;
@@ -365,7 +374,7 @@ export class ViewQuestionPaperComponent implements OnInit {
     });
     this.questionsEdited = true;
   }
-
+ 
   removeRubric(index: number): void {
     if (!this.currentDraftQuestion) return;
     const q = this.currentDraftQuestion;
@@ -377,9 +386,9 @@ export class ViewQuestionPaperComponent implements OnInit {
     q.rubrics.forEach((r, i) => r.criterionOrder = i + 1);
     this.questionsEdited = true;
   }
-
+ 
   // ─── Edit mode ────────────────────────────────────────────────────────────
-
+ 
   enterEditMode(): void {
     if (!this.questionPaper) return;
     if (this.isLocked) {
@@ -414,12 +423,12 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.isEditMode     = true;
     this.questionsEdited = false;   // reset — no question changes yet
   }
-
+ 
   cancelEdit(): void {
     this.isEditMode = false;
     this.draft      = null;
   }
-
+ 
   backToList(): void {
     // Cancel any in-progress edit without saving
     this.isEditMode      = false;
@@ -428,12 +437,12 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.questionPaper   = null;
     this.currentQuestion = null;
   }
-
+ 
   validateDraftQuestion(q: QuestionDraft): string | null {
     if (!q.questionText?.trim())   return `Question ${q.questionNumber}: question text is required`;
     if (!q.officialAnswer?.trim()) return `Question ${q.questionNumber}: official answer is required`;
     if (q.maxMarks <= 0)           return `Question ${q.questionNumber}: max marks must be > 0`;
-
+ 
     if (q.rubricAdded) {
       for (const r of q.rubrics) {
         if (!r.rubricText?.trim()) return `Question ${q.questionNumber}, criterion ${r.criterionOrder}: text is required`;
@@ -445,10 +454,10 @@ export class ViewQuestionPaperComponent implements OnInit {
     }
     return null;
   }
-
+ 
   saveAllChanges(): void {
     if (!this.draft || !this.questionPaper) return;
-
+ 
     // Validate ExamDate — if provided it must be today or in the future
     if (this.draft.examDate) {
       if (this.isExamDateInPast(this.draft.examDate)) {
@@ -456,26 +465,26 @@ export class ViewQuestionPaperComponent implements OnInit {
         return;
       }
     }
-
+ 
     for (const q of this.draft.questions) {
       const err = this.validateDraftQuestion(q);
       if (err) { this.toastService.showError('Validation Error', err); return; }
     }
-
+ 
     const questionTotal = this.draft.questions.reduce((s, q) => s + q.maxMarks, 0);
     if (questionTotal !== this.draft.totalMarks) {
       this.toastService.showError('Validation Error',
         `Sum of question marks (${questionTotal}) must equal total marks (${this.draft.totalMarks})`);
       return;
     }
-
+ 
     this.isSaving = true;
-
+ 
     // questionsEdited is set to true only when the user actually types in a
     // question field (bound via (ngModelChange) in the template).
     // If false → only header fields changed → send questions: [] → backend
     // skips the expensive soft-delete + re-insert of all question rows.
-
+ 
     const payload = {
       totalMarks:        this.draft.totalMarks,
       questionPaperName: this.draft.questionPaperName,
@@ -502,7 +511,7 @@ export class ViewQuestionPaperComponent implements OnInit {
           }))
         : [],
     };
-
+ 
     this.http
       .put<{ success: boolean; message: string }>(
         `${this.apiUrl}/question-paper/${this.questionPaper.questionPaperId}`,
@@ -511,12 +520,12 @@ export class ViewQuestionPaperComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isSaving = false;
-
+ 
           // Capture all draft values BEFORE nulling draft
           const updatedName    = this.draft!.questionPaperName;
           const updatedMarks   = this.draft!.totalMarks;
           const updatedExamDate = this.draft!.examDate;
-
+ 
           // Apply draft back to live model
           this.questionPaper!.questionPaperName = updatedName;
           this.questionPaper!.totalMarks        = updatedMarks;
@@ -538,7 +547,7 @@ export class ViewQuestionPaperComponent implements OnInit {
           this.currentQuestion  = this.questionPaper!.questions[this.currentQuestionIndex];
           this.isEditMode       = false;
           this.draft            = null;   // safe to null now — all values captured above
-
+ 
           // Refresh the matching row in allPapersList if summary view is active
           if (this.selectedSubject === this.ALL_SUBJECTS) {
             const row = this.allPapersList.find(p => p.questionPaperId === this.questionPaper!.questionPaperId);
@@ -548,7 +557,7 @@ export class ViewQuestionPaperComponent implements OnInit {
               row.examDate          = updatedExamDate;
             }
           }
-
+ 
           this.toastService.showSuccess('Success', 'Question paper updated successfully');
         },
         error: (err) => {
@@ -557,21 +566,21 @@ export class ViewQuestionPaperComponent implements OnInit {
         },
       });
   }
-
+ 
   // ─── Fullscreen ───────────────────────────────────────────────────────────
-
+ 
   openFullscreen(type: string): void {
     this.fullscreenType    = type;
     this.fullscreenContent = type;
     document.body.style.overflow = 'hidden';
   }
-
+ 
   closeFullscreen(): void {
     this.fullscreenType    = null;
     this.fullscreenContent = null;
     document.body.style.overflow = 'auto';
   }
-
+ 
   getFullscreenTitle(): string {
     const titles: Record<string, string> = {
       questionText:   'Question Text',
@@ -579,7 +588,7 @@ export class ViewQuestionPaperComponent implements OnInit {
     };
     return titles[this.fullscreenType ?? ''] ?? '';
   }
-
+ 
   getFullscreenContent(): string {
     if (!this.currentQuestion) return '';
     switch (this.fullscreenType) {
@@ -588,9 +597,9 @@ export class ViewQuestionPaperComponent implements OnInit {
       default:               return '';
     }
   }
-
+ 
   // ─── Helpers ──────────────────────────────────────────────────────────────
-
+ 
   private clearPapers(): void {
     this.showDetailPage            = false;
     this.questionPapers            = [];
@@ -604,7 +613,7 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.allPapersList             = [];
     this.showAllPapersList         = false;
   }
-
+ 
   private resetAll(): void {
     this.selectedSubject  = '';
     this.selectedExamType = '';

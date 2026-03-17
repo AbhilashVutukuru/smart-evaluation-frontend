@@ -37,7 +37,7 @@ export interface ExamFormData {
   totalMarks: number | null;
   numberOfQuestions: number | null;
   questionSets: QuestionSet[];
-  questionPaperName: string;
+  questionPaperName: string | null;
   /** Optional exam date — YYYY-MM-DD string or null */
   examDate: string | null;
 }

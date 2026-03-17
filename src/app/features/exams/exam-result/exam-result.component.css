@@ -428,6 +428,10 @@
   text-transform: uppercase;
 }
 
+.info-label i {
+  color: #6366f1;
+}
+
 .info-value {
   font-size: 0.875rem;
   color: #1a1a1a;
@@ -1404,4 +1408,67 @@
   font-size: 1rem;
   font-weight: 700;
   color: #1a1a1a;
+}
+/* ─── Marks badge with Obtained/Total label — inline horizontal ─────────── */
+.marks-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.marks-label-text {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ─── Official Answer + Student Answer side by side ─────────────────────── */
+.answers-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: stretch;
+}
+.answer-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.answer-col .scrollable-text {
+  flex: 1;
+  height: 150px;
+  max-height: 150px;
+}
+@media (max-width: 768px) {
+  .answers-row { flex-direction: column; }
+  .answer-col .scrollable-text { height: 120px; max-height: 120px; }
+}
+
+/* ─── Back Button — clean text link ──────────────────────────────────────── */
+.back-btn-row {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+.btn-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.btn-back-pill i {
+  font-size: 0.75rem;
+  transition: transform 0.15s;
+}
+.btn-back-pill:hover {
+  color: #4f46e5;
+}
+.btn-back-pill:hover i {
+  transform: translateX(-3px);
 }

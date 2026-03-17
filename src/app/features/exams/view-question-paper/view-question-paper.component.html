@@ -2,7 +2,7 @@
 
   <!-- Page Header -->
   <div class="page-header">
-    <h2><i class="fas fa-file-alt"></i> View Question Papers</h2>
+    <h2><i class="fas fa-file-alt"></i> View Question Paper</h2>
   </div>
 
   <!-- ══ FILTER / LIST VIEW (hidden when detail page is open) ══ -->
@@ -12,7 +12,7 @@
   <div class="card">
     <h4><i class="fas fa-filter"></i> Select Question Paper</h4>
 
-    <div class="row">
+    <div class="row align-items-end">
 
       <!-- Class -->
       <div class="col-md-3 mb-3">
@@ -32,13 +32,20 @@
           <option value="">
             {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'Select Subject' }}
           </option>
-          <!-- All Subjects sentinel -->
           <option [value]="ALL_SUBJECTS">— All Subjects —</option>
           <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
         </select>
       </div>
 
-      <!-- Exam Type — shown only when a specific subject is chosen -->
+      <!-- Show Papers button — inline next to Subject when All Subjects is chosen -->
+      <div class="col-md-2 mb-3" *ngIf="isAllSubjects">
+        <button class="btn btn-primary" (click)="showPapers()" [disabled]="isLoadingAllPapers">
+          <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+          {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
+        </button>
+      </div>
+
+      <!-- Exam Type -->
       <div class="col-md-3 mb-3" *ngIf="selectedSubject && !isAllSubjects">
         <label class="form-label">Exam Type <span class="required">*</span></label>
         <select class="form-control" [(ngModel)]="selectedExamType"
@@ -51,46 +58,39 @@
         </select>
       </div>
 
-    </div>
-
-    <!-- Show Papers button — only when All Subjects is chosen -->
-    <div class="row" *ngIf="isAllSubjects">
-      <div class="col-md-2 mb-3">
-        <button class="btn btn-primary" (click)="showPapers()" [disabled]="isLoadingAllPapers">
-          <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
-          {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Row 2: Question Paper + View button (single-subject mode only) -->
-    <div class="row align-items-end"
-      *ngIf="!isAllSubjects && (showQuestionPaperDropdown || isLoadingPapers)">
-
-      <div class="col-md-3 mb-3">
+      <!-- Question Paper loading -->
+      <div class="col-md-3 mb-3" *ngIf="!isAllSubjects && isLoadingPapers">
         <label class="form-label">Question Paper <span class="required">*</span></label>
-
-        <div *ngIf="isLoadingPapers" class="form-control qp-loading">
+        <div class="form-control qp-loading">
           <i class="fas fa-spinner fa-spin"></i> Loading...
         </div>
+      </div>
 
-        <ng-container *ngIf="!isLoadingPapers && questionPapers.length === 1">
-          <div class="qp-readonly-wrapper">
-            <input type="text" class="form-control qp-readonly-input"
-              [value]="questionPapers[0].questionPaperName" readonly disabled />
-            <i class="fas fa-info-circle qp-info-icon"
-              title="Question paper name is same as the selected Exam Type by default"></i>
-          </div>
-        </ng-container>
+      <!-- Single paper WITH a name — readonly input -->
+      <div class="col-md-3 mb-3"
+        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length === 1 && questionPapers[0].questionPaperName">
+        <label class="form-label">Question Paper <span class="required">*</span></label>
+        <div class="qp-readonly-wrapper">
+          <input type="text" class="form-control qp-readonly-input"
+            [value]="questionPapers[0].questionPaperName" readonly disabled />
+        </div>
+      </div>
 
-        <select *ngIf="!isLoadingPapers && questionPapers.length > 1"
-          class="form-control" [(ngModel)]="selectedQuestionPaperId">
+      <!-- Multiple papers — dropdown -->
+      <div class="col-md-3 mb-3"
+        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length > 1">
+        <label class="form-label">Question Paper <span class="required">*</span></label>
+        <select class="form-control" [(ngModel)]="selectedQuestionPaperId">
           <option [ngValue]="null">Select Question Paper</option>
-          <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">{{ qp.questionPaperName }}</option>
+          <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
+            {{ qp.questionPaperName || '(Unnamed)' }}
+          </option>
         </select>
       </div>
 
-      <div class="col-md-2 mb-3">
+      <!-- View Paper button — shown when papers are loaded (with or without name) -->
+      <div class="col-md-2 mb-3"
+        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length > 0">
         <button class="btn btn-primary" (click)="loadQuestionPaper()" [disabled]="!canLoad || isLoadingPaper">
           <i [class]="isLoadingPaper ? 'fas fa-spinner fa-spin' : 'fas fa-eye'"></i>
           {{ isLoadingPaper ? 'Loading...' : 'View Paper' }}
@@ -208,93 +208,29 @@
   <!-- ══════════════════════════════════════════════════════════════════════════
        QUESTION PAPER DETAIL CARD (full page when showDetailPage = true)
   ══════════════════════════════════════════════════════════════════════════ -->
+  <!-- Back button — outside card so it never stretches -->
+  <div *ngIf="showDetailPage && questionPaper" class="back-btn-row">
+    <button class="btn-back-pill" (click)="backToList()">
+      <i class="fas fa-chevron-left"></i> Back to List
+    </button>
+  </div>
+
   <div class="card" id="paper-detail-card" *ngIf="showDetailPage && questionPaper">
 
-    <!-- Back button -->
-    <button class="btn btn-back" (click)="backToList()">
-      <i class="fas fa-arrow-left"></i> Back to List
-    </button>
-
-    <!-- Paper Header -->
-    <div class="paper-header">
-      <div class="paper-meta-grid">
-
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-file-alt"></i> Paper Name</span>
-          <span class="meta-value" *ngIf="!isEditMode">{{ questionPaper.questionPaperName }}</span>
-          <input *ngIf="isEditMode && !isLocked" type="text" class="form-control form-control-sm meta-edit-input"
-            [(ngModel)]="draft!.questionPaperName" placeholder="Paper name" />
-        </div>
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-chalkboard"></i> Class</span>
-          <span class="meta-value">{{ questionPaper.className }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-book"></i> Subject</span>
-          <span class="meta-value">{{ questionPaper.subjectName }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-pen-to-square"></i> Exam Type</span>
-          <span class="meta-value">{{ questionPaper.examTypeName }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-calendar"></i> Academic Year</span>
-          <span class="meta-value">{{ questionPaper.academicYear }}</span>
-        </div>
-        <div class="meta-item">
-          <span class="meta-label"><i class="fas fa-star"></i> Total Marks</span>
-          <span class="meta-value marks-highlight" *ngIf="!isEditMode">{{ questionPaper.totalMarks }}</span>
-          <input *ngIf="isEditMode && !isLocked" type="number" class="form-control form-control-sm meta-edit-input"
-            [(ngModel)]="draft!.totalMarks" min="1" placeholder="Total marks" />
-        </div>
-
-        <div class="meta-item">
-          <span class="meta-label">
-            <i class="fas fa-calendar-day"></i> Exam Date
-            <span class="meta-optional">(optional)</span>
-          </span>
-          <!-- View mode: show date or dash -->
-          <span class="meta-value" *ngIf="!isEditMode">
-            {{ questionPaper.examDate ? (questionPaper.examDate | date:'dd MMM yyyy') : '—' }}
-          </span>
-          <!-- Edit mode: date picker, clearable -->
-          <div *ngIf="isEditMode && !isLocked" class="exam-date-edit-group">
-            <input type="date" class="form-control form-control-sm meta-edit-input"
-              [(ngModel)]="draft!.examDate"
-              [min]="todayIso"
-              [class.input-date-error]="draft!.examDate && isExamDateInPast(draft!.examDate)" />
-            <button *ngIf="draft!.examDate" class="btn-clear-date"
-              (click)="draft!.examDate = null" title="Clear date">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <span class="exam-date-error"
-            *ngIf="isEditMode && !isLocked && draft!.examDate && isExamDateInPast(draft!.examDate)">
-            <i class="fas fa-exclamation-circle"></i> Date cannot be in the past
-          </span>
-        </div>
-
-      </div>
-
-      <!-- Actions -->
+    <!-- Paper Header — info grid style -->
+    <div class="results-page-header">
+      <h3><i class="fas fa-file-alt"></i> Question Paper</h3>
       <div class="paper-actions">
-
-        <!-- Locked: answer sheets submitted (priority over exam date) -->
         <span *ngIf="isLocked && questionPaper.answerSheetsSubmitted" class="badge badge-locked">
           <i class="fas fa-lock"></i> Locked — answer sheets submitted
         </span>
-
-        <!-- Locked: exam date passed (only when not submitted) -->
         <span *ngIf="isLocked && !questionPaper.answerSheetsSubmitted" class="badge badge-locked">
           <i class="fas fa-calendar-times"></i>
           Locked — exam date passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
         </span>
-
-        <button *ngIf="!isLocked && !isEditMode"
-          class="btn btn-edit-paper" (click)="enterEditMode()">
+        <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
           <i class="fas fa-edit"></i> Edit Paper
         </button>
-
         <ng-container *ngIf="isEditMode && !isLocked">
           <button class="btn btn-success" (click)="saveAllChanges()" [disabled]="isSaving">
             <i [class]="isSaving ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
@@ -304,6 +240,57 @@
             <i class="fas fa-times"></i> Cancel
           </button>
         </ng-container>
+      </div>
+    </div>
+
+    <div class="student-info-grid">
+      <div class="info-item" *ngIf="questionPaper.questionPaperName">
+        <span class="info-label"><i class="fas fa-file-signature"></i> Paper Name</span>
+        <span class="info-value">{{ questionPaper.questionPaperName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-layer-group"></i> Class</span>
+        <span class="info-value">{{ questionPaper.className }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-book-open"></i> Subject</span>
+        <span class="info-value">{{ questionPaper.subjectName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-tag"></i> Exam Type</span>
+        <span class="info-value">{{ questionPaper.examTypeName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-graduation-cap"></i> Academic Year</span>
+        <span class="info-value">{{ questionPaper.academicYear }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-trophy"></i> Total Marks</span>
+        <span class="info-value marks-highlight" *ngIf="!isEditMode">{{ questionPaper.totalMarks }}</span>
+        <input *ngIf="isEditMode && !isLocked" type="number" class="form-control form-control-sm meta-edit-input"
+          [(ngModel)]="draft!.totalMarks" min="1" placeholder="Total marks" />
+      </div>
+      <div class="info-item">
+        <span class="info-label">
+          <i class="fas fa-calendar-alt"></i> Exam Date
+          <span style="font-size:0.7rem; color:#9ca3af; font-weight:400">(optional)</span>
+        </span>
+        <span class="info-value" *ngIf="!isEditMode">
+          {{ questionPaper.examDate ? (questionPaper.examDate | date:'dd MMM yyyy') : '—' }}
+        </span>
+        <div *ngIf="isEditMode && !isLocked" class="exam-date-edit-group">
+          <input type="date" class="form-control form-control-sm meta-edit-input"
+            [(ngModel)]="draft!.examDate" [min]="todayIso"
+            [class.input-date-error]="draft!.examDate && isExamDateInPast(draft!.examDate)" />
+          <button *ngIf="draft!.examDate" class="btn-clear-date"
+            (click)="draft!.examDate = null" title="Clear date">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <span class="exam-date-error"
+          *ngIf="isEditMode && !isLocked && draft!.examDate && isExamDateInPast(draft!.examDate)">
+          <i class="fas fa-exclamation-circle"></i> Date cannot be in the past
+        </span>
       </div>
     </div>
 
@@ -345,7 +332,7 @@
     <!-- ── VIEW MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="!isEditMode && currentQuestion">
 
-      <div class="question-header-with-marks">
+      <div class="question-header-with-marks" id="question-top">
         <h5><i class="fas fa-question-circle"></i> Question {{ currentQuestion.questionNumber }}</h5>
         <span class="marks-badge">{{ currentQuestion.maxMarks }} Marks</span>
       </div>
@@ -423,7 +410,7 @@
     <!-- ── EDIT MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="isEditMode && !isLocked && currentDraftQuestion">
 
-      <div class="question-header-with-marks">
+      <div class="question-header-with-marks" id="question-top">
         <h5><i class="fas fa-edit"></i> Question {{ currentDraftQuestion.questionNumber }}</h5>
         <div class="marks-edit-group">
           <label class="marks-edit-label">Max Marks:</label>
