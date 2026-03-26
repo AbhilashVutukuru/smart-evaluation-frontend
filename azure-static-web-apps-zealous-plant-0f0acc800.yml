@@ -1,32 +1,38 @@
-name: Azure Static Web Apps CI/CD
-
-pr:
-  branches:
-    include:
-      - main
 trigger:
-  branches:
-    include:
-      - main
+- main
 
-jobs:
-- job: build_and_deploy_job
-  displayName: Build and Deploy Job
-  condition: or(eq(variables['Build.Reason'], 'Manual'),or(eq(variables['Build.Reason'], 'PullRequest'),eq(variables['Build.Reason'], 'IndividualCI')))
-  pool:
-    vmImage: ubuntu-latest
-  variables:
-  - group: Azure-Static-Web-Apps-zealous-plant-0f0acc800-variable-group
-  steps:
-  - checkout: self
-    submodules: true
-  - task: AzureStaticWebApp@0
-    inputs:
-      azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_ZEALOUS_PLANT_0F0ACC800)
-###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-# For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-      app_location: "/" # App source code path
-      api_location: "" # Api source code path - optional
-      output_location: "dist/exam-evaluate-portal" # Built app content directory - optional
-###### End of Repository/Build Configurations ######
+pool:
+  vmImage: 'ubuntu-latest'
 
+steps:
+
+# Step 1: Install Node.js
+- task: NodeTool@0
+  displayName: 'Install Node.js'
+  inputs:
+    versionSpec: '20.x'
+
+# Step 2: Install packages
+- task: Npm@1
+  displayName: 'npm install'
+  inputs:
+    command: 'install'
+    workingDir: '.'
+
+# Step 3: Build Angular
+- task: Npm@1
+  displayName: 'Angular Build Production'
+  inputs:
+    command: 'custom'
+    workingDir: '.'
+    customCommand: 'run build -- --configuration production'
+
+# Step 4: Deploy to Azure Static Web App
+- task: AzureStaticWebApp@0
+  displayName: 'Deploy to Static Web App'
+  inputs:
+    app_location: '/'
+    output_location: 'dist/exam-evaluate-portal'
+    skip_api_build: true
+  env:
+    azure_static_web_apps_api_token: $(5633698d9db093a974a825fdf828eddf5385f1080e05d25c71d38fbc186a9b3e02-8a55ae9d-2c90-4d31-8d21-e8e39119e48500031270f0acc800)
