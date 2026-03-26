@@ -25,7 +25,7 @@ steps:
   inputs:
     command: 'custom'
     workingDir: '.'
-    customCommand: 'run build -- --configuration production'
+    customCommand: 'run build -- --configuration production --no-progress'
 
 # Step 4: Deploy to Azure Static Web App
 - task: AzureStaticWebApp@0
