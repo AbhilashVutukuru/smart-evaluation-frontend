@@ -35,4 +35,4 @@ steps:
     output_location: 'dist/exam-evaluate-portal'
     skip_api_build: true
   env:
-    azure_static_web_apps_api_token: '5633698d9db093a974a825fdf828eddf5385f1080e05d25c71d38fbc186a9b3e02-8a55ae9d-2c90-4d31-8d21-e8e39119e48500031270f0acc800'
+    azure_static_web_apps_api_token: 'c132a7812967f63254ce0b198749fd868aa30457b3ba015c10d68b10a2412c4102-e63e174d-0824-4cbc-9f4f-f166558b712100031270f0acc800'
