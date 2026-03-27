@@ -35,6 +35,13 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
     totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0,
   };
 
+  // Live total obtained marks — updated from API after each rubric save
+  liveObtainedMarks: number | null = null;
+
+  get displayObtainedMarks(): number {
+    return this.liveObtainedMarks ?? this.selectedStudent?.obtainedMarks ?? 0;
+  }
+
   // ─── Current question data ────────────────────────────────────────────────────
   currentResults:       ExamResult | null     = null;
   currentQuestion:      ResultQuestion | null = null;
@@ -109,9 +116,10 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   // ─── View Student Results ─────────────────────────────────────────────────────
 
   viewStudentResults(student: StudentResultInfo): void {
-    this.selectedStudent  = student;
-    this.showStudentsCard = false;
-    this.showResultsCard  = true;
+    this.selectedStudent     = student;
+    this.liveObtainedMarks   = null;
+    this.showStudentsCard    = false;
+    this.showResultsCard     = true;
     this.currentResults   = {
       studentId: student.studentId,
       studentName: student.studentName,
@@ -128,12 +136,13 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   }
 
   backToStudentsList(): void {
-    this.showResultsCard  = false;
-    this.showStudentsCard = true;
-    this.selectedStudent  = null;
-    this.currentResults   = null;
-    this.currentQuestion  = null;
-    this.currentQuestionIndex = 0;
+    this.selectedStudent       = null;
+    this.currentResults        = null;
+    this.currentQuestion       = null;
+    this.currentQuestionIndex  = 0;
+    this.liveObtainedMarks     = null;
+    this.showResultsCard       = false;
+    this.showStudents();
   }
 
   // ─── Question Navigation ──────────────────────────────────────────────────────
@@ -277,13 +286,14 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
         }],
       )
       .subscribe({
-        next: () => {
+        next: (totalObtainedMarks: number) => {
           rubric.isEditing          = false;
           rubric.teacherModified    = true;
           rubric.originalMarksGiven = rubric.marksGiven;
           rubric.originalRemarks    = rubric.remarks;
           rubric.isSaving           = false;
           this.isLoading            = false;
+          this.liveObtainedMarks    = totalObtainedMarks;
           this.toastService.showSuccess('Success', 'Marks saved successfully!');
         },
         error: (error) => {
@@ -348,7 +358,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
 
   getPercentage(): number {
     if (!this.selectedStudent || !this.totalMarks) return 0;
-    return Math.round(((this.selectedStudent.obtainedMarks ?? 0) / this.totalMarks) * 100);
+    return Math.round((this.displayObtainedMarks / this.totalMarks) * 100);
   }
 
   isAnyRubricEditing(): boolean {

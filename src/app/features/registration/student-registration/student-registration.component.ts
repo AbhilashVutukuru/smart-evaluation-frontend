@@ -55,6 +55,9 @@ export class StudentRegistrationComponent implements OnInit {
   // Validation tracking
   touchedFields: Set<string> = new Set();
 
+  // Today's date for max date constraint (YYYY-MM-DD)
+  todayDate = new Date().toISOString().split('T')[0];
+
   // ============================================
   // Lifecycle
   // ============================================

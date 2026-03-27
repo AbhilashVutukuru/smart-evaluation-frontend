@@ -114,7 +114,7 @@
 
 .search-input {
   width: 100%;
-  padding: 0.625rem 0.875rem 0.625rem 2.75rem;
+  padding: 0.625rem 0.875rem 0.625rem 2.75rem !important;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
@@ -595,7 +595,7 @@
   }
 
   .search-input {
-    padding-left: 2.5rem;
+    padding-left: 2.5rem !important;
   }
 
   .search-icon {

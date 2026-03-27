@@ -94,7 +94,7 @@ export class ExamResultService {
     questionNumber: number,
     questionPaperId: number,   
     rubrics: Array<{ questionPaperRubricId: number; teacherAssignedMarks: number; teacherRemarks?: string }>,
-  ): Observable<boolean> {
+  ): Observable<number> {
     const body: UpdateRubricsRequest = {
       studentId,
       classId,
@@ -112,7 +112,7 @@ export class ExamResultService {
     return this.http
       .put<ApiResponse<void>>(`${this.apiUrl}/exam-result/update-question-rubrics`, body)
       .pipe(
-        map(() => true),
+        map((res) => (res.data as any)?.updatedQuestionMarks ?? 0),
         catchError((error) => {
           console.error('Update rubrics error:', error);
           return throwError(() => error);

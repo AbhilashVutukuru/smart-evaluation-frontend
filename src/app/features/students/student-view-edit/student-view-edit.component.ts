@@ -302,7 +302,12 @@ export class StudentViewEditComponent implements OnInit {
 
         if (response.success) {
           this.toastService.showSuccess('Success', 'Student deleted successfully!');
-          setTimeout(() => this.router.navigate(['/students/list']), 1500);
+          const qp = this.route.snapshot.queryParams;
+          setTimeout(() => this.router.navigate(['/students/list'], {
+            queryParams: qp['classId'] && qp['sectionId']
+              ? { classId: qp['classId'], sectionId: qp['sectionId'] }
+              : {}
+          }), 1500);
         } else {
           this.toastService.showError('Error', response.message || 'Failed to delete student');
         }
@@ -323,7 +328,12 @@ export class StudentViewEditComponent implements OnInit {
   // ============================================
 
   goBack(): void {
-    this.router.navigate(['/students/list']);
+    const qp = this.route.snapshot.queryParams;
+    this.router.navigate(['/students/list'], {
+      queryParams: qp['classId'] && qp['sectionId']
+        ? { classId: qp['classId'], sectionId: qp['sectionId'] }
+        : {}
+    });
   }
 
   getStudentFullName(): string {

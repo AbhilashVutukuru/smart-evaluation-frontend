@@ -63,6 +63,7 @@
             [class.is-invalid]="shouldShowError('dateOfBirth')"
             formControlName="dateOfBirth"
             (blur)="onFieldBlur('dateOfBirth')"
+            [max]="todayDate"
           />
           <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
             {{ getErrorMessage('dateOfBirth') }}
@@ -195,17 +196,20 @@
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Admission Date <span class="required">*</span></label>
-        <input
-          type="date"
-          class="form-control"
-          [class.is-invalid]="shouldShowError('admissionDate')"
-          formControlName="admissionDate"
-          (blur)="onFieldBlur('admissionDate')"
-        />
-        <div class="error-message" *ngIf="shouldShowError('admissionDate')">
-          {{ getErrorMessage('admissionDate') }}
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Admission Date <span class="required">*</span></label>
+          <input
+            type="date"
+            class="form-control"
+            [class.is-invalid]="shouldShowError('admissionDate')"
+            formControlName="admissionDate"
+            (blur)="onFieldBlur('admissionDate')"
+            [max]="todayDate"
+          />
+          <div class="error-message" *ngIf="shouldShowError('admissionDate')">
+            {{ getErrorMessage('admissionDate') }}
+          </div>
         </div>
       </div>
 

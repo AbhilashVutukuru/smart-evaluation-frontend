@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentService } from '../../../core/services/student.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -18,6 +18,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 export class StudentListComponent implements OnInit {
   private studentService    = inject(StudentService);
   private router            = inject(Router);
+  private route             = inject(ActivatedRoute);
   private masterDataService = inject(MasterDataService);
   private toastService      = inject(ToastService);
   private errorHandler      = inject(ErrorHandlerService);
@@ -48,6 +49,22 @@ export class StudentListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadClasses();
+
+    // Restore filter state from query params (set when navigating away)
+    const qp = this.route.snapshot.queryParams;
+    if (qp['classId'] && qp['sectionId']) {
+      this.selectedClass   = qp['classId'];
+      this.selectedSection = qp['sectionId'];
+
+      // Load sections for the restored class, then load students
+      this.masterDataService.getSectionsByClass(+this.selectedClass).subscribe({
+        next: (sections) => {
+          this.sections = sections;
+          this.loadStudents();
+        },
+        error: (error) => this.errorHandler.handle('Failed to load sections', error),
+      });
+    }
   }
 
   // ============================================
@@ -173,12 +190,16 @@ export class StudentListComponent implements OnInit {
 
   viewDetails(id: number): void {
     if (!id) { this.toastService.showWarning('Invalid Action', 'Student ID is missing'); return; }
-    this.router.navigate(['/students/view', id]);
+    this.router.navigate(['/students/view', id], {
+      queryParams: { classId: this.selectedClass, sectionId: this.selectedSection }
+    });
   }
 
   editStudent(id: number): void {
     if (!id) { this.toastService.showWarning('Invalid Action', 'Student ID is missing'); return; }
-    this.router.navigate(['/students/edit', id]);
+    this.router.navigate(['/students/edit', id], {
+      queryParams: { classId: this.selectedClass, sectionId: this.selectedSection }
+    });
   }
 
   // ============================================
