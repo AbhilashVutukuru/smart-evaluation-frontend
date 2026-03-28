@@ -1,9 +1,8 @@
 /* ============================================ */
 /* STUDENT REGISTRATION COMPONENT - COMPLETE CSS */
-/* Responsive & Auto-fit with Error Handling */
 /* ============================================ */
 
-/* ===== Container - Full Screen Auto-fit ===== */
+/* ===== Container ===== */
 .registration-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -55,6 +54,7 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease;
 }
 
 .card h4 {
@@ -75,7 +75,7 @@
   .card {
     padding: 1rem;
   }
-  
+
   .card h4 {
     font-size: 1.125rem;
   }
@@ -108,7 +108,7 @@
   font-size: 1.125rem;
 }
 
-/* ===== Form Controls ===== */
+/* ===== Form Labels ===== */
 .form-label {
   display: block;
   margin-bottom: 0.5rem;
@@ -122,19 +122,26 @@
   font-weight: 600;
 }
 
+/* ===== Base Form Controls ===== */
+/* outline:none prevents browser native ring stacking → fixes double-line */
 .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+  outline: none;
 }
 
 .form-control:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control:focus-visible {
+  outline: none;
 }
 
 .form-control:disabled {
@@ -148,35 +155,89 @@ textarea.form-control {
   font-family: inherit;
 }
 
-/* ✅ Error State Styling */
-.form-control.is-invalid {
-  border-color: #ef4444 !important;
-  box-shadow: inset 0 0 0 1px #ef4444 !important;
+/* Clear SVG background from non-select inputs */
+input.form-control,
+textarea.form-control {
+  background-image: none !important;
 }
 
-.form-control.is-invalid:focus {
-  border-color: #dc2626 !important;
-  box-shadow: inset 0 0 0 1px #dc2626, 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
-}
-
-/* Fix date input calendar icon overlapping border */
+/* Date input tweaks */
 input[type="date"].form-control {
   padding-right: 0.5rem;
-  position: relative;
 }
 
-input[type="date"].form-control.is-invalid {
-  padding-right: 0.5rem;
-}
-
-/* Chrome/Edge: push calendar icon inward */
 input[type="date"].form-control::-webkit-calendar-picker-indicator {
   margin-right: 2px;
   opacity: 0.6;
   cursor: pointer;
 }
 
-/* ✅ Error Message Styling */
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.8rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control.is-invalid + .select-icon {
+  color: #ef4444;
+}
+
+/* Placeholder option grey, real values dark */
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
+}
+
+/* ===== Error State ===== */
+.form-control.is-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.form-control.is-invalid:focus {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ===== Error Message ===== */
 .error-message {
   color: #ef4444;
   font-size: 0.8125rem;
@@ -198,7 +259,11 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
     font-size: 0.8125rem;
     padding: 0.5rem 0.75rem;
   }
-  
+
+  .select-wrapper select.form-control {
+    padding-right: 2.25rem;
+  }
+
   .error-message {
     font-size: 0.75rem;
   }
@@ -218,13 +283,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
 }
 
 @media (min-width: 768px) {
-  .col-md-4 {
-    width: 33.333333%;
-  }
-  
-  .col-md-6 {
-    width: 50%;
-  }
+  .col-md-4 { width: 33.333333%; }
+  .col-md-6 { width: 50%; }
 }
 
 .mb-3 {
@@ -328,7 +388,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
   .button-group {
     flex-direction: column;
   }
-  
+
   .button-group .btn {
     width: 100%;
   }
@@ -394,7 +454,6 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
   font-size: 0.8125rem;
 }
 
-/* File Selected State */
 .file-selected {
   background: white;
   border-radius: 8px;
@@ -455,17 +514,6 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
   font-size: 1rem;
 }
 
-@media (max-width: 640px) {
-  .upload-section {
-    padding: 1.5rem 1rem;
-  }
-  
-  .upload-placeholder i {
-    font-size: 3rem;
-  }
-}
-
-/* ✅ File Input Label as Button */
 label[for="fileInput"] {
   display: inline-flex;
   align-items: center;
@@ -479,6 +527,16 @@ label[for="fileInput"].disabled {
   opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .upload-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .upload-placeholder i {
+    font-size: 3rem;
+  }
 }
 
 /* ===== Upload Results ===== */
@@ -526,66 +584,23 @@ label[for="fileInput"].disabled {
   border: 2px solid;
 }
 
-.result-card i {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
+.result-card i         { font-size: 2rem; flex-shrink: 0; }
+.result-card > div     { display: flex; flex-direction: column; gap: 0.25rem; }
+.result-card strong    { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.result-card span      { font-size: 0.875rem; color: #6b7280; font-weight: 500; }
 
-.result-card > div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
+.result-card.success   { border-color: #10b981; }
+.result-card.success i { color: #10b981; }
+.result-card.success strong { color: #059669; }
 
-.result-card strong {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1;
-}
+.result-card.failed    { border-color: #ef4444; }
+.result-card.failed i  { color: #ef4444; }
+.result-card.failed strong { color: #dc2626; }
 
-.result-card span {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
+.result-card.total     { border-color: #6366f1; }
+.result-card.total i   { color: #6366f1; }
+.result-card.total strong { color: #4f46e5; }
 
-.result-card.success {
-  border-color: #10b981;
-}
-
-.result-card.success i {
-  color: #10b981;
-}
-
-.result-card.success strong {
-  color: #059669;
-}
-
-.result-card.failed {
-  border-color: #ef4444;
-}
-
-.result-card.failed i {
-  color: #ef4444;
-}
-
-.result-card.failed strong {
-  color: #dc2626;
-}
-
-.result-card.total {
-  border-color: #6366f1;
-}
-
-.result-card.total i {
-  color: #6366f1;
-}
-
-.result-card.total strong {
-  color: #4f46e5;
-}
-
-/* Error Details */
 .error-details {
   background: white;
   border-radius: 8px;
@@ -603,9 +618,7 @@ label[for="fileInput"].disabled {
   gap: 0.5rem;
 }
 
-.error-details h6 i {
-  color: #ef4444;
-}
+.error-details h6 i { color: #ef4444; }
 
 .error-list {
   display: flex;
@@ -633,50 +646,32 @@ label[for="fileInput"].disabled {
   flex-shrink: 0;
 }
 
-/* ===== Utility Classes ===== */
-.d-flex {
-  display: flex;
-}
+/* ===== Utilities ===== */
+.d-flex  { display: flex; }
+.gap-2   { gap: 0.5rem; }
+.mt-3    { margin-top: 1rem; }
 
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-/* ===== Animations ===== */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card {
-  animation: slideIn 0.3s ease;
-}
-
-/* ===== Print Styles ===== */
+/* ===== Print ===== */
 @media print {
   .registration-container {
     padding: 0;
     background: white;
   }
-  
+
   .btn,
   .button-group,
   .upload-section {
     display: none;
   }
-  
+
   .card {
     box-shadow: none;
     page-break-inside: avoid;
   }
+}
+
+/* ===== Animations ===== */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

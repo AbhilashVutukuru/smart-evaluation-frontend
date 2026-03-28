@@ -115,6 +115,7 @@ export class CreateExamComponent implements OnInit {
 
   onClassSelected(classId: string): void {
     this.resetDependentDropdowns();
+    this.resetQuestions();
     if (!classId) return;
     this.loadSubjectsAndExamTypes(classId);
   }
@@ -136,6 +137,42 @@ export class CreateExamComponent implements OnInit {
       next: (examTypes) => (this.allExamTypes = examTypes),
       error: (error) => this.errorHandler.handle('Failed to load exam types', error),
     });
+  }
+
+  onSubjectChange(): void {
+    this.resetQuestions();
+  }
+
+  onExamTypeChange(): void {
+    this.resetQuestions();
+  }
+
+  onTotalMarksChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (!isNaN(value)) {
+      if (value < 1)   value = 1;
+      if (value > 200) value = 200;
+      this.examFormData.totalMarks = value;
+      input.value = String(value);
+    }
+    this.resetQuestions();
+  }
+
+  onNumberOfQuestionsChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (!isNaN(value)) {
+      if (value < 1)  value = 1;
+      if (value > 50) value = 50;
+      this.examFormData.numberOfQuestions = value;
+      input.value = String(value);
+    }
+    this.resetQuestions();
+  }
+
+  onQuestionPaperNameChange(): void {
+    this.resetQuestions();
   }
 
   // ─── Filter Handlers (Update Mode) ───────────────────────────────────────────
@@ -472,6 +509,17 @@ export class CreateExamComponent implements OnInit {
 
   trackByIndex(index: number): number {
     return index;
+  }
+
+  // ─── Reset Questions (called when any exam info field changes) ───────────────
+  private resetQuestions(): void {
+    if (this.questionsGenerated) {
+      this.questionsGenerated = false;
+      this.questionSets = [];
+      this.examFormData.questionSets = [];
+      this.currentQuestionIndex = 0;
+      this.toastService.showInfo('Info', 'Question form reset due to field change');
+    }
   }
 
   private resetForm(): void {

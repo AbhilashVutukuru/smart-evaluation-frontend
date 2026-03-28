@@ -32,10 +32,6 @@ export class TeacherListComponent implements OnInit {
   showDeleteModal  = false;
   teacherToDelete: any = null;
 
-  // Validation
-  touchedFields: Set<string> = new Set();
-  searchError = '';
-
   // ============================================
   // Lifecycle
   // ============================================
@@ -83,10 +79,9 @@ export class TeacherListComponent implements OnInit {
 
   onSearchInput(): void {
     if (this.searchTerm.trim()) {
-      this.searchError = '';
       this.filteredTeachers = this.teachers.filter((t) =>
-        t.firstName?.toLowerCase().includes(this.searchTerm.toLowerCase())   ||
-        t.lastName?.toLowerCase().includes(this.searchTerm.toLowerCase())    ||
+        t.firstName?.toLowerCase().includes(this.searchTerm.toLowerCase())    ||
+        t.lastName?.toLowerCase().includes(this.searchTerm.toLowerCase())     ||
         t.employeeCode?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         t.email?.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
@@ -95,23 +90,9 @@ export class TeacherListComponent implements OnInit {
     }
   }
 
-  onSearchBlur(): void {
-    this.touchedFields.add('search');
-    this.searchError =
-      this.touchedFields.has('search') && !this.searchTerm.trim() && this.teachers.length > 0
-        ? 'Search term cannot be empty'
-        : '';
-  }
-
-  onSearchFocus(): void {
-    this.searchError = '';
-  }
-
   clearSearch(): void {
     this.searchTerm       = '';
-    this.searchError      = '';
     this.filteredTeachers = this.teachers;
-    this.touchedFields.delete('search');
   }
 
   // ============================================

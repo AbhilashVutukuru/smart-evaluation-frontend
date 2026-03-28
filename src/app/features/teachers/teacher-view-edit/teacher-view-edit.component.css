@@ -1,4 +1,3 @@
-
 /* Force component to full width */
 :host {
   display: block;
@@ -6,9 +5,9 @@
   max-width: none;
 }
 
-/* ===== Container - Full Screen Auto-fit ===== */
+/* ===== Container ===== */
 .view-container {
- width: 100%;
+  width: 100%;
   max-width: 100%;
   padding: 1.5rem;
   background: #f8f9fa;
@@ -124,9 +123,7 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .loading-state p {
@@ -150,6 +147,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   width: 100%;
+  animation: fadeIn 0.3s ease;
 }
 
 .card-header {
@@ -175,16 +173,11 @@
 }
 
 @media (max-width: 768px) {
-  .card-header {
-    padding: 1rem;
-  }
-
-  .card-body {
-    padding: 1rem;
-  }
+  .card-header { padding: 1rem; }
+  .card-body   { padding: 1rem; }
 }
 
-/* ===== Form Controls ===== */
+/* ===== Form Labels ===== */
 .form-label {
   display: block;
   margin-bottom: 0.5rem;
@@ -198,20 +191,27 @@
   font-weight: 600;
 }
 
+/* ===== Base Input / Textarea / Date ===== */
+/* outline:none prevents browser native ring stacking on box-shadow → fixes double-line */
 .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   background: white;
+  outline: none;
 }
 
 .form-control:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* No extra outline on keyboard nav — box-shadow is the only ring */
+.form-control:focus-visible {
+  outline: none;
 }
 
 .form-control:disabled,
@@ -226,7 +226,67 @@ textarea.form-control {
   font-family: inherit;
 }
 
-/* ✅ Error State Styling */
+/* Explicitly clear any inherited background-image on non-select inputs */
+input.form-control,
+textarea.form-control {
+  background-image: none !important;
+}
+
+/* ===== Custom Select — Wrapper + FA Chevron Icon ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.8rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control.is-invalid + .select-icon {
+  color: #ef4444;
+}
+
+/* Placeholder option grey, real values dark */
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
+}
+
+/* ===== Error State ===== */
 .form-control.is-invalid {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
@@ -237,7 +297,7 @@ textarea.form-control {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
 }
 
-/* ✅ Error Message Styling */
+/* ===== Error Message ===== */
 .error-message {
   color: #ef4444;
   font-size: 0.8125rem;
@@ -258,6 +318,10 @@ textarea.form-control {
   .form-control {
     font-size: 0.8125rem;
     padding: 0.5rem 0.75rem;
+  }
+
+  .select-wrapper select.form-control {
+    padding-right: 2.25rem;
   }
 
   .error-message {
@@ -281,13 +345,8 @@ textarea.form-control {
 }
 
 @media (min-width: 768px) {
-  .col-md-4 {
-    width: 33.333333%;
-  }
-
-  .col-md-6 {
-    width: 50%;
-  }
+  .col-md-4 { width: 33.333333%; }
+  .col-md-6 { width: 50%; }
 }
 
 .mb-3 {
@@ -356,6 +415,12 @@ textarea.form-control {
   font-size: 1rem;
 }
 
+/* Buttons keep focus ring for keyboard accessibility */
+.btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
 @media (max-width: 640px) {
   .btn {
     padding: 0.5rem 1rem;
@@ -385,7 +450,7 @@ textarea.form-control {
   }
 }
 
-/* ===== Responsive Adjustments ===== */
+/* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .view-container {
     padding: 1.25rem;
@@ -393,24 +458,13 @@ textarea.form-control {
 }
 
 @media (max-width: 640px) {
-  .page-header {
-    margin-bottom: 1.5rem;
-  }
-
-  .card {
-    margin-bottom: 1rem;
-  }
-
-  .card-header {
-    font-size: 0.875rem;
-  }
-
-  .card-header i {
-    font-size: 1rem;
-  }
+  .page-header  { margin-bottom: 1.5rem; }
+  .card         { margin-bottom: 1rem; }
+  .card-header  { font-size: 0.875rem; }
+  .card-header i { font-size: 1rem; }
 }
 
-/* ===== Print Styles ===== */
+/* ===== Print ===== */
 @media print {
   .view-container {
     padding: 0;
@@ -446,14 +500,16 @@ textarea.form-control {
     transform: translateY(0);
   }
 }
-
-.card {
-  animation: fadeIn 0.3s ease;
+/* ===== Date Input — Hand Cursor ===== */
+input[type="date"].form-control {
+  cursor: pointer;
 }
 
-/* ===== Focus Visible for Accessibility ===== */
-.btn:focus-visible,
-.form-control:focus-visible {
-  outline: 2px solid #6366f1;
-  outline-offset: 2px;
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }

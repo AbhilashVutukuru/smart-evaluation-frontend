@@ -58,28 +58,35 @@ export class ExamFilterComponent {
   @Output() subjectChanged     = new EventEmitter<void>();
   @Output() examTypeChanged    = new EventEmitter<void>();
   @Output() showStudentsClick  = new EventEmitter<void>();
+  /** Fires on ANY filter change so parents can clear their list */
+  @Output() filtersChanged     = new EventEmitter<void>();
 
   onClassChange(value: string): void {
     this.selectedClassChange.emit(value);
     this.classChanged.emit(value);
+    this.filtersChanged.emit();
   }
 
   onSectionChange(): void {
     this.selectedSectionChange.emit(this.selectedSection);
     this.sectionChanged.emit();
+    this.filtersChanged.emit();
   }
 
   onSubjectChange(): void {
     this.selectedSubjectChange.emit(this.selectedSubject);
     this.subjectChanged.emit();
+    this.filtersChanged.emit();
   }
 
   onExamTypeChange(): void {
     this.selectedExamTypeChange.emit(this.selectedExamType);
     this.examTypeChanged.emit();
+    this.filtersChanged.emit();
   }
 
   onQuestionPaperChange(): void {
     this.selectedQuestionPaperIdChange.emit(this.selectedQuestionPaperId);
+    this.filtersChanged.emit();
   }
 }

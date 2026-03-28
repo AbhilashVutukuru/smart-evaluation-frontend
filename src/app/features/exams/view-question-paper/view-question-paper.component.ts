@@ -436,6 +436,11 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.showDetailPage  = false;
     this.questionPaper   = null;
     this.currentQuestion = null;
+
+    // Only refresh from API when in All Subjects mode
+    if (this.showAllPapersList) {
+      this.loadAllPapers();
+    }
   }
  
   validateDraftQuestion(q: QuestionDraft): string | null {

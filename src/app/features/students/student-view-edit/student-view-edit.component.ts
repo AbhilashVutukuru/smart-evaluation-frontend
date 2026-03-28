@@ -31,6 +31,10 @@ export class StudentViewEditComponent implements OnInit {
   mode: 'view' | 'edit' = 'view';
   loading = false;
 
+  // Today's date in YYYY-MM-DD — bound to [max] on date inputs
+  // so the calendar disables tomorrow and all future dates
+  today: string = new Date().toISOString().split('T')[0];
+
   // Dropdown data
   classes:  ClassDto[]   = [];
   sections: SectionDto[] = [];
@@ -114,7 +118,8 @@ export class StudentViewEditComponent implements OnInit {
 
     if (control.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
     if (control.errors['email'])    return 'Please enter a valid email address';
-    if (control.errors['pattern'] && fieldName === 'phoneNumber') return 'Phone number must be exactly 10 digits';
+    if (control.errors['pattern'] && fieldName === 'phoneNumber')
+      return 'Phone number must be exactly 10 digits';
 
     return 'Invalid value';
   }

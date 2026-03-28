@@ -39,10 +39,6 @@ export class StudentListComponent implements OnInit {
   showDeleteModal  = false;
   studentToDelete: any = null;
 
-  // Validation
-  touchedFields: Set<string> = new Set();
-  searchError = '';
-
   // ============================================
   // Lifecycle
   // ============================================
@@ -149,7 +145,6 @@ export class StudentListComponent implements OnInit {
 
   onSearchInput(): void {
     if (this.searchTerm.trim()) {
-      this.searchError      = '';
       this.filteredStudents = this.students.filter((s) =>
         s.firstName?.toLowerCase().includes(this.searchTerm.toLowerCase())  ||
         s.lastName?.toLowerCase().includes(this.searchTerm.toLowerCase())   ||
@@ -161,23 +156,9 @@ export class StudentListComponent implements OnInit {
     }
   }
 
-  onSearchBlur(): void {
-    this.touchedFields.add('search');
-    this.searchError =
-      this.touchedFields.has('search') && !this.searchTerm.trim() && this.students.length > 0
-        ? 'Search term cannot be empty'
-        : '';
-  }
-
-  onSearchFocus(): void {
-    this.searchError = '';
-  }
-
   clearSearch(): void {
     this.searchTerm       = '';
-    this.searchError      = '';
     this.filteredStudents = this.students;
-    this.touchedFields.delete('search');
   }
 
   // ============================================

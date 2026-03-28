@@ -6,48 +6,57 @@
     <!-- Class -->
     <div class="col-md-3 mb-3">
       <label class="form-label">Class <span class="required">*</span></label>
-      <select
-        class="form-control"
-        [(ngModel)]="selectedClass"
-        (change)="onClassChange(selectedClass)"
-      >
-        <option value="">Select Class</option>
-        <option *ngFor="let cls of classes" [value]="cls.id">
-          {{ cls.className }}
-        </option>
-      </select>
+      <div class="select-wrapper">
+        <select
+          class="form-control"
+          [(ngModel)]="selectedClass"
+          (change)="onClassChange(selectedClass)"
+        >
+          <option value="">Select Class</option>
+          <option *ngFor="let cls of classes" [value]="cls.id">
+            {{ cls.className }}
+          </option>
+        </select>
+        <i class="fas fa-chevron-down select-icon"></i>
+      </div>
     </div>
 
     <!-- Section -->
     <div class="col-md-3 mb-3">
       <label class="form-label">Section <span class="required">*</span></label>
-      <select
-        class="form-control"
-        [(ngModel)]="selectedSection"
-        [disabled]="!selectedClass"
-        (change)="onSectionChange()"
-      >
-        <option value="">{{ selectedClass ? "Select Section" : "Select Class First" }}</option>
-        <option *ngFor="let sec of sections" [value]="sec.id">
-          {{ sec.sectionName }}
-        </option>
-      </select>
+      <div class="select-wrapper">
+        <select
+          class="form-control"
+          [(ngModel)]="selectedSection"
+          [disabled]="!selectedClass"
+          (change)="onSectionChange()"
+        >
+          <option value="">{{ selectedClass ? "Select Section" : "Select Class First" }}</option>
+          <option *ngFor="let sec of sections" [value]="sec.id">
+            {{ sec.sectionName }}
+          </option>
+        </select>
+        <i class="fas fa-chevron-down select-icon"></i>
+      </div>
     </div>
 
     <!-- Subject -->
     <div class="col-md-3 mb-3">
       <label class="form-label">Subject <span class="required">*</span></label>
-      <select
-        class="form-control"
-        [(ngModel)]="selectedSubject"
-        [disabled]="!selectedClass"
-        (change)="onSubjectChange()"
-      >
-        <option value="">{{ selectedClass ? "Select Subject" : "Select Class First" }}</option>
-        <option *ngFor="let sub of subjects" [value]="sub.id">
-          {{ sub.subjectName }}
-        </option>
-      </select>
+      <div class="select-wrapper">
+        <select
+          class="form-control"
+          [(ngModel)]="selectedSubject"
+          [disabled]="!selectedClass"
+          (change)="onSubjectChange()"
+        >
+          <option value="">{{ selectedClass ? "Select Subject" : "Select Class First" }}</option>
+          <option *ngFor="let sub of subjects" [value]="sub.id">
+            {{ sub.subjectName }}
+          </option>
+        </select>
+        <i class="fas fa-chevron-down select-icon"></i>
+      </div>
     </div>
 
     <!-- Exam Type -->
@@ -59,18 +68,20 @@
         <i class="fas fa-spinner fa-spin"></i> Loading...
       </div>
 
-      <select
-        *ngIf="!isLoadingExamTypes"
-        class="form-control"
-        [(ngModel)]="selectedExamType"
-        [disabled]="!selectedClass || !selectedSubject"
-        (change)="onExamTypeChange()"
-      >
-        <option value="">{{ selectedSubject ? 'Select Exam Type' : 'Select Subject First' }}</option>
-        <option *ngFor="let exam of examTypes" [value]="exam.id">
-          {{ exam.examTypeName }}
-        </option>
-      </select>
+      <div class="select-wrapper" *ngIf="!isLoadingExamTypes">
+        <select
+          class="form-control"
+          [(ngModel)]="selectedExamType"
+          [disabled]="!selectedClass || !selectedSubject"
+          (change)="onExamTypeChange()"
+        >
+          <option value="">{{ selectedSubject ? 'Select Exam Type' : 'Select Subject First' }}</option>
+          <option *ngFor="let exam of examTypes" [value]="exam.id">
+            {{ exam.examTypeName }}
+          </option>
+        </select>
+        <i class="fas fa-chevron-down select-icon"></i>
+      </div>
     </div>
   </div>
 
@@ -94,13 +105,16 @@
         <div class="col-md-3 mb-3"
           *ngIf="showQuestionPaperDropdown && questionPapers.length > 1">
           <label class="form-label">Question Paper <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="selectedQuestionPaperId"
-            (change)="onQuestionPaperChange()">
-            <option [ngValue]="null">Select Question Paper</option>
-            <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
-              {{ qp.questionPaperName || '(Unnamed)' }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select class="form-control" [(ngModel)]="selectedQuestionPaperId"
+              (change)="onQuestionPaperChange()">
+              <option [ngValue]="null">Select Question Paper</option>
+              <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
+                {{ qp.questionPaperName || '(Unnamed)' }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
         </div>
 
       </ng-container>

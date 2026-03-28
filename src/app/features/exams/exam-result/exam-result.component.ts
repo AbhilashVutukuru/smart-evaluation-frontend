@@ -73,6 +73,11 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
     this.statistics = { totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0 };
   }
 
+  // ─── Clear list on any filter change ────────────────────────────────────────
+  onFiltersChanged(): void {
+    this.clearStudents();
+  }
+
   // ─── Get Students ─────────────────────────────────────────────────────────────
 
   showStudents(): void {

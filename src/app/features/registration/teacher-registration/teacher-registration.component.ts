@@ -41,6 +41,9 @@ export class TeacherRegistrationComponent implements OnInit {
   // Validation tracking
   touchedFields: Set<string> = new Set();
 
+  // Today's date for [max] on date inputs (YYYY-MM-DD)
+  today: string = new Date().toISOString().split('T')[0];
+
   // ============================================
   // Lifecycle
   // ============================================

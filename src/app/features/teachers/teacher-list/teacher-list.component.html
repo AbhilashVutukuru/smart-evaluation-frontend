@@ -1,4 +1,4 @@
-<!-- Teacher List Component - Complete with Error Handling & Validation -->
+<!-- Teacher List Component -->
 <div class="list-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -11,31 +11,25 @@
   <!-- Search & Filter Card -->
   <div class="card">
     <div class="search-section">
-      <!-- Search Input with Error -->
+      <!-- Search Input -->
       <div class="search-wrapper">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            class="form-control search-input" 
-            [class.is-invalid]="searchError"
+          <input
+            type="text"
+            class="form-control search-input"
             placeholder="Search by name, email, employee code..."
             [(ngModel)]="searchTerm"
             (input)="onSearchInput()"
-            (blur)="onSearchBlur()"
-            (focus)="onSearchFocus()"
           />
-          <button 
-            *ngIf="searchTerm" 
-            class="clear-search" 
+          <button
+            *ngIf="searchTerm"
+            class="clear-search"
             (click)="clearSearch()"
             type="button"
           >
             <i class="fas fa-times"></i>
           </button>
-        </div>
-        <div class="error-message" *ngIf="searchError">
-          {{ searchError }}
         </div>
       </div>
 
@@ -111,7 +105,11 @@
             </td>
             <td>{{ teacher.joiningDate | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="badge" [class.badge-success]="teacher.isActive" [class.badge-danger]="!teacher.isActive">
+              <span
+                class="badge"
+                [class.badge-success]="teacher.isActive"
+                [class.badge-danger]="!teacher.isActive"
+              >
                 {{ teacher.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
@@ -142,7 +140,11 @@
             <h4>{{ teacher.firstName }} {{ teacher.lastName }}</h4>
             <p class="text-muted">{{ teacher.gender }} • {{ teacher.employeeCode }}</p>
           </div>
-          <span class="badge" [class.badge-success]="teacher.isActive" [class.badge-danger]="!teacher.isActive">
+          <span
+            class="badge"
+            [class.badge-success]="teacher.isActive"
+            [class.badge-danger]="!teacher.isActive"
+          >
             {{ teacher.isActive ? 'Active' : 'Inactive' }}
           </span>
         </div>
@@ -191,8 +193,8 @@
     <!-- Results Count -->
     <div *ngIf="!loading && filteredTeachers.length > 0" class="results-footer">
       <p>
-        Showing <strong>{{ filteredTeachers.length }}</strong> 
-        of <strong>{{ teachers.length }}</strong> 
+        Showing <strong>{{ filteredTeachers.length }}</strong>
+        of <strong>{{ teachers.length }}</strong>
         teacher{{ teachers.length !== 1 ? 's' : '' }}
       </p>
     </div>
