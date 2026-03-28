@@ -95,18 +95,22 @@ export class StudentViewEditComponent implements OnInit {
     });
 
     this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      if (classId && !this._initializing) {
-        // User changed class in edit mode — clear section and reload
-        this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
+      if (!this._initializing) {
         this.sections = [];
-        this.loadSections(+classId);
+        this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
+        this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+        if (classId) this.loadSections(+classId);
       }
     });
 
     this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
       const classId = this.studentForm.get('classId')?.value;
-      if (sectionId && classId && this.mode === 'edit' && !this._initializing) {
-        this.loadNextRollNumber(+classId, +sectionId);
+      if (!this._initializing && this.mode === 'edit') {
+        if (sectionId && classId) {
+          this.loadNextRollNumber(+classId, +sectionId);
+        } else {
+          this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+        }
       }
     });
   }
@@ -195,13 +199,17 @@ export class StudentViewEditComponent implements OnInit {
       next: (sections) => {
         this.sections = sections;
         if (!sectionId) return;
+
         const ctrl = this.studentForm.get('sectionId');
         if (!ctrl) return;
-        // Must enable before setValue — Angular ignores setValue on disabled controls
+
+        // Guard against triggering loadNextRollNumber during patch
+        this._initializing = true;
         const wasDisabled = ctrl.disabled;
         if (wasDisabled) ctrl.enable({ emitEvent: false });
         ctrl.setValue(+sectionId, { emitEvent: false });
         if (wasDisabled) ctrl.disable({ emitEvent: false });
+        this._initializing = false;
       },
       error: (error) => this.errorHandler.handle('Failed to load sections', error),
     });
@@ -211,10 +219,13 @@ export class StudentViewEditComponent implements OnInit {
   private loadNextRollNumber(classId: number, sectionId: number): void {
     if (!classId || !sectionId) return;
     this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
-      next: (rollNumber) => {
-        this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
+      next: (response: any) => {
+        const rollNumber = response?.data?.nextRollNumber;
+        if (rollNumber !== null && rollNumber !== undefined) {
+          this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
+        }
       },
-      error: () => { /* silently ignore — roll number stays as-is */ },
+      error: () => { /* silently ignore */ },
     });
   }
 
