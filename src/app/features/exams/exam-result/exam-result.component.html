@@ -155,7 +155,7 @@
                 class="download-link"
                 (click)="viewStudentResults(student)"
               >
-                <i class="fas fa-eye"></i> View Results
+                <i class="fas fa-eye"></i><span class="link-text"> View Results</span>
               </a>
 
               <!-- Pending -->
@@ -220,7 +220,7 @@
           [class.disabled]="isViewing"
           (click)="!isViewing && viewAnswerSheet(selectedStudent)"
         >
-          <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
+          <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
           <span *ngIf="isViewing">
             <i class="fas fa-spinner fa-spin"></i> Opening...
           </span>
