@@ -201,7 +201,7 @@
                   (blur)="onFieldBlur('classId')"
                 >
                   <option value="">Select Class</option>
-                  <option *ngFor="let cls of classes" [value]="cls.id">
+                  <option *ngFor="let cls of classes" [ngValue]="cls.id">
                     {{ cls.className }}
                   </option>
                 </select>
@@ -223,7 +223,7 @@
                   (blur)="onFieldBlur('sectionId')"
                 >
                   <option value="">Select Section</option>
-                  <option *ngFor="let sec of sections" [value]="sec.id">
+                  <option *ngFor="let sec of sections" [ngValue]="sec.id">
                     {{ sec.sectionName }}
                   </option>
                 </select>

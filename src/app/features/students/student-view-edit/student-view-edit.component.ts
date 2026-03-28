@@ -8,6 +8,7 @@ import { CancelConfirmationComponent } from '../../../shared/components/cancel-c
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { RegistrationService } from '../../../core/services/registration.service';
 
 @Component({
   selector: 'app-student-view-edit',
@@ -24,6 +25,7 @@ export class StudentViewEditComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastService      = inject(ToastService);
   private errorHandler      = inject(ErrorHandlerService);
+  private registrationService = inject(RegistrationService);
 
   // Form and Data
   studentForm!: FormGroup;
@@ -45,6 +47,9 @@ export class StudentViewEditComponent implements OnInit {
 
   // Validation tracking
   touchedFields: Set<string> = new Set();
+
+  // Flag to suppress valueChanges side-effects during initial data load
+  private _initializing = false;
 
   // ============================================
   // Lifecycle
@@ -90,7 +95,19 @@ export class StudentViewEditComponent implements OnInit {
     });
 
     this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      if (classId) this.loadSections(+classId);
+      if (classId && !this._initializing) {
+        // User changed class in edit mode — clear section and reload
+        this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
+        this.sections = [];
+        this.loadSections(+classId);
+      }
+    });
+
+    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
+      const classId = this.studentForm.get('classId')?.value;
+      if (sectionId && classId && this.mode === 'edit' && !this._initializing) {
+        this.loadNextRollNumber(+classId, +sectionId);
+      }
     });
   }
 
@@ -170,6 +187,37 @@ export class StudentViewEditComponent implements OnInit {
     });
   }
 
+  /** Loads sections then patches sectionId — used on initial data load
+      so the dropdown option exists before the value is bound */
+  private loadSectionsAndPatchSection(classId: number, sectionId: number | string): void {
+    if (!classId) return;
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+        if (!sectionId) return;
+        const ctrl = this.studentForm.get('sectionId');
+        if (!ctrl) return;
+        // Must enable before setValue — Angular ignores setValue on disabled controls
+        const wasDisabled = ctrl.disabled;
+        if (wasDisabled) ctrl.enable({ emitEvent: false });
+        ctrl.setValue(+sectionId, { emitEvent: false });
+        if (wasDisabled) ctrl.disable({ emitEvent: false });
+      },
+      error: (error) => this.errorHandler.handle('Failed to load sections', error),
+    });
+  }
+
+  /** Fetches next available roll number for a class+section */
+  private loadNextRollNumber(classId: number, sectionId: number): void {
+    if (!classId || !sectionId) return;
+    this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
+      next: (rollNumber) => {
+        this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
+      },
+      error: () => { /* silently ignore — roll number stays as-is */ },
+    });
+  }
+
   private loadStudent(): void {
     this.loading = true;
 
@@ -179,6 +227,7 @@ export class StudentViewEditComponent implements OnInit {
 
         if (response.success && response.data) {
           const s = response.data;
+          this._initializing = true;
           this.studentForm.patchValue({
             firstName:     s.firstName,
             lastName:      s.lastName,
@@ -192,8 +241,9 @@ export class StudentViewEditComponent implements OnInit {
             rollNumber:    s.rollNumber,
             admissionDate: s.admissionDate?.split('T')[0],
           });
+          this._initializing = false;
 
-          if (s.classId) this.loadSections(s.classId);
+          if (s.classId) this.loadSectionsAndPatchSection(s.classId, s.sectionId);
         } else {
           this.toastService.showError('Error', 'Student not found');
           this.goBack();
@@ -213,7 +263,19 @@ export class StudentViewEditComponent implements OnInit {
 
   enableEdit(): void {
     this.mode = 'edit';
+    // Set _initializing BEFORE enable() — enabling a disabled form fires
+    // valueChanges on all controls, which would clear sections[] and lose sectionId
+    this._initializing = true;
     this.studentForm.enable();
+    this._initializing = false;
+
+    // Now re-load sections and patch sectionId using saved API values
+    const classId   = this.studentForm.get('classId')?.value;
+    const sectionId = this.studentForm.get('sectionId')?.value;
+    if (classId) {
+      this.loadSectionsAndPatchSection(+classId, sectionId ?? '');
+    }
+
     this.toastService.showInfo('Edit Mode', 'You can now edit student details');
   }
 
@@ -350,6 +412,17 @@ export class StudentViewEditComponent implements OnInit {
   getStudentInfo(): string {
     const fullName   = this.getStudentFullName();
     const rollNumber = this.studentForm.get('rollNumber')?.value || '';
-    return rollNumber ? `${fullName} (Roll: ${rollNumber})` : fullName;
+    const classId    = this.studentForm.get('classId')?.value;
+    const sectionId  = this.studentForm.get('sectionId')?.value;
+
+    const className   = this.classes.find(c => String(c.id) === String(classId))?.className || '';
+    const sectionName = this.sections.find(s => String(s.id) === String(sectionId))?.sectionName || '';
+
+    const parts = [fullName];
+    if (className)   parts.push(`Class: ${className}`);
+    if (sectionName) parts.push(`Section: ${sectionName}`);
+    if (rollNumber)  parts.push(`Roll: ${rollNumber}`);
+
+    return parts.join(' | ');
   }
 }
