@@ -5,11 +5,17 @@ import { RegistrationService } from '../../../core/services/registration.service
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
+interface RowError {
+  rowNumber:   number;
+  teacherName: string;
+  columns:     string[];
+}
+
 interface UploadResults {
-  success: number;
-  failed:  number;
-  total:   number;
-  errors?: string[];
+  success:   number;
+  failed:    number;
+  total:     number;
+  rowErrors: RowError[];
 }
 
 @Component({
@@ -197,6 +203,48 @@ export class TeacherRegistrationComponent implements OnInit {
     this.uploadResults = null;
   }
 
+  // ============================================
+  // Error Grouping Helper
+  // ============================================
+
+  private groupErrors(rawErrors: any[]): RowError[] {
+    const map = new Map<number, RowError>();
+
+    rawErrors.forEach((e: any) => {
+      let rowNumber   = 0;
+      let teacherName = '';
+      let message     = '';
+
+      if (typeof e === 'string') {
+        try {
+          const parsed = JSON.parse(e);
+          rowNumber   = parsed.rowNumber ?? 0;
+          teacherName = parsed.teacherName ?? parsed.studentName ?? '';
+          message     = parsed.error ?? parsed.errorMessage ?? parsed.message ?? e;
+        } catch {
+          const match = e.match(/^Row (\d+):\s*(.+)$/);
+          if (match) { rowNumber = +match[1]; message = match[2]; }
+          else { message = e; }
+        }
+      } else {
+        rowNumber   = e.rowNumber ?? 0;
+        teacherName = e.teacherName ?? e.studentName ?? '';
+        message     = e.error ?? e.errorMessage ?? e.message ?? '';
+      }
+
+      message = message.replace(/^Row \d+:\s*/, '');
+
+      if (!map.has(rowNumber)) {
+        map.set(rowNumber, { rowNumber, teacherName, columns: [] });
+      }
+      map.get(rowNumber)!.columns.push(message);
+    });
+
+    return Array.from(map.values()).sort((a, b) =>
+      a.rowNumber === 0 ? 1 : b.rowNumber === 0 ? -1 : a.rowNumber - b.rowNumber
+    );
+  }
+
   removeFile(): void {
     this.selectedFile = null;
     const fileInput = document.getElementById('fileInput') as HTMLInputElement;
@@ -213,31 +261,59 @@ export class TeacherRegistrationComponent implements OnInit {
     this.uploadResults  = null;
 
     this.registrationService.bulkUploadTeachers(this.selectedFile).subscribe({
-      next: (response) => {
+      next: (raw) => {
         this.uploadProgress = false;
 
-        if (response.success) {
-          this.uploadResults = {
-            success: response.successfulRecords || 0,
-            failed:  response.failedRecords     || 0,
-            total:   response.totalRecords      || 0,
-            errors:  response.errors            || [],
-          };
+        const data = raw?.data ?? raw;
+        const success = data?.successCount      ?? data?.successfulRecords ?? 0;
+        const failed  = data?.failedCount       ?? data?.failedRecords     ?? 0;
+        const total   = data?.totalRows         ?? data?.totalRecords      ?? (success + failed);
+        const rawErrors: any[] = data?.errors ?? [];
+        const rowErrors = this.groupErrors(rawErrors);
 
-          this.toastService.showSuccess('Upload Complete', `${response.successfulRecords} teachers uploaded successfully`);
+        this.uploadResults = { success, failed, total, rowErrors };
 
-          if (response.failedRecords > 0) {
-            this.toastService.showWarning('Partial Upload', `${response.failedRecords} records failed. Check errors below.`);
-          }
-
-          this.removeFile();
-        } else {
-          this.toastService.showError('Upload Failed', response.message || 'Failed to upload teachers');
+        if (success > 0) {
+          this.toastService.showSuccess(
+            'Upload Complete',
+            `${success} of ${total} teachers registered successfully`
+          );
         }
+        if (failed > 0) {
+          this.toastService.showWarning(
+            'Validation Errors',
+            `${failed} row(s) failed — see error details below`
+          );
+        }
+        if (success === 0 && failed === 0) {
+          this.toastService.showError('Upload Failed', raw?.message || 'Unknown error');
+        }
+
+        this.removeFile();
       },
       error: (error) => {
         this.uploadProgress = false;
-        this.errorHandler.handle('Failed to upload teachers', error);
+
+        const body = error?.error;
+        const data = body?.data ?? body;
+        const rawErrors: any[] = data?.errors ?? [];
+        const rowErrors = this.groupErrors(rawErrors);
+
+        const failed  = data?.failedCount  ?? data?.failedRecords  ?? rowErrors.length;
+        const total   = data?.totalRows    ?? data?.totalRecords   ?? failed;
+        const success = data?.successCount ?? data?.successfulRecords ?? 0;
+
+        if (rowErrors.length > 0) {
+          this.uploadResults = { success, failed, total, rowErrors };
+          this.toastService.showWarning(
+            'Validation Errors',
+            `${failed} row(s) failed — see error details below`
+          );
+          return;
+        }
+
+        const msg = body?.message ?? body?.title ?? error?.message ?? 'Upload failed';
+        this.toastService.showError('Upload Failed', msg);
       },
     });
   }

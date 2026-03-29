@@ -379,28 +379,69 @@
       <!-- Upload Results -->
       <div *ngIf="uploadResults" class="upload-results">
         <h5><i class="fas fa-chart-bar"></i> Upload Results</h5>
+
+        <!-- Summary Cards -->
         <div class="results-grid">
+          <div class="result-card total">
+            <i class="fas fa-list"></i>
+            <div><strong>{{ uploadResults.total }}</strong><span>Total Rows</span></div>
+          </div>
           <div class="result-card success">
             <i class="fas fa-check-circle"></i>
             <div><strong>{{ uploadResults.success }}</strong><span>Successful</span></div>
           </div>
           <div class="result-card failed">
             <i class="fas fa-times-circle"></i>
-            <div><strong>{{ uploadResults.failed }}</strong><span>Failed</span></div>
-          </div>
-          <div class="result-card total">
-            <i class="fas fa-list"></i>
-            <div><strong>{{ uploadResults.total }}</strong><span>Total</span></div>
+            <div><strong>{{ uploadResults.failed }}</strong><span>Failed Rows</span></div>
           </div>
         </div>
-        <div *ngIf="uploadResults.errors && uploadResults.errors.length > 0" class="error-details">
-          <h6><i class="fas fa-exclamation-triangle"></i> Error Details</h6>
-          <div class="error-list">
-            <div *ngFor="let error of uploadResults.errors" class="error-item">
-              <i class="fas fa-circle"></i>
-              <span>{{ error }}</span>
-            </div>
+
+        <!-- Row-wise Error Table -->
+        <div *ngIf="uploadResults.rowErrors && uploadResults.rowErrors.length > 0" class="error-details">
+          <h6>
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ uploadResults.rowErrors.length }} Row(s) Have Errors — Fix and Re-upload
+          </h6>
+
+          <div class="error-table-wrap">
+            <table class="error-table">
+              <thead>
+                <tr>
+                  <th style="width:70px">Row</th>
+                  <th style="width:140px">Student</th>
+                  <th>Column Errors</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rowErr of uploadResults.rowErrors" class="error-row">
+                  <!-- Row number badge -->
+                  <td class="row-num">
+                    <span class="row-badge" *ngIf="rowErr.rowNumber > 0">{{ rowErr.rowNumber }}</span>
+                    <span class="row-badge unknown" *ngIf="rowErr.rowNumber === 0">?</span>
+                  </td>
+
+                  <!-- Student name -->
+                  <td class="student-col">
+                    {{ rowErr.studentName || '—' }}
+                  </td>
+
+                  <!-- All column errors for this row -->
+                  <td class="col-errors">
+                    <div *ngFor="let col of rowErr.columns" class="col-error-item">
+                      <i class="fas fa-times-circle"></i>
+                      <span>{{ col }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+
+        <!-- All success message -->
+        <div *ngIf="uploadResults.failed === 0 && uploadResults.success > 0" class="all-success-msg">
+          <i class="fas fa-check-circle"></i>
+          All {{ uploadResults.success }} students registered successfully!
         </div>
       </div>
     </div>
