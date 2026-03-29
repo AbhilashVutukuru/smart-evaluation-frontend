@@ -67,7 +67,7 @@ export class TeacherRegistrationComponent implements OnInit {
       gender:        ['', Validators.required],
       qualification: ['', Validators.required],
       experience:    [0, [Validators.required, Validators.min(0)]],
-      joiningDate:   ['', Validators.required],
+      dateOfJoining:   ['', Validators.required],
     });
   }
 
@@ -112,7 +112,7 @@ export class TeacherRegistrationComponent implements OnInit {
       gender:        'Gender',
       qualification: 'Qualification',
       experience:    'Experience',
-      joiningDate:   'Joining Date',
+      dateOfJoining:   'Joining Date',
     };
     return labels[fieldName] || fieldName;
   }

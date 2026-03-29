@@ -83,7 +83,7 @@
               <option value="">Select Gender</option>
               <option value="Male">Male</option>
               <option value="Female">Female</option>
-              <option value="Other">Other</option>
+              <!-- <option value="Other">Other</option> -->
             </select>
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
@@ -189,18 +189,18 @@
       </div>
 
       <!-- Joining Date -->
-      <div class="mb-3">
+      <div class="col-md-6 mb-3">
         <label class="form-label">Joining Date <span class="required">*</span></label>
         <input
           type="date"
           class="form-control"
-          [class.is-invalid]="shouldShowError('joiningDate')"
-          formControlName="joiningDate"
-          (blur)="onFieldBlur('joiningDate')"
+          [class.is-invalid]="shouldShowError('dateOfJoining')"
+          formControlName="dateOfJoining"
+          (blur)="onFieldBlur('dateOfJoining')"
           [max]="today"
         />
-        <div class="error-message" *ngIf="shouldShowError('joiningDate')">
-          {{ getErrorMessage('joiningDate') }}
+        <div class="error-message" *ngIf="shouldShowError('dateOfJoining')">
+          {{ getErrorMessage('dateOfJoining') }}
         </div>
       </div>
 

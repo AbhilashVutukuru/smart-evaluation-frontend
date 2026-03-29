@@ -60,6 +60,8 @@ export class AdminSettingsComponent implements OnInit {
 
   // ── Forms ──────────────────────────────────────────────────
   classForm!: FormGroup;
+  get today(): string { return new Date().toISOString().split('T')[0]; }
+  get currentYear(): number { return new Date().getFullYear(); }
   sectionForm!: FormGroup;
   subjectForm!: FormGroup;
   examTypeForm!: FormGroup;
@@ -108,9 +110,9 @@ export class AdminSettingsComponent implements OnInit {
   // ── Form initialisation ───────────────────────────────────
   initForms(): void {
     // Master forms — no class dependency
-    this.classForm = this.fb.group({ classNumber: ['', Validators.required] });
+    this.classForm = this.fb.group({ classNumber: ['', [Validators.required, Validators.pattern(/^(1[0-2]|[1-9])$/)]] });
     this.sectionForm = this.fb.group({
-      sectionName: ['', Validators.required],
+      sectionName: ['', [Validators.required, Validators.pattern(/^[A-Z]$/)]],
     });
     this.subjectForm = this.fb.group({
       subjectName: ['', Validators.required],
@@ -136,10 +138,19 @@ export class AdminSettingsComponent implements OnInit {
     });
 
     // Academic Year forms
-    this.academicYearForm = this.fb.group({
-      yearName: ['', Validators.required],
-      startDate: ['', Validators.required],
-      endDate: ['', Validators.required],
+    this.academicYearForm = this.fb.group(
+      {
+        yearName:  ['', [Validators.required, this.academicYearNameValidator()]],
+        startDate: ['', Validators.required],
+        endDate:   ['', Validators.required],
+      },
+      { validators: this.academicYearDatesValidator() }
+    );
+
+    // Re-validate dates whenever yearName changes
+    this.academicYearForm.get('yearName')?.valueChanges.subscribe(() => {
+      this.academicYearForm.get('startDate')?.updateValueAndValidity({ emitEvent: false });
+      this.academicYearForm.get('endDate')?.updateValueAndValidity({ emitEvent: false });
     });
 
     this.promoteStudentsForm = this.fb.group({
@@ -790,6 +801,128 @@ export class AdminSettingsComponent implements OnInit {
   // ── Helpers ───────────────────────────────────────────────
   private showSuccess(msg: string): void {   
     this.toastService.showSuccess('Success', msg); 
+  }
+
+  // ── Class number: digits only, 1-12 ─────────────────────────
+  onClassNumberInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Strip non-digits
+    let val = input.value.replace(/[^0-9]/g, '');
+    // Clamp to 1-12
+    if (val !== '') {
+      const num = parseInt(val, 10);
+      if (num > 12) val = '12';
+      if (num < 1 && val.length > 0) val = val.slice(0, -1);
+    }
+    input.value = val;
+    this.classForm.get('classNumber')?.setValue(val, { emitEvent: false });
+  }
+
+  // ── Section name: single uppercase A-Z only ──────────────────
+  onSectionNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    // Keep only A-Z (uppercase)
+    const val = input.value.replace(/[^A-Za-z]/g, '').toUpperCase().slice(0, 1);
+    input.value = val;
+    this.sectionForm.get('sectionName')?.setValue(val, { emitEvent: false });
+  }
+
+  // ── Academic Year Name: must be YYYY-(YYYY+1) ────────────────
+  academicYearNameValidator() {
+    return (control: any) => {
+      const val: string = control.value || '';
+      if (!val) return null;
+
+      const match = val.match(/^(\d{4})-(\d{4})$/);
+      if (!match) return { invalidFormat: true };
+
+      const from = parseInt(match[1], 10);
+      const to   = parseInt(match[2], 10);
+      const currentYear = new Date().getFullYear();
+
+      if (to !== from + 1)   return { notConsecutive: true };
+      if (from < currentYear) return { pastYear: true };
+      // Only allow current year or next year
+      if (from > currentYear + 1) return { tooFarFuture: true };
+
+      return null;
+    };
+  }
+
+  /** Cross-field: start and end dates must fall within the named year range */
+  academicYearDatesValidator() {
+    return (group: any) => {
+      const yearName  = group.get('yearName')?.value || '';
+      const startDate = group.get('startDate')?.value || '';
+      const endDate   = group.get('endDate')?.value   || '';
+
+      const errors: any = {};
+
+      const match = yearName.match(/^(\d{4})-(\d{4})$/);
+      if (!match || !startDate || !endDate) return null;
+
+      const fromYear = parseInt(match[1], 10);
+      const toYear   = parseInt(match[2], 10);
+
+      const start = new Date(startDate);
+      const end   = new Date(endDate);
+
+      // Start date must be in fromYear
+      if (start.getFullYear() !== fromYear) {
+        errors['startDateYearMismatch'] = true;
+      }
+      // End date must be in toYear
+      if (end.getFullYear() !== toYear) {
+        errors['endDateYearMismatch'] = true;
+      }
+      // End must be after start
+      if (startDate && endDate && end <= start) {
+        errors['endBeforeStart'] = true;
+      }
+
+      return Object.keys(errors).length ? errors : null;
+    };
+  }
+
+  // ── Min/Max for date inputs based on yearName ────────────────
+  get startDateMin(): string {
+    const match = (this.academicYearForm?.get('yearName')?.value || '').match(/^(\d{4})/);
+    return match ? `${match[1]}-01-01` : this.today;
+  }
+  get startDateMax(): string {
+    const match = (this.academicYearForm?.get('yearName')?.value || '').match(/^(\d{4})/);
+    return match ? `${match[1]}-12-31` : '';
+  }
+  get endDateMin(): string {
+    const match = (this.academicYearForm?.get('yearName')?.value || '').match(/-(\d{4})$/);
+    return match ? `${match[1]}-01-01` : this.today;
+  }
+  get endDateMax(): string {
+    const match = (this.academicYearForm?.get('yearName')?.value || '').match(/-(\d{4})$/);
+    return match ? `${match[1]}-12-31` : '';
+  }
+
+  // ── Auto-format: insert dash after 4 digits, allow only numbers+dash ──
+  onYearNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let val = input.value;
+
+    // Strip anything that's not a digit or dash
+    val = val.replace(/[^0-9-]/g, '');
+
+    // Auto-insert dash after 4 digits
+    if (val.length === 4 && !val.includes('-')) {
+      val = val + '-';
+    }
+
+    // Limit total length to 9 (YYYY-YYYY)
+    if (val.length > 9) {
+      val = val.slice(0, 9);
+    }
+
+    input.value = val;
+    this.academicYearForm.get('yearName')?.setValue(val, { emitEvent: false });
+    this.academicYearForm.get('yearName')?.updateValueAndValidity();
   }
 
 }

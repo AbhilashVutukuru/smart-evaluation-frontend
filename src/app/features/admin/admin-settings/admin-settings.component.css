@@ -703,3 +703,63 @@ select.field-input {
 
   .flow-arrow { display: none; }
 }
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.75rem;
+  z-index: 1;
+}
+
+.select-wrapper select.field-input {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+}
+
+.select-wrapper select.field-input:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.field-input:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+/* ===== Date Input — Hand cursor + past dates visually disabled ===== */
+input[type="date"].date-input {
+  cursor: pointer;
+}
+
+input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+/* ===== Field Validation Error ===== */
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: #ef4444;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.field-error::before {
+  content: "⚠ ";
+}
