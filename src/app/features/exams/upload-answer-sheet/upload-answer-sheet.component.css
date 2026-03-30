@@ -844,3 +844,67 @@ input[type="checkbox"] {
 .card {
   animation: fadeIn 0.3s ease;
 }
+
+/* ===== Fix double-border on inputs ===== */
+.form-control {
+  outline: none;
+  background-image: none !important;
+}
+
+.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control:focus-visible {
+  outline: none;
+}
+
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.75rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
+}

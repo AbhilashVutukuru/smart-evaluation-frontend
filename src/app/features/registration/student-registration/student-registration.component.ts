@@ -12,11 +12,17 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 
+interface RowError {
+  rowNumber: number;       // Excel row number (0 = unknown)
+  studentName: string;
+  columns: string[];       // list of column-level error messages
+}
+
 interface UploadResults {
-  success: number;
-  failed:  number;
-  total:   number;
-  errors?: string[];
+  success:   number;
+  failed:    number;
+  total:     number;
+  rowErrors: RowError[];   // grouped by row
 }
 
 @Component({
@@ -56,6 +62,56 @@ export class StudentRegistrationComponent implements OnInit {
   touchedFields: Set<string> = new Set();
 
   // ============================================
+  // Error Grouping Helper
+  // ============================================
+
+  private groupErrors(rawErrors: any[]): RowError[] {
+    const map = new Map<number, RowError>();
+
+    rawErrors.forEach((e: any) => {
+      let rowNumber = 0;
+      let studentName = '';
+      let message = '';
+
+      if (typeof e === 'string') {
+        // Try JSON parse (double-serialised)
+        try {
+          const parsed = JSON.parse(e);
+          rowNumber   = parsed.rowNumber ?? 0;
+          studentName = parsed.studentName ?? '';
+          message     = parsed.error ?? parsed.errorMessage ?? parsed.message ?? e;
+        } catch {
+          // Plain string like "Row 3: Phone Number must be..."
+          const match = e.match(/^Row (\d+):\s*(.+)$/);
+          if (match) { rowNumber = +match[1]; message = match[2]; }
+          else { message = e; }
+        }
+      } else {
+        rowNumber   = e.rowNumber ?? 0;
+        studentName = e.studentName ?? '';
+        message     = e.error ?? e.errorMessage ?? e.message ?? '';
+      }
+
+      // Strip redundant "Row N: " prefix from message if present
+      message = message.replace(/^Row \d+:\s*/, '');
+
+      const key = rowNumber;
+      if (!map.has(key)) {
+        map.set(key, { rowNumber, studentName, columns: [] });
+      }
+      map.get(key)!.columns.push(message);
+    });
+
+    // Sort by row number (unknown rows last)
+    return Array.from(map.values()).sort((a, b) =>
+      a.rowNumber === 0 ? 1 : b.rowNumber === 0 ? -1 : a.rowNumber - b.rowNumber
+    );
+  }
+
+  // Today's date for max date constraint (YYYY-MM-DD)
+  todayDate = new Date().toISOString().split('T')[0];
+
+  // ============================================
   // Lifecycle
   // ============================================
 
@@ -75,7 +131,7 @@ export class StudentRegistrationComponent implements OnInit {
       lastName:      ['', Validators.required],
       dateOfBirth:   ['', Validators.required],
       gender:        ['', Validators.required],
-      email:         ['', [Validators.required, Validators.email]],
+      // email:         ['', [Validators.required, Validators.email]],
       phoneNumber:   ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       address:       ['', Validators.required],
       classId:       ['', Validators.required],
@@ -321,31 +377,67 @@ export class StudentRegistrationComponent implements OnInit {
     this.registrationService
       .bulkUploadStudents(this.selectedFile!, this.bulkClassId!, this.bulkSectionId!)
       .subscribe({
-        next: (response) => {
+        next: (raw) => {
           this.uploadProgress = false;
 
-          if (response.success) {
-            this.uploadResults = {
-              success: response.successfulRecords || 0,
-              failed:  response.failedRecords     || 0,
-              total:   response.totalRecords      || 0,
-              errors:  response.errors            || [],
-            };
+          // Backend wraps in ApiResponse: { success, data: { successCount, failedCount, totalRows, errors: [{row, studentName, email, errorMessage}] } }
+          // OR returns BulkUploadResponse directly: { success, totalRecords, successfulRecords, failedRecords, errors: string[] }
+          const data = raw?.data ?? raw;
 
-            this.toastService.showSuccess('Upload Complete', `${response.successfulRecords} students uploaded successfully`);
+          const success = data?.successCount      ?? data?.successfulRecords ?? 0;
+          const failed  = data?.failedCount       ?? data?.failedRecords     ?? 0;
+          const total   = data?.totalRows         ?? data?.totalRecords      ?? (success + failed);
 
-            if (response.failedRecords > 0) {
-              this.toastService.showWarning('Partial Upload', `${response.failedRecords} records failed. Check errors below.`);
-            }
+          // Backend errors[] may be BulkStudentError objects or plain strings — normalise to string[]
+          const rawErrors: any[] = data?.errors ?? [];
+          const rowErrors = this.groupErrors(rawErrors);
 
-            this.removeFile();
-          } else {
-            this.toastService.showError('Upload Failed', response.message);
+          this.uploadResults = { success, failed, total, rowErrors };
+
+          if (success > 0) {
+            this.toastService.showSuccess(
+              'Upload Complete',
+              `${success} of ${total} students registered successfully`
+            );
           }
+          if (failed > 0) {
+            this.toastService.showWarning(
+              'Validation Errors',
+              `${failed} row(s) failed — see error details below`
+            );
+          }
+          if (success === 0 && failed === 0) {
+            this.toastService.showError('Upload Failed', raw?.message || 'Unknown error');
+          }
+
+          this.removeFile();
         },
         error: (error) => {
           this.uploadProgress = false;
-          this.errorHandler.handle('Upload failed', error);
+
+          // HTTP 400/422 — backend may still send structured error body
+          const body = error?.error;
+          const data = body?.data ?? body;
+
+          const rawErrors: any[] = data?.errors ?? [];
+          const rowErrors = this.groupErrors(rawErrors);
+
+          const failed  = data?.failedCount  ?? data?.failedRecords  ?? rowErrors.length;
+          const total   = data?.totalRows    ?? data?.totalRecords   ?? failed;
+          const success = data?.successCount ?? data?.successfulRecords ?? 0;
+
+          if (rowErrors.length > 0) {
+            this.uploadResults = { success, failed, total, rowErrors };
+            this.toastService.showWarning(
+              'Validation Errors',
+              `${failed} row(s) failed — see error details below`
+            );
+            return;
+          }
+
+          // No structured errors — show generic message
+          const msg = body?.message ?? body?.title ?? error?.message ?? 'Upload failed';
+          this.toastService.showError('Upload Failed', msg);
         },
       });
   }

@@ -881,33 +881,52 @@
 
 /* ── Exam Date edit group ──────────────────────────────────────────────────── */
 .exam-date-edit-group {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  width: 100%;
 }
 
 .exam-date-edit-group .meta-edit-input {
   flex: 1;
+  width: 100%;
+  cursor: pointer;
+  padding-right: 4.5rem; /* room for clear button + calendar icon */
 }
 
+/* Calendar icon pinned to far right */
+.exam-date-edit-group input[type="date"].meta-edit-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  position: absolute;
+  right: 0.5rem;
+}
+
+.exam-date-edit-group input[type="date"].meta-edit-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Clear button sits to the left of the calendar icon */
 .btn-clear-date {
-  background: #fee2e2;
-  color: #ef4444;
+  position: absolute;
+  right: 2rem;
+  background: none;
   border: none;
-  border-radius: 0.375rem;
-  width: 1.75rem;
-  height: 1.75rem;
+  color: #ef4444;
+  font-size: 0.8rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 0.75rem;
-  flex-shrink: 0;
-  transition: background 0.2s;
+  border-radius: 50%;
+  transition: background 0.15s;
+  z-index: 2;
 }
 
 .btn-clear-date:hover {
-  background: #fecaca;
+  background: #fee2e2;
 }
 
 /* ── Optional label suffix ────────────────────────────────────────────────── */
@@ -1056,4 +1075,52 @@
   color: #6b7280;
   margin: 0;
   font-size: 0.875rem;
+}
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.75rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
 }

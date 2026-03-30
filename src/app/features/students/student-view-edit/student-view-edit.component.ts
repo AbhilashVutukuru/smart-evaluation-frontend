@@ -8,6 +8,7 @@ import { CancelConfirmationComponent } from '../../../shared/components/cancel-c
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { RegistrationService } from '../../../core/services/registration.service';
 
 @Component({
   selector: 'app-student-view-edit',
@@ -24,12 +25,17 @@ export class StudentViewEditComponent implements OnInit {
   private masterDataService = inject(MasterDataService);
   private toastService      = inject(ToastService);
   private errorHandler      = inject(ErrorHandlerService);
+  private registrationService = inject(RegistrationService);
 
   // Form and Data
   studentForm!: FormGroup;
   studentId!:   number;
   mode: 'view' | 'edit' = 'view';
   loading = false;
+
+  // Today's date in YYYY-MM-DD — bound to [max] on date inputs
+  // so the calendar disables tomorrow and all future dates
+  today: string = new Date().toISOString().split('T')[0];
 
   // Dropdown data
   classes:  ClassDto[]   = [];
@@ -41,6 +47,9 @@ export class StudentViewEditComponent implements OnInit {
 
   // Validation tracking
   touchedFields: Set<string> = new Set();
+
+  // Flag to suppress valueChanges side-effects during initial data load
+  private _initializing = false;
 
   // ============================================
   // Lifecycle
@@ -86,7 +95,23 @@ export class StudentViewEditComponent implements OnInit {
     });
 
     this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      if (classId) this.loadSections(+classId);
+      if (!this._initializing) {
+        this.sections = [];
+        this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
+        this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+        if (classId) this.loadSections(+classId);
+      }
+    });
+
+    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
+      const classId = this.studentForm.get('classId')?.value;
+      if (!this._initializing && this.mode === 'edit') {
+        if (sectionId && classId) {
+          this.loadNextRollNumber(+classId, +sectionId);
+        } else {
+          this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+        }
+      }
     });
   }
 
@@ -114,7 +139,8 @@ export class StudentViewEditComponent implements OnInit {
 
     if (control.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
     if (control.errors['email'])    return 'Please enter a valid email address';
-    if (control.errors['pattern'] && fieldName === 'phoneNumber') return 'Phone number must be exactly 10 digits';
+    if (control.errors['pattern'] && fieldName === 'phoneNumber')
+      return 'Phone number must be exactly 10 digits';
 
     return 'Invalid value';
   }
@@ -165,6 +191,44 @@ export class StudentViewEditComponent implements OnInit {
     });
   }
 
+  /** Loads sections then patches sectionId — used on initial data load
+      so the dropdown option exists before the value is bound */
+  private loadSectionsAndPatchSection(classId: number, sectionId: number | string): void {
+    if (!classId) return;
+    this.masterDataService.getSectionsByClass(classId).subscribe({
+      next: (sections) => {
+        this.sections = sections;
+        if (!sectionId) return;
+
+        const ctrl = this.studentForm.get('sectionId');
+        if (!ctrl) return;
+
+        // Guard against triggering loadNextRollNumber during patch
+        this._initializing = true;
+        const wasDisabled = ctrl.disabled;
+        if (wasDisabled) ctrl.enable({ emitEvent: false });
+        ctrl.setValue(+sectionId, { emitEvent: false });
+        if (wasDisabled) ctrl.disable({ emitEvent: false });
+        this._initializing = false;
+      },
+      error: (error) => this.errorHandler.handle('Failed to load sections', error),
+    });
+  }
+
+  /** Fetches next available roll number for a class+section */
+  private loadNextRollNumber(classId: number, sectionId: number): void {
+    if (!classId || !sectionId) return;
+    this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
+      next: (response: any) => {
+        const rollNumber = response?.data?.nextRollNumber;
+        if (rollNumber !== null && rollNumber !== undefined) {
+          this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
+        }
+      },
+      error: () => { /* silently ignore */ },
+    });
+  }
+
   private loadStudent(): void {
     this.loading = true;
 
@@ -174,6 +238,7 @@ export class StudentViewEditComponent implements OnInit {
 
         if (response.success && response.data) {
           const s = response.data;
+          this._initializing = true;
           this.studentForm.patchValue({
             firstName:     s.firstName,
             lastName:      s.lastName,
@@ -187,8 +252,9 @@ export class StudentViewEditComponent implements OnInit {
             rollNumber:    s.rollNumber,
             admissionDate: s.admissionDate?.split('T')[0],
           });
+          this._initializing = false;
 
-          if (s.classId) this.loadSections(s.classId);
+          if (s.classId) this.loadSectionsAndPatchSection(s.classId, s.sectionId);
         } else {
           this.toastService.showError('Error', 'Student not found');
           this.goBack();
@@ -208,7 +274,19 @@ export class StudentViewEditComponent implements OnInit {
 
   enableEdit(): void {
     this.mode = 'edit';
+    // Set _initializing BEFORE enable() — enabling a disabled form fires
+    // valueChanges on all controls, which would clear sections[] and lose sectionId
+    this._initializing = true;
     this.studentForm.enable();
+    this._initializing = false;
+
+    // Now re-load sections and patch sectionId using saved API values
+    const classId   = this.studentForm.get('classId')?.value;
+    const sectionId = this.studentForm.get('sectionId')?.value;
+    if (classId) {
+      this.loadSectionsAndPatchSection(+classId, sectionId ?? '');
+    }
+
     this.toastService.showInfo('Edit Mode', 'You can now edit student details');
   }
 
@@ -302,7 +380,12 @@ export class StudentViewEditComponent implements OnInit {
 
         if (response.success) {
           this.toastService.showSuccess('Success', 'Student deleted successfully!');
-          setTimeout(() => this.router.navigate(['/students/list']), 1500);
+          const qp = this.route.snapshot.queryParams;
+          setTimeout(() => this.router.navigate(['/students/list'], {
+            queryParams: qp['classId'] && qp['sectionId']
+              ? { classId: qp['classId'], sectionId: qp['sectionId'] }
+              : {}
+          }), 1500);
         } else {
           this.toastService.showError('Error', response.message || 'Failed to delete student');
         }
@@ -323,7 +406,12 @@ export class StudentViewEditComponent implements OnInit {
   // ============================================
 
   goBack(): void {
-    this.router.navigate(['/students/list']);
+    const qp = this.route.snapshot.queryParams;
+    this.router.navigate(['/students/list'], {
+      queryParams: qp['classId'] && qp['sectionId']
+        ? { classId: qp['classId'], sectionId: qp['sectionId'] }
+        : {}
+    });
   }
 
   getStudentFullName(): string {
@@ -335,6 +423,17 @@ export class StudentViewEditComponent implements OnInit {
   getStudentInfo(): string {
     const fullName   = this.getStudentFullName();
     const rollNumber = this.studentForm.get('rollNumber')?.value || '';
-    return rollNumber ? `${fullName} (Roll: ${rollNumber})` : fullName;
+    const classId    = this.studentForm.get('classId')?.value;
+    const sectionId  = this.studentForm.get('sectionId')?.value;
+
+    const className   = this.classes.find(c => String(c.id) === String(classId))?.className || '';
+    const sectionName = this.sections.find(s => String(s.id) === String(sectionId))?.sectionName || '';
+
+    const parts = [fullName];
+    if (className)   parts.push(`Class: ${className}`);
+    if (sectionName) parts.push(`Section: ${sectionName}`);
+    if (rollNumber)  parts.push(`Roll: ${rollNumber}`);
+
+    return parts.join(' | ');
   }
 }

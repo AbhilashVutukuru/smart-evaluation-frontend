@@ -15,6 +15,10 @@ export class UnauthorizedComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
 
+  // Check if this is a student-login attempt (user never authenticated)
+  readonly isStudentBlock: boolean =
+    sessionStorage.getItem('unauthorizedReason') === 'student';
+
   get userEmail(): string | null {
     return this.authService.getUserEmail();
   }
@@ -24,10 +28,16 @@ export class UnauthorizedComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/dashboard']);
+    if (this.isStudentBlock) {
+      sessionStorage.removeItem('unauthorizedReason');
+      this.router.navigate(['/auth/login']);
+    } else {
+      this.router.navigate(['/dashboard']);
+    }
   }
 
   logout(): void {
+    sessionStorage.removeItem('unauthorizedReason');
     this.authService.logout();
   }
 }

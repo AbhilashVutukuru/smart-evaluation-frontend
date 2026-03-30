@@ -44,8 +44,32 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
-    this.students = [];
-    this.showStudentsCard = false;
+    this.students            = [];
+    this.showStudentsCard    = false;
+    this.isSubmittedForEvaluation = false;
+    this.absentStudentIds    = [];
+    this.noExamPaperFound    = false;
+  }
+
+  // ─── Clear list whenever any filter changes ───────────────────────────────────
+  override onClassChange(classId: string): void {
+    this.clearStudents();
+    super.onClassChange(classId);
+  }
+
+  override onSectionChange(): void {
+    this.clearStudents();
+    super.onSectionChange();
+  }
+
+  override onSubjectChange(): void {
+    this.clearStudents();
+    super.onSubjectChange();
+  }
+
+  override onExamTypeChange(): void {
+    this.clearStudents();
+    super.onExamTypeChange();
   }
 
   // ─── Show Students ────────────────────────────────────────────────────────────
@@ -238,13 +262,3 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.openAnswerSheet(student.studentId);
   }
 }
-
-
-
-
-
-
-
-
-
-

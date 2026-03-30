@@ -47,12 +47,12 @@ export class RegistrationService {
     file: File,
     classId: number,
     sectionId: number
-  ): Observable<BulkUploadResponse> {
+  ): Observable<any> {
     const formData = new FormData();
     formData.append('ExcelFile', file);
     formData.append('ClassId', classId.toString());
     formData.append('SectionId', sectionId.toString());
-    return this.http.post<BulkUploadResponse>(
+    return this.http.post<any>(
       `${this.apiUrl}/bulk-registration/upload-students`,
       formData
     );
@@ -66,10 +66,10 @@ export class RegistrationService {
     );
   }
 
-  bulkUploadTeachers(file: File): Observable<BulkUploadResponse> {
+  bulkUploadTeachers(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('ExcelFile', file);
-    return this.http.post<BulkUploadResponse>(
+    return this.http.post<any>(
       `${this.apiUrl}/bulk-registration/upload-teachers`,
       formData
     );

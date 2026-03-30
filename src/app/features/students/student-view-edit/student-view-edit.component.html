@@ -1,4 +1,4 @@
-<!-- Student View/Edit Component - Complete with Error Handling & Validation -->
+<!-- Student View/Edit Component -->
 <div class="view-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -14,20 +14,12 @@
         <p class="breadcrumb">Students / {{ mode === 'view' ? 'View' : 'Edit' }}</p>
       </div>
     </div>
-    
+
     <div class="header-actions">
-      <button 
-        *ngIf="mode === 'view'" 
-        class="btn btn-primary" 
-        (click)="enableEdit()"
-      >
+      <button *ngIf="mode === 'view'" class="btn btn-primary" (click)="enableEdit()">
         <i class="fas fa-edit"></i> Edit
       </button>
-      <button 
-        *ngIf="mode === 'view'" 
-        class="btn btn-danger" 
-        (click)="deleteStudent()"
-      >
+      <button *ngIf="mode === 'view'" class="btn btn-danger" (click)="deleteStudent()">
         <i class="fas fa-trash"></i> Delete
       </button>
     </div>
@@ -42,16 +34,17 @@
   <!-- Form Content -->
   <div *ngIf="!loading" class="form-content">
     <form [formGroup]="studentForm" (ngSubmit)="onSubmit()">
-      
-      <!-- Personal Information Card -->
+
+      <!-- Personal Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-id-card"></i>
           <span>Personal Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- First Name -->
             <div class="col-md-6 mb-3">
               <label class="form-label">First Name <span class="required">*</span></label>
               <input
@@ -67,6 +60,7 @@
               </div>
             </div>
 
+            <!-- Last Name -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Last Name <span class="required">*</span></label>
               <input
@@ -84,6 +78,8 @@
           </div>
 
           <div class="row">
+
+            <!-- Date of Birth — [max]="today" disables future dates -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Date of Birth <span class="required">*</span></label>
               <input
@@ -92,24 +88,29 @@
                 [class.is-invalid]="shouldShowError('dateOfBirth')"
                 formControlName="dateOfBirth"
                 (blur)="onFieldBlur('dateOfBirth')"
+                [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
                 {{ getErrorMessage('dateOfBirth') }}
               </div>
             </div>
 
+            <!-- Gender -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Gender <span class="required">*</span></label>
-              <select 
-                class="form-control"
-                [class.is-invalid]="shouldShowError('gender')"
-                formControlName="gender"
-                (blur)="onFieldBlur('gender')"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-              </select>
+              <div class="select-wrapper">
+                <select
+                  class="form-control"
+                  [class.is-invalid]="shouldShowError('gender')"
+                  formControlName="gender"
+                  (blur)="onFieldBlur('gender')"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
               <div class="error-message" *ngIf="shouldShowError('gender')">
                 {{ getErrorMessage('gender') }}
               </div>
@@ -118,15 +119,16 @@
         </div>
       </div>
 
-      <!-- Contact Information Card -->
+      <!-- Contact Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-address-book"></i>
           <span>Contact Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- Email -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Email <span class="required">*</span></label>
               <input
@@ -142,6 +144,7 @@
               </div>
             </div>
 
+            <!-- Phone -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Phone Number <span class="required">*</span></label>
               <input
@@ -160,6 +163,7 @@
             </div>
           </div>
 
+          <!-- Address -->
           <div class="mb-3">
             <label class="form-label">Address <span class="required">*</span></label>
             <textarea
@@ -177,51 +181,60 @@
         </div>
       </div>
 
-      <!-- Academic Information Card -->
+      <!-- Academic Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-graduation-cap"></i>
           <span>Academic Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- Class -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Class <span class="required">*</span></label>
-              <select 
-                class="form-control"
-                [class.is-invalid]="shouldShowError('classId')"
-                formControlName="classId"
-                (blur)="onFieldBlur('classId')"
-              >
-                <option value="">Select Class</option>
-                <option *ngFor="let cls of classes" [value]="cls.id">
-                  {{ cls.className }}
-                </option>
-              </select>
+              <div class="select-wrapper">
+                <select
+                  class="form-control"
+                  [class.is-invalid]="shouldShowError('classId')"
+                  formControlName="classId"
+                  (blur)="onFieldBlur('classId')"
+                >
+                  <option value="">Select Class</option>
+                  <option *ngFor="let cls of classes" [ngValue]="cls.id">
+                    {{ cls.className }}
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
               <div class="error-message" *ngIf="shouldShowError('classId')">
                 {{ getErrorMessage('classId') }}
               </div>
             </div>
 
+            <!-- Section -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Section <span class="required">*</span></label>
-              <select 
-                class="form-control"
-                [class.is-invalid]="shouldShowError('sectionId')"
-                formControlName="sectionId"
-                (blur)="onFieldBlur('sectionId')"
-              >
-                <option value="">Select Section</option>
-                <option *ngFor="let sec of sections" [value]="sec.id">
-                  {{ sec.sectionName }}
-                </option>
-              </select>
+              <div class="select-wrapper">
+                <select
+                  class="form-control"
+                  [class.is-invalid]="shouldShowError('sectionId')"
+                  formControlName="sectionId"
+                  (blur)="onFieldBlur('sectionId')"
+                >
+                  <option value="">Select Section</option>
+                  <option *ngFor="let sec of sections" [ngValue]="sec.id">
+                    {{ sec.sectionName }}
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
               <div class="error-message" *ngIf="shouldShowError('sectionId')">
                 {{ getErrorMessage('sectionId') }}
               </div>
             </div>
 
+            <!-- Roll Number (readonly) -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Roll Number <span class="required">*</span></label>
               <input
@@ -229,13 +242,15 @@
                 class="form-control"
                 formControlName="rollNumber"
                 readonly
-                placeholder="Roll Number"
+                placeholder="Auto-generated"
               />
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-6 mb-3">
+
+            <!-- Admission Date — [max]="today" disables future dates -->
+            <div class="col-md-4 mb-3">
               <label class="form-label">Admission Date <span class="required">*</span></label>
               <input
                 type="date"
@@ -243,6 +258,7 @@
                 [class.is-invalid]="shouldShowError('admissionDate')"
                 formControlName="admissionDate"
                 (blur)="onFieldBlur('admissionDate')"
+                [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('admissionDate')">
                 {{ getErrorMessage('admissionDate') }}
@@ -252,18 +268,18 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons (edit mode only) -->
       <div *ngIf="mode === 'edit'" class="action-buttons">
-        <button 
-          type="button" 
-          class="btn btn-secondary btn-lg" 
+        <button
+          type="button"
+          class="btn btn-secondary btn-lg"
           (click)="cancelEdit()"
           [disabled]="loading"
         >
           <i class="fas fa-times"></i> Cancel
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn btn-success btn-lg"
           [disabled]="loading"
         >

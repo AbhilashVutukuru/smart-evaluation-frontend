@@ -1,9 +1,8 @@
 /* ============================================ */
 /* STUDENT REGISTRATION COMPONENT - COMPLETE CSS */
-/* Responsive & Auto-fit with Error Handling */
 /* ============================================ */
 
-/* ===== Container - Full Screen Auto-fit ===== */
+/* ===== Container ===== */
 .registration-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -55,6 +54,7 @@
   padding: 1.5rem;
   margin-bottom: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease;
 }
 
 .card h4 {
@@ -75,7 +75,7 @@
   .card {
     padding: 1rem;
   }
-  
+
   .card h4 {
     font-size: 1.125rem;
   }
@@ -108,7 +108,7 @@
   font-size: 1.125rem;
 }
 
-/* ===== Form Controls ===== */
+/* ===== Form Labels ===== */
 .form-label {
   display: block;
   margin-bottom: 0.5rem;
@@ -122,19 +122,26 @@
   font-weight: 600;
 }
 
+/* ===== Base Form Controls ===== */
+/* outline:none prevents browser native ring stacking → fixes double-line */
 .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+  outline: none;
 }
 
 .form-control:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control:focus-visible {
+  outline: none;
 }
 
 .form-control:disabled {
@@ -148,7 +155,78 @@ textarea.form-control {
   font-family: inherit;
 }
 
-/* ✅ Error State Styling */
+/* Clear SVG background from non-select inputs */
+input.form-control,
+textarea.form-control {
+  background-image: none !important;
+}
+
+/* Date input tweaks */
+input[type="date"].form-control {
+  padding-right: 0.5rem;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  margin-right: 2px;
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.8rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control.is-invalid + .select-icon {
+  color: #ef4444;
+}
+
+/* Placeholder option grey, real values dark */
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
+}
+
+/* ===== Error State ===== */
 .form-control.is-invalid {
   border-color: #ef4444 !important;
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
@@ -159,7 +237,7 @@ textarea.form-control {
   box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
 }
 
-/* ✅ Error Message Styling */
+/* ===== Error Message ===== */
 .error-message {
   color: #ef4444;
   font-size: 0.8125rem;
@@ -181,7 +259,11 @@ textarea.form-control {
     font-size: 0.8125rem;
     padding: 0.5rem 0.75rem;
   }
-  
+
+  .select-wrapper select.form-control {
+    padding-right: 2.25rem;
+  }
+
   .error-message {
     font-size: 0.75rem;
   }
@@ -201,13 +283,8 @@ textarea.form-control {
 }
 
 @media (min-width: 768px) {
-  .col-md-4 {
-    width: 33.333333%;
-  }
-  
-  .col-md-6 {
-    width: 50%;
-  }
+  .col-md-4 { width: 33.333333%; }
+  .col-md-6 { width: 50%; }
 }
 
 .mb-3 {
@@ -311,7 +388,7 @@ textarea.form-control {
   .button-group {
     flex-direction: column;
   }
-  
+
   .button-group .btn {
     width: 100%;
   }
@@ -377,7 +454,6 @@ textarea.form-control {
   font-size: 0.8125rem;
 }
 
-/* File Selected State */
 .file-selected {
   background: white;
   border-radius: 8px;
@@ -438,17 +514,6 @@ textarea.form-control {
   font-size: 1rem;
 }
 
-@media (max-width: 640px) {
-  .upload-section {
-    padding: 1.5rem 1rem;
-  }
-  
-  .upload-placeholder i {
-    font-size: 3rem;
-  }
-}
-
-/* ✅ File Input Label as Button */
 label[for="fileInput"] {
   display: inline-flex;
   align-items: center;
@@ -462,6 +527,16 @@ label[for="fileInput"].disabled {
   opacity: 0.6;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .upload-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .upload-placeholder i {
+    font-size: 3rem;
+  }
 }
 
 /* ===== Upload Results ===== */
@@ -509,66 +584,23 @@ label[for="fileInput"].disabled {
   border: 2px solid;
 }
 
-.result-card i {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
+.result-card i         { font-size: 2rem; flex-shrink: 0; }
+.result-card > div     { display: flex; flex-direction: column; gap: 0.25rem; }
+.result-card strong    { font-size: 1.5rem; font-weight: 700; line-height: 1; }
+.result-card span      { font-size: 0.875rem; color: #6b7280; font-weight: 500; }
 
-.result-card > div {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
+.result-card.success   { border-color: #10b981; }
+.result-card.success i { color: #10b981; }
+.result-card.success strong { color: #059669; }
 
-.result-card strong {
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1;
-}
+.result-card.failed    { border-color: #ef4444; }
+.result-card.failed i  { color: #ef4444; }
+.result-card.failed strong { color: #dc2626; }
 
-.result-card span {
-  font-size: 0.875rem;
-  color: #6b7280;
-  font-weight: 500;
-}
+.result-card.total     { border-color: #6366f1; }
+.result-card.total i   { color: #6366f1; }
+.result-card.total strong { color: #4f46e5; }
 
-.result-card.success {
-  border-color: #10b981;
-}
-
-.result-card.success i {
-  color: #10b981;
-}
-
-.result-card.success strong {
-  color: #059669;
-}
-
-.result-card.failed {
-  border-color: #ef4444;
-}
-
-.result-card.failed i {
-  color: #ef4444;
-}
-
-.result-card.failed strong {
-  color: #dc2626;
-}
-
-.result-card.total {
-  border-color: #6366f1;
-}
-
-.result-card.total i {
-  color: #6366f1;
-}
-
-.result-card.total strong {
-  color: #4f46e5;
-}
-
-/* Error Details */
 .error-details {
   background: white;
   border-radius: 8px;
@@ -586,9 +618,7 @@ label[for="fileInput"].disabled {
   gap: 0.5rem;
 }
 
-.error-details h6 i {
-  color: #ef4444;
-}
+.error-details h6 i { color: #ef4444; }
 
 .error-list {
   display: flex;
@@ -600,66 +630,293 @@ label[for="fileInput"].disabled {
 
 .error-item {
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   background: #fef2f2;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.8125rem;
   color: #991b1b;
 }
 
-.error-item i {
-  color: #ef4444;
-  font-size: 0.5rem;
-  margin-top: 0.375rem;
+.error-item .row-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
-/* ===== Utility Classes ===== */
-.d-flex {
-  display: flex;
+.error-item i {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
 }
 
-.gap-2 {
-  gap: 0.5rem;
-}
+/* ===== Utilities ===== */
+.d-flex  { display: flex; }
+.gap-2   { gap: 0.5rem; }
+.mt-3    { margin-top: 1rem; }
 
-.mt-3 {
-  margin-top: 1rem;
-}
-
-/* ===== Animations ===== */
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card {
-  animation: slideIn 0.3s ease;
-}
-
-/* ===== Print Styles ===== */
+/* ===== Print ===== */
 @media print {
   .registration-container {
     padding: 0;
     background: white;
   }
-  
+
   .btn,
   .button-group,
   .upload-section {
     display: none;
   }
-  
+
   .card {
     box-shadow: none;
     page-break-inside: avoid;
   }
+}
+
+/* ===== Animations ===== */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* ===== Bulk Upload Error Table ===== */
+.error-table-wrap {
+  max-height: 350px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid #fee2e2;
+}
+
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.error-table thead {
+  background: #fef2f2;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.error-table thead th {
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #991b1b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #fecaca;
+}
+
+.error-table tbody tr.error-row {
+  border-bottom: 1px solid #fef2f2;
+}
+
+.error-table tbody tr.error-row:hover {
+  background: #fff5f5;
+}
+
+.error-table td {
+  padding: 0.625rem 0.875rem;
+  vertical-align: top;
+}
+
+.row-num {
+  width: 60px;
+  text-align: center;
+}
+
+.row-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.student-col {
+  width: 160px;
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.8125rem;
+}
+
+.error-msg {
+  color: #991b1b;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.375rem;
+  line-height: 1.5;
+}
+
+.error-msg i {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.125rem;
+  flex-shrink: 0;
+}
+
+.text-danger { color: #ef4444 !important; }
+
+/* ===== All Success Message ===== */
+.all-success-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 8px;
+  color: #065f46;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.all-success-msg i {
+  color: #10b981;
+  font-size: 1.25rem;
+}
+/* ===== Row-wise Error Table ===== */
+.error-table-wrap {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.error-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.error-table thead {
+  background: #fef2f2;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.error-table thead th {
+  padding: 0.625rem 0.875rem;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #991b1b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #fecaca;
+}
+
+.error-table tbody tr.error-row {
+  border-bottom: 1px solid #fee2e2;
+  vertical-align: top;
+}
+
+.error-table tbody tr.error-row:last-child {
+  border-bottom: none;
+}
+
+.error-table tbody tr.error-row:hover {
+  background: #fff5f5;
+}
+
+.error-table td {
+  padding: 0.75rem 0.875rem;
+  vertical-align: top;
+}
+
+/* Row number cell */
+.row-num {
+  text-align: center;
+  width: 70px;
+}
+
+.row-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  background: #fee2e2;
+  color: #dc2626;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0 6px;
+}
+
+.row-badge.unknown {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+/* Student name cell */
+.student-col {
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+/* Column errors cell */
+.col-errors {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.col-error-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #991b1b;
+  line-height: 1.4;
+}
+
+.col-error-item i {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.text-danger { color: #ef4444 !important; }
+
+/* ===== All Success Message ===== */
+.all-success-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 8px;
+  color: #065f46;
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.all-success-msg i {
+  color: #10b981;
+  font-size: 1.25rem;
 }

@@ -16,11 +16,11 @@
 
     <!-- Message -->
     <p class="message">
-      You don't have permission to access this page.
+      {{ isStudentBlock ? 'This portal is for school staff only.' : "You don't have permission to access this page." }}
     </p>
 
-    <!-- User Info -->
-    <div class="user-info" *ngIf="userEmail">
+    <!-- User Info — only show if authenticated user data is available -->
+    <div class="user-info" *ngIf="userEmail && !isStudentBlock">
       <p class="user-detail">
         <strong>Logged in as:</strong> {{ userEmail }}
       </p>
@@ -30,9 +30,13 @@
     </div>
 
     <!-- Description -->
-    <p class="description">
-      This page requires specific permissions that your account doesn't have. 
+    <p class="description" *ngIf="!isStudentBlock">
+      This page requires specific permissions that your account doesn't have.
       If you believe this is an error, please contact your administrator.
+    </p>
+    <p class="description" *ngIf="isStudentBlock">
+      Students are not permitted to log in to this portal.
+      Please contact your school administrator for assistance.
     </p>
 
     <!-- Actions -->
@@ -41,7 +45,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
-        Go to Dashboard
+        {{ isStudentBlock ? 'Back to Login' : 'Go to Dashboard' }}
       </button>
       
       <button class="btn btn-secondary" (click)="logout()">

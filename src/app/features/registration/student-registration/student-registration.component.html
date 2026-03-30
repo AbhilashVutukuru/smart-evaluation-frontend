@@ -1,4 +1,4 @@
-<!-- Student Registration Component - Complete with Error Handling & Validation -->
+<!-- Student Registration Component -->
 <div class="registration-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -12,12 +12,12 @@
     </button>
   </div>
 
-  <!-- Single Registration Form -->
+  <!-- ===== SINGLE REGISTRATION FORM ===== -->
   <div *ngIf="!showBulkUpload" class="card">
     <h4><i class="fas fa-user-plus"></i> Student Information</h4>
 
     <form [formGroup]="studentForm" (ngSubmit)="onSubmit()">
-      <!-- Personal Information Section -->
+      <!-- Personal Information -->
       <div class="section-header">
         <i class="fas fa-id-card"></i>
         <span>Personal Information</span>
@@ -25,7 +25,9 @@
 
       <div class="row">
         <div class="col-md-6 mb-3">
-          <label class="form-label">First Name <span class="required">*</span></label>
+          <label class="form-label"
+            >First Name <span class="required">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -35,11 +37,14 @@
             placeholder="Enter first name"
           />
           <div class="error-message" *ngIf="shouldShowError('firstName')">
-            {{ getErrorMessage('firstName') }}
+            {{ getErrorMessage("firstName") }}
           </div>
         </div>
+
         <div class="col-md-6 mb-3">
-          <label class="form-label">Last Name <span class="required">*</span></label>
+          <label class="form-label"
+            >Last Name <span class="required">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -49,51 +54,62 @@
             placeholder="Enter last name"
           />
           <div class="error-message" *ngIf="shouldShowError('lastName')">
-            {{ getErrorMessage('lastName') }}
+            {{ getErrorMessage("lastName") }}
           </div>
         </div>
       </div>
 
       <div class="row">
+        <!-- Date of Birth -->
         <div class="col-md-6 mb-3">
-          <label class="form-label">Date of Birth <span class="required">*</span></label>
+          <label class="form-label"
+            >Date of Birth <span class="required">*</span></label
+          >
           <input
             type="date"
             class="form-control"
             [class.is-invalid]="shouldShowError('dateOfBirth')"
             formControlName="dateOfBirth"
             (blur)="onFieldBlur('dateOfBirth')"
+            [max]="todayDate"
           />
           <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
-            {{ getErrorMessage('dateOfBirth') }}
+            {{ getErrorMessage("dateOfBirth") }}
           </div>
         </div>
+
+        <!-- Gender -->
         <div class="col-md-6 mb-3">
-          <label class="form-label">Gender <span class="required">*</span></label>
-          <select 
-            class="form-control"
-            [class.is-invalid]="shouldShowError('gender')"
-            formControlName="gender"
-            (blur)="onFieldBlur('gender')"
+          <label class="form-label"
+            >Gender <span class="required">*</span></label
           >
-            <option value="">Select Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="form-control"
+              [class.is-invalid]="shouldShowError('gender')"
+              formControlName="gender"
+              (blur)="onFieldBlur('gender')"
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
           <div class="error-message" *ngIf="shouldShowError('gender')">
-            {{ getErrorMessage('gender') }}
+            {{ getErrorMessage("gender") }}
           </div>
         </div>
       </div>
 
-      <!-- Contact Information Section -->
+      <!-- Contact Information -->
       <div class="section-header">
         <i class="fas fa-address-book"></i>
         <span>Contact Information</span>
       </div>
 
       <div class="row">
-        <div class="col-md-6 mb-3">
+        <!-- <div class="col-md-6 mb-3">
           <label class="form-label">Email <span class="required">*</span></label>
           <input
             type="email"
@@ -106,9 +122,29 @@
           <div class="error-message" *ngIf="shouldShowError('email')">
             {{ getErrorMessage('email') }}
           </div>
-        </div>
+        </div> -->
+
         <div class="col-md-6 mb-3">
-          <label class="form-label">Phone Number <span class="required">*</span></label>
+          <label class="form-label"
+            >Address <span class="required">*</span></label
+          >
+          <textarea
+            class="form-control"
+            [class.is-invalid]="shouldShowError('address')"
+            formControlName="address"
+            (blur)="onFieldBlur('address')"
+            rows="2"
+            placeholder="Enter complete address"
+          ></textarea>
+          <div class="error-message" *ngIf="shouldShowError('address')">
+            {{ getErrorMessage("address") }}
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+          <label class="form-label"
+            >Phone Number <span class="required">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -120,71 +156,73 @@
             maxlength="10"
           />
           <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
-            {{ getErrorMessage('phoneNumber') }}
+            {{ getErrorMessage("phoneNumber") }}
           </div>
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Address <span class="required">*</span></label>
-        <textarea
-          class="form-control"
-          [class.is-invalid]="shouldShowError('address')"
-          formControlName="address"
-          (blur)="onFieldBlur('address')"
-          rows="2"
-          placeholder="Enter complete address"
-        ></textarea>
-        <div class="error-message" *ngIf="shouldShowError('address')">
-          {{ getErrorMessage('address') }}
-        </div>
-      </div>
-
-      <!-- Academic Information Section -->
+      <!-- Academic Information -->
       <div class="section-header">
         <i class="fas fa-graduation-cap"></i>
         <span>Academic Information</span>
       </div>
 
       <div class="row">
+        <!-- Class -->
         <div class="col-md-4 mb-3">
-          <label class="form-label">Class <span class="required">*</span></label>
-          <select 
-            class="form-control"
-            [class.is-invalid]="shouldShowError('classId')"
-            formControlName="classId"
-            (blur)="onFieldBlur('classId')"
+          <label class="form-label"
+            >Class <span class="required">*</span></label
           >
-            <option value="">Select Class</option>
-            <option *ngFor="let cls of classes" [value]="cls.id">
-              {{ cls.className }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="form-control"
+              [class.is-invalid]="shouldShowError('classId')"
+              formControlName="classId"
+              (blur)="onFieldBlur('classId')"
+            >
+              <option value="">Select Class</option>
+              <option *ngFor="let cls of classes" [value]="cls.id">
+                {{ cls.className }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
           <div class="error-message" *ngIf="shouldShowError('classId')">
-            {{ getErrorMessage('classId') }}
+            {{ getErrorMessage("classId") }}
           </div>
         </div>
+
+        <!-- Section -->
         <div class="col-md-4 mb-3">
-          <label class="form-label">Section <span class="required">*</span></label>
-          <select 
-            class="form-control"
-            [class.is-invalid]="shouldShowError('sectionId')"
-            formControlName="sectionId"
-            (blur)="onFieldBlur('sectionId')"
+          <label class="form-label"
+            >Section <span class="required">*</span></label
           >
-            <option value="">
-              {{ isClassSelected ? "Select Section" : "Select Class First" }}
-            </option>
-            <option *ngFor="let sec of sections" [value]="sec.id">
-              {{ sec.sectionName }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="form-control"
+              [class.is-invalid]="shouldShowError('sectionId')"
+              formControlName="sectionId"
+              (blur)="onFieldBlur('sectionId')"
+            >
+              <option value="">
+                {{ isClassSelected ? "Select Section" : "Select Class First" }}
+              </option>
+              <option *ngFor="let sec of sections" [value]="sec.id">
+                {{ sec.sectionName }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
           <div class="error-message" *ngIf="shouldShowError('sectionId')">
-            {{ getErrorMessage('sectionId') }}
+            {{ getErrorMessage("sectionId") }}
           </div>
         </div>
+
+        <!-- Roll Number (auto-generated) -->
         <div class="col-md-4 mb-3">
-          <label class="form-label">Roll Number <span class="required">*</span></label>
+          <label class="form-label"
+            >Roll Number <span class="required">*</span></label
+          >
           <input
             type="text"
             class="form-control"
@@ -195,17 +233,23 @@
         </div>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Admission Date <span class="required">*</span></label>
-        <input
-          type="date"
-          class="form-control"
-          [class.is-invalid]="shouldShowError('admissionDate')"
-          formControlName="admissionDate"
-          (blur)="onFieldBlur('admissionDate')"
-        />
-        <div class="error-message" *ngIf="shouldShowError('admissionDate')">
-          {{ getErrorMessage('admissionDate') }}
+      <div class="row">
+        <!-- Admission Date -->
+        <div class="col-md-4 mb-3">
+          <label class="form-label"
+            >Admission Date <span class="required">*</span></label
+          >
+          <input
+            type="date"
+            class="form-control"
+            [class.is-invalid]="shouldShowError('admissionDate')"
+            formControlName="admissionDate"
+            (blur)="onFieldBlur('admissionDate')"
+            [max]="todayDate"
+          />
+          <div class="error-message" *ngIf="shouldShowError('admissionDate')">
+            {{ getErrorMessage("admissionDate") }}
+          </div>
         </div>
       </div>
 
@@ -215,7 +259,9 @@
           class="btn btn-primary btn-lg"
           [disabled]="loading"
         >
-          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
+          <i
+            [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"
+          ></i>
           {{ loading ? "Registering..." : "Register Student" }}
         </button>
         <button
@@ -224,34 +270,38 @@
           (click)="resetForm()"
           [disabled]="loading"
         >
-          <i class="fas fa-redo"></i>
-          Reset Form
+          <i class="fas fa-redo"></i> Reset Form
         </button>
       </div>
     </form>
   </div>
 
-  <!-- BULK UPLOAD -->
+  <!-- ===== BULK UPLOAD ===== -->
   <div *ngIf="showBulkUpload">
     <!-- Instructions Card -->
     <div class="card info-card">
       <h4><i class="fas fa-info-circle"></i> Bulk Upload Instructions</h4>
       <ul class="instructions-list">
         <li>
-          <i class="fas fa-check"></i>
-          <span>Download the template Excel file and fill in student details</span>
+          <i class="fas fa-check"></i
+          ><span
+            >Download the template Excel file and fill in student details</span
+          >
         </li>
         <li>
-          <i class="fas fa-check"></i>
-          <span>Ensure all required fields are filled correctly (Name, DOB, Gender, etc.)</span>
+          <i class="fas fa-check"></i
+          ><span
+            >Ensure all required fields are filled correctly (Name, DOB, Gender,
+            etc.)</span
+          >
         </li>
         <li>
-          <i class="fas fa-check"></i>
-          <span>Upload the completed Excel file (.xlsx or .xls format)</span>
+          <i class="fas fa-check"></i
+          ><span>Upload the completed Excel file (.xlsx or .xls format)</span>
         </li>
         <li>
-          <i class="fas fa-check"></i>
-          <span>Review the upload results and fix any errors if needed</span>
+          <i class="fas fa-check"></i
+          ><span>Review the upload results and fix any errors if needed</span>
         </li>
       </ul>
       <button
@@ -259,7 +309,9 @@
         (click)="downloadTemplate()"
         [disabled]="isDownloading"
       >
-        <i [class]="isDownloading ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i>
+        <i
+          [class]="isDownloading ? 'fas fa-spinner fa-spin' : 'fas fa-download'"
+        ></i>
         {{ isDownloading ? "Downloading..." : "Download Template" }}
       </button>
     </div>
@@ -268,51 +320,62 @@
     <div class="card">
       <h4><i class="fas fa-cloud-upload-alt"></i> Upload Student Data</h4>
 
-      <!-- Step 1: Select Class and Section -->
+      <!-- Step 1 -->
       <div class="section-header">
         <i class="fas fa-list-ol"></i>
         <span>Step 1: Select Class and Section</span>
       </div>
 
       <div class="row">
+        <!-- Bulk Class -->
         <div class="col-md-6 mb-3">
-          <label class="form-label">Class <span class="required">*</span></label>
-          <select
-            class="form-control"
-            [(ngModel)]="bulkClassId"
-            (change)="onBulkClassChange()"
+          <label class="form-label"
+            >Class <span class="required">*</span></label
           >
-            <option [value]="null">Select Class</option>
-            <option *ngFor="let cls of classes" [value]="cls.id">
-              {{ cls.className }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="form-control"
+              [(ngModel)]="bulkClassId"
+              (change)="onBulkClassChange()"
+            >
+              <option [value]="null">Select Class</option>
+              <option *ngFor="let cls of classes" [value]="cls.id">
+                {{ cls.className }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
         </div>
 
+        <!-- Bulk Section -->
         <div class="col-md-6 mb-3">
-          <label class="form-label">Section <span class="required">*</span></label>
-          <select
-            class="form-control"
-            [(ngModel)]="bulkSectionId"
-            [disabled]="!bulkClassId"
+          <label class="form-label"
+            >Section <span class="required">*</span></label
           >
-            <option [value]="null">
-              {{ bulkClassId ? "Select Section" : "Select Class First" }}
-            </option>
-            <option *ngFor="let sec of sections" [value]="sec.id">
-              {{ sec.sectionName }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="form-control"
+              [(ngModel)]="bulkSectionId"
+              [disabled]="!bulkClassId"
+            >
+              <option [value]="null">
+                {{ bulkClassId ? "Select Section" : "Select Class First" }}
+              </option>
+              <option *ngFor="let sec of sections" [value]="sec.id">
+                {{ sec.sectionName }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
         </div>
       </div>
 
-      <!-- Step 2: Upload File -->
+      <!-- Step 2 -->
       <div class="section-header">
         <i class="fas fa-file-excel"></i>
         <span>Step 2: Upload Excel File</span>
       </div>
 
-      <!-- File Upload Section -->
       <div class="upload-section">
         <input
           type="file"
@@ -322,18 +385,25 @@
           [disabled]="!canSelectFile()"
           style="display: none"
         />
-        
+
         <div *ngIf="!selectedFile" class="upload-placeholder">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>
             <strong>
-              {{ canSelectFile() ? "Click to select Excel file" : "Please select Class and Section first" }}
+              {{
+                canSelectFile()
+                  ? "Click to select Excel file"
+                  : "Please select Class and Section first"
+              }}
             </strong>
           </p>
           <p class="text-muted">Supported formats: .xlsx, .xls (Max 5MB)</p>
-          <label for="fileInput" class="btn btn-primary" [class.disabled]="!canSelectFile()">
-            <i class="fas fa-folder-open"></i>
-            Browse Files
+          <label
+            for="fileInput"
+            class="btn btn-primary"
+            [class.disabled]="!canSelectFile()"
+          >
+            <i class="fas fa-folder-open"></i> Browse Files
           </label>
         </div>
 
@@ -353,7 +423,6 @@
               <i class="fas fa-times"></i>
             </button>
           </div>
-
           <div class="selected-info">
             <div class="info-badge">
               <i class="fas fa-school"></i>
@@ -367,7 +436,6 @@
         </div>
       </div>
 
-      <!-- Upload Button -->
       <div class="button-group">
         <button
           type="button"
@@ -375,7 +443,11 @@
           (click)="uploadBulk()"
           [disabled]="!canUpload() || uploadProgress"
         >
-          <i [class]="uploadProgress ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
+          <i
+            [class]="
+              uploadProgress ? 'fas fa-spinner fa-spin' : 'fas fa-upload'
+            "
+          ></i>
           {{ uploadProgress ? "Uploading..." : "Upload Students" }}
         </button>
       </div>
@@ -383,40 +455,97 @@
       <!-- Upload Results -->
       <div *ngIf="uploadResults" class="upload-results">
         <h5><i class="fas fa-chart-bar"></i> Upload Results</h5>
-        
+
+        <!-- Summary Cards -->
         <div class="results-grid">
+          <div class="result-card total">
+            <i class="fas fa-list"></i>
+            <div>
+              <strong>{{ uploadResults.total }}</strong
+              ><span>Total Rows</span>
+            </div>
+          </div>
           <div class="result-card success">
             <i class="fas fa-check-circle"></i>
             <div>
-              <strong>{{ uploadResults.success }}</strong>
-              <span>Successful</span>
+              <strong>{{ uploadResults.success }}</strong
+              ><span>Successful</span>
             </div>
           </div>
           <div class="result-card failed">
             <i class="fas fa-times-circle"></i>
             <div>
-              <strong>{{ uploadResults.failed }}</strong>
-              <span>Failed</span>
-            </div>
-          </div>
-          <div class="result-card total">
-            <i class="fas fa-list"></i>
-            <div>
-              <strong>{{ uploadResults.total }}</strong>
-              <span>Total</span>
+              <strong>{{ uploadResults.failed }}</strong
+              ><span>Failed Rows</span>
             </div>
           </div>
         </div>
 
-        <!-- Error Details -->
-        <div *ngIf="uploadResults.errors && uploadResults.errors.length > 0" class="error-details">
-          <h6><i class="fas fa-exclamation-triangle"></i> Error Details</h6>
-          <div class="error-list">
-            <div *ngFor="let error of uploadResults.errors" class="error-item">
-              <i class="fas fa-circle"></i>
-              <span>{{ error }}</span>
-            </div>
+        <!-- Row-wise Error Table -->
+        <div
+          *ngIf="uploadResults.rowErrors && uploadResults.rowErrors.length > 0"
+          class="error-details"
+        >
+          <h6>
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ uploadResults.rowErrors.length }} Row(s) Have Errors — Fix and
+            Re-upload
+          </h6>
+
+          <div class="error-table-wrap">
+            <table class="error-table">
+              <thead>
+                <tr>
+                  <th style="width: 70px">Row</th>
+                  <th style="width: 140px">Student</th>
+                  <th>Column Errors</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  *ngFor="let rowErr of uploadResults.rowErrors"
+                  class="error-row"
+                >
+                  <!-- Row number badge -->
+                  <td class="row-num">
+                    <span class="row-badge" *ngIf="rowErr.rowNumber > 0">{{
+                      rowErr.rowNumber
+                    }}</span>
+                    <span
+                      class="row-badge unknown"
+                      *ngIf="rowErr.rowNumber === 0"
+                      >?</span
+                    >
+                  </td>
+
+                  <!-- Student name -->
+                  <td class="student-col">
+                    {{ rowErr.studentName || "—" }}
+                  </td>
+
+                  <!-- All column errors for this row -->
+                  <td class="col-errors">
+                    <div
+                      *ngFor="let col of rowErr.columns"
+                      class="col-error-item"
+                    >
+                      <i class="fas fa-times-circle"></i>
+                      <span>{{ col }}</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+        </div>
+
+        <!-- All success message -->
+        <div
+          *ngIf="uploadResults.failed === 0 && uploadResults.success > 0"
+          class="all-success-msg"
+        >
+          <i class="fas fa-check-circle"></i>
+          All {{ uploadResults.success }} students registered successfully!
         </div>
       </div>
     </div>

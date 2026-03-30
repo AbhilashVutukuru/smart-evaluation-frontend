@@ -20,10 +20,11 @@
     </div>
   </div>
 
-  <!-- User Info - Name with Icon -->
+  <!-- User Info - Name with Role -->
   <div class="user-info-minimal" *ngIf="userName">
     <i class="fas fa-user"></i>
     <span class="user-name-simple">{{ userName }}</span>
+    <span class="user-role-badge" *ngIf="userRole">{{ userRole }}</span>
   </div>
 
   <!-- Menu Items -->

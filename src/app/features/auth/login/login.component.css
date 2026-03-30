@@ -100,6 +100,15 @@
 .toggle-password {
   cursor: pointer;
   border-left: none !important;
+  border: 2px solid #e5e7eb;
+  border-left: none !important;
+  border-radius: 0 10px 10px 0 !important;
+  background: transparent;
+  color: #6b7280;
+}
+
+.input-group:focus-within .toggle-password {
+  border-color: #6366f1;
 }
 
 .btn-submit {

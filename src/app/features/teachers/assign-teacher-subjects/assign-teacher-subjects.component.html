@@ -3,12 +3,11 @@
   <div class="page-header">
     <h2><i class="fas fa-chalkboard-teacher"></i> Assign Subjects to Teacher</h2>
   </div>
- 
 
   <!-- Teacher Selection -->
   <div class="card">
     <h4><i class="fas fa-user-tie"></i> Select Teacher</h4>
-    
+
     <div class="info-box">
       <i class="fas fa-info-circle"></i>
       <span>Select a teacher to view their current assignments and add new subject assignments.</span>
@@ -17,12 +16,15 @@
     <div class="row">
       <div class="col-md-12 mb-3">
         <label class="form-label">Teacher <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="selectedTeacherId" (change)="onTeacherChange()">
-          <option value="">Select Teacher</option>
-          <option *ngFor="let teacher of teachers" [value]="teacher.id">
-            {{ teacher.firstName }} {{ teacher.lastName }} ({{ teacher.employeeCode }})
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select class="form-control" [(ngModel)]="selectedTeacherId" (change)="onTeacherChange()">
+            <option value="">Select Teacher</option>
+            <option *ngFor="let teacher of teachers" [value]="teacher.id">
+              {{ teacher.firstName }} {{ teacher.lastName }} ({{ teacher.employeeCode }})
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
     </div>
   </div>
@@ -30,35 +32,51 @@
   <!-- Assignment Form -->
   <div class="card" *ngIf="selectedTeacherId">
     <h4><i class="fas fa-plus-circle"></i> Add Subject Assignment</h4>
-    
+
     <div class="row">
+      <!-- Class -->
       <div class="col-md-4 mb-3">
         <label class="form-label">Class <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="selectedClassId" (change)="onClassChange()">
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
-        </select>
+        <div class="select-wrapper">
+          <select class="form-control" [(ngModel)]="selectedClassId" (change)="onClassChange()">
+            <option value="">Select Class</option>
+            <option *ngFor="let cls of classes" [value]="cls.id">{{ cls.className }}</option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
+      <!-- Section -->
       <div class="col-md-4 mb-3">
         <label class="form-label">Section <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="selectedSectionId" [disabled]="!selectedClassId">
-          <option value="">{{ selectedClassId ? 'Select Section' : 'Select Class First' }}</option>
-          <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
-        </select>
+        <div class="select-wrapper">
+          <select class="form-control" [(ngModel)]="selectedSectionId" [disabled]="!selectedClassId">
+            <option value="">{{ selectedClassId ? 'Select Section' : 'Select Class First' }}</option>
+            <option *ngFor="let sec of sections" [value]="sec.id">{{ sec.sectionName }}</option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
+      <!-- Subject -->
       <div class="col-md-4 mb-3">
         <label class="form-label">Subject <span class="required">*</span></label>
-        <select class="form-control" [(ngModel)]="selectedSubjectId" [disabled]="!selectedClassId">
-          <option value="">{{ selectedClassId ? 'Select Subject' : 'Select Class First' }}</option>
-          <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
-        </select>
+        <div class="select-wrapper">
+          <select class="form-control" [(ngModel)]="selectedSubjectId" [disabled]="!selectedClassId">
+            <option value="">{{ selectedClassId ? 'Select Subject' : 'Select Class First' }}</option>
+            <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
     </div>
 
     <div class="d-flex">
-      <button class="btn btn-primary" (click)="addAssignment()" [disabled]="!selectedClassId || !selectedSectionId || !selectedSubjectId">
+      <button
+        class="btn btn-primary"
+        (click)="addAssignment()"
+        [disabled]="!selectedClassId || !selectedSectionId || !selectedSubjectId"
+      >
         <i class="fas fa-plus"></i> Add to List
       </button>
     </div>
@@ -70,7 +88,7 @@
       <h4><i class="fas fa-list"></i> Pending Assignments</h4>
       <span class="badge badge-warning">{{ assignments.length }} Pending</span>
     </div>
-    
+
     <div class="table-responsive">
       <table class="table">
         <thead>
@@ -112,7 +130,7 @@
       <h4><i class="fas fa-check-circle"></i> Current Assignments</h4>
       <span class="badge badge-success">{{ existingAssignments.length }} Assigned</span>
     </div>
-    
+
     <div class="table-responsive">
       <table class="table">
         <thead>
@@ -131,15 +149,13 @@
             <td>{{ assignment.sectionName }}</td>
             <td>{{ assignment.subjectName }}</td>
             <td>
-              <!-- <button class="btn btn-sm btn-danger" (click)="removeExistingAssignment(assignment.id)" [disabled]="loading">
+              <button
+                class="btn btn-sm btn-danger"
+                (click)="openRemoveModal(assignment)"
+                [disabled]="removing"
+              >
                 <i class="fas fa-times"></i> Remove
-              </button> -->
-               <button 
-            class="btn btn-sm btn-danger" 
-            (click)="openRemoveModal(assignment)"
-            [disabled]="removing">
-            <i class="fas fa-times"></i> Remove
-          </button>
+              </button>
             </td>
           </tr>
         </tbody>
@@ -162,7 +178,7 @@
   title="Remove Assignment"
   message="Are you sure you want to remove this assignment?"
   [details]="assignmentToRemove ? [
-    { label: 'Class', value: assignmentToRemove.className },
+    { label: 'Class',   value: assignmentToRemove.className },
     { label: 'Section', value: assignmentToRemove.sectionName },
     { label: 'Subject', value: assignmentToRemove.subjectName }
   ] : []"

@@ -1,9 +1,8 @@
 /* ============================================ */
 /* STUDENT LIST COMPONENT - COMPLETE RESPONSIVE CSS */
-/* Auto-fit Screen with Error Handling */
 /* ============================================ */
 
-/* ===== Container - Full Screen Auto-fit ===== */
+/* ===== Container ===== */
 .list-container {
   padding: 1.5rem;
   background: #f8f9fa;
@@ -59,6 +58,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
 }
 
 @media (max-width: 768px) {
@@ -91,7 +91,7 @@
   }
 }
 
-/* ===== Search Input with Error ===== */
+/* ===== Search Input ===== */
 .search-wrapper {
   display: flex;
   flex-direction: column;
@@ -114,23 +114,22 @@
 
 .search-input {
   width: 100%;
-  padding: 0.625rem 0.875rem 0.625rem 2.75rem;
+  padding: 0.625rem 0.875rem 0.625rem 2.75rem !important;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  background-image: none !important;
 }
 
 .search-input:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-.search-input.is-invalid {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
-  padding-right: 2.5rem;
+.search-input:focus-visible {
+  outline: none;
 }
 
 .clear-search {
@@ -155,43 +154,93 @@
   color: #1f2937;
 }
 
-/* ✅ Error Message Styling */
-.error-message {
-  color: #ef4444;
-  font-size: 0.8125rem;
-  margin-top: 0.375rem;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-weight: 500;
-}
-
-.error-message::before {
-  content: "⚠";
-  font-size: 0.875rem;
-  flex-shrink: 0;
-}
-
-/* ===== Form Controls ===== */
+/* ===== Base Form Controls ===== */
 .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+  background: white;
+  background-image: none !important;
 }
 
 .form-control:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control:focus-visible {
+  outline: none;
 }
 
 .form-control:disabled {
   background: #f3f4f6;
   color: #9ca3af;
   cursor: not-allowed;
+}
+
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.8rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+/* Placeholder option grey, real values dark */
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
+}
+
+@media (max-width: 640px) {
+  .form-control {
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .select-wrapper select.form-control {
+    padding-right: 2.25rem;
+  }
 }
 
 /* ===== Buttons ===== */
@@ -260,9 +309,7 @@
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .loading-state p {
@@ -297,13 +344,8 @@
 }
 
 @media (max-width: 640px) {
-  .empty-state i {
-    font-size: 3rem;
-  }
-
-  .empty-state h5 {
-    font-size: 1rem;
-  }
+  .empty-state i  { font-size: 3rem; }
+  .empty-state h5 { font-size: 1rem; }
 }
 
 /* ===== Table - Desktop ===== */
@@ -349,7 +391,7 @@
   }
 }
 
-/* ===== Student Info in Table ===== */
+/* ===== Student Info ===== */
 .student-info {
   display: flex;
   align-items: center;
@@ -425,35 +467,12 @@
   font-size: 0.875rem;
 }
 
-.btn-view {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.btn-view:hover {
-  background: #bfdbfe;
-  transform: translateY(-2px);
-}
-
-.btn-edit {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.btn-edit:hover {
-  background: #fde68a;
-  transform: translateY(-2px);
-}
-
-.btn-delete {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.btn-delete:hover {
-  background: #fecaca;
-  transform: translateY(-2px);
-}
+.btn-view  { background: #dbeafe; color: #1e40af; }
+.btn-view:hover  { background: #bfdbfe; transform: translateY(-2px); }
+.btn-edit  { background: #fef3c7; color: #d97706; }
+.btn-edit:hover  { background: #fde68a; transform: translateY(-2px); }
+.btn-delete { background: #fee2e2; color: #dc2626; }
+.btn-delete:hover { background: #fecaca; transform: translateY(-2px); }
 
 /* ===== Student Cards - Mobile ===== */
 .students-cards {
@@ -572,7 +591,7 @@
   font-weight: 600;
 }
 
-/* ===== Responsive Utilities ===== */
+/* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .list-container {
     padding: 1.25rem;
@@ -589,13 +608,8 @@
     margin-bottom: 1rem;
   }
 
-  .form-control {
-    font-size: 0.8125rem;
-    padding: 0.5rem 0.75rem;
-  }
-
   .search-input {
-    padding-left: 2.5rem;
+    padding-left: 2.5rem !important;
   }
 
   .search-icon {
@@ -604,7 +618,7 @@
   }
 }
 
-/* ===== Print Styles ===== */
+/* ===== Print ===== */
 @media print {
   .list-container {
     padding: 0;
@@ -640,8 +654,4 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.card {
-  animation: fadeIn 0.3s ease;
 }

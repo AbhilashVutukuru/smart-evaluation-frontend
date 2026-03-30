@@ -164,14 +164,20 @@
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.875rem;
-  transition: all 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   min-height: 42px;
+  outline: none;
+  background: white;
+  background-image: none !important;
 }
 
 .form-control:focus {
-  outline: none;
   border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.form-control:focus-visible {
+  outline: none;
 }
 
 .form-control:disabled {
@@ -661,31 +667,52 @@ textarea.form-control {
 }
 
 /* ===== Exam Date Input Group ===== */
+/* flex + flex:1 stretches the input to full column width
+   so the native calendar icon lands at the far right edge */
 .exam-date-input-group {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
-.exam-date-input-group .form-control {
-  padding-right: 2.25rem; /* room for the clear button */
+/* Extra padding-right makes room for BOTH the clear button and calendar icon */
+.exam-date-input-group input[type="date"].form-control {
+  flex: 1;
+  width: 100%;
+  cursor: pointer;
+  padding-right: 4.5rem;
 }
 
+/* Calendar icon pinned to the far right */
+.exam-date-input-group input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+  position: absolute;
+  right: 0.75rem;
+}
+
+.exam-date-input-group input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Clear button sits to the LEFT of the calendar icon */
 .btn-clear-date {
   position: absolute;
-  right: 0.5rem;
+  right: 2.25rem;
   background: none;
   border: none;
   color: #ef4444;
-  font-size: 1rem;
+  font-size: 0.875rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   transition: background 0.15s;
+  z-index: 2;
 }
 
 .btn-clear-date:hover {
@@ -754,4 +781,76 @@ textarea.form-control {
 
 .qp-name-info-icon:hover {
   color: #0369a1;
+}
+
+/* ===== Date Input — Hand Cursor ===== */
+input[type="date"].form-control {
+  cursor: pointer;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* ===== Select — Hand Cursor (non-wrapper selects) ===== */
+select.form-control {
+  cursor: pointer;
+}
+
+select.form-control:disabled {
+  cursor: not-allowed;
+}
+
+/* ===== Custom Select — Wrapper + FA Chevron ===== */
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper .select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.75rem;
+  z-index: 1;
+}
+
+.select-wrapper select.form-control {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none !important;
+  padding-right: 2.5rem;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.select-wrapper select.form-control:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.select-wrapper select.form-control:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.select-wrapper select.form-control:disabled + .select-icon {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option[value=""] {
+  color: #9ca3af;
+}
+
+.select-wrapper select.form-control option:not([value=""]) {
+  color: #1f2937;
 }

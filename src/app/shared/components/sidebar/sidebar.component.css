@@ -291,3 +291,15 @@
 .nav-item:nth-child(8) { animation-delay: 0.4s; }
 .nav-item:nth-child(9) { animation-delay: 0.45s; }
 .nav-item:nth-child(10) { animation-delay: 0.5s; }
+/* ===== User Role Badge ===== */
+.user-role-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}

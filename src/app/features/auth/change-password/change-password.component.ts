@@ -55,7 +55,8 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.isFirstTimeChange = this.router.url.includes('auth/change-password');
+    // First-time change = routed via /auth/change-password (not /change-password)
+    this.isFirstTimeChange = this.router.url.includes('/auth/change-password');
   }
 
   get f() {

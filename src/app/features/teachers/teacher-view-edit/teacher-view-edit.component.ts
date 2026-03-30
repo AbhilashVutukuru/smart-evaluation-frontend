@@ -29,6 +29,10 @@ export class TeacherViewEditComponent implements OnInit {
   mode: 'view' | 'edit' = 'view';
   loading = false;
 
+  // Today's date in YYYY-MM-DD — bound to [max] on date inputs
+  // so the calendar disables tomorrow and all future dates
+  today: string = new Date().toISOString().split('T')[0];
+
   // Modals
   showDeleteModal = false;
   showCancelModal = false;

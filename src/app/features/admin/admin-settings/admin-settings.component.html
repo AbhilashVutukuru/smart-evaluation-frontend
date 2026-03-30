@@ -109,7 +109,9 @@
                 type="text"
                 class="field-input"
                 formControlName="classNumber"
-                placeholder="e.g., 1, 2 … 10"
+                placeholder="e.g., 1, 2 … 12"
+                maxlength="2"
+                (input)="onClassNumberInput($event)"
               />
             </div>
             <button
@@ -198,6 +200,8 @@
                 class="field-input"
                 formControlName="sectionName"
                 placeholder="e.g., A, B, C"
+                maxlength="1"
+                (input)="onSectionNameInput($event)"
               />
             </div>
             <button
@@ -490,23 +494,29 @@
               <label class="field-label"
                 >Class <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="classId">
                 <option value="">-- Choose Class --</option>
                 <option *ngFor="let cls of classes" [value]="cls.id">
                   Class {{ cls.classNumber }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <div class="field-group">
               <label class="field-label"
                 >Section <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="sectionId">
                 <option value="">-- Choose Section --</option>
                 <option *ngFor="let s of masterSections" [value]="s.id">
                   {{ s.sectionName }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <button
               type="submit"
@@ -603,23 +613,29 @@
               <label class="field-label"
                 >Class <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="classId">
                 <option value="">-- Choose Class --</option>
                 <option *ngFor="let cls of classes" [value]="cls.id">
                   Class {{ cls.classNumber }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <div class="field-group">
               <label class="field-label"
                 >Subject <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="subjectId">
                 <option value="">-- Choose Subject --</option>
                 <option *ngFor="let sub of masterSubjects" [value]="sub.id">
                   {{ sub.subjectName }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <button
               type="submit"
@@ -716,23 +732,29 @@
               <label class="field-label"
                 >Class <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="classId">
                 <option value="">-- Choose Class --</option>
                 <option *ngFor="let cls of classes" [value]="cls.id">
                   Class {{ cls.classNumber }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <div class="field-group">
               <label class="field-label"
                 >Exam Type <span class="req">*</span></label
               >
+              <div class="select-wrapper">
               <select class="field-input" formControlName="examTypeId">
                 <option value="">-- Choose Exam Type --</option>
                 <option *ngFor="let et of masterExamTypes" [value]="et.id">
                   {{ et.examTypeName }}
                 </option>
               </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
             </div>
             <button
               type="submit"
@@ -827,8 +849,22 @@
               type="text"
               class="field-input"
               formControlName="yearName"
-              placeholder="e.g., 2024-2025"
+              placeholder="e.g., 2025-2026"
+              maxlength="9"
+              (input)="onYearNameInput($event)"
             />
+            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['invalidFormat'] && academicYearForm.get('yearName')?.dirty">
+              Format must be YYYY-YYYY (e.g. 2026-2027)
+            </span>
+            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['notConsecutive'] && academicYearForm.get('yearName')?.dirty">
+              Second year must be exactly one year after the first (e.g. 2026-2027)
+            </span>
+            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['pastYear'] && academicYearForm.get('yearName')?.dirty">
+              Year cannot be in the past — use current or next year only
+            </span>
+            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['tooFarFuture'] && academicYearForm.get('yearName')?.dirty">
+              Only current year ({{ currentYear }}-{{ currentYear+1 }}) or next year ({{ currentYear+1 }}-{{ currentYear+2 }}) allowed
+            </span>
           </div>
           <div class="field-group">
             <label class="field-label"
@@ -836,15 +872,32 @@
             >
             <input
               type="date"
-              class="field-input"
+              class="field-input date-input"
               formControlName="startDate"
+              [min]="startDateMin"
+              [max]="startDateMax"
             />
+            <span class="field-error" *ngIf="academicYearForm.errors?.['startDateYearMismatch'] && academicYearForm.get('startDate')?.dirty">
+              Start date must be within the first year of the academic year name
+            </span>
           </div>
           <div class="field-group">
             <label class="field-label"
               >End Date <span class="req">*</span></label
             >
-            <input type="date" class="field-input" formControlName="endDate" />
+            <input
+              type="date"
+              class="field-input date-input"
+              formControlName="endDate"
+              [min]="endDateMin"
+              [max]="endDateMax"
+            />
+            <span class="field-error" *ngIf="academicYearForm.errors?.['endDateYearMismatch'] && academicYearForm.get('endDate')?.dirty">
+              End date must be within the second year of the academic year name
+            </span>
+            <span class="field-error" *ngIf="academicYearForm.errors?.['endBeforeStart'] && academicYearForm.get('endDate')?.dirty">
+              End date must be after start date
+            </span>
           </div>
           <button
             type="submit"
@@ -949,32 +1002,38 @@
           <label class="field-label"
             >From (Active Year) <span class="req">*</span></label
           >
-          <select
-            class="field-input"
-            formControlName="fromYearId"
-            [disabled]="activeAcademicYears.length === 0"
-          >
-            <option value="">Select Active Academic Year</option>
-            <option *ngFor="let y of activeAcademicYears" [value]="y.id">
-              {{ y.yearName }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="field-input"
+              formControlName="fromYearId"
+              [disabled]="activeAcademicYears.length === 0"
+            >
+              <option value="">Select Active Academic Year</option>
+              <option *ngFor="let y of activeAcademicYears" [value]="y.id">
+                {{ y.yearName }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
         </div>
         <div class="promo-arrow"><i class="fas fa-arrow-right"></i></div>
         <div class="field-group">
           <label class="field-label"
             >To (Target Year) <span class="req">*</span></label
           >
-          <select
-            class="field-input"
-            formControlName="toYearId"
-            [disabled]="availableTargetYears.length === 0"
-          >
-            <option value="">Select Target Academic Year</option>
-            <option *ngFor="let y of availableTargetYears" [value]="y.id">
-              {{ y.yearName }}
-            </option>
-          </select>
+          <div class="select-wrapper">
+            <select
+              class="field-input"
+              formControlName="toYearId"
+              [disabled]="availableTargetYears.length === 0"
+            >
+              <option value="">Select Target Academic Year</option>
+              <option *ngFor="let y of availableTargetYears" [value]="y.id">
+                {{ y.yearName }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
           <!-- <small class="field-hint"
             >Only inactive years without completed promotions are shown</small
           > -->
@@ -1010,12 +1069,15 @@
             <label class="field-label"
               >Select User <span class="req">*</span></label
             >
+            <div class="select-wrapper">
             <select class="field-input" formControlName="userId">
               <option value="">-- Choose User --</option>
               <option *ngFor="let user of users" [value]="user.userId">
                 {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
               </option>
             </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+            </div>
           </div>
           <button
             type="submit"

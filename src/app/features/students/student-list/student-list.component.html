@@ -1,4 +1,4 @@
-<!-- Student List Component - Complete with Error Handling & Validation -->
+<!-- Student List Component -->
 <div class="list-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -11,64 +11,66 @@
   <!-- Search & Filter Card -->
   <div class="card">
     <div class="search-section">
-      <!-- Search Input with Error -->
+
+      <!-- Search Input -->
       <div class="search-wrapper">
         <div class="search-input-wrapper">
           <i class="fas fa-search search-icon"></i>
-          <input 
-            type="text" 
-            class="form-control search-input" 
-            [class.is-invalid]="searchError"
+          <input
+            type="text"
+            class="form-control search-input"
             placeholder="Search by name, roll number, email..."
             [(ngModel)]="searchTerm"
             (input)="onSearchInput()"
-            (blur)="onSearchBlur()"
-            (focus)="onSearchFocus()"
           />
-          <button 
-            *ngIf="searchTerm" 
-            class="clear-search" 
+          <button
+            *ngIf="searchTerm"
+            class="clear-search"
             (click)="clearSearch()"
             type="button"
           >
             <i class="fas fa-times"></i>
           </button>
         </div>
-        <div class="error-message" *ngIf="searchError">
-          {{ searchError }}
-        </div>
       </div>
 
       <!-- Class Dropdown -->
       <div class="filter-wrapper">
-        <select 
-          class="form-control" 
-          [(ngModel)]="selectedClass" 
-          (change)="onClassChange()"
-        >
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of classes" [value]="cls.id">
-            {{ cls.className }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            class="form-control"
+            [(ngModel)]="selectedClass"
+            (change)="onClassChange()"
+          >
+            <option value="">Select Class</option>
+            <option *ngFor="let cls of classes" [value]="cls.id">
+              {{ cls.className }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <!-- Section Dropdown -->
       <div class="filter-wrapper">
-        <select 
-          class="form-control" 
-          [(ngModel)]="selectedSection" 
-          (change)="onSectionChange()"
-          [disabled]="!selectedClass"
-        >
-          <option value="">
-            {{ selectedClass ? 'Select Section' : 'Select Class First' }}
-          </option>
-          <option *ngFor="let sec of sections" [value]="sec.id">
-            {{ sec.sectionName }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            class="form-control"
+            [(ngModel)]="selectedSection"
+            (change)="onSectionChange()"
+            [disabled]="!selectedClass"
+          >
+            <option value="">
+              {{ selectedClass ? 'Select Section' : 'Select Class First' }}
+            </option>
+            <option *ngFor="let sec of sections" [value]="sec.id">
+              {{ sec.sectionName }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
+
     </div>
 
     <!-- Loading State -->
@@ -113,7 +115,7 @@
             <th>Name</th>
             <th>Class</th>
             <th>Section</th>
-            <th>Email</th>
+            <!-- <th>Email</th> -->
             <th>Phone</th>
             <th>Admission Date</th>
             <th>Status</th>
@@ -134,11 +136,15 @@
             </td>
             <td>{{ student.className }}</td>
             <td>{{ student.sectionName }}</td>
-            <td>{{ student.email }}</td>
+            <!-- <td>{{ student.email }}</td> -->
             <td>{{ student.phoneNumber }}</td>
             <td>{{ student.admissionDate | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span class="badge" [class.badge-success]="student.isActive" [class.badge-danger]="!student.isActive">
+              <span
+                class="badge"
+                [class.badge-success]="student.isActive"
+                [class.badge-danger]="!student.isActive"
+              >
                 {{ student.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
@@ -169,7 +175,11 @@
             <h4>{{ student.firstName }} {{ student.lastName }}</h4>
             <p class="text-muted">{{ student.gender }} • Roll: {{ student.rollNumber }}</p>
           </div>
-          <span class="badge" [class.badge-success]="student.isActive" [class.badge-danger]="!student.isActive">
+          <span
+            class="badge"
+            [class.badge-success]="student.isActive"
+            [class.badge-danger]="!student.isActive"
+          >
             {{ student.isActive ? 'Active' : 'Inactive' }}
           </span>
         </div>
@@ -210,8 +220,8 @@
     <!-- Results Count -->
     <div *ngIf="!loading && filteredStudents.length > 0" class="results-footer">
       <p>
-        Showing <strong>{{ filteredStudents.length }}</strong> 
-        of <strong>{{ students.length }}</strong> 
+        Showing <strong>{{ filteredStudents.length }}</strong>
+        of <strong>{{ students.length }}</strong>
         student{{ students.length !== 1 ? 's' : '' }}
       </p>
     </div>

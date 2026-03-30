@@ -1,4 +1,4 @@
-<!-- Teacher View/Edit Component - Complete with Error Handling & Validation -->
+<!-- Teacher View/Edit Component -->
 <div class="view-container">
   <!-- Page Header -->
   <div class="page-header">
@@ -14,20 +14,12 @@
         <p class="breadcrumb">Teachers / {{ mode === 'view' ? 'View' : 'Edit' }}</p>
       </div>
     </div>
-    
+
     <div class="header-actions">
-      <button 
-        *ngIf="mode === 'view'" 
-        class="btn btn-primary" 
-        (click)="enableEdit()"
-      >
+      <button *ngIf="mode === 'view'" class="btn btn-primary" (click)="enableEdit()">
         <i class="fas fa-edit"></i> Edit
       </button>
-      <button 
-        *ngIf="mode === 'view'" 
-        class="btn btn-danger" 
-        (click)="deleteTeacher()"
-      >
+      <button *ngIf="mode === 'view'" class="btn btn-danger" (click)="deleteTeacher()">
         <i class="fas fa-trash"></i> Delete
       </button>
     </div>
@@ -42,16 +34,17 @@
   <!-- Form Content -->
   <div *ngIf="!loading" class="form-content">
     <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()">
-      
-      <!-- Personal Information Card -->
+
+      <!-- Personal Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-id-card"></i>
           <span>Personal Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- First Name -->
             <div class="col-md-6 mb-3">
               <label class="form-label">First Name <span class="required">*</span></label>
               <input
@@ -67,6 +60,7 @@
               </div>
             </div>
 
+            <!-- Last Name -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Last Name <span class="required">*</span></label>
               <input
@@ -84,6 +78,8 @@
           </div>
 
           <div class="row">
+
+            <!-- Date of Birth — [max]="today" disables future dates -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Date of Birth <span class="required">*</span></label>
               <input
@@ -92,25 +88,30 @@
                 [class.is-invalid]="shouldShowError('dateOfBirth')"
                 formControlName="dateOfBirth"
                 (blur)="onFieldBlur('dateOfBirth')"
+                [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
                 {{ getErrorMessage('dateOfBirth') }}
               </div>
             </div>
 
+            <!-- Gender -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Gender <span class="required">*</span></label>
-              <select 
-                class="form-control"
-                [class.is-invalid]="shouldShowError('gender')"
-                formControlName="gender"
-                (blur)="onFieldBlur('gender')"
-              >
-                <option value="">Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
+              <div class="select-wrapper">
+                <select
+                  class="form-control"
+                  [class.is-invalid]="shouldShowError('gender')"
+                  formControlName="gender"
+                  (blur)="onFieldBlur('gender')"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
               <div class="error-message" *ngIf="shouldShowError('gender')">
                 {{ getErrorMessage('gender') }}
               </div>
@@ -119,15 +120,16 @@
         </div>
       </div>
 
-      <!-- Contact Information Card -->
+      <!-- Contact Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-address-book"></i>
           <span>Contact Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- Email -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Email <span class="required">*</span></label>
               <input
@@ -143,6 +145,7 @@
               </div>
             </div>
 
+            <!-- Phone -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Phone Number <span class="required">*</span></label>
               <input
@@ -161,6 +164,7 @@
             </div>
           </div>
 
+          <!-- Address -->
           <div class="mb-3">
             <label class="form-label">Address <span class="required">*</span></label>
             <textarea
@@ -178,15 +182,16 @@
         </div>
       </div>
 
-      <!-- Professional Information Card -->
+      <!-- Professional Information -->
       <div class="card">
         <div class="card-header">
           <i class="fas fa-briefcase"></i>
           <span>Professional Information</span>
         </div>
-        
         <div class="card-body">
           <div class="row">
+
+            <!-- Employee Code (readonly) -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Employee Code <span class="required">*</span></label>
               <input
@@ -197,6 +202,7 @@
               />
             </div>
 
+            <!-- Qualification -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Qualification <span class="required">*</span></label>
               <input
@@ -212,6 +218,7 @@
               </div>
             </div>
 
+            <!-- Experience -->
             <div class="col-md-4 mb-3">
               <label class="form-label">Experience (Years) <span class="required">*</span></label>
               <input
@@ -230,7 +237,8 @@
             </div>
           </div>
 
-          <div class="mb-3">
+          <!-- Joining Date — [max]="today" disables future dates -->
+          <div class="col-md-4 mb-3">
             <label class="form-label">Joining Date <span class="required">*</span></label>
             <input
               type="date"
@@ -238,6 +246,7 @@
               [class.is-invalid]="shouldShowError('dateOfJoining')"
               formControlName="dateOfJoining"
               (blur)="onFieldBlur('dateOfJoining')"
+              [max]="today"
             />
             <div class="error-message" *ngIf="shouldShowError('dateOfJoining')">
               {{ getErrorMessage('dateOfJoining') }}
@@ -246,18 +255,18 @@
         </div>
       </div>
 
-      <!-- Action Buttons -->
+      <!-- Action Buttons (edit mode only) -->
       <div *ngIf="mode === 'edit'" class="action-buttons">
-        <button 
-          type="button" 
-          class="btn btn-secondary btn-lg" 
+        <button
+          type="button"
+          class="btn btn-secondary btn-lg"
           (click)="cancelEdit()"
           [disabled]="loading"
         >
           <i class="fas fa-times"></i> Cancel
         </button>
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           class="btn btn-success btn-lg"
           [disabled]="loading"
         >

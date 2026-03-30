@@ -5,7 +5,7 @@
   </div>
 
   <app-exam-filter
-    *ngIf="!showResultsCard"
+    [hidden]="showResultsCard"
     [classes]="classes"
     [sections]="sections"
     [subjects]="subjects"
@@ -27,6 +27,7 @@
     (subjectChanged)="onSubjectChange()"
     (examTypeChanged)="onExamTypeChange()"
     (showStudentsClick)="showStudents()"
+    (filtersChanged)="onFiltersChanged()"
   ></app-exam-filter>
 
 
@@ -154,7 +155,7 @@
                 class="download-link"
                 (click)="viewStudentResults(student)"
               >
-                <i class="fas fa-eye"></i> View Results
+                <i class="fas fa-eye"></i><span class="link-text"> View Results</span>
               </a>
 
               <!-- Pending -->
@@ -205,7 +206,7 @@
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks:</span>
-        <span class="info-value">{{ selectedStudent.obtainedMarks ?? 0 }} / {{ totalMarks }}</span>
+        <span class="info-value">{{ displayObtainedMarks }} / {{ totalMarks }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-percentage"></i> Percentage:</span>
@@ -219,7 +220,7 @@
           [class.disabled]="isViewing"
           (click)="!isViewing && viewAnswerSheet(selectedStudent)"
         >
-          <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
+          <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
           <span *ngIf="isViewing">
             <i class="fas fa-spinner fa-spin"></i> Opening...
           </span>
@@ -228,7 +229,7 @@
     </div>
 
     <!-- ✅ Progress Bar -->
-    <div class="progress-section" *ngIf="totalQuestions > 0">
+    <!-- <div class="progress-section" *ngIf="totalQuestions > 0">
       <label class="section-label">
         <i class="fas fa-tasks"></i> Question Progress:
       </label>
@@ -247,7 +248,7 @@
           {{ totalQuestions }} Questions</span
         >
       </div>
-    </div>
+    </div> -->
 
     <!-- Question Navigation -->
     <div class="question-selector" *ngIf="questionNumbers.length">
@@ -462,7 +463,7 @@
                   TEACHER MARKS
                   <i
                     class="fas fa-info-circle text-info header-info-icon"
-                    title="Blue icon indicates using system-assigned marks"
+                    title="By default system marks assigned to teacher marks you can override"
                   ></i>
                 </th>
                 <th>REMARKS</th>

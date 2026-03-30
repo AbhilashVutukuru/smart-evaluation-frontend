@@ -22,62 +22,71 @@
         <label class="form-label"
           >Filter by Class <span class="required">*</span></label
         >
-        <select
-          [(ngModel)]="examFilters.filterExamClass"
-          (change)="onFilterClassSelected(examFilters.filterExamClass)"
-          class="form-control"
-        >
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of allClasses" [value]="cls.id">
-            {{ cls.className }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFilters.filterExamClass"
+            (change)="onFilterClassSelected(examFilters.filterExamClass)"
+            class="form-control"
+          >
+            <option value="">Select Class</option>
+            <option *ngFor="let cls of allClasses" [value]="cls.id">
+              {{ cls.className }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <div class="col-md-4 mb-3">
         <label class="form-label"
           >Filter by Subject <span class="required">*</span></label
         >
-        <select
-          [(ngModel)]="examFilters.filterExamSubject"
-          [disabled]="!examFilters.filterExamClass"
-          (change)="examFilters.filterExamExamType = ''; existingExams = []"
-          class="form-control"
-        >
-          <option value="">
-            {{
-              examFilters.filterExamClass
-                ? "Select Subject"
-                : "Select Class First"
-            }}
-          </option>
-          <option *ngFor="let subject of allSubjects" [value]="subject.id">
-            {{ subject.subjectName }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFilters.filterExamSubject"
+            [disabled]="!examFilters.filterExamClass"
+            (change)="examFilters.filterExamExamType = ''; existingExams = []"
+            class="form-control"
+          >
+            <option value="">
+              {{
+                examFilters.filterExamClass
+                  ? "Select Subject"
+                  : "Select Class First"
+              }}
+            </option>
+            <option *ngFor="let subject of allSubjects" [value]="subject.id">
+              {{ subject.subjectName }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <div class="col-md-4 mb-3">
         <label class="form-label"
           >Filter by Exam Type <span class="required">*</span></label
         >
-        <select
-          [(ngModel)]="examFilters.filterExamExamType"
-          [disabled]="!examFilters.filterExamSubject"
-          (change)="existingExams = []"
-          class="form-control"
-        >
-          <option value="">
-            {{
-              examFilters.filterExamSubject
-                ? "Select Exam Type"
-                : "Select Subject First"
-            }}
-          </option>
-          <option *ngFor="let examType of allExamTypes" [value]="examType.id">
-            {{ examType.examTypeName }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFilters.filterExamExamType"
+            [disabled]="!examFilters.filterExamSubject"
+            (change)="existingExams = []"
+            class="form-control"
+          >
+            <option value="">
+              {{
+                examFilters.filterExamSubject
+                  ? "Select Exam Type"
+                  : "Select Subject First"
+              }}
+            </option>
+            <option *ngFor="let examType of allExamTypes" [value]="examType.id">
+              {{ examType.examTypeName }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
     </div>
 
@@ -181,58 +190,69 @@
     <div class="row">
       <div class="col-md-3 mb-3">
         <label class="form-label">Class <span class="required">*</span></label>
-        <select
-          [(ngModel)]="examFormData.classId"
-          (change)="onClassSelected(examFormData.classId)"
-          [disabled]="examMode === 'update'"
-          required
-          class="form-control"
-        >
-          <option value="">Select Class</option>
-          <option *ngFor="let cls of allClasses" [value]="cls.id">
-            {{ cls.className }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFormData.classId"
+            (change)="onClassSelected(examFormData.classId)"
+            [disabled]="examMode === 'update'"
+            required
+            class="form-control"
+          >
+            <option value="">Select Class</option>
+            <option *ngFor="let cls of allClasses" [value]="cls.id">
+              {{ cls.className }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <div class="col-md-3 mb-3">
         <label class="form-label"
           >Subject <span class="required">*</span></label
         >
-        <select
-          [(ngModel)]="examFormData.subjectId"
-          [disabled]="examMode === 'update' || !examFormData.classId"
-          required
-          class="form-control"
-        >
-          <option value="">
-            {{ examFormData.classId ? "Select Subject" : "Select Class First" }}
-          </option>
-          <option *ngFor="let subject of allSubjects" [value]="subject.id">
-            {{ subject.subjectName }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFormData.subjectId"
+            (change)="onSubjectChange()"
+            [disabled]="examMode === 'update' || !examFormData.classId"
+            required
+            class="form-control"
+          >
+            <option value="">
+              {{ examFormData.classId ? "Select Subject" : "Select Class First" }}
+            </option>
+            <option *ngFor="let subject of allSubjects" [value]="subject.id">
+              {{ subject.subjectName }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <div class="col-md-3 mb-3">
         <label class="form-label"
           >Exam Type <span class="required">*</span></label
         >
-        <select
-          [(ngModel)]="examFormData.examTypeId"
-          [disabled]="examMode === 'update' || !examFormData.classId"
-          required
-          class="form-control"
-        >
-          <option value="">
-            {{
-              examFormData.classId ? "Select Exam Type" : "Select Class First"
-            }}
-          </option>
-          <option *ngFor="let examType of allExamTypes" [value]="examType.id">
-            {{ examType.examTypeName }}
-          </option>
-        </select>
+        <div class="select-wrapper">
+          <select
+            [(ngModel)]="examFormData.examTypeId"
+            (change)="onExamTypeChange()"
+            [disabled]="examMode === 'update' || !examFormData.classId"
+            required
+            class="form-control"
+          >
+            <option value="">
+              {{
+                examFormData.classId ? "Select Exam Type" : "Select Class First"
+              }}
+            </option>
+            <option *ngFor="let examType of allExamTypes" [value]="examType.id">
+              {{ examType.examTypeName }}
+            </option>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
       </div>
 
       <div class="col-md-3 mb-3">
@@ -242,8 +262,9 @@
         <input
           type="number"
           [(ngModel)]="examFormData.totalMarks"
+          (input)="onTotalMarksChange($event)"
           min="1"
-          max="500"
+          max="200"
           placeholder="e.g., 100"
           class="form-control"
         />
@@ -259,8 +280,9 @@
         <input
           type="number"
           [(ngModel)]="examFormData.numberOfQuestions"
+          (input)="onNumberOfQuestionsChange($event)"
           min="1"
-          max="100"
+          max="50"
           placeholder="e.g., 10"
           class="form-control"
         />
@@ -274,8 +296,9 @@
         <input
           type="text"
           [(ngModel)]="examFormData.questionPaperName"
+          (input)="onQuestionPaperNameChange()"
           maxlength="200"
-          placeholder="e.g., Mid Term-1"
+          placeholder="e.g., Mid Term-1,Mid Term-2"
           class="form-control"
         />
       </div>
