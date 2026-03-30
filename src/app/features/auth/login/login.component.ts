@@ -94,9 +94,12 @@ export class LoginComponent implements OnInit {
         this.loading = false;
 
         if (error.status === 401) {
-          this.error = 'Invalid email or password';
+          this.error = 'Invalid email or password. Please try again.';
         } else if (error.status === 403) {
-          this.error = 'Your account has been suspended';
+          // Student trying to log in — redirect to unauthorized page
+          // Store a flag so unauthorized page knows why
+          sessionStorage.setItem('unauthorizedReason', 'student');
+          this.router.navigate(['/unauthorized']);
         } else if (error.status === 429) {
           this.error = 'Too many login attempts. Please try again later.';
         } else if (error.status === 0) {
