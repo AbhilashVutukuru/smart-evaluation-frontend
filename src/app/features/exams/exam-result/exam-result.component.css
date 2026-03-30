@@ -1646,3 +1646,8 @@
     overflow-y: auto;
   }
 }
+/* ===== Submission Completed Badge ===== */
+.badge-submitted {
+  background: #ede9fe;
+  color: #6366f1;
+}

@@ -58,7 +58,7 @@ export class ExamResultService {
       evaluatedCount: 0,
       notEvaluatedCount: 0,
     };
-    return { statistics, students: [], totalMarks: 0, totalQuestions: 0, questionNumbers: [] };
+    return { statistics, students: [], totalMarks: 0, totalQuestions: 0, questionNumbers: [], answerSheetsSubmitted: false };
   }
 
   // ─── Question Details ─────────────────────────────────────────────────────────
