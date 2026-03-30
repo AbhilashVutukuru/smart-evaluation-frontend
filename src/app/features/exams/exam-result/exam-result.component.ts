@@ -35,6 +35,9 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
     totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0,
   };
 
+  // Whether the answer sheet batch was submitted for evaluation
+  answerSheetsSubmitted = false;
+
   // Live total obtained marks — updated from API after each rubric save
   liveObtainedMarks: number | null = null;
 
@@ -63,13 +66,14 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
 
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
-    this.students = [];
-    this.selectedStudent = null;
-    this.currentResults = null;
-    this.currentQuestion = null;
-    this.showStudentsCard = false;
-    this.showResultsCard = false;
-    this.searchCompleted = false;
+    this.students              = [];
+    this.selectedStudent       = null;
+    this.currentResults        = null;
+    this.currentQuestion       = null;
+    this.showStudentsCard      = false;
+    this.showResultsCard       = false;
+    this.searchCompleted       = false;
+    this.answerSheetsSubmitted = false;
     this.statistics = { totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0 };
   }
 
@@ -96,16 +100,17 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
       )
       .subscribe({
         next: (response) => {
-          this.students       = response.students;
-          this.statistics     = response.statistics;
-          this.totalMarks     = response.totalMarks;
-          this.totalQuestions = response.totalQuestions;
-          this.questionNumbers = response.questionNumbers;
-          this.showStudentsCard = true;
-          this.showResultsCard  = false;
-          this.searchCompleted  = true;
-          this.isLoading        = false;
-          this.noExamPaperFound = this.students.length === 0;
+          this.students              = response.students;
+          this.statistics            = response.statistics;
+          this.totalMarks            = response.totalMarks;
+          this.totalQuestions        = response.totalQuestions;
+          this.questionNumbers       = response.questionNumbers;
+          this.answerSheetsSubmitted = response.answerSheetsSubmitted ?? false;
+          this.showStudentsCard      = true;
+          this.showResultsCard       = false;
+          this.searchCompleted       = true;
+          this.isLoading             = false;
+          this.noExamPaperFound      = this.students.length === 0;
         },
         error: (error) => {
           this.isLoading = false;

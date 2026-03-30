@@ -118,11 +118,7 @@
               </span>
 
               <span
-                *ngIf="
-                  !student.isAbsent &&
-                  student.evaluationStatus === 'Evaluated' &&
-                  student.hasUploaded
-                "
+                *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated' && student.hasUploaded"
                 class="badge badge-success"
               >
                 Evaluated
@@ -130,18 +126,22 @@
 
               <!-- Not Evaluated -->
               <span
-                *ngIf="
-                  !student.isAbsent &&
-                  student.evaluationStatus === 'Pending' &&
-                  student.hasUploaded
-                "
+                *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending' && student.hasUploaded"
                 class="badge badge-warning"
               >
                 Not Evaluated
               </span>
 
-              <!-- Not Uploaded -->
-              <span *ngIf="!student.isAbsent && !student.hasUploaded"> - </span>
+              <!-- Not Uploaded — show Submission Completed only if batch was submitted -->
+              <span *ngIf="!student.isAbsent && !student.hasUploaded && answerSheetsSubmitted"
+                class="badge badge-submitted">
+                <i class="fas fa-paper-plane"></i> Submission Completed
+              </span>
+
+              <!-- Not Uploaded — batch not yet submitted -->
+              <span *ngIf="!student.isAbsent && !student.hasUploaded && !answerSheetsSubmitted">
+                -
+              </span>
             </td>
 
             <td>

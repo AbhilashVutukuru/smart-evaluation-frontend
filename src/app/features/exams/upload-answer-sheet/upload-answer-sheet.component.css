@@ -908,3 +908,8 @@ input[type="checkbox"] {
 .select-wrapper select.form-control option:not([value=""]) {
   color: #1f2937;
 }
+/* ===== Submission Completed Badge ===== */
+.badge-submitted {
+  background: #ede9fe;
+  color: #6366f1;
+}

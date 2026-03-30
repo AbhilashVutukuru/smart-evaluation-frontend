@@ -42,7 +42,7 @@ export interface ResultQuestion {
   marksObtained: number;
   confidenceScore?: number;
   remarks?: string;
-  rubricAdded: boolean; 
+  rubricAdded: boolean;
 }
 
 /** Exam result summary for a student */
@@ -94,4 +94,5 @@ export interface StudentListResponse {
   totalMarks: number;
   totalQuestions: number;
   questionNumbers: number[];
+  answerSheetsSubmitted: boolean;  // ← added
 }

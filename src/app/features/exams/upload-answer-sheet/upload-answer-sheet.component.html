@@ -103,19 +103,26 @@
             <td>{{ student.className }}</td>
             <td>{{ student.sectionName }}</td>
             <td>
+              <!-- Absent — always show regardless of submission -->
               <span *ngIf="student.isAbsent" class="badge badge-warning">
                 <i class="fas fa-user-slash"></i> Absent
               </span>
-              <span
-                *ngIf="!student.isAbsent && student.isUploaded"
-                class="badge badge-success"
-              >
+
+              <!-- Uploaded — show Uploaded badge always -->
+              <span *ngIf="!student.isAbsent && student.isUploaded"
+                class="badge badge-success">
                 <i class="fas fa-check-circle"></i> Uploaded
               </span>
-              <span
-                *ngIf="!student.isAbsent && !student.isUploaded"
-                class="badge badge-secondary"
-              >
+
+              <!-- Pending + submitted → Submission Completed -->
+              <span *ngIf="isSubmittedForEvaluation && !student.isAbsent && !student.isUploaded"
+                class="badge badge-submitted">
+                <i class="fas fa-paper-plane"></i> Submission Completed
+              </span>
+
+              <!-- Pending + not submitted → Pending -->
+              <span *ngIf="!isSubmittedForEvaluation && !student.isAbsent && !student.isUploaded"
+                class="badge badge-secondary">
                 <i class="fas fa-clock"></i> Pending
               </span>
             </td>
@@ -201,35 +208,36 @@
               <!-- 3. ABSENT: Show dash -->
               <span *ngIf="student.isAbsent" class="text-muted">-</span>
 
-              <!-- 4. SUBMITTED FOR EVALUATION: Show dash -->
-              <span
-                *ngIf="isSubmittedForEvaluation && !student.isAbsent"
-                class="text-muted"
-                >-</span
-              >
+              <!-- 4. PENDING + SUBMITTED: Show dash -->
+              <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation"
+                class="text-muted">-</span>
+
+
             </td>
 
             <td>
-              <!-- After upload → Show N/A -->
-              <span *ngIf="student.isUploaded" class="text-muted"> - </span>
+              <!-- Submitted → always show dash -->
+              <span *ngIf="isSubmittedForEvaluation" class="text-muted">-</span>
 
-              <!-- Before upload → Show checkbox -->
-              <div *ngIf="!student.isUploaded" class="form-check">
-                <input
-                  type="checkbox"
-                  [id]="'absent-' + student.studentId"
-                  [checked]="student.isAbsent"
-                  (change)="toggleAbsent(student)"
-                  [disabled]="isSubmittedForEvaluation"
-                  class="custom-checkbox"
-                />
-                <label
-                  [for]="'absent-' + student.studentId"
-                  class="checkbox-label"
-                >
-                  Mark Absent
-                </label>
-              </div>
+              <!-- Not submitted -->
+              <ng-container *ngIf="!isSubmittedForEvaluation">
+                <!-- After upload → Show dash -->
+                <span *ngIf="student.isUploaded" class="text-muted">-</span>
+
+                <!-- Before upload → Show checkbox -->
+                <div *ngIf="!student.isUploaded" class="form-check">
+                  <input
+                    type="checkbox"
+                    [id]="'absent-' + student.studentId"
+                    [checked]="student.isAbsent"
+                    (change)="toggleAbsent(student)"
+                    class="custom-checkbox"
+                  />
+                  <label [for]="'absent-' + student.studentId" class="checkbox-label">
+                    Mark Absent
+                  </label>
+                </div>
+              </ng-container>
             </td>
 
             <td>
