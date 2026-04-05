@@ -882,3 +882,32 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
    │              │ promo-form: stacked                        │
    └──────────────┴───────────────────────────────────────────┘
    ============================================================ */
+/* ============================================================
+   MISSING CLASSES — added from HTML audit
+   ============================================================ */
+
+/* select-icon: the FA chevron inside .select-wrapper */
+.select-icon {
+  position: absolute;
+  right: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6366f1;
+  font-size: 0.75rem;
+  z-index: 1;
+}
+
+/* date-input: date fields in Academic Year form */
+input[type="date"].date-input {
+  cursor: pointer;
+}
+
+input[type="date"].date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
