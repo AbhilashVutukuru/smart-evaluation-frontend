@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -29,6 +29,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
   isCollapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
   visibleMenuItems: MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
@@ -159,6 +160,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
+    this.collapsedChange.emit(this.isCollapsed);
   }
 
   logout(): void {
