@@ -188,3 +188,98 @@
   background-color: #6366f1;
   border-color: #6366f1;
 }
+/* ── Already Logged In ───────────────────────────────────────────────────────── */
+.already-logged-in {
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+.logged-in-icon {
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.already-logged-in h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 0.5rem;
+}
+
+.already-logged-in p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+.logged-in-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.btn-go-dashboard {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.btn-go-dashboard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.35);
+}
+
+.btn-switch-account {
+  background: white;
+  color: #6b7280;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 11px;
+  font-weight: 500;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-switch-account:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.switch-hint {
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 0.5rem;
+}
+
+.switch-hint i {
+  color: #6366f1;
+}

@@ -104,6 +104,10 @@
   font-size: 0.95rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sidebar-nav {
@@ -301,5 +305,94 @@
   color: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.3);
   letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+/* ── Collapsed Sidebar ───────────────────────────────────────────────────────── */
+.sidebar {
+  transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* Toggle button */
+.toggle-btn {
+  position: absolute;
+  top: 20px;
+  right: -14px;
+  width: 28px;
+  height: 28px;
+  background: white;
+  border: 2px solid #6366f1;
+  border-radius: 50%;
+  color: #6366f1;
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.toggle-btn:hover {
+  background: #6366f1;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Collapsed header — center logo only */
+.sidebar.collapsed .sidebar-header {
+  padding: 20px 10px;
+}
+
+.sidebar.collapsed .logo {
+  margin-bottom: 0;
+}
+
+/* Collapsed user info — center icon only */
+.sidebar.collapsed .user-info-minimal {
+  justify-content: center;
+  padding: 12px;
+}
+
+/* Collapsed nav items — center icons */
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 15px;
+}
+
+.sidebar.collapsed .nav-item i {
+  margin-right: 0;
+  width: auto;
+}
+
+/* Collapsed footer — center icon */
+.sidebar.collapsed .logout-btn {
+  padding: 12px;
+  justify-content: center;
+}
+
+.sidebar.collapsed .logout-btn i {
+  margin-right: 0;
+}
+
+/* User info text layout */
+.user-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.user-name-simple {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }

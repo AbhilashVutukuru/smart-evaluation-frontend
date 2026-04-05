@@ -28,6 +28,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   schoolName: string | null = null;
   currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
+  isCollapsed = false;
   visibleMenuItems: MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
@@ -154,6 +155,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.isLoadingAcademicYear = false;
       },
     });
+  }
+
+  toggleCollapse(): void {
+    this.isCollapsed = !this.isCollapsed;
   }
 
   logout(): void {

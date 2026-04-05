@@ -299,15 +299,8 @@ export class AuthService {
   }
 
   getUserDisplayName(): string | null {
-    const name = this.getUserName();
-    if (!name) return null;
-    return name
-      .replace(/[0-9]/g, '')
-      .replace(/[._-]/g, ' ')
-      .trim()
-      .split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
+    // Return full email for display — clearer than derived name
+    return this.getUserEmail();
   }
 
   getSchoolName(): string | null {
