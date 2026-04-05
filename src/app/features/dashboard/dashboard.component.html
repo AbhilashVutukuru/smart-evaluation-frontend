@@ -225,98 +225,15 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- TEACHER VIEW                                               -->
     <!-- ══════════════════════════════════════════════════════════ -->
-    <ng-container *ngIf="isTeacher && summary.teacher as teacher">
-
-      <!-- Stats Cards -->
-      <div class="stats-grid stats-grid-4">
-        <div class="stat-card stat-purple">
-          <div class="stat-icon"><i class="fas fa-book"></i></div>
-          <div class="stat-body">
-            <span class="stat-number">{{ teacher.assignedSubjects }}</span>
-            <span class="stat-label">Assigned Subjects</span>
-          </div>
+    <ng-container *ngIf="isTeacher">
+      <div class="coming-soon-container">
+        <div class="coming-soon-icon">
+          <i class="fas fa-tools"></i>
         </div>
-        <div class="stat-card stat-indigo">
-          <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-          <div class="stat-body">
-            <span class="stat-number">{{ teacher.questionPapersCreated }}</span>
-            <span class="stat-label">Question Papers</span>
-          </div>
-        </div>
-        <div class="stat-card stat-orange">
-          <div class="stat-icon"><i class="fas fa-clock"></i></div>
-          <div class="stat-body">
-            <span class="stat-number">{{ teacher.pendingEvaluations }}</span>
-            <span class="stat-label">Pending</span>
-          </div>
-        </div>
-        <div class="stat-card stat-green">
-          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-          <div class="stat-body">
-            <span class="stat-number">{{ teacher.completedEvaluations }}</span>
-            <span class="stat-label">Evaluated</span>
-          </div>
-        </div>
+        <h2 class="coming-soon-title">Teacher Dashboard</h2>
+        <p class="coming-soon-text">Coming Soon</p>
+        <p class="coming-soon-sub">We're working hard to bring you an amazing dashboard experience.</p>
       </div>
-
-      <!-- Quick Actions -->
-      <div class="card">
-        <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
-        <div class="quick-actions">
-          <a routerLink="/create/exam" class="action-btn action-indigo">
-            <i class="fas fa-file-alt"></i>
-            <span>Create Question Paper</span>
-          </a>
-          <a routerLink="/upload-answer-sheets" class="action-btn action-purple">
-            <i class="fas fa-upload"></i>
-            <span>Upload Answer Sheets</span>
-          </a>
-          <a routerLink="/results" class="action-btn action-teal">
-            <i class="fas fa-chart-bar"></i>
-            <span>View Results</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Subject Breakdown -->
-      <div class="card" *ngIf="teacher.subjectSummaries.length > 0">
-        <h4><i class="fas fa-list-alt"></i> Subject-wise Evaluation Status</h4>
-        <div class="table-responsive">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Subject</th>
-                <th>Exam Type</th>
-                <th class="text-center">Total Students</th>
-                <th class="text-center">Evaluated</th>
-                <th class="text-center">Pending</th>
-                <th>Progress</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let row of teacher.subjectSummaries">
-                <td><strong>{{ row.subjectName }}</strong></td>
-                <td>{{ row.examTypeName }}</td>
-                <td class="text-center">{{ row.totalStudents }}</td>
-                <td class="text-center">
-                  <span class="badge badge-success">{{ row.evaluated }}</span>
-                </td>
-                <td class="text-center">
-                  <span class="badge badge-warning">{{ row.pending }}</span>
-                </td>
-                <td style="min-width: 120px;">
-                  <div class="progress-bar-track progress-bar-sm">
-                    <div class="progress-bar-fill"
-                      [style.width]="getProgressWidth(row.evaluated, row.totalStudents)">
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
     </ng-container>
 
     <!-- ══════════════════════════════════════════════════════════ -->

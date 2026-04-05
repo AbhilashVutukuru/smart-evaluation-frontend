@@ -5,7 +5,8 @@
       <i class="fas fa-th-large"></i>
     </div>
     <h3>School Portal</h3>
-    <p>Dashboard</p>
+    <p *ngIf="schoolName">{{ schoolName }}</p>
+    <p *ngIf="!schoolName">Dashboard</p>
     
     <!-- ✅ NEW: Academic Year Display -->
     <div class="academic-year" *ngIf="currentAcademicYear">

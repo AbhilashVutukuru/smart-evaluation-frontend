@@ -25,6 +25,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   userRole: string | null = null;
   userName: string | null = null;
+  schoolName: string | null = null;
   currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
   visibleMenuItems: MenuItem[] = [];
@@ -107,8 +108,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.userRole = this.authService.getUserRole();
-    this.userName = this.authService.getUserDisplayName();
+    this.userRole  = this.authService.getUserRole();
+    this.userName  = this.authService.getUserDisplayName();
+    this.schoolName = this.authService.getSchoolName();
     this.filterMenuByRole();
     this.subscribeToAcademicYear();
     this.loadAcademicYear();
