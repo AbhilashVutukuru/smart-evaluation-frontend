@@ -1,35 +1,48 @@
-<div class="sidebar">
+<div class="sidebar" [class.collapsed]="isCollapsed">
+
+  <!-- Toggle Button -->
+  <button class="toggle-btn" (click)="toggleCollapse()" [title]="isCollapsed ? 'Expand' : 'Collapse'">
+    <i [class]="isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
+  </button>
+
   <!-- Sidebar Header -->
   <div class="sidebar-header">
     <div class="logo">
       <i class="fas fa-th-large"></i>
     </div>
-    <h3>School Portal</h3>
-    <p>Dashboard</p>
-    
-    <!-- ✅ NEW: Academic Year Display -->
-    <div class="academic-year" *ngIf="currentAcademicYear">
-      <i class="fas fa-calendar-alt"></i>
-      <span>{{ currentAcademicYear }}</span>
-    </div>
-    
-    <!-- Loading state for academic year -->
-    <div class="academic-year loading" *ngIf="isLoadingAcademicYear">
-      <i class="fas fa-spinner fa-spin"></i>
-      <span>Loading...</span>
-    </div>
+    <ng-container *ngIf="!isCollapsed">
+      <h3>School Portal</h3>
+      <p *ngIf="schoolName">{{ schoolName }}</p>
+      <p *ngIf="!schoolName">Dashboard</p>
+
+      <!-- Academic Year Display -->
+      <div class="academic-year" *ngIf="currentAcademicYear">
+        <i class="fas fa-calendar-alt"></i>
+        <span>{{ currentAcademicYear }}</span>
+      </div>
+
+      <!-- Loading state for academic year -->
+      <div class="academic-year loading" *ngIf="isLoadingAcademicYear">
+        <i class="fas fa-spinner fa-spin"></i>
+        <span>Loading...</span>
+      </div>
+    </ng-container>
   </div>
 
-  <!-- User Info - Name with Role -->
+  <!-- User Info -->
   <div class="user-info-minimal" *ngIf="userName">
-    <i class="fas fa-user"></i>
-    <span class="user-name-simple">{{ userName }}</span>
-    <span class="user-role-badge" *ngIf="userRole">{{ userRole }}</span>
+    <i class="fas fa-user" [title]="isCollapsed ? (userName || '') : ''"></i>
+    <ng-container *ngIf="!isCollapsed">
+      <div class="user-info-text">
+        <span class="user-name-simple" [title]="userName || ''">{{ userName }}</span>
+      </div>
+    </ng-container>
+    <span class="user-role-badge" *ngIf="userRole && !isCollapsed">{{ userRole }}</span>
   </div>
 
   <!-- Menu Items -->
   <nav class="sidebar-nav">
-    <a 
+    <a
       *ngFor="let item of visibleMenuItems"
       [routerLink]="item.route"
       routerLinkActive="active"
@@ -37,11 +50,10 @@
       [title]="item.label"
     >
       <i [class]="item.icon"></i>
-      <span>{{ item.label }}</span>
+      <span *ngIf="!isCollapsed">{{ item.label }}</span>
     </a>
 
-    <!-- Show message if no menu items visible -->
-    <div *ngIf="visibleMenuItems.length === 0" class="no-menu-items">
+    <div *ngIf="visibleMenuItems.length === 0 && !isCollapsed" class="no-menu-items">
       <i class="fas fa-info-circle"></i>
       <p>No menu items available</p>
     </div>
@@ -49,9 +61,9 @@
 
   <!-- Sidebar Footer -->
   <div class="sidebar-footer">
-    <button (click)="logout()" class="logout-btn">
+    <button (click)="logout()" class="logout-btn" [title]="isCollapsed ? 'Logout' : ''">
       <i class="fas fa-sign-out-alt"></i>
-      <span>Logout</span>
+      <span *ngIf="!isCollapsed">Logout</span>
     </button>
   </div>
 </div>

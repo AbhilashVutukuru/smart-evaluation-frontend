@@ -85,7 +85,8 @@ export class ChangePasswordComponent implements OnInit {
   }
 
   goToLogin(): void {
-    this.router.navigate(['/auth/login']);
+    // Clear auth state first so the guard doesn't redirect back to dashboard
+    this.authService.logoutLocal();
   }
 
   onSubmit(): void {

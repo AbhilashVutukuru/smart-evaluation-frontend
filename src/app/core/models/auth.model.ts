@@ -15,6 +15,7 @@ export interface LoginResponse {
   role?: string;
   schoolId?: string;
   message?: string;
+  schoolName: string; 
 }
 
 export interface ForgotPasswordRequest {

@@ -1,5 +1,24 @@
 <div class="login-container">
   <div class="login-card">
+    <!-- Already Logged In Banner -->
+    <div *ngIf="alreadyLoggedIn" class="already-logged-in">
+      <div class="logged-in-icon">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <h3>Already Signed In</h3>
+      <p>You are currently logged in as <strong>{{ loggedInUserName }}</strong></p>
+      <div class="logged-in-actions">
+        <button class="btn-go-dashboard" (click)="goToDashboard()">
+          <i class="fas fa-th-large"></i> Go to Dashboard
+        </button>
+        <p class="switch-hint">
+          <i class="fas fa-info-circle"></i> To switch accounts, please <strong>Logout</strong> from the sidebar first.
+        </p>
+      </div>
+    </div>
+
+    <!-- Normal login form -->
+    <div *ngIf="!alreadyLoggedIn">
     <div class="logo-section">
       <div class="logo-icon">
         <i class="fas fa-graduation-cap"></i>
@@ -103,4 +122,5 @@
       <p class="mb-0">Don't have an account? <a routerLink="/auth/register" class="register-link">Register here</a></p>
     </div> -->
   </div>
+    </div><!-- end *ngIf="!alreadyLoggedIn" -->
 </div>

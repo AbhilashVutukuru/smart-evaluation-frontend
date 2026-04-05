@@ -26,6 +26,8 @@ export class LoginComponent implements OnInit {
   loading = false;
   error = '';
   showPassword = false;
+  alreadyLoggedIn = false;
+  loggedInUserName = '';
 
   constructor() {
     this.loginForm = this.fb.group({
@@ -41,10 +43,10 @@ export class LoginComponent implements OnInit {
       this.loginForm.patchValue({ rememberMe: true });
     }
 
-    // Already logged in → redirect
+    // Already logged in → show warning instead of silent redirect
     if (this.authService.isAuthenticated()) {
-      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-      this.router.navigate([returnUrl]);
+      this.alreadyLoggedIn = true;
+      this.loggedInUserName = this.authService.getUserEmail() ?? this.authService.getUserDisplayName() ?? 'another account';
     }
   }
 
@@ -58,6 +60,11 @@ export class LoginComponent implements OnInit {
 
   clearError(): void {
     if (this.error) this.error = '';
+  }
+
+  goToDashboard(): void {
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+    this.router.navigate([returnUrl]);
   }
 
   onSubmit(): void {

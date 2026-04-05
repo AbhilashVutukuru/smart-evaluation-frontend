@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,8 +25,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   userRole: string | null = null;
   userName: string | null = null;
+  schoolName: string | null = null;
   currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
+  isCollapsed = false;
+  @Output() collapsedChange = new EventEmitter<boolean>();
   visibleMenuItems: MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
@@ -107,8 +110,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.userRole = this.authService.getUserRole();
-    this.userName = this.authService.getUserDisplayName();
+    this.userRole  = this.authService.getUserRole();
+    this.userName  = this.authService.getUserDisplayName();
+    this.schoolName = this.authService.getSchoolName();
     this.filterMenuByRole();
     this.subscribeToAcademicYear();
     this.loadAcademicYear();
@@ -152,6 +156,11 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.isLoadingAcademicYear = false;
       },
     });
+  }
+
+  toggleCollapse(): void {
+    this.isCollapsed = !this.isCollapsed;
+    this.collapsedChange.emit(this.isCollapsed);
   }
 
   logout(): void {

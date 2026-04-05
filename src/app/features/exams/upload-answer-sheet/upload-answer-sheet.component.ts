@@ -9,7 +9,7 @@ import {
   StudentUploadStatus,
   SubmitAllPayload,
 } from '../../../core/models/upload-answer-sheet.models';
-import { ExamFilterComponent } from '../exam-filter/exam-filter.componenet';
+import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 
 @Component({

@@ -1,5 +1,15 @@
-/* unauthorized.component.css */
+/* ============================================================
+   UNAUTHORIZED — RESPONSIVE COMPONENT STYLES
+   Breakpoints:
+     Mobile  : < 480px
+     Tablet  : 480px – 767px
+     Laptop  : 768px – 1023px
+     Desktop : ≥ 1024px
+   ============================================================ */
 
+/* ============================================================
+   OUTER CONTAINER
+   ============================================================ */
 .unauthorized-container {
   display: flex;
   justify-content: center;
@@ -7,8 +17,29 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  box-sizing: border-box;
 }
 
+/* Tablet — top-align so card doesn't feel suspended mid-screen */
+@media (max-width: 767px) {
+  .unauthorized-container {
+    align-items: flex-start;
+    padding-top: 3rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Mobile — tight edges */
+@media (max-width: 479px) {
+  .unauthorized-container {
+    padding: 1.5rem 0.75rem;
+    align-items: flex-start;
+  }
+}
+
+/* ============================================================
+   CARD
+   ============================================================ */
 .unauthorized-card {
   background: white;
   border-radius: 16px;
@@ -18,19 +49,35 @@
   width: 100%;
   text-align: center;
   animation: slideUp 0.5s ease-out;
+  box-sizing: border-box;
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Tablet */
+@media (max-width: 767px) {
+  .unauthorized-card {
+    padding: 36px 28px;
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
   }
 }
 
+/* Mobile — full-width, compressed */
+@media (max-width: 479px) {
+  .unauthorized-card {
+    padding: 28px 18px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ============================================================
+   ICON WRAPPER  (pulsing lock circle)
+   ============================================================ */
 .icon-wrapper {
   display: inline-flex;
   justify-content: center;
@@ -44,12 +91,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.05); }
 }
 
 .unauthorized-icon {
@@ -58,13 +101,42 @@
   color: white;
 }
 
+/* Tablet */
+@media (max-width: 767px) {
+  .icon-wrapper        { width: 68px; height: 68px; margin-bottom: 20px; }
+  .unauthorized-icon   { width: 34px; height: 34px; }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
+  .icon-wrapper        { width: 58px; height: 58px; margin-bottom: 16px; }
+  .unauthorized-icon   { width: 28px; height: 28px; }
+}
+
+/* ============================================================
+   TITLE
+   ============================================================ */
 .title {
   font-size: 32px;
   font-weight: 700;
   color: #1a202c;
   margin-bottom: 8px;
+  line-height: 1.2;
 }
 
+/* Tablet */
+@media (max-width: 767px) {
+  .title { font-size: 26px; }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
+  .title { font-size: 22px; margin-bottom: 6px; }
+}
+
+/* ============================================================
+   ERROR CODE BADGE
+   ============================================================ */
 .error-code {
   display: inline-block;
   font-size: 14px;
@@ -76,32 +148,67 @@
   margin-bottom: 20px;
 }
 
+@media (max-width: 479px) {
+  .error-code { font-size: 12px; padding: 5px 14px; margin-bottom: 14px; }
+}
+
+/* ============================================================
+   MESSAGE
+   ============================================================ */
 .message {
   font-size: 20px;
   color: #4a5568;
   margin-bottom: 24px;
   font-weight: 500;
+  line-height: 1.5;
 }
 
+/* Tablet */
+@media (max-width: 767px) {
+  .message { font-size: 17px; margin-bottom: 18px; }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
+  .message { font-size: 15px; margin-bottom: 14px; }
+}
+
+/* ============================================================
+   USER INFO BOX
+   ============================================================ */
 .user-info {
   background: #f7fafc;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
+  text-align: left;
 }
 
 .user-detail {
   margin: 8px 0;
   color: #4a5568;
   font-size: 14px;
+  line-height: 1.5;
 }
+
+.user-detail:first-child { margin-top: 0; }
+.user-detail:last-child  { margin-bottom: 0; }
 
 .user-detail strong {
   color: #2d3748;
   font-weight: 600;
 }
 
+/* Mobile — slightly tighter */
+@media (max-width: 479px) {
+  .user-info   { padding: 12px; margin-bottom: 14px; }
+  .user-detail { font-size: 13px; margin: 6px 0; }
+}
+
+/* ============================================================
+   DESCRIPTION
+   ============================================================ */
 .description {
   font-size: 15px;
   color: #718096;
@@ -109,6 +216,21 @@
   margin-bottom: 32px;
 }
 
+/* Tablet */
+@media (max-width: 767px) {
+  .description { font-size: 14px; margin-bottom: 24px; }
+}
+
+/* Mobile */
+@media (max-width: 479px) {
+  .description { font-size: 13px; margin-bottom: 20px; }
+}
+
+/* ============================================================
+   ACTIONS  (buttons row)
+   Desktop / Laptop / Tablet : side-by-side centred
+   Mobile                    : stacked full-width
+   ============================================================ */
 .actions {
   display: flex;
   gap: 12px;
@@ -117,6 +239,18 @@
   flex-wrap: wrap;
 }
 
+/* Mobile — stack */
+@media (max-width: 479px) {
+  .actions {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -131,13 +265,17 @@
   transition: all 0.3s ease;
   text-decoration: none;
   min-width: 160px;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 .btn-icon {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
+/* Primary */
 .btn-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -147,12 +285,12 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  color: white;
 }
 
-.btn-primary:active {
-  transform: translateY(0);
-}
+.btn-primary:active { transform: translateY(0); }
 
+/* Secondary */
 .btn-secondary {
   background: white;
   color: #667eea;
@@ -165,10 +303,23 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
 }
 
-.btn-secondary:active {
-  transform: translateY(0);
+.btn-secondary:active { transform: translateY(0); }
+
+/* Tablet — slightly smaller */
+@media (max-width: 767px) {
+  .btn         { padding: 11px 20px; font-size: 14px; min-width: 140px; }
+  .btn-icon    { width: 18px; height: 18px; }
 }
 
+/* Mobile — full-width stacked buttons */
+@media (max-width: 479px) {
+  .btn         { width: 100%; min-width: unset; padding: 12px 16px; font-size: 14px; }
+  .btn-icon    { width: 18px; height: 18px; }
+}
+
+/* ============================================================
+   HELP SECTION
+   ============================================================ */
 .help-section {
   padding-top: 24px;
   border-top: 1px solid #e2e8f0;
@@ -192,25 +343,18 @@
   text-decoration: underline;
 }
 
-/* Responsive Design */
-@media (max-width: 640px) {
-  .unauthorized-card {
-    padding: 32px 24px;
-  }
-
-  .title {
-    font-size: 26px;
-  }
-
-  .message {
-    font-size: 18px;
-  }
-
-  .actions {
-    flex-direction: column;
-  }
-
-  .btn {
-    width: 100%;
-  }
+/* Mobile */
+@media (max-width: 479px) {
+  .help-section { padding-top: 18px; }
+  .help-text    { font-size: 13px; }
 }
+
+/* ============================================================
+   RESPONSIVE SUMMARY
+   ┌──────────────┬──────────────────────────────────────────┐
+   │ ≥ 1024px     │ Centered, 600px card, 48px pad           │
+   │ 768–1023px   │ Top-aligned, 36px pad, tighter icon      │
+   │ 480–767px    │ Top-aligned, side-by-side buttons        │
+   │ < 480px      │ Full-width card, 18px pad, stacked btns  │
+   └──────────────┴──────────────────────────────────────────┘
+   ============================================================ */

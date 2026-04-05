@@ -10,7 +10,7 @@ import {
   ResultRubric,
   EvaluationStatistics,
 } from '../../../core/models/exam-result';
-import { ExamFilterComponent } from '../exam-filter/exam-filter.componenet';
+import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 
 @Component({
