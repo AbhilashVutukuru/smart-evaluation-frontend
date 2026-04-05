@@ -29,10 +29,23 @@ export class SidebarComponent implements OnInit, OnDestroy {
   currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
   isCollapsed = false;
+
+  // ── Mobile drawer state ──────────────────────────────────
+  isMobileOpen = false;
+
   @Output() collapsedChange = new EventEmitter<boolean>();
   visibleMenuItems: MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
+
+  // ── Toggle button left position ──────────────────────────
+  // position:fixed means CSS parent selectors won't work.
+  // We drive the left value directly from TS as a style binding.
+  // Expanded : 260px sidebar - 14px (half of 28px btn) = 246px
+  // Collapsed:  70px sidebar - 14px                    =  56px
+  get toggleBtnLeft(): string {
+    return this.isCollapsed ? '56px' : '246px';
+  }
 
   private readonly allMenuItems: MenuItem[] = [
     {
@@ -54,13 +67,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
       roles: ['Admin'],
     },
     {
-      icon: 'fas fa-user-plus',           // ✅ Fixed: was fa-user-graduate (duplicate)
+      icon: 'fas fa-user-plus',
       label: 'Student Registration',
       route: '/registration/student',
       roles: ['Admin'],
     },
     {
-      icon: 'fas fa-user-tie',            // ✅ Fixed: was fa-chalkboard-teacher (duplicate)
+      icon: 'fas fa-user-tie',
       label: 'Teacher Registration',
       route: '/registration/teacher',
       roles: ['Admin'],
@@ -110,8 +123,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.userRole  = this.authService.getUserRole();
-    this.userName  = this.authService.getUserDisplayName();
+    this.userRole   = this.authService.getUserRole();
+    this.userName   = this.authService.getUserDisplayName();
     this.schoolName = this.authService.getSchoolName();
     this.filterMenuByRole();
     this.subscribeToAcademicYear();
@@ -120,7 +133,10 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.academicYearSubscription?.unsubscribe();
+    document.body.style.overflow = '';
   }
+
+  // ── Academic Year ────────────────────────────────────────
 
   private subscribeToAcademicYear(): void {
     this.academicYearSubscription = this.masterDataService.academicYear$
@@ -131,19 +147,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
       });
   }
 
-  private filterMenuByRole(): void {
-    if (!this.userRole) {
-      this.visibleMenuItems = [];
-      return;
-    }
-    this.visibleMenuItems = this.allMenuItems.filter((item) =>
-      item.roles.includes(this.userRole!),
-    );
-  }
-
   private loadAcademicYear(): void {
     this.isLoadingAcademicYear = true;
-
     this.masterDataService.getCurrentAcademicYear().subscribe({
       next: (response) => {
         if (!response.success || !response.data) {
@@ -158,12 +163,41 @@ export class SidebarComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Menu ─────────────────────────────────────────────────
+
+  private filterMenuByRole(): void {
+    if (!this.userRole) {
+      this.visibleMenuItems = [];
+      return;
+    }
+    this.visibleMenuItems = this.allMenuItems.filter((item) =>
+      item.roles.includes(this.userRole!),
+    );
+  }
+
+  // ── Desktop collapse ─────────────────────────────────────
+
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
     this.collapsedChange.emit(this.isCollapsed);
   }
 
+  // ── Mobile drawer ────────────────────────────────────────
+
+  openMobileSidebar(): void {
+    this.isMobileOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeMobileSidebar(): void {
+    this.isMobileOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  // ── Logout ───────────────────────────────────────────────
+
   logout(): void {
+    this.closeMobileSidebar();
     this.authService.logout();
   }
 }

@@ -1,7 +1,12 @@
-<div class="sidebar" [class.collapsed]="isCollapsed">
+<div class="sidebar" [class.collapsed]="isCollapsed" [class.open]="isMobileOpen">
 
-  <!-- Toggle Button -->
-  <button class="toggle-btn" (click)="toggleCollapse()" [title]="isCollapsed ? 'Expand' : 'Collapse'">
+  <!-- Desktop collapse toggle — left position driven by TS getter -->
+  <button
+    class="toggle-btn"
+    [style.left]="toggleBtnLeft"
+    (click)="toggleCollapse()"
+    [title]="isCollapsed ? 'Expand' : 'Collapse'"
+  >
     <i [class]="isCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
   </button>
 
@@ -15,13 +20,11 @@
       <p *ngIf="schoolName">{{ schoolName }}</p>
       <p *ngIf="!schoolName">Dashboard</p>
 
-      <!-- Academic Year Display -->
       <div class="academic-year" *ngIf="currentAcademicYear">
         <i class="fas fa-calendar-alt"></i>
         <span>{{ currentAcademicYear }}</span>
       </div>
 
-      <!-- Loading state for academic year -->
       <div class="academic-year loading" *ngIf="isLoadingAcademicYear">
         <i class="fas fa-spinner fa-spin"></i>
         <span>Loading...</span>
@@ -48,6 +51,7 @@
       routerLinkActive="active"
       class="nav-item"
       [title]="item.label"
+      (click)="closeMobileSidebar()"
     >
       <i [class]="item.icon"></i>
       <span *ngIf="!isCollapsed">{{ item.label }}</span>
@@ -66,4 +70,8 @@
       <span *ngIf="!isCollapsed">Logout</span>
     </button>
   </div>
+
 </div>
+
+<!-- Mobile backdrop overlay -->
+<div class="sidebar-overlay" [class.active]="isMobileOpen" (click)="closeMobileSidebar()"></div>
