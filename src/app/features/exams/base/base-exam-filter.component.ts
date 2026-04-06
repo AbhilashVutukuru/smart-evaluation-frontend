@@ -202,24 +202,36 @@ export abstract class BaseExamFilterComponent implements OnInit {
     return true;
   }
 
-  protected openAnswerSheet(studentId: number): void {
-    try {
-      const url = this.viewAnswerSheetService.getAnswerSheetUrl(
-        studentId,
-        +this.selectedClass,
-        +this.selectedSubject,
-        +this.selectedExamType,
-      );
-      const newWindow = window.open(url, '_blank');
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        this.toastService.showWarning('Popup Blocked', 'Please allow popups for this site to view answer sheets');
-        return;
-      }
-      newWindow.onerror = () => this.toastService.showError('Error', 'Failed to load answer sheet');
-    } catch {
-      this.toastService.showError('Error', 'Failed to open answer sheet');
-    }
-  }
+  // protected openAnswerSheet(studentId: number): void {
+  //   try {
+  //     const url = this.viewAnswerSheetService.getAnswerSheetUrl(
+  //       studentId,
+  //       +this.selectedClass,
+  //       +this.selectedSubject,
+  //       +this.selectedExamType,
+  //     );
+  //     const newWindow = window.open(url, '_blank');
+  //     if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+  //       this.toastService.showWarning('Popup Blocked', 'Please allow popups for this site to view answer sheets');
+  //       return;
+  //     }
+  //     newWindow.onerror = () => this.toastService.showError('Error', 'Failed to load answer sheet');
+  //   } catch {
+  //     this.toastService.showError('Error', 'Failed to open answer sheet');
+  //   }
+  // }
+
+protected openAnswerSheet(studentId: number, fileName?: string): void {
+  const params = new URLSearchParams({
+    studentId:  studentId.toString(),
+    classId:    this.selectedClass,
+    subjectId:  this.selectedSubject,
+    examTypeId: this.selectedExamType,
+    fileName:   fileName || 'answer-sheet.pdf'
+  });
+
+window.open(`/view-pdf?${params.toString()}`, '_blank');
+}
 
   protected abstract clearStudents(): void;
 }
