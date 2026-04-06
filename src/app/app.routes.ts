@@ -2,6 +2,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { LayoutComponent } from './shared/components/layout/layout.component';
+import { PdfViewerComponent } from './features/exams/pdf-viewer/pdf-viewer.component';
 
 export const routes: Routes = [
   {
@@ -9,7 +10,7 @@ export const routes: Routes = [
     redirectTo: '/auth/login',
     pathMatch: 'full',
   },
-  
+
   // ============================================================
   // AUTH ROUTES (No Layout, No Guard)
   // ============================================================
@@ -41,9 +42,9 @@ export const routes: Routes = [
         (m) => m.ResetPasswordComponent,
       ),
   },
-  
+
   // ============================================================
-  // ✅ UNAUTHORIZED ROUTE (No Layout, No Guard)
+  //  UNAUTHORIZED ROUTE (No Layout, No Guard)
   // ============================================================
   {
     path: 'unauthorized',
@@ -103,7 +104,7 @@ export const routes: Routes = [
             (m) => m.CreateExamComponent,
           ),
       },
-         {
+      {
         path: 'view/exam',
         loadComponent: () =>
           import('./features/exams/view-question-paper/view-question-paper.component').then(
@@ -179,7 +180,15 @@ export const routes: Routes = [
       },
     ],
   },
-  
+
+  // ============================================================
+  // PDF VIEWER (No Layout — no sidebar, no guard needed)
+  // ============================================================
+  {
+    path: 'view-pdf',
+    component: PdfViewerComponent,
+  },
+
   // ============================================================
   // WILDCARD ROUTE (Fallback)
   // ============================================================
