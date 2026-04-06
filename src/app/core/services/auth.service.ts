@@ -252,7 +252,7 @@ export class AuthService {
   }
 
   updateCurrentUser(user: LoginResponse): void {
-    console.log('📝 Updating current user');
+    //console.log('📝 Updating current user');
     this.currentUserSubject.next(user);
   }
 
