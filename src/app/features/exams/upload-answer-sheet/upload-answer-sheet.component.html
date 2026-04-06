@@ -71,6 +71,16 @@
     <!-- Table -->
     <div class="table-responsive">
       <table class="table">
+        <colgroup>
+          <col style="width:70px">       <!-- Roll No -->
+          <col style="width:160px">      <!-- Student Name -->
+          <col style="width:80px">       <!-- Class -->
+          <col style="width:80px">       <!-- Section -->
+          <col style="width:110px">      <!-- Status -->
+          <col style="width:280px">      <!-- Document -->
+          <col style="width:120px">      <!-- Mark Absent -->
+          <col style="width:140px">      <!-- Action -->
+        </colgroup>
         <thead>
           <tr>
             <th>Roll No</th>
@@ -109,130 +119,7 @@
             </td>
 
             <!-- DOCUMENT -->
-            <td>
-              <!-- UPLOADED: PDF name + Update -->
-              <div *ngIf="student.isUploaded && !student.isAbsent" class="document-display">
-                <span class="pdf-info">
-                  <i class="fas fa-file-pdf text-danger"></i>
-                  <span class="pdf-name">{{ student.fileName || 'PDF' }}</span>
-                </span>
-
-                <ng-container *ngIf="!isSubmittedForEvaluation">
-                  <!-- Desktop: PDF only -->
-                  <input type="file" [id]="'file-update-' + student.studentId"
-                    accept=".pdf" (change)="onFileSelected($event, student, true)"
-                    [disabled]="student.isUploading" style="display:none" />
-                  <label [for]="'file-update-' + student.studentId"
-                    class="btn btn-xs btn-warning hide-on-mobile"
-                    [class.disabled]="student.isUploading"
-                    [title]="student.isUploading ? 'Updating...' : 'Update PDF'">
-                    <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-sync-alt'"></i>
-                    {{ student.isUploading ? 'Updating...' : 'Update' }}
-                  </label>
-
-                  <!-- Mobile: image/camera capture for update -->
-                  <div class="mobile-capture-group show-on-mobile">
-                    <!-- Camera -->
-                    <input type="file" accept="image/*" capture="environment"
-                      [id]="'cam-update-' + student.studentId"
-                      (change)="onImagesSelected($event, student, true)"
-                      [disabled]="student.isUploading" style="display:none" />
-                    <label [for]="'cam-update-' + student.studentId"
-                      class="btn-capture btn-capture-cam"
-                      [class.disabled]="student.isUploading"
-                      title="Take photo">
-                      <i class="fas fa-camera"></i>
-                    </label>
-
-                    <!-- Gallery -->
-                    <input type="file" accept="image/png,image/jpeg" multiple
-                      [id]="'gal-update-' + student.studentId"
-                      (change)="onImagesSelected($event, student, true)"
-                      [disabled]="student.isUploading" style="display:none" />
-                    <label [for]="'gal-update-' + student.studentId"
-                      class="btn-capture btn-capture-gal"
-                      [class.disabled]="student.isUploading"
-                      title="Select images">
-                      <i class="fas fa-images"></i>
-                    </label>
-
-                    <!-- Spinner -->
-                    <span *ngIf="student.isUploading" class="capture-spinner">
-                      <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                  </div>
-                </ng-container>
-              </div>
-
-              <!-- PENDING: Upload buttons -->
-              <ng-container *ngIf="!student.isUploaded && !student.isAbsent && !isSubmittedForEvaluation">
-
-                <!-- Desktop: PDF upload -->
-                <div class="upload-section hide-on-mobile">
-                  <input type="file" [id]="'file-' + student.studentId"
-                    accept=".pdf" (change)="onFileSelected($event, student, false)"
-                    [disabled]="student.isUploading" style="display:none" />
-                  <label [for]="'file-' + student.studentId"
-                    class="btn btn-sm btn-primary"
-                    [class.disabled]="student.isUploading"
-                    [title]="student.isUploading ? 'Uploading...' : 'Upload PDF'">
-                    <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-upload'"></i>
-                    {{ student.isUploading ? 'Uploading...' : 'Upload' }}
-                  </label>
-                </div>
-
-                <!-- Mobile: camera + image gallery -->
-                <div class="mobile-capture-group show-on-mobile">
-                  <!-- Camera capture -->
-                  <input type="file" accept="image/*" capture="environment"
-                    [id]="'cam-' + student.studentId"
-                    (change)="onImagesSelected($event, student, false)"
-                    [disabled]="student.isUploading" style="display:none" />
-                  <label [for]="'cam-' + student.studentId"
-                    class="btn-capture btn-capture-cam"
-                    [class.disabled]="student.isUploading"
-                    title="Take photo">
-                    <i class="fas fa-camera"></i>
-                  </label>
-
-                  <!-- Gallery (PNG / JPEG, multiple) -->
-                  <input type="file" accept="image/png,image/jpeg" multiple
-                    [id]="'gal-' + student.studentId"
-                    (change)="onImagesSelected($event, student, false)"
-                    [disabled]="student.isUploading" style="display:none" />
-                  <label [for]="'gal-' + student.studentId"
-                    class="btn-capture btn-capture-gal"
-                    [class.disabled]="student.isUploading"
-                    title="Select images">
-                    <i class="fas fa-images"></i>
-                  </label>
-
-                  <!-- Spinner while converting -->
-                  <span *ngIf="student.isUploading" class="capture-spinner">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <small>Converting...</small>
-                  </span>
-                </div>
-
-                <!-- Image preview strip (mobile: shows selected images before upload) -->
-                <div class="image-preview-strip"
-                  *ngIf="getPreviewImages(student.studentId).length > 0">
-                  <img *ngFor="let src of getPreviewImages(student.studentId)"
-                    [src]="src" class="preview-thumb" alt="page preview" />
-                  <button class="btn-upload-images btn btn-sm btn-primary"
-                    (click)="uploadCapturedImages(student, false)"
-                    [disabled]="student.isUploading">
-                    <i class="fas fa-upload"></i>
-                    Upload {{ getPreviewImages(student.studentId).length }} page(s) as PDF
-                  </button>
-                  <button class="btn-clear-images btn btn-xs btn-secondary"
-                    (click)="clearPreviewImages(student.studentId)"
-                    [disabled]="student.isUploading">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-
-              </ng-container>
+            <td class="doc-cell">
 
               <!-- ABSENT -->
               <span *ngIf="student.isAbsent" class="text-muted">-</span>
@@ -240,8 +127,215 @@
               <!-- PENDING + SUBMITTED -->
               <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation"
                 class="text-muted">-</span>
-            </td>
 
+              <!-- UPLOADED: filename + update options -->
+              <ng-container *ngIf="student.isUploaded && !student.isAbsent">
+                <div class="doc-uploaded-row">
+                  <span class="pdf-info">
+                    <i class="fas fa-file-pdf text-danger"></i>
+                    <span class="pdf-name" [title]="student.fileName || 'PDF'">{{ student.fileName || 'PDF' }}</span>
+                  </span>
+                  <ng-container *ngIf="!isSubmittedForEvaluation">
+                    <!-- Desktop: update buttons — hidden while preview strip is showing -->
+                    <div class="doc-update-wrap desktop-only"
+                      *ngIf="getPreviewImages(student.studentId).length === 0">
+                      <span class="doc-update-label">
+                        <i class="fas fa-pen"></i> Update:
+                      </span>
+                      <div class="doc-update-btns">
+                        <input type="file" [id]="'file-update-' + student.studentId"
+                          accept=".pdf" (change)="onFileSelected($event, student, true)"
+                          [disabled]="student.isUploading" style="display:none" />
+                        <label [for]="'file-update-' + student.studentId"
+                          class="btn-doc btn-doc-pdf"
+                          [class.disabled]="student.isUploading"
+                          [class.uploading]="student.isUploading"
+                          title="Update: replace with a new PDF">
+                          <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-file-pdf'"></i>
+                          <span>{{ student.isUploading ? 'Updating...' : 'PDF' }}</span>
+                        </label>
+                        <ng-container *ngIf="!student.isUploading">
+                          <input type="file" accept="image/png,image/jpeg" multiple
+                            [id]="'img-update-' + student.studentId"
+                            (change)="onImagesSelected($event, student, true)"
+                            style="display:none" />
+                          <label [for]="'img-update-' + student.studentId"
+                            class="btn-doc btn-doc-img"
+                            title="Update: replace with images (converted to PDF)">
+                            <i class="fas fa-images"></i>
+                            <span>Images</span>
+                          </label>
+                        </ng-container>
+                      </div>
+                    </div>
+                    <!-- Mobile: camera + gallery only -->
+                    <div class="doc-actions mobile-only">
+                      <input type="file" accept="image/*" capture="environment"
+                        [id]="'cam-update-' + student.studentId"
+                        (change)="onImagesSelected($event, student, true)"
+                        [disabled]="student.isUploading" style="display:none" />
+                      <label [for]="'cam-update-' + student.studentId"
+                        class="btn-capture btn-capture-cam"
+                        [class.disabled]="student.isUploading" title="Take photo">
+                        <i class="fas fa-camera"></i>
+                      </label>
+                      <input type="file" accept="image/png,image/jpeg" multiple
+                        [id]="'gal-update-' + student.studentId"
+                        (change)="onImagesSelected($event, student, true)"
+                        [disabled]="student.isUploading" style="display:none" />
+                      <label [for]="'gal-update-' + student.studentId"
+                        class="btn-capture btn-capture-gal"
+                        [class.disabled]="student.isUploading" title="Select images">
+                        <i class="fas fa-images"></i>
+                      </label>
+                      <span *ngIf="student.isUploading" class="capture-spinner">
+                        <i class="fas fa-spinner fa-spin"></i>
+                      </span>
+                    </div>
+                  </ng-container>
+                </div>
+              </ng-container>
+
+              <!-- PENDING: upload options -->
+              <ng-container *ngIf="!student.isUploaded && !student.isAbsent && !isSubmittedForEvaluation">
+                <!-- Desktop: PDF + Images buttons — hidden while preview strip is showing -->
+                <div class="desktop-only doc-desktop-btns"
+                  *ngIf="getPreviewImages(student.studentId).length === 0">
+                  <input type="file" [id]="'file-' + student.studentId"
+                    accept=".pdf" (change)="onFileSelected($event, student, false)"
+                    [disabled]="student.isUploading" style="display:none" />
+                  <label [for]="'file-' + student.studentId"
+                    class="btn-doc btn-doc-pdf"
+                    [class.disabled]="student.isUploading" title="Upload PDF">
+                    <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-file-pdf'"></i>
+                    <span>{{ student.isUploading ? 'Uploading...' : 'PDF' }}</span>
+                  </label>
+                  <ng-container *ngIf="!student.isUploading">
+                  <input type="file" accept="image/png,image/jpeg" multiple
+                    [id]="'img-' + student.studentId"
+                    (change)="onImagesSelected($event, student, false)"
+                    style="display:none" />
+                  <label [for]="'img-' + student.studentId"
+                    class="btn-doc btn-doc-img"
+                    title="Select PNG/JPEG images — converted to PDF">
+                    <i class="fas fa-images"></i>
+                    <span>Images</span>
+                  </label>
+                  </ng-container>
+                </div>
+                <!-- Mobile: camera + gallery only (no PDF) -->
+                <div class="mobile-only mobile-capture-group">
+                  <input type="file" accept="image/*" capture="environment"
+                    [id]="'cam-' + student.studentId"
+                    (change)="onImagesSelected($event, student, false)"
+                    [disabled]="student.isUploading" style="display:none" />
+                  <label [for]="'cam-' + student.studentId"
+                    class="btn-capture btn-capture-cam"
+                    [class.disabled]="student.isUploading" title="Take photo">
+                    <i class="fas fa-camera"></i>
+                  </label>
+                  <input type="file" accept="image/png,image/jpeg" multiple
+                    [id]="'gal-' + student.studentId"
+                    (change)="onImagesSelected($event, student, false)"
+                    [disabled]="student.isUploading" style="display:none" />
+                  <label [for]="'gal-' + student.studentId"
+                    class="btn-capture btn-capture-gal"
+                    [class.disabled]="student.isUploading" title="Select images">
+                    <i class="fas fa-images"></i>
+                  </label>
+                  <span *ngIf="student.isUploading" class="capture-spinner">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <small>Converting...</small>
+                  </span>
+                </div>
+              </ng-container>
+
+              <!-- IMAGE PREVIEW STRIP — desktop & mobile -->
+              <div class="image-preview-strip"
+                *ngIf="getPreviewImages(student.studentId).length > 0 && !student.isAbsent">
+
+                <!-- Row 1: count label + Add More button -->
+                <div class="preview-top-row">
+                  <span class="preview-count-label">
+                    <i class="fas fa-images"></i>
+                    {{ getPreviewImages(student.studentId).length }} image(s) ready
+                  </span>
+                  <div class="preview-add-btns">
+                    <!-- Desktop: add more images from gallery -->
+                    <input type="file" accept="image/png,image/jpeg" multiple
+                      [id]="'add-img-' + student.studentId"
+                      (change)="onImagesSelected($event, student, student.isUploaded)"
+                      [disabled]="student.isUploading" style="display:none" />
+                    <label [for]="'add-img-' + student.studentId"
+                      class="btn-doc btn-doc-img desktop-only"
+                      [class.disabled]="student.isUploading"
+                      title="Add more images">
+                      <i class="fas fa-plus"></i>
+                      <span>Add</span>
+                    </label>
+                    <!-- Mobile: add via camera or gallery -->
+                    <input type="file" accept="image/*" capture="environment"
+                      [id]="'add-cam-' + student.studentId"
+                      (change)="onImagesSelected($event, student, student.isUploaded)"
+                      [disabled]="student.isUploading" style="display:none" />
+                    <label [for]="'add-cam-' + student.studentId"
+                      class="btn-capture btn-capture-cam mobile-only"
+                      style="width:28px;height:28px;font-size:0.75rem"
+                      [class.disabled]="student.isUploading" title="Take photo">
+                      <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" accept="image/png,image/jpeg" multiple
+                      [id]="'add-gal-' + student.studentId"
+                      (change)="onImagesSelected($event, student, student.isUploaded)"
+                      [disabled]="student.isUploading" style="display:none" />
+                    <label [for]="'add-gal-' + student.studentId"
+                      class="btn-capture btn-capture-gal mobile-only"
+                      style="width:28px;height:28px;font-size:0.75rem"
+                      [class.disabled]="student.isUploading" title="Add images">
+                      <i class="fas fa-plus"></i>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Row 2: scrollable thumbnails, each with delete button -->
+                <div class="preview-thumbs-row">
+                  <div *ngFor="let src of getPreviewImages(student.studentId); let i = index"
+                    class="preview-thumb-wrap">
+                    <img [src]="src" class="preview-thumb"
+                      [attr.alt]="'Page ' + (i+1)"
+                      (click)="openLightbox(student.studentId, i)"
+                      title="Click to view full size" />
+                    <span class="preview-page-num">{{ i + 1 }}</span>
+                    <!-- Delete this image -->
+                    <button class="preview-thumb-delete"
+                      (click)="deletePreviewImage(student.studentId, i)"
+                      [disabled]="student.isUploading"
+                      title="Remove page {{ i + 1 }}">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Row 3: Upload + Discard -->
+                <div class="preview-actions">
+                  <button class="btn btn-sm btn-primary"
+                    (click)="uploadCapturedImages(student)"
+                    [disabled]="student.isUploading">
+                    <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-file-pdf'"></i>
+                <!-- {{ student.isUploading ? 'Converting & Uploading...' :
+                       'Upload ' + getPreviewImages(student.studentId).length + ' page(s) as PDF' }} -->
+                          {{ student.isUploading ? 'Converting & Uploading...' :
+                       'Upload as PDF' }}
+                  </button>
+                  <button class="btn btn-sm btn-danger"
+                    (click)="clearPreviewImages(student.studentId)"
+                    [disabled]="student.isUploading" title="Discard all">
+                    <i class="fas fa-trash-alt"></i> Discard All
+                  </button>
+                </div>
+              </div>
+
+            </td>
             <!-- MARK ABSENT -->
             <td>
               <span *ngIf="isSubmittedForEvaluation" class="text-muted">-</span>
@@ -263,7 +357,7 @@
               <a *ngIf="student.isUploaded" href="javascript:void(0)"
                 class="download-link" [class.disabled]="isViewing"
                 (click)="!isViewing && viewAnswerSheet(student)">
-                <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View</span>
+                <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
             </td>
@@ -280,6 +374,50 @@
         <i [class]="isSubmittingAll ? 'fas fa-spinner fa-spin' : 'fas fa-paper-plane'"></i>
         {{ isSubmittingAll ? 'Submitting...' : 'Submit All For Evaluation' }}
       </button>
+    </div>
+  </div>
+
+<!-- ── LIGHTBOX MODAL ── -->
+<div class="lightbox-overlay" *ngIf="lightboxSrc" (click)="closeLightbox()">
+  <div class="lightbox-box" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
+    <div class="lightbox-header">
+      <span class="lightbox-label">
+        <i class="fas fa-images"></i> Page {{ lightboxPage }} of {{ lightboxTotal }}
+      </span>
+      <button class="lightbox-close" (click)="closeLightbox()" title="Close (Esc)">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <!-- Prev / Next + Image -->
+    <div class="lightbox-body">
+      <button class="lightbox-nav lightbox-prev"
+        (click)="lightboxNav(-1)"
+        [disabled]="lightboxPage <= 1"
+        title="Previous (←)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      <div class="lightbox-img-wrap">
+        <img [src]="lightboxSrc" class="lightbox-img" alt="Full size preview" />
+      </div>
+
+      <button class="lightbox-nav lightbox-next"
+        (click)="lightboxNav(1)"
+        [disabled]="lightboxPage >= lightboxTotal"
+        title="Next (→)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="lightbox-footer">
+      <span class="lightbox-hint">
+        <i class="fas fa-info-circle"></i>
+        Click outside or press Esc to close &nbsp;·&nbsp; ← → to navigate
+      </span>
     </div>
   </div>
 </div>

@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -35,6 +36,15 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── Mobile image capture state ──────────────────────────────────────────────
   // Map of studentId → array of base64 data-URLs (one per captured page)
   private capturedImages = new Map<number, string[]>();
+  // Tracks which students are in "update" (replace) mode during mobile image capture
+  private updateModeStudentIds = new Set<number>();
+
+  // ─── Lightbox state ───────────────────────────────────────────────────────────
+  lightboxSrc:        string | null = null;
+  lightboxPage        = 0;   // 1-based for display
+  lightboxTotal       = 0;
+  lightboxStudentId   = 0;
+  lightboxIndex       = 0;   // 0-based current index
 
   // ─── Computed statistics ──────────────────────────────────────────────────────
   get totalStudents(): number { return this.students.length; }
@@ -53,6 +63,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.absentStudentIds         = [];
     this.noExamPaperFound         = false;
     this.capturedImages.clear();
+    this.updateModeStudentIds.clear();
   }
 
   // ─── Filter change overrides ──────────────────────────────────────────────────
@@ -140,15 +151,15 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
   // ─── Mobile: image / camera selection ────────────────────────────────────────
   /**
-   * Called when user captures a photo or selects PNG/JPEG images from gallery.
-   * Images are stored as preview; user confirms before uploading.
-   * If only one image selected from camera, auto-upload immediately.
+   * Mobile & Desktop: called when user selects PNG/JPEG images or captures via camera.
+   * Images are ALWAYS accumulated into the preview strip first.
+   * Upload only happens when user explicitly taps "Upload X page(s) as PDF".
    */
   onImagesSelected(event: Event, student: StudentUploadStatus, isUpdate: boolean): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
 
-    if (files.length === 0) return;
+    if (files.length === 0) { input.value = ''; return; }
 
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
     const invalid = files.find(f => !validTypes.includes(f.type));
@@ -158,31 +169,20 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       return;
     }
 
-    // Read all images as base64 data-URLs
-    const readers = files.map(file => this.readFileAsDataUrl(file));
+    // Track whether this is an update (replace) or new upload
+    if (isUpdate) {
+      this.updateModeStudentIds.add(student.studentId);
+    } else {
+      this.updateModeStudentIds.delete(student.studentId);
+    }
 
-    Promise.all(readers).then(dataUrls => {
-      if (isUpdate) {
-        // For update, convert immediately (no preview accumulation needed)
-        this.convertImagesToPdfAndUpload(dataUrls, student, true);
-      } else {
-        // Accumulate into preview map
-        const existing = this.capturedImages.get(student.studentId) ?? [];
-        const merged   = [...existing, ...dataUrls];
-        this.capturedImages.set(student.studentId, merged);
-
-        // Single camera shot → auto-upload immediately for speed
-        const isCameraCapture = input.accept?.includes('capture') ||
-          input.getAttribute('capture') !== null;
-
-        if (isCameraCapture && merged.length === 1) {
-          this.uploadCapturedImages(student, false);
-        }
-        // Otherwise show preview strip → user taps "Upload X page(s)"
-      }
+    // Read all selected images as base64 data-URLs and accumulate into preview
+    Promise.all(files.map(f => this.readFileAsDataUrl(f))).then(dataUrls => {
+      const existing = this.capturedImages.get(student.studentId) ?? [];
+      this.capturedImages.set(student.studentId, [...existing, ...dataUrls]);
     });
 
-    input.value = '';
+    input.value = ''; // reset so same file can be re-selected
   }
 
   // ─── Preview strip helpers ────────────────────────────────────────────────────
@@ -192,14 +192,21 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
   clearPreviewImages(studentId: number): void {
     this.capturedImages.delete(studentId);
+    this.updateModeStudentIds.delete(studentId);
   }
 
   /** Called by "Upload X page(s) as PDF" button in the preview strip */
-  uploadCapturedImages(student: StudentUploadStatus, isUpdate: boolean): void {
+  /**
+   * Called by "Upload X page(s) as PDF" button.
+   * isUpdate is tracked internally via updateModeStudentIds set during onImagesSelected.
+   */
+  uploadCapturedImages(student: StudentUploadStatus): void {
     const images = this.capturedImages.get(student.studentId);
     if (!images || images.length === 0) return;
 
-    this.capturedImages.delete(student.studentId); // clear preview immediately
+    const isUpdate = this.updateModeStudentIds.has(student.studentId);
+    this.capturedImages.delete(student.studentId);
+    this.updateModeStudentIds.delete(student.studentId);
     this.convertImagesToPdfAndUpload(images, student, isUpdate);
   }
 
@@ -213,7 +220,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
     try {
       const pdfBlob = await this.imagesToPdf(dataUrls, student.studentName);
-      const fileName = `${student.studentName.replace(/\s+/g, '_')}_answers.pdf`;
+      //const fileName = `${student.studentName.replace(/\s+/g, '_')}_answers.pdf`;
+      const fileName = `${student.studentName.replace(/\s+/g, '_')}.pdf`;
       const pdfFile  = new File([pdfBlob], fileName, { type: 'application/pdf' });
 
       student.answerSheetFile = pdfFile;
@@ -232,19 +240,12 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   /**
    * Converts an array of image data-URLs to a single PDF Blob.
    * Each image becomes one A4 page; image is scaled to fit within the page.
-   * Uses jsPDF loaded from CDN (already in index.html).
+   * Uses jsPDF installed via npm (import jsPDF from 'jspdf').
    */
   private async imagesToPdf(dataUrls: string[], studentName: string): Promise<Blob> {
-    // jsPDF loaded as window.jspdf.jsPDF (CDN UMD build)
-    const jsPDF = (window as any)?.jspdf?.jsPDF ?? (window as any)?.jsPDF;
-
-    if (!jsPDF) {
-      throw new Error('jsPDF library not loaded. Add the CDN script to index.html.');
-    }
-
     const A4_W_MM = 210;
     const A4_H_MM = 297;
-    const MARGIN  = 8; // mm margin on each side
+    const MARGIN  = 8;
     const maxW    = A4_W_MM - MARGIN * 2;
     const maxH    = A4_H_MM - MARGIN * 2;
 
@@ -399,5 +400,60 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── View Answer Sheet ────────────────────────────────────────────────────────
   viewAnswerSheet(student: StudentUploadStatus): void {
     this.openAnswerSheet(student.studentId);
+  }
+
+  // ─── Delete single preview image ─────────────────────────────────────────────
+  deletePreviewImage(studentId: number, index: number): void {
+    const images = this.capturedImages.get(studentId);
+    if (!images) return;
+    images.splice(index, 1);
+    if (images.length === 0) {
+      this.capturedImages.delete(studentId);
+      this.updateModeStudentIds.delete(studentId);
+    } else {
+      this.capturedImages.set(studentId, [...images]);
+    }
+    // If lightbox is open for this student, update or close it
+    if (this.lightboxStudentId === studentId) {
+      if (images.length === 0) {
+        this.closeLightbox();
+      } else {
+        const newIdx = Math.min(this.lightboxIndex, images.length - 1);
+        this.lightboxIndex = newIdx;
+        this.lightboxSrc   = images[newIdx];
+        this.lightboxPage  = newIdx + 1;
+        this.lightboxTotal = images.length;
+      }
+    }
+  }
+
+  // ─── Lightbox ─────────────────────────────────────────────────────────────────
+  openLightbox(studentId: number, index: number): void {
+    const images = this.capturedImages.get(studentId);
+    if (!images || images.length === 0) return;
+    this.lightboxStudentId = studentId;
+    this.lightboxIndex     = index;
+    this.lightboxSrc       = images[index];
+    this.lightboxPage      = index + 1;
+    this.lightboxTotal     = images.length;
+    document.body.style.overflow = 'hidden';
+  }
+
+  lightboxNav(direction: -1 | 1): void {
+    const images = this.capturedImages.get(this.lightboxStudentId);
+    if (!images) return;
+    const newIdx = this.lightboxIndex + direction;
+    if (newIdx < 0 || newIdx >= images.length) return;
+    this.lightboxIndex = newIdx;
+    this.lightboxSrc   = images[newIdx];
+    this.lightboxPage  = newIdx + 1;
+  }
+
+  closeLightbox(): void {
+    this.lightboxSrc       = null;
+    this.lightboxStudentId = 0;
+    this.lightboxIndex     = 0;
+    this.lightboxPage      = 0;
+    document.body.style.overflow = '';
   }
 }

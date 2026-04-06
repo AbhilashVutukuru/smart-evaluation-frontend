@@ -2,11 +2,11 @@
    SIDEBAR — RESPONSIVE COMPONENT STYLES
    Breakpoints:
      Mobile  : < 768px  → hidden off-screen drawer + overlay
-     Desktop : ≥ 768px  → fixed left panel (260px or 70px collapsed)
+     Desktop : ≥ 768px  → fixed left panel (16.25rem or 4.375rem collapsed)
    ============================================================ */
 
 .sidebar {
-  width: 260px;
+  width: 16.25rem;
   height: 100vh;
   background: linear-gradient(180deg, #6366f1 0%, #8b5cf6 100%);
   color: white;
@@ -15,7 +15,7 @@
   position: fixed;
   left: 0;
   top: 0;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 2px 0 0.625rem rgba(0, 0, 0, 0.1);
   z-index: 1000;
   transition: width 0.3s ease, transform 0.3s ease;
   /* overflow:hidden intentionally removed — toggle-btn is position:fixed */
@@ -23,7 +23,7 @@
 
 /* ── Collapsed (desktop only) ── */
 .sidebar.collapsed {
-  width: 70px;
+  width: 4.375rem;
 }
 
 /* ============================================================
@@ -31,24 +31,30 @@
    ============================================================ */
 @media (max-width: 767px) {
   .sidebar {
-    width: 260px !important;
+    width: 16.25rem !important;
     transform: translateX(-100%);
     box-shadow: none;
   }
 
   .sidebar.open {
     transform: translateX(0);
-    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+    box-shadow: 4px 0 1.25rem rgba(0, 0, 0, 0.25);
   }
 
   .sidebar.collapsed {
-    width: 260px !important;
+    width: 16.25rem !important;
     transform: translateX(-100%);
   }
 
   .sidebar.collapsed.open {
     transform: translateX(0);
   }
+}
+
+/* Very small phones: slightly narrower drawer so content peeks through */
+@media (max-width: 479px) {
+  .sidebar,
+  .sidebar.collapsed { width: 15rem !important; }
 }
 
 /* ============================================================
@@ -60,10 +66,10 @@
    ============================================================ */
 .toggle-btn {
   position: fixed;
-  top: 22px;
+  top: 1.375rem;
   /* left is set dynamically via [style.left] in HTML */
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   background: white;
   border: 2px solid #6366f1;
   border-radius: 50%;
@@ -75,7 +81,7 @@
   justify-content: center;
   z-index: 1002;
   transition: left 0.3s ease, background 0.2s ease, transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 2px 0.5rem rgba(0, 0, 0, 0.18);
 }
 
 .toggle-btn:hover {
@@ -93,21 +99,21 @@
    ============================================================ */
 .sidebar-header {
   text-align: center;
-  padding: 30px 20px 20px;
+  padding: 1.875rem 1.25rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
 
 .logo {
-  width: 60px;
-  height: 60px;
+  width: 3.75rem;
+  height: 3.75rem;
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 15px;
+  border-radius: 0.9375rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 1.8rem;
-  margin-bottom: 15px;
+  margin-bottom: 0.9375rem;
   transition: all 0.3s ease;
 }
 
@@ -123,13 +129,13 @@
 }
 
 .sidebar-header p {
-  margin: 5px 0 0;
+  margin: 0.3125rem 0 0;
   font-size: 0.9rem;
   opacity: 0.9;
 }
 
 .sidebar.collapsed .sidebar-header {
-  padding: 20px 10px;
+  padding: 1.25rem 0.625rem;
 }
 
 .sidebar.collapsed .logo {
@@ -141,11 +147,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: 12px;
-  padding: 8px 15px;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.9375rem;
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
+  border-radius: 1.25rem;
   font-size: 0.8rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
@@ -173,8 +179,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 15px 20px;
+  gap: 0.625rem;
+  padding: 0.9375rem 1.25rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   flex-shrink: 0;
 }
@@ -206,8 +212,8 @@
 .user-role-badge {
   font-size: 0.7rem;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 2px 0.5rem;
+  border-radius: 0.625rem;
   background: rgba(255, 255, 255, 0.2);
   color: rgba(255, 255, 255, 0.95);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -218,7 +224,7 @@
 
 .sidebar.collapsed .user-info-minimal {
   justify-content: center;
-  padding: 12px;
+  padding: 0.75rem;
 }
 
 /* ============================================================
@@ -226,7 +232,7 @@
    ============================================================ */
 .sidebar-nav {
   flex: 1;
-  padding: 10px 0;
+  padding: 0.625rem 0;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -239,7 +245,7 @@
 .nav-item {
   display: flex;
   align-items: center;
-  padding: 14px 25px;
+  padding: 0.875rem 1.5625rem;
   color: white;
   text-decoration: none;
   transition: all 0.3s ease;
@@ -247,12 +253,13 @@
   margin: 3px 0;
   position: relative;
   animation: slideIn 0.3s ease-out;
+  min-height: 2.75rem;   /* 44px accessible touch target */
 }
 
 .nav-item i {
-  width: 24px;
+  width: 1.5rem;
   font-size: 1.1rem;
-  margin-right: 15px;
+  margin-right: 0.9375rem;
   flex-shrink: 0;
   transition: transform 0.3s ease;
 }
@@ -268,7 +275,7 @@
 .nav-item:hover {
   background: rgba(255, 255, 255, 0.1);
   border-left-color: white;
-  padding-left: 30px;
+  padding-left: 1.875rem;
 }
 
 .nav-item:hover i  { transform: scale(1.1); }
@@ -277,22 +284,22 @@
 
 .sidebar.collapsed .nav-item {
   justify-content: center;
-  padding: 15px;
+  padding: 0.9375rem;
 }
 
 .sidebar.collapsed .nav-item i { margin-right: 0; width: auto; }
 
 .no-menu-items {
   text-align: center;
-  padding: 40px 20px;
+  padding: 2.5rem 1.25rem;
   color: rgba(255,255,255,0.6);
 }
 
-.no-menu-items i { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+.no-menu-items i { font-size: 2rem; margin-bottom: 0.625rem; opacity: 0.5; display: block; }
 .no-menu-items p { font-size: 0.9rem; margin: 0; }
 
 @keyframes slideIn {
-  from { opacity: 0; transform: translateX(-20px); }
+  from { opacity: 0; transform: translateX(-1.25rem); }
   to   { opacity: 1; transform: translateX(0); }
 }
 
@@ -311,7 +318,7 @@
    FOOTER / LOGOUT
    ============================================================ */
 .sidebar-footer {
-  padding: 20px;
+  padding: 1.25rem;
   border-top: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
 }
@@ -321,22 +328,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 20px;
+  padding: 0.75rem 1.25rem;
   background: rgba(255,255,255,0.1);
   border: none;
-  border-radius: 10px;
+  border-radius: 0.625rem;
   color: white;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: inherit;
+  min-height: 2.75rem;   /* 44px accessible touch target */
 }
 
 .logout-btn i {
-  width: 24px;
+  width: 1.5rem;
   font-size: 1.1rem;
-  margin-right: 15px;
+  margin-right: 0.9375rem;
   transition: transform 0.3s ease;
   flex-shrink: 0;
 }
@@ -344,13 +352,13 @@
 .logout-btn:hover {
   background: rgba(255,255,255,0.2);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 0.5rem rgba(0,0,0,0.2);
 }
 
 .logout-btn:hover i { transform: rotate(-10deg); }
 .logout-btn:active  { transform: translateY(0); }
 
-.sidebar.collapsed .logout-btn { padding: 12px; justify-content: center; }
+.sidebar.collapsed .logout-btn { padding: 0.75rem; justify-content: center; }
 .sidebar.collapsed .logout-btn i { margin-right: 0; }
 
 /* ============================================================
