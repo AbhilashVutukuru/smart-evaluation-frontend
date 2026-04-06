@@ -417,6 +417,7 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 640px;
+  table-layout: fixed;          /* honors explicit column widths */
 }
 
 .table thead { background: #f9fafb; }
@@ -479,14 +480,13 @@
   color: #059669;
   font-weight: 500;
   font-size: 0.8125rem;
-  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 @media (max-width: 479px) {
-  .pdf-name { max-width: 80px; font-size: 0.75rem; }
+  .pdf-name { font-size: 0.75rem; }
 }
 
 /* ============================================================
@@ -726,21 +726,110 @@ input[type="checkbox"] {
    ============================================================ */
 
 /* ============================================================
-   MOBILE CAMERA / IMAGE CAPTURE
+   DOCUMENT COLUMN — DESKTOP vs MOBILE VISIBILITY
+   desktop-only : visible on ≥ 768px, hidden on mobile
+   mobile-only  : hidden on desktop, visible on mobile
    ============================================================ */
+/* desktop-only: flex on desktop, hidden on mobile */
+.desktop-only { display: flex !important; }
 
-/* Show/hide helpers — toggled by CSS media query, no JS needed */
-.hide-on-mobile  { display: inline-flex; }
-.show-on-mobile  { display: none; }
+/* mobile-only: hidden on desktop, flex on mobile */
+/* !important needed to override .mobile-capture-group { display:flex } */
+.mobile-only  { display: none !important; }
 
 @media (max-width: 767px) {
-  .hide-on-mobile { display: none !important; }
-  .show-on-mobile { display: flex !important; }
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
 }
 
-/* ── Capture button group (Camera + Gallery) ── */
-.mobile-capture-group {
+/* ── Uploaded row: filename + action buttons ── */
+.doc-uploaded-row {
   display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+  width: 100%;
+}
+
+/* Filename: takes all leftover space, truncates naturally */
+.doc-uploaded-row .pdf-info {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.doc-uploaded-row .pdf-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* No fixed max-width — fills available space, only truncates when buttons need room */
+}
+
+/* Update group: never shrinks, always stays on same line */
+.doc-update-wrap {
+  flex-shrink: 0 !important;
+}
+
+
+
+/* ── Action buttons wrapper ── */
+/* display controlled by .desktop-only / .mobile-only — do NOT set here */
+.doc-actions {
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ── Pending desktop: PDF + Images side by side ── */
+/* display controlled by .desktop-only — do NOT set here */
+.doc-desktop-btns {
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Images outline button (desktop pending) ── */
+.btn-outline-indigo {
+  background: white;
+  color: #6366f1;
+  border: 2px solid #6366f1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-outline-indigo:hover:not(.disabled) {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-outline-indigo.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── btn-info for desktop update image button ── */
+.btn-info {
+  background: #0ea5e9;
+  color: white;
+}
+.btn-info:hover:not(.disabled) { background: #0284c7; }
+
+/* ── Mobile: camera + gallery capture group ── */
+/* display is controlled by .mobile-only class — do NOT set display here */
+.mobile-capture-group {
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
@@ -807,57 +896,517 @@ input[type="checkbox"] {
 
 .capture-spinner i { font-size: 0.875rem; }
 
-/* ── Image preview strip ── */
+/* ── Image preview strip ──────────────────────────────────────────────────
+   3-row layout: label | scrollable thumbnails | action buttons
+   Thumbnails scroll horizontally — height is fixed so table row stays neat.
+   ─────────────────────────────────────────────────────────────────────── */
 .image-preview-strip {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 6px;
-  flex-wrap: wrap;
   margin-top: 8px;
-  padding: 8px 10px;
+  padding: 10px 12px;
   background: #f0f9ff;
   border: 1.5px solid #bae6fd;
   border-radius: 10px;
   animation: fadeIn 0.25s ease;
+  box-sizing: border-box;
+  /* Fill the doc-cell exactly — scrolling happens inside .preview-thumbs-row */
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
+/* Row 1 — "16 image(s) ready — review then upload" */
+.preview-count-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Row 2 — horizontally scrolling thumbnails, fixed height, never wraps */
+.preview-thumbs-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  overflow-x: auto;             /* scroll horizontally when images overflow */
+  overflow-y: hidden;
+  flex-shrink: 1;               /* allow shrink so strip doesn't overflow parent */
+  min-width: 0;                 /* critical: allows flex child to shrink below content size */
+  /* Fixed height = thumb height + scrollbar */
+  height: 72px;
+  align-items: flex-start;
+  padding-bottom: 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: auto;
+  scrollbar-color: #93c5fd #e0f2fe;
+}
+
+.preview-thumbs-row::-webkit-scrollbar        { height: 8px; }
+.preview-thumbs-row::-webkit-scrollbar-track  { background: #e0f2fe; border-radius: 4px; }
+.preview-thumbs-row::-webkit-scrollbar-thumb  { background: #60a5fa; border-radius: 4px; }
+.preview-thumbs-row::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
+
+/* Each thumbnail wrapper */
+.preview-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+/* Thumbnail — large enough to actually see the content */
 .preview-thumb {
   width: 44px;
   height: 56px;
   object-fit: cover;
   border-radius: 6px;
-  border: 2px solid #e0f2fe;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  border: 2px solid #93c5fd;
+  display: block;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-/* "Upload X page(s) as PDF" button */
-.btn-upload-images {
+.preview-thumb:hover {
+  transform: scale(1.08);
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+/* Page number badge */
+.preview-page-num {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  background: rgba(99,102,241,0.9);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 1px 4px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+/* Row 3 — Upload + Discard buttons */
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
+  flex-wrap: wrap;               /* wrap Discard to next line if needed */
+  min-width: 0;
+}
+
+.preview-actions .btn {
+  font-size: 0.75rem;
+  padding: 5px 10px;
   white-space: nowrap;
-  font-size: 0.75rem !important;
-  padding: 5px 10px !important;
+  height: 30px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
-/* Clear (×) button */
-.btn-clear-images {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  padding: 0 !important;
-  border-radius: 50% !important;
-  font-size: 0.75rem !important;
-  background: #fee2e2 !important;
-  color: #ef4444 !important;
+/* Mobile */
+@media (max-width: 767px) {
+  .image-preview-strip { width: 100%; }
+  .preview-thumb       { width: 42px; height: 54px; }
+  .preview-thumbs-row  { height: 68px; }
+}
+
+/* ── Document column — constrained width so preview strip scrolls internally ── */
+.doc-cell {
+  width: 280px;                 /* hard fixed width column */
+  min-width: 280px;
+  max-width: 280px;             /* table-layout:fixed will honor this */
+  vertical-align: middle;
+  overflow: hidden;             /* clip anything that overflows */
+}
+
+@media (max-width: 767px) {
+  .doc-cell { min-width: 200px; max-width: 280px; width: 280px; }
+}
+
+/* ============================================================
+   DOCUMENT ACTION BUTTONS — btn-doc
+   Solid filled pill — always coloured, white text, icon + label
+   PDF = indigo   |   Images = teal
+   ============================================================ */
+/* label element reset — browsers give labels no styling by default */
+label.btn-doc,
+.btn-doc {
+  box-sizing: border-box;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  border: none !important;
+  outline: none;
+  font-family: inherit;
+  line-height: 1.2;
+  text-decoration: none;
+  color: white !important;
+  user-select: none;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.btn-doc i    { font-size: 0.875rem; flex-shrink: 0; line-height: 1; }
+.btn-doc span { flex-shrink: 0; }
+
+/* Hover */
+label.btn-doc:hover:not(.disabled),
+.btn-doc:hover:not(.disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.22);
+}
+
+/* Disabled */
+.btn-doc.disabled {
+  opacity: 0.38 !important;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* PDF — indigo */
+label.btn-doc-pdf,
+.btn-doc-pdf { background: #6366f1 !important; }
+
+/* Images — teal */
+label.btn-doc-img,
+.btn-doc-img { background: #0d9488 !important; }
+
+/* While uploading / converting */
+.btn-doc.uploading {
+  opacity: 0.65;
+  cursor: wait;
+  transform: none;
+}
+
+@media (max-width: 767px) {
+  .btn-doc { padding: 6px 12px; font-size: 0.75rem; }
+}
+/* ============================================================
+   LIGHTBOX — full-screen image preview on thumbnail click
+   ============================================================ */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.88);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9999;
+  padding: 1.5rem;
+  animation: fadeIn 0.18s ease;
+  cursor: pointer;
 }
 
-/* Mobile: make preview strip full-width below the table cell */
+.lightbox-box {
+  background: #1e1e2e;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  max-width: 92vw;
+  max-height: 92vh;
+  width: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  animation: slideUp 0.2s ease;
+  cursor: default;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Header: "Page X of Y" + close button */
+.lightbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+}
+
+.lightbox-label {
+  color: #93c5fd;
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lightbox-close {
+  background: rgba(239,68,68,0.15);
+  border: 1px solid rgba(239,68,68,0.3);
+  color: #f87171;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.15s;
+}
+
+.lightbox-close:hover {
+  background: #ef4444;
+  color: white;
+  border-color: #ef4444;
+}
+
+/* Lightbox body: [←] [image] [→] in a row */
+.lightbox-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+}
+
+/* Image wrapper — scrollable, fills the middle */
+.lightbox-img-wrap {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: calc(92vh - 130px);
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  display: block;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  object-fit: contain;
+}
+
+/* Footer hint */
+.lightbox-footer {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.lightbox-hint {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.3);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Make thumb cursor pointer */
+.preview-thumb {
+  cursor: pointer;
+}
+
 @media (max-width: 767px) {
-  .image-preview-strip {
-    width: 100%;
-    box-sizing: border-box;
-  }
+  .lightbox-overlay { padding: 0.75rem; }
+  .lightbox-img     { max-height: calc(90vh - 100px); }
+}
+
+/* ── Preview strip top row: count + Add button ── */
+.preview-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.preview-add-btns {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* ── Delete button on each thumbnail ── */
+.preview-thumb-delete {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: white;
+  border: 2px solid white;
+  font-size: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0;                    /* hidden until hover */
+  transition: opacity 0.15s ease;
+  z-index: 2;
+  line-height: 1;
+}
+
+.preview-thumb-wrap:hover .preview-thumb-delete {
+  opacity: 1;                    /* show on hover */
+}
+
+/* Always visible on touch devices */
+@media (hover: none) {
+  .preview-thumb-delete { opacity: 1; }
+}
+
+/* ── Lightbox prev / next — fixed-width columns beside the image ── */
+.lightbox-nav {
+  flex-shrink: 0;
+  width: 52px;
+  height: 100%;
+  min-height: 80px;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+  padding: 0;
+}
+
+.lightbox-nav:hover:not(:disabled) {
+  background: rgba(255,255,255,0.15);
+  color: white;
+}
+
+.lightbox-nav:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
+.lightbox-prev { border-radius: 0 0 0 14px; }
+.lightbox-next { border-radius: 0 0 14px 0; }
+
+@media (max-width: 479px) {
+  .lightbox-nav { width: 36px; font-size: 1rem; }
+}
+
+/* ============================================================
+   UPLOADED ROW — "Replace with:" label + update buttons
+   ============================================================ */
+
+/* Update wrapper — label + buttons, never shrinks */
+.doc-update-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+.doc-update-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.doc-update-label i {
+  font-size: 0.58rem;
+  color: #f59e0b;
+}
+
+.doc-update-btns {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+/* ── Icon-only update buttons ── */
+.btn-doc-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+/* Default: ghost — no fill, coloured icon */
+.btn-doc-icon-pdf {
+  color: #6366f1;
+  border-color: #c7d2fe;
+  background: #eef2ff;
+}
+
+.btn-doc-icon-img {
+  color: #0d9488;
+  border-color: #99f6e4;
+  background: #f0fdf9;
+}
+
+/* Hover: fill */
+.btn-doc-icon-pdf:hover:not(.disabled) {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+  transform: scale(1.08);
+}
+
+.btn-doc-icon-img:hover:not(.disabled) {
+  background: #0d9488;
+  border-color: #0d9488;
+  color: white;
+  transform: scale(1.08);
+}
+
+.btn-doc-icon.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
