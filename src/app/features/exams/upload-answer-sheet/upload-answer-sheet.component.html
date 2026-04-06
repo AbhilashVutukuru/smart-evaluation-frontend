@@ -235,7 +235,7 @@
                   </label>
                   <span *ngIf="student.isUploading" class="capture-spinner">
                     <i class="fas fa-spinner fa-spin"></i>
-                    <small>Converting...</small>
+                    <small>Uploading...</small>
                   </span>
                 </div>
               </ng-container>
@@ -312,9 +312,9 @@
                     (click)="uploadCapturedImages(student)"
                     [disabled]="student.isUploading">
                     <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-file-pdf'"></i>
-                <!-- {{ student.isUploading ? 'Converting & Uploading...' :
+                <!-- {{ student.isUploading ? 'Uploading...' :
                        'Upload ' + getPreviewImages(student.studentId).length + ' page(s) as PDF' }} -->
-                          {{ student.isUploading ? 'Converting & Uploading...' :
+                          {{ student.isUploading ? 'Uploading...' :
                        'Upload as PDF' }}
                   </button>
                   <button class="btn btn-sm btn-danger"
