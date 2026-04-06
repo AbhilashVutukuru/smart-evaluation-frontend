@@ -417,7 +417,7 @@
   width: 100%;
   border-collapse: collapse;
   min-width: 640px;
-  table-layout: fixed;          /* honors explicit column widths */
+  table-layout: auto;           /* browser sizes columns by content */
 }
 
 .table thead { background: #f9fafb; }
@@ -747,19 +747,18 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 6px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   min-width: 0;
   width: 100%;
 }
 
-/* Filename: takes all leftover space, truncates naturally */
+/* Filename: always on its own line above update buttons */
 .doc-uploaded-row .pdf-info {
-  flex: 1 1 0;
-  min-width: 0;
-  overflow: hidden;
+  flex: 0 0 100%;
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0;
 }
 
 .doc-uploaded-row .pdf-name {
@@ -770,9 +769,7 @@ input[type="checkbox"] {
 }
 
 /* Update group: never shrinks, always stays on same line */
-.doc-update-wrap {
-  flex-shrink: 0 !important;
-}
+/* doc-update-wrap styles below in the section block */
 
 
 
@@ -1027,15 +1024,12 @@ input[type="checkbox"] {
 
 /* ── Document column — constrained width so preview strip scrolls internally ── */
 .doc-cell {
-  width: 280px;                 /* hard fixed width column */
-  min-width: 280px;
-  max-width: 280px;             /* table-layout:fixed will honor this */
   vertical-align: middle;
-  overflow: hidden;             /* clip anything that overflows */
+  /* No fixed width — table-layout:auto sizes by content */
 }
 
 @media (max-width: 767px) {
-  .doc-cell { min-width: 200px; max-width: 280px; width: 280px; }
+  .doc-cell { min-width: 180px; }
 }
 
 /* ============================================================

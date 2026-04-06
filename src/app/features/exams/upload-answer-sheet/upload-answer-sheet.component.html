@@ -71,16 +71,6 @@
     <!-- Table -->
     <div class="table-responsive">
       <table class="table">
-        <colgroup>
-          <col style="width:70px">       <!-- Roll No -->
-          <col style="width:160px">      <!-- Student Name -->
-          <col style="width:80px">       <!-- Class -->
-          <col style="width:80px">       <!-- Section -->
-          <col style="width:110px">      <!-- Status -->
-          <col style="width:280px">      <!-- Document -->
-          <col style="width:120px">      <!-- Mark Absent -->
-          <col style="width:140px">      <!-- Action -->
-        </colgroup>
         <thead>
           <tr>
             <th>Roll No</th>
@@ -360,6 +350,7 @@
                 <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
+              <span *ngIf="!student.isUploaded" class="text-muted">-</span>
             </td>
           </tr>
         </tbody>
