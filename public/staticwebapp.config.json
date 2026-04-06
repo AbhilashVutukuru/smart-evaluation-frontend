@@ -1,6 +1,52 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.css", "/*.js", "/*.ico"]
-  }
+    "exclude": [
+      "/*.js",
+      "/*.mjs",
+      "/*.css",
+      "/*.ico",
+      "/*.png",
+      "/*.svg",
+      "/*.jpg",
+      "/*.jpeg",
+      "/*.gif",
+      "/*.webp",
+      "/*.woff",
+      "/*.woff2",
+      "/*.ttf",
+      "/assets/*",
+      "/chunk-*"
+    ]
+  },
+  "mimeTypes": {
+    ".js":  "text/javascript",
+    ".mjs": "text/javascript"
+  },
+  "routes": [
+    {
+      "route": "/index.html",
+      "headers": {
+        "Cache-Control": "no-cache, no-store, must-revalidate"
+      }
+    },
+    {
+      "route": "/chunk-*.js",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/*.js",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "route": "/*.css",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    }
+  ]
 }
