@@ -1,6 +1,6 @@
 <div class="sidebar" [class.collapsed]="isCollapsed" [class.open]="isMobileOpen">
 
-  <!-- Desktop collapse toggle — left position driven by TS getter -->
+  <!-- Desktop collapse toggle -->
   <button
     class="toggle-btn"
     [style.left]="toggleBtnLeft"
@@ -43,10 +43,12 @@
     <span class="user-role-badge" *ngIf="userRole && !isCollapsed">{{ userRole }}</span>
   </div>
 
-  <!-- Menu Items -->
+  <!-- Nav -->
   <nav class="sidebar-nav">
+
+    <!-- ── Common Items (both Admin + Teacher) ── -->
     <a
-      *ngFor="let item of visibleMenuItems"
+      *ngFor="let item of commonMenuItems"
       [routerLink]="item.route"
       routerLinkActive="active"
       class="nav-item"
@@ -57,13 +59,51 @@
       <span *ngIf="!isCollapsed">{{ item.label }}</span>
     </a>
 
-    <div *ngIf="visibleMenuItems.length === 0 && !isCollapsed" class="no-menu-items">
+    <!-- ── Admin Submenu ── -->
+    <ng-container *ngIf="isAdmin">
+
+      <!-- Admin section toggle -->
+      <div
+        class="nav-item nav-group-header"
+        (click)="toggleAdminMenu()"
+        [title]="isCollapsed ? 'Admin' : ''"
+      >
+        <i class="fas fa-shield-alt"></i>
+        <span *ngIf="!isCollapsed">Admin</span>
+        <i
+          *ngIf="!isCollapsed"
+          class="fas submenu-arrow"
+          [class.fa-chevron-down]="!isAdminMenuOpen"
+          [class.fa-chevron-up]="isAdminMenuOpen"
+        ></i>
+      </div>
+
+      <!-- Admin sub-items -->
+      <div class="submenu" [class.open]="isAdminMenuOpen && !isCollapsed">
+        <a
+          *ngFor="let item of adminMenuItems"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-item nav-subitem"
+          [title]="item.label"
+          (click)="closeMobileSidebar()"
+        >
+          <i [class]="item.icon"></i>
+          <span *ngIf="!isCollapsed">{{ item.label }}</span>
+        </a>
+      </div>
+
+    </ng-container>
+
+    <!-- Empty state -->
+    <div *ngIf="commonMenuItems.length === 0 && !isCollapsed" class="no-menu-items">
       <i class="fas fa-info-circle"></i>
       <p>No menu items available</p>
     </div>
+
   </nav>
 
-  <!-- Sidebar Footer -->
+  <!-- Footer -->
   <div class="sidebar-footer">
     <button (click)="logout()" class="logout-btn" [title]="isCollapsed ? 'Logout' : ''">
       <i class="fas fa-sign-out-alt"></i>
@@ -73,5 +113,5 @@
 
 </div>
 
-<!-- Mobile backdrop overlay -->
+<!-- Mobile backdrop -->
 <div class="sidebar-overlay" [class.active]="isMobileOpen" (click)="closeMobileSidebar()"></div>
