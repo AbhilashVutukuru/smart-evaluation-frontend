@@ -214,4 +214,3 @@ export class SidebarComponent implements OnInit, OnDestroy {
     this.authService.logout();
   }
 }
-
