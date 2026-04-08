@@ -11,3 +11,21 @@ body {
   overflow-x: hidden;
 }
 
+/* ─── Brand Colors ─── */
+:root {
+  /* 4 brand colors */
+  --green:  #7fbb06;
+  --blue:   #0ea4f4;
+  --red:    #f85310;
+  --yellow: #ffbb0a;
+
+  /* Sidebar — uses only brand colors */
+  --sidebar-bg-from:      #0ea4f4;   /* 🔵 blue */
+  --sidebar-bg-to:        #0882c4;   /* 🔵 blue dark */
+  --sidebar-toggle:       #0ea4f4;   /* 🔵 blue */
+  --sidebar-active:       #ffbb0a;   /* 🟡 yellow */
+  --sidebar-pill-bg:      rgba(255, 255, 255, 0.2);
+  --sidebar-pill-border:  rgba(255, 255, 255, 0.35);
+  --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
+  --sidebar-badge-border: rgba(255, 255, 255, 0.4);
+}

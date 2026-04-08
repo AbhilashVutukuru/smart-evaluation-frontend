@@ -26,14 +26,7 @@
 /* ============================================================
    PAGE HEADER
    ============================================================ */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
+/* .page-header — global.css */
 
 .page-header h2 {
   color: #1f2937;
@@ -45,7 +38,7 @@
   gap: 0.75rem;
 }
 
-.page-header h2 i { color: #6366f1; }
+.page-header h2 i { color: #0ea4f4; }
 
 @media (max-width: 767px) {
   .page-header    { margin-bottom: 1.25rem; }
@@ -60,15 +53,7 @@
 /* ============================================================
    CARDS
    ============================================================ */
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
-  animation: slideDown 0.3s ease;
-}
+/* .card — global.css */
 
 @keyframes slideDown {
   from { opacity: 0; transform: translateY(-10px); }
@@ -85,7 +70,7 @@
   gap: 0.5rem;
 }
 
-.card h4 i { color: #6366f1; }
+.card h4 i { color: #0ea4f4; }
 
 .card h5 {
   font-size: 1rem;
@@ -110,20 +95,12 @@
    ============================================================ */
 .info-box,
 .warning-box,
-.error-box {
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  line-height: 1.5;
-}
+/* .error-box — see below */
 
-.info-box    { background: #dbeafe; border: 1px solid #3b82f6; color: #1e40af; }
-.warning-box { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
-.error-box   { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; }
+
+/* .info-box — global.css */
+.warning-box { background: #fff8e0; border: 1px solid #ffbb0a; color: #d69900; }
+.error-box   { background: #fee8e0; border: 1px solid #f85310; color: #d04008; }
 
 .info-box i,
 .warning-box i,
@@ -137,19 +114,19 @@
 
 /* ── Alert inline (matches input height) ── */
 .alert-info-inline {
-  background: #e0f2fe;
-  border: 1px solid #0284c7;
+  background: #e0f4fe;
+  border: 1px solid #0882c4;
   border-radius: 8px;
   padding: 0.625rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #0c4a6e;
+  color: #0882c4;
   font-size: 0.875rem;
   min-height: 42px;
 }
 
-.alert-info-inline i    { font-size: 1.125rem; color: #0284c7; flex-shrink: 0; }
+.alert-info-inline i    { font-size: 1.125rem; color: #0882c4; flex-shrink: 0; }
 .alert-info-inline span { line-height: 1.4; flex: 1; }
 
 @media (max-width: 767px) {
@@ -159,15 +136,9 @@
 /* ============================================================
    FORM LABELS & CONTROLS
    ============================================================ */
-.form-label {
-  font-weight: 500;
-  color: #374151;
-  margin-bottom: 0.5rem;
-  display: block;
-  font-size: 0.875rem;
-}
+/* .form-label — global.css */
 
-.required { color: #ef4444; font-weight: 600; }
+/* .required — global.css */
 
 .form-control {
   width: 100%;
@@ -185,8 +156,8 @@
 }
 
 .form-control:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #0ea4f4;
+  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1);
 }
 
 .form-control:focus-visible { outline: none; }
@@ -215,11 +186,7 @@ textarea.form-control {
 /* ============================================================
    BOOTSTRAP GRID
    ============================================================ */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -0.5rem;
-}
+/* .row — global.css */
 
 .col-md-3,
 .col-md-4,
@@ -245,50 +212,36 @@ textarea.form-control {
   .col-md-8 { width: 100%; }
 }
 
-.mb-3 { margin-bottom: 1rem; }
-.mb-0 { margin-bottom: 0 !important; }
-.mt-3 { margin-top: 1rem; }
-.mt-4 { margin-top: 1.5rem; }
+/* .mb-3 — global.css */
+/* .mb-0 — global.css */
+/* .mt-3 — global.css */
+/* .mt-4 — global.css */
 
 /* ============================================================
    BUTTONS
    ============================================================ */
-.btn {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-family: inherit;
-  box-sizing: border-box;
-}
+/* .btn — global.css */
 
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+/* .btn:disabled — global.css */
 
-.btn-primary              { background: #6366f1; color: white; }
-.btn-primary:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); }
+/* .btn-primary — global.css */
+.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-1px); }
 
-.btn-secondary            { background: #6b7280; color: white; }
-.btn-secondary:hover:not(:disabled) { background: #4b5563; }
+/* .btn-secondary — global.css */
+.btn-secondary:hover:not(:disabled) { background: #374151; }
 
-.btn-success              { background: #10b981; color: white; }
-.btn-success:hover:not(:disabled) { background: #059669; }
+/* .btn-success — global.css */
+.btn-success:hover:not(:disabled) { background: #5f8e04; }
 
-.btn-danger               { background: #ef4444; color: white; }
-.btn-danger:hover:not(:disabled)  { background: #dc2626; }
+/* .btn-danger — global.css */
+.btn-danger:hover:not(:disabled)  { background: #d04008; }
 
-.btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
+/* .btn-sm — global.css */
 
 .w-100 { width: 100%; }
 
-.d-flex { display: flex; }
-.gap-2  { gap: 0.5rem; }
+/* .d-flex — global.css */
+/* .gap-2 — global.css */
 
 @media (max-width: 479px) {
   .btn    { padding: 0.5rem 1rem; font-size: 0.8125rem; }
@@ -306,7 +259,7 @@ textarea.form-control {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #6366f1;
+  color: #0ea4f4;
   font-size: 0.75rem;
   z-index: 1;
 }
@@ -322,8 +275,8 @@ textarea.form-control {
 }
 
 .select-wrapper select.form-control:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #0ea4f4;
+  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1);
 }
 
 .select-wrapper select.form-control:disabled {
@@ -375,7 +328,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   right: 2.25rem;
   background: none;
   border: none;
-  color: #ef4444;
+  color: #f85310;
   font-size: 0.875rem;
   line-height: 1;
   cursor: pointer;
@@ -388,18 +341,18 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   z-index: 2;
 }
 
-.btn-clear-date:hover { background: #fee2e2; }
+.btn-clear-date:hover { background: #fee8e0; }
 
 .input-date-error {
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+  border-color: #f85310 !important;
+  box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.15) !important;
 }
 
 .exam-date-error {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #ef4444;
+  color: #f85310;
   font-size: 0.75rem;
   margin-top: 0.3rem;
 }
@@ -438,14 +391,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .exam-card:hover {
-  border-color: #6366f1;
+  border-color: #0ea4f4;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 12px rgba(14, 164, 244, 0.15);
 }
 
 .exam-card.selected {
-  border-color: #6366f1;
-  background: #f0f9ff;
+  border-color: #0ea4f4;
+  background: #e0f4fe;
 }
 
 .exam-card h5 {
@@ -474,7 +427,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  color: #10b981;
+  color: #7fbb06;
   font-size: 1.5rem;
 }
 
@@ -499,7 +452,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .question-badge {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #f85310;
   color: white;
   padding: 0.625rem 1.25rem;
   border-radius: 50px;
@@ -530,8 +483,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-bottom: 1rem;
 }
 
-.marks-summary.valid   { background: #ecfdf5; border-color: #10b981; }
-.marks-summary.invalid { background: #fef2f2; border-color: #ef4444; }
+.marks-summary.valid   { background: #eef7d6; border-color: #7fbb06; }
+.marks-summary.invalid { background: #fee8e0; border-color: #f85310; }
 
 .marks-row {
   display: flex;
@@ -564,10 +517,10 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   font-weight: 600;
 }
 
-.text-success { color: #10b981 !important; }
-.text-danger  { color: #ef4444 !important; }
-.text-warning { color: #f59e0b !important; }
-.text-muted   { color: #9ca3af !important; }
+/* .text-success — global.css */
+/* .text-danger — global.css */
+/* .text-warning — global.css */
+/* .text-muted — global.css */
 
 /* Tablet — stack marks row */
 @media (max-width: 767px) {
@@ -607,7 +560,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .rule-number {
   width: 2rem;
   height: 2rem;
-  background: #6366f1;
+  background: #0ea4f4;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -660,14 +613,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    Desktop / Tablet : space-between
    Mobile           : stacked full-width
    ============================================================ */
-.navigation-buttons {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 2rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
+/* .navigation-buttons — global.css */
 
 @media (max-width: 479px) {
   .navigation-buttons {
@@ -687,11 +633,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 /* ============================================================
    PROGRESS SECTION
    ============================================================ */
-.progress-section {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 2px solid #e5e7eb;
-}
+/* .progress-section — global.css */
 
 .progress-bar-wrapper {
   width: 100%;
@@ -704,19 +646,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: linear-gradient(90deg, #0ea4f4, #0ea4f4);
   border-radius: 50px;
   transition: width 0.3s ease;
 }
 
-.bg-success { background: #10b981 !important; }
+.bg-success { background: #7fbb06 !important; }
 
-.progress-text {
-  font-size: 0.875rem;
-  color: #6b7280;
-  text-align: center;
-  margin: 0;
-}
+/* .progress-text — global.css */
 
 @media (max-width: 479px) {
   .progress-section  { margin-top: 1.25rem; padding-top: 1.25rem; }
@@ -730,8 +667,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .upload-progress {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: #f0fdf4;
-  border: 1px solid #10b981;
+  background: #eef7d6;
+  border: 1px solid #7fbb06;
   border-radius: 8px;
 }
 
@@ -741,14 +678,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .me-2 { margin-right: 0.5rem; }
 
 .qp-name-info-icon {
-  color: #0284c7;
+  color: #f85310;
   font-size: 0.8rem;
   margin-left: 0.25rem;
   cursor: help;
   vertical-align: middle;
 }
 
-.qp-name-info-icon:hover { color: #0369a1; }
+.qp-name-info-icon:hover { color:#d04008; }
 
 /* ============================================================
    PRINT
@@ -768,3 +705,207 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    │              │ rule marks full-width below description  │
    └──────────────┴──────────────────────────────────────────┘
    ============================================================ */
+/* ─── Inline field validation error ─────────────────────────────────────────── */
+.field-error {
+  color: #f85310;   /* brand red */
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-weight: 500;
+}
+
+/* ─── Push nav buttons to right ──────────────────────────────────────────────── */
+.ms-auto { margin-left: auto; }
+
+/* ─── Question fields — clean, no extra spacing ─────────────────────────────── */
+.q-field {
+  margin-bottom: 1rem;
+}
+
+.q-field .form-control {
+  margin-top: 0.375rem;
+}
+
+.q-field .form-control.is-invalid {
+  border-color: #f85310 !important;
+  box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.1) !important;
+}
+
+/* ─── Field error — red, small, inline ──────────────────────────────────────── */
+.field-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #f85310 !important;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.field-error i { font-size: 0.75rem; }
+
+/* ─── Marks row — compact, no bottom spacing ─────────────────────────────────── */
+.q-marks-row {
+  margin-bottom: 0.5rem;
+}
+
+.q-marks-row .col-md-4,
+.q-marks-row .col-md-5,
+.q-marks-row .col-md-3,
+.q-marks-row .col-md-8 {
+  margin-bottom: 0.75rem !important;
+}
+
+/* ─── Error banner — red, compact ───────────────────────────────────────────── */
+.q-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.625rem 0.875rem;
+  background: #fef2f2;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.q-error-banner i { font-size: 0.875rem; flex-shrink: 0; }
+
+/* ─── Progress bar — slim, below nav ────────────────────────────────────────── */
+.q-progress {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.q-progress-bar-wrap {
+  height: 10px;
+  background: #e5e7eb;
+  border-radius: 7px;
+  overflow: hidden;
+  margin-bottom: 0.375rem;
+}
+
+.q-progress-fill {
+  height: 100%;
+  background: #0ea4f4;
+  border-radius: 7px;
+  transition: width 0.3s ease;
+}
+
+.q-progress-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* ─── Navigation — clean flex ────────────────────────────────────────────────── */
+.q-nav {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 0.625rem;
+  margin-top: 0;
+}
+
+/* ─── Collapse toggle button ─────────────────────────────────────────────────── */
+/* ─── Exam Info header ───────────────────────────────────────────────────────── */
+.exam-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.exam-info-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.exam-info-title i { color: #0ea4f4; }
+
+.btn-collapse-toggle {
+  background: none;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.btn-collapse-toggle:hover {
+  background: #f3f4f6;
+  color: #0ea4f4;
+  border-color: #0ea4f4;
+}
+
+/* ─── Collapsed section ──────────────────────────────────────────────────────── */
+.collapsed-section {
+  display: none;
+}
+
+/* ─── ms-auto ────────────────────────────────────────────────────────────────── */
+.ms-auto { margin-left: auto; }
+/* ─── Exam info header chevron ───────────────────────────────────────────────── */
+.exam-info-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem; }
+.exam-info-header:hover h4 { color: #0ea4f4; }
+.exam-chevron { transition: transform 0.25s ease; }
+/* ─── Previous button — distinct color ──────────────────────────────────────── */
+.btn-prev {
+  background: #0ea4f4;
+  color: white;
+  border: 1.5px solid #0ea4f4;
+}
+
+.btn-prev:hover:not(:disabled) {
+  background: #0882c4;
+  border-color: #0882c4;
+  color: white;
+}
+
+/* ─── Disabled state — blocked cursor ───────────────────────────────────────── */
+.btn:disabled,
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+.btn[disabled],
+label.disabled {
+  cursor: not-allowed !important;
+  opacity: 0.55;
+}
+
+/* Wrapper needed for disabled label buttons */
+.disabled-wrap {
+  cursor: not-allowed !important;
+  display: inline-block;
+}
+
+.disabled-wrap .btn:disabled {
+  pointer-events: none;
+    cursor: not-allowed !important;
+}
+
+.btn:disabled,
+.btn[disabled] {
+  pointer-events: auto !important;
+  cursor: not-allowed !important;
+}
