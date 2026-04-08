@@ -6,7 +6,7 @@ import { MasterDataService } from '../../../core/services/master-data.service';
 import { Subscription } from 'rxjs';
 
 interface MenuItem {
-  icon: string;
+  icon:  string;
   label: string;
   route: string;
   roles: string[];
@@ -20,102 +20,108 @@ interface MenuItem {
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  private authService = inject(AuthService);
+  private authService       = inject(AuthService);
   private masterDataService = inject(MasterDataService);
 
-  userRole: string | null = null;
-  userName: string | null = null;
-  schoolName: string | null = null;
-  currentAcademicYear: string | null = null;
+  userRole:             string | null = null;
+  userName:             string | null = null;
+  schoolName:           string | null = null;
+  currentAcademicYear:  string | null = null;
   isLoadingAcademicYear = false;
-  isCollapsed = false;
+  isCollapsed           = false;
+  isMobileOpen          = false;
 
-  // ── Mobile drawer state ──────────────────────────────────
-  isMobileOpen = false;
+  // ── Admin submenu state ──────────────────────────────────
+  isAdminMenuOpen = false;
 
   @Output() collapsedChange = new EventEmitter<boolean>();
-  visibleMenuItems: MenuItem[] = [];
+
+  commonMenuItems: MenuItem[] = [];
+  adminMenuItems:  MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
 
-  // ── Toggle button left position ──────────────────────────
-  // position:fixed means CSS parent selectors won't work.
-  // We drive the left value directly from TS as a style binding.
-  // Expanded : 260px sidebar - 14px (half of 28px btn) = 246px
-  // Collapsed:  70px sidebar - 14px                    =  56px
   get toggleBtnLeft(): string {
     return this.isCollapsed ? '56px' : '246px';
   }
 
-  private readonly allMenuItems: MenuItem[] = [
+  get isAdmin(): boolean {
+    return this.userRole === 'Admin';
+  }
+
+  // ── All menu items ───────────────────────────────────────
+  private readonly allCommonItems: MenuItem[] = [
     {
-      icon: 'fas fa-th-large',
+      icon:  'fas fa-th-large',
       label: 'Dashboard',
       route: '/dashboard',
       roles: ['Admin', 'Teacher', 'Student'],
     },
     {
-      icon: 'fas fa-user-graduate',
-      label: 'Students',
-      route: '/students/list',
-      roles: ['Admin'],
-    },
-    {
-      icon: 'fas fa-chalkboard-teacher',
-      label: 'Teachers',
-      route: '/teachers/list',
-      roles: ['Admin'],
-    },
-    {
-      icon: 'fas fa-user-plus',
-      label: 'Student Registration',
-      route: '/registration/student',
-      roles: ['Admin'],
-    },
-    {
-      icon: 'fas fa-user-tie',
-      label: 'Teacher Registration',
-      route: '/registration/teacher',
-      roles: ['Admin'],
-    },
-    {
-      icon: 'fas fa-user-tag',
-      label: 'Assign Subjects',
-      route: '/assign-teacher-subjects',
-      roles: ['Admin'],
-    },
-    {
-      icon: 'fas fa-file-alt',
+      icon:  'fas fa-file-alt',
       label: 'Create Question Paper',
       route: '/create/exam',
       roles: ['Admin', 'Teacher'],
     },
     {
-      icon: 'fas fa-eye',
+      icon:  'fas fa-eye',
       label: 'View Question Papers',
       route: '/view/exam',
       roles: ['Admin', 'Teacher'],
     },
     {
-      icon: 'fas fa-upload',
+      icon:  'fas fa-upload',
       label: 'Upload Answer Sheet',
       route: '/upload-answer-sheets',
       roles: ['Admin', 'Teacher'],
     },
     {
-      icon: 'fas fa-chart-bar',
+      icon:  'fas fa-chart-bar',
       label: 'View Exam Result',
       route: '/results',
       roles: ['Admin', 'Teacher', 'Student'],
     },
     {
-      icon: 'fas fa-key',
+      icon:  'fas fa-key',
       label: 'Change Password',
       route: '/change-password',
       roles: ['Admin', 'Teacher', 'Student'],
     },
+  ];
+
+  private readonly allAdminOnlyItems: MenuItem[] = [
     {
-      icon: 'fas fa-cog',
+      icon:  'fas fa-user-graduate',
+      label: 'Students',
+      route: '/students/list',
+      roles: ['Admin'],
+    },
+    {
+      icon:  'fas fa-chalkboard-teacher',
+      label: 'Teachers',
+      route: '/teachers/list',
+      roles: ['Admin'],
+    },
+    {
+      icon:  'fas fa-user-plus',
+      label: 'Student Registration',
+      route: '/registration/student',
+      roles: ['Admin'],
+    },
+    {
+      icon:  'fas fa-user-tie',
+      label: 'Teacher Registration',
+      route: '/registration/teacher',
+      roles: ['Admin'],
+    },
+    {
+      icon:  'fas fa-user-tag',
+      label: 'Assign Subjects',
+      route: '/assign-teacher-subjects',
+      roles: ['Admin'],
+    },
+    {
+      icon:  'fas fa-cog',
       label: 'Settings',
       route: '/admin-settings',
       roles: ['Admin'],
@@ -141,9 +147,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private subscribeToAcademicYear(): void {
     this.academicYearSubscription = this.masterDataService.academicYear$
       .subscribe((yearName) => {
-        if (yearName) {
-          this.currentAcademicYear = yearName;
-        }
+        if (yearName) this.currentAcademicYear = yearName;
       });
   }
 
@@ -157,7 +161,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.isLoadingAcademicYear = false;
       },
       error: () => {
-        this.currentAcademicYear = 'Not Available';
+        this.currentAcademicYear  = 'Not Available';
         this.isLoadingAcademicYear = false;
       },
     });
@@ -167,18 +171,27 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   private filterMenuByRole(): void {
     if (!this.userRole) {
-      this.visibleMenuItems = [];
+      this.commonMenuItems = [];
+      this.adminMenuItems  = [];
       return;
     }
-    this.visibleMenuItems = this.allMenuItems.filter((item) =>
-      item.roles.includes(this.userRole!),
+    this.commonMenuItems = this.allCommonItems.filter(item =>
+      item.roles.includes(this.userRole!)
     );
+    this.adminMenuItems = this.isAdmin ? this.allAdminOnlyItems : [];
+  }
+
+  toggleAdminMenu(): void {
+    if (!this.isCollapsed) {
+      this.isAdminMenuOpen = !this.isAdminMenuOpen;
+    }
   }
 
   // ── Desktop collapse ─────────────────────────────────────
 
   toggleCollapse(): void {
     this.isCollapsed = !this.isCollapsed;
+    if (this.isCollapsed) this.isAdminMenuOpen = false;
     this.collapsedChange.emit(this.isCollapsed);
   }
 

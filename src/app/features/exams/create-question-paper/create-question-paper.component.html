@@ -2,7 +2,7 @@
 <div class="exam-container">
   <!-- Page Header -->
   <div class="page-header">
-    <h2><i class="fas fa-file-alt"></i> Create Exam - Questions & Answers</h2>
+    <h2><i class="fas fa-file-alt"></i> Create Question Paper</h2>
   </div>
 
   <!-- UPDATE MODE: Select Exam -->
@@ -155,15 +155,23 @@
 
   <!-- EXAM FORM -->
   <div class="card">
-    <h4>
-      <i class="fas fa-clipboard-list"></i>
-      {{
-        examMode === "upload"
-          ? "Exam Information"
-          : "Step 3: Update Exam Information"
-      }}
-    </h4>
+    <div class="exam-info-header"
+         [style.cursor]="showExamInfoChevron ? 'pointer' : 'default'"
+         (click)="showExamInfoChevron && (examInfoCollapsed = !examInfoCollapsed)"
+         style="margin-bottom:1rem">
+      <h4 style="margin-bottom:0; display:flex; align-items:center; gap:0.5rem; user-select:none">
+        <i class="fas fa-clipboard-list"></i>
+        {{ examMode === "upload" ? "Exam Information" : "Step 3: Update Exam Information" }}
+        <i *ngIf="showExamInfoChevron"
+           class="fas exam-chevron"
+           [class.fa-chevron-down]="examInfoCollapsed"
+           [class.fa-chevron-up]="!examInfoCollapsed"
+           style="font-size:0.875rem; color:#6b7280; margin-left:0.25rem">
+        </i>
+      </h4>
+    </div>
 
+    <div [class.collapsed-section]="examInfoCollapsed">
     <div
       *ngIf="examMode === 'update' && selectedExamForUpdate"
       class="info-box"
@@ -178,13 +186,13 @@
       </div>
     </div>
 
-    <div *ngIf="examMode === 'upload'" class="info-box">
+    <!-- <div *ngIf="examMode === 'upload'" class="info-box">
       <i class="fas fa-info-circle"></i>
       <span
         ><strong>Note:</strong> All questions, answers, and validation rules are
         required.</span
       >
-    </div>
+    </div> -->
 
     <!-- Form Fields -->
     <div class="row">
@@ -292,13 +300,16 @@
       <div class="col-md-3 mb-3">
         <label class="form-label">
           Question Paper Name <span class="required">*</span>
+          <i class="fas fa-info-circle qp-name-info-icon"
+             title="Give a unique name for this question paper e.g. Mid Term-1, Unit Test-2. If same as Exam Type, no dropdown will appear during upload.">
+          </i>
         </label>
         <input
           type="text"
           [(ngModel)]="examFormData.questionPaperName"
           (input)="onQuestionPaperNameChange()"
           maxlength="200"
-          placeholder="e.g., Mid Term-1,Mid Term-2"
+          placeholder="e.g., Mid Term-1, Unit Test-2"
           class="form-control"
         />
       </div>
@@ -357,7 +368,7 @@
     </div>
 
     <!-- Generate Questions Prompt -->
-    <div
+    <!-- <div
       *ngIf="examMode === 'upload' && !questionsGenerated"
       class="warning-box"
     >
@@ -368,11 +379,11 @@
           begin.</strong
         ></span
       >
-    </div>
+    </div> -->
   </div>
 
   <!-- QUESTIONS SECTION -->
-  <div *ngIf="questionsGenerated" class="card">
+  <div *ngIf="questionsGenerated" class="card" style="margin-top:0.5rem">
     <!-- Question Header -->
     <div class="question-header">
       <div class="question-badge">
@@ -385,35 +396,45 @@
     </div>
 
     <!-- Question Text -->
-    <div class="mb-3">
-      <label class="form-label"
-        ><i class="fas fa-question"></i> Question
-        <span class="required">*</span></label
-      >
+    <div class="q-field">
+      <label class="form-label">
+        <i class="fas fa-question"></i> Question <span class="required">*</span>
+      </label>
       <textarea
         [(ngModel)]="currentQuestionSet.questionText"
+        (blur)="onQuestionTextBlur()"
+        (input)="onQuestionTextChange()"
         placeholder="Enter question text here..."
         rows="3"
         class="form-control"
+        [class.is-invalid]="questionTextInvalid"
       ></textarea>
+      <span *ngIf="questionTextInvalid" class="field-error">
+        <i class="fas fa-exclamation-circle"></i> Question text is required
+      </span>
     </div>
 
     <!-- Answer Text -->
-    <div class="mb-3">
-      <label class="form-label"
-        ><i class="fas fa-check-circle"></i> Answer
-        <span class="required">*</span></label
-      >
+    <div class="q-field">
+      <label class="form-label">
+        <i class="fas fa-check-circle"></i> Answer <span class="required">*</span>
+      </label>
       <textarea
         [(ngModel)]="currentQuestionSet.answerText"
+        (blur)="onAnswerTextBlur()"
+        (input)="onAnswerTextChange()"
         placeholder="Enter answer text here..."
-        rows="6"
+        rows="5"
         class="form-control"
+        [class.is-invalid]="answerTextInvalid"
       ></textarea>
+      <span *ngIf="answerTextInvalid" class="field-error">
+        <i class="fas fa-exclamation-circle"></i> Answer text is required
+      </span>
     </div>
 
-    <!--  FIXED: Marks & Validation Count with Proper Alignment -->
-    <div class="row">
+    <!-- Marks & Validation Count -->
+    <div class="row q-marks-row">
       <div class="col-md-4 mb-3">
         <label class="form-label"
           ><strong>Maximum Marks</strong> <span class="required">*</span></label
@@ -442,106 +463,48 @@
 
       <!-- ✅ Validation rules for other marks -->
       <ng-container *ngIf="currentQuestionSet.maxMarks !== 1">
-        <div class="col-md-5 mb-3">
-          <label class="form-label"
-            ><strong>Validation Rules Count</strong>
-            <span class="required">*</span></label
-          >
+        <div class="col-md-4 mb-3">
+          <label class="form-label">
+            <strong>No: of Validation Rules</strong>
+            <span class="required">*</span>
+            <i class="fas fa-info-circle qp-name-info-icon"
+               title="Enter the number of marking criteria (1–10). Each criterion will have a description and marks. Click Set Rules after entering the count.">
+            </i>
+          </label>
           <input
             type="number"
             [(ngModel)]="currentQuestionSet.validationRulesCount"
-            min="1"
+            (input)="onValidationCountChange()"
+            min="0"
             max="10"
-            placeholder="e.g., 3"
+            placeholder="0"
             class="form-control"
           />
         </div>
 
         <div class="col-md-3 mb-3">
           <label class="form-label">&nbsp;</label>
-          <button
-            class="btn btn-primary w-100"
-            (click)="generateValidationRules()"
-          >
-            <i class="fas fa-list-check"></i> Set Rules
-          </button>
+          <div [class.disabled-wrap]="!canSetRules">
+            <button
+              class="btn btn-primary w-100"
+              (click)="generateValidationRules()"
+              [disabled]="!canSetRules"
+            >
+              <i class="fas fa-list-check"></i> Set Validation Rules
+            </button>
+          </div>
         </div>
       </ng-container>
     </div>
 
-    <!-- ✅ Validation Rules Section (Only show if marks > 1) -->
+    <!-- Validation Rules Section — only show after Set Rules clicked -->
     <div class="mb-3" *ngIf="shouldShowValidationRules">
       <label class="form-label"
         ><i class="fas fa-chart-bar"></i> Validation Rules
         <span class="required">*</span></label
       >
 
-      <!-- Marks Summary -->
-      <div
-        class="marks-summary"
-        [class.valid]="validateMarksMatch()"
-        [class.invalid]="
-          !validateMarksMatch() &&
-          currentQuestionSet.maxMarks &&
-          calculateValidationMarksTotal() > 0
-        "
-      >
-        <div class="marks-row">
-          <div>
-            <strong>Maximum Marks:</strong>
-            <span class="marks-value">{{
-              currentQuestionSet.maxMarks || 0
-            }}</span>
-          </div>
-          <div>
-            <strong>Validation Total:</strong>
-            <span
-              class="marks-value"
-              [class.text-success]="validateMarksMatch()"
-              [class.text-danger]="!validateMarksMatch()"
-            >
-              {{ calculateValidationMarksTotal() }}
-            </span>
-          </div>
-          <div class="marks-status">
-            <i
-              class="fas fa-check-circle text-success"
-              *ngIf="validateMarksMatch()"
-            ></i>
-            <i
-              class="fas fa-exclamation-circle text-danger"
-              *ngIf="!validateMarksMatch()"
-            ></i>
-            <span *ngIf="validateMarksMatch()">Marks match!</span>
-            <span
-              *ngIf="
-                !validateMarksMatch() &&
-                currentQuestionSet.maxMarks &&
-                calculateValidationMarksTotal() > currentQuestionSet.maxMarks
-              "
-              class="text-danger"
-            >
-              Exceeded by
-              {{
-                calculateValidationMarksTotal() - currentQuestionSet.maxMarks
-              }}
-            </span>
-            <span
-              *ngIf="
-                !validateMarksMatch() &&
-                currentQuestionSet.maxMarks &&
-                calculateValidationMarksTotal() < currentQuestionSet.maxMarks
-              "
-              class="text-warning"
-            >
-              Short by
-              {{
-                currentQuestionSet.maxMarks - calculateValidationMarksTotal()
-              }}
-            </span>
-          </div>
-        </div>
-      </div>
+
 
       <!-- Rules List -->
       <div class="validation-rules">
@@ -560,10 +523,15 @@
             >
             <textarea
               [(ngModel)]="rule.description"
+              (blur)="rule.descriptionTouched = true"
               placeholder="Enter validation rule..."
               rows="2"
               class="form-control"
+              [class.is-invalid]="rule.descriptionTouched && !rule.description.trim()"
             ></textarea>
+            <span *ngIf="rule.descriptionTouched && !rule.description.trim()" class="field-error">
+              <i class="fas fa-exclamation-circle"></i> Rule description is required
+            </span>
           </div>
           <div class="rule-marks">
             <label class="form-label"
@@ -572,81 +540,72 @@
             <input
               type="number"
               [(ngModel)]="rule.marks"
+              (blur)="rule.marksTouched = true"
               min="0"
               max="100"
               step="0.5"
               placeholder="e.g., 3"
               class="form-control"
+              [class.is-invalid]="rule.marksTouched && (rule.marks === null || rule.marks === undefined)"
             />
+            <span *ngIf="rule.marksTouched && (rule.marks === null || rule.marks === undefined)" class="field-error">
+              <i class="fas fa-exclamation-circle"></i> Required
+            </span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ✅ Validation Errors (Only show if marks > 1) -->
+    <!-- Validation Errors -->
     <div
-      *ngIf="
-        getQuestionValidationErrors().length > 0 && shouldShowValidationRules
-      "
-      class="error-box mb-3"
+      *ngIf="shouldShowValidationRules && !validateMarksMatch() && calculateValidationMarksTotal() > 0"
+      class="q-error-banner"
     >
       <i class="fas fa-exclamation-triangle"></i>
-      <span
-        ><strong>{{ getQuestionValidationErrors()[0] }}</strong></span
-      >
+      Validation marks do not match maximum marks
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="navigation-buttons">
+    <div class="q-nav">
       <button
-        class="btn btn-secondary"
+        class="btn btn-prev"
         *ngIf="currentQuestionIndex > 0"
         (click)="goToPreviousQuestion()"
       >
         <i class="fas fa-arrow-left"></i> Previous
       </button>
+      <span *ngIf="currentQuestionIndex === 0"></span>
 
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2" style="margin-left:auto">
         <button
           class="btn btn-primary"
           *ngIf="!isLastQuestion"
           (click)="goToNextQuestion()"
         >
-          Save & Next <i class="fas fa-arrow-right"></i>
+          Save &amp; Next <i class="fas fa-arrow-right"></i>
         </button>
-
         <button
           class="btn btn-success"
           *ngIf="isLastQuestion"
           (click)="submitAll()"
           [disabled]="isSubmitting"
         >
-          <i
-            class="fas"
-            [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check-double'"
-          ></i>
+          <i class="fas" [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check-double'"></i>
           <span *ngIf="!isSubmitting">Submit All</span>
           <span *ngIf="isSubmitting">Submitting...</span>
         </button>
       </div>
     </div>
 
-    <!-- Progress Bar -->
-    <div class="progress-section">
-      <div class="progress-bar-wrapper">
-        <div
-          class="progress-bar"
-          [style.width]="
-            ((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'
-          "
-        ></div>
+    <!-- Progress Bar — below nav -->
+    <div class="q-progress">
+      <div class="q-progress-bar-wrap">
+        <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
       </div>
-      <p class="progress-text">
-        <strong>Progress:</strong> {{ currentQuestionIndex + 1 }} /
-        {{ questionSets.length }} questions ({{
-          (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0)
-        }}%)
-      </p>
+      <span class="q-progress-text">
+        Progress: {{ currentQuestionIndex + 1 }} / {{ questionSets.length }} questions
+        ({{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%)
+      </span>
     </div>
 
     <!-- Upload Progress -->
