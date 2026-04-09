@@ -63,21 +63,21 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
       align-items: center;
       gap: 0.75rem;
       padding: 0.875rem 1rem;
-      background: white;
-      border-bottom: 1px solid #e5e7eb;
+      background: linear-gradient(135deg, #0ea4f4 0%, #0882c4 100%);
+      border-bottom: none;
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 2px 8px rgba(8, 130, 196, 0.3);
     }
 
     .hamburger-btn {
       width: 40px;
       height: 40px;
-      background: #ede9fe;
+      background: rgba(255, 255, 255, 0.2);
       border: none;
       border-radius: 8px;
-      color: #6366f1;
+      color: white;
       font-size: 1.1rem;
       cursor: pointer;
       display: flex;
@@ -87,12 +87,12 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
       transition: background 0.2s;
     }
 
-    .hamburger-btn:hover { background: #ddd6fe; }
+    .hamburger-btn:hover { background: rgba(255, 255, 255, 0.3); }
 
     .topbar-title {
       font-size: 1rem;
       font-weight: 600;
-      color: #1f2937;
+      color: white;
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;

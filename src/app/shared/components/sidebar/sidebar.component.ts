@@ -71,13 +71,13 @@ export class SidebarComponent implements OnInit, OnDestroy {
     },
     {
       icon:  'fas fa-upload',
-      label: 'Upload Answer Sheet',
+      label: 'Upload Answer Sheets',
       route: '/upload-answer-sheets',
       roles: ['Admin', 'Teacher'],
     },
     {
       icon:  'fas fa-chart-bar',
-      label: 'View Exam Result',
+      label: 'View Exam Results',
       route: '/results',
       roles: ['Admin', 'Teacher', 'Student'],
     },

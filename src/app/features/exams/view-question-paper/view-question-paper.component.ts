@@ -107,7 +107,7 @@ export class ViewQuestionPaperComponent implements OnInit {
   // ─── Computed helpers ─────────────────────────────────────────────────────
  
   get isAllSubjects(): boolean {
-    return this.selectedSubject === this.ALL_SUBJECTS;
+    return !this.selectedSubject || this.selectedSubject === this.ALL_SUBJECTS;
   }
  
   // Locked when: ExamDate is set and has passed (checked server-side),
@@ -175,7 +175,7 @@ export class ViewQuestionPaperComponent implements OnInit {
   onSubjectChange(): void {
     this.clearPapers();
  
-    if (this.selectedSubject === this.ALL_SUBJECTS) {
+    if (this.selectedSubject || this.selectedSubject === this.ALL_SUBJECTS) {
       // Hide exam type / QP dropdowns — wait for "Show Papers" button click
       this.selectedExamType = '';
       return;

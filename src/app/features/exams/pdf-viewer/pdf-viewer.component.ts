@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -12,12 +12,12 @@ import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet
     <div style="margin:0;padding:0;width:100%;height:100vh;
                 background:#404040;overflow:hidden;position:relative">
 
-      <!-- ✅ Download button — correct filename -->
+      <!-- Download button -->
       <a *ngIf="blobUrl && fileName"
         [href]="blobUrl"
         [download]="fileName"
         style="position:fixed;top:10px;right:16px;z-index:9999;
-               background:#6366f1;color:white;padding:7px 16px;
+               background:#0ea4f4;color:white;padding:7px 16px;
                border-radius:8px;font-family:sans-serif;font-size:13px;
                font-weight:600;text-decoration:none;
                display:flex;align-items:center;gap:6px;
@@ -50,12 +50,12 @@ import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet
     </div>
   `
 })
-export class PdfViewerComponent implements OnInit {
-  pdfUrl:    SafeResourceUrl | null = null;
-  blobUrl:   string | null = null;   // ✅ for download button
-  fileName   = 'answer-sheet.pdf';
-  isLoading  = true;
-  error:     string | null = null;
+export class PdfViewerComponent implements OnInit, OnDestroy {
+  pdfUrl:   SafeResourceUrl | null = null;
+  blobUrl:  string | null = null;
+  fileName  = 'answer-sheet.pdf';
+  isLoading = true;
+  error:    string | null = null;
 
   constructor(
     private route:     ActivatedRoute,
@@ -64,23 +64,33 @@ export class PdfViewerComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const params     = this.route.snapshot.queryParams;
-    const studentId  = +params['studentId'];
-    const classId    = +params['classId'];
-    const subjectId  = +params['subjectId'];
-    const examTypeId = +params['examTypeId'];
+    const params          = this.route.snapshot.queryParams;
+    const studentId       = +params['studentId'];
+    const classId         = +params['classId'];
+    const subjectId       = +params['subjectId'];
+    const examTypeId      = +params['examTypeId'];
+    const questionPaperId = params['questionPaperId'] ? +params['questionPaperId'] : undefined;
 
-    const url = this.viewAnswerSheetService.getAnswerSheetUrl(
-      studentId, classId, subjectId, examTypeId
+    // Build URL with questionPaperId + cache-bust timestamp
+    const baseUrl = this.viewAnswerSheetService.getAnswerSheetUrl(
+      studentId, classId, subjectId, examTypeId, questionPaperId
     );
+    const url = `${baseUrl}&_t=${Date.now()}`;
 
-    fetch(url, { credentials: 'include' })
+    fetch(url, {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+      }
+    })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch');
 
-        // ✅ Read filename from Content-Disposition — server is source of truth
+        // Read filename from Content-Disposition
         const disposition = res.headers.get('Content-Disposition');
-        let serverFileName = 'answer-sheet.pdf';
+        let serverFileName = params['fileName'] || 'answer-sheet.pdf';
 
         if (disposition) {
           const utf8Match = disposition.match(/filename\*=UTF-8''([^;]+)/i);
@@ -95,26 +105,25 @@ export class PdfViewerComponent implements OnInit {
         }
 
         this.fileName  = serverFileName;
-        document.title = serverFileName;  // ✅ Tab name
+        document.title = serverFileName;
 
         return res.blob();
       })
       .then(blob => {
+        if (this.blobUrl) URL.revokeObjectURL(this.blobUrl);
         const blobUrl  = URL.createObjectURL(blob);
-        this.blobUrl   = blobUrl;         // Download button uses this
+        this.blobUrl   = blobUrl;
         this.pdfUrl    = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
         this.isLoading = false;
       })
       .catch(() => {
-        this.error     = 'Failed to load answer sheet';
+        this.error     = 'Failed to load answer sheet. Please try again.';
         this.isLoading = false;
       });
   }
 
   ngOnDestroy(): void {
-    //  Free memory when component destroyed
-    if (this.blobUrl) {
-      URL.revokeObjectURL(this.blobUrl);
-    }
-  }
+ //  Free memory when component destroyed
+     if (this.blobUrl) URL.revokeObjectURL(this.blobUrl);
+          }
 }

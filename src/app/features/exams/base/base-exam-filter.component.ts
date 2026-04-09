@@ -83,6 +83,10 @@ export abstract class BaseExamFilterComponent implements OnInit {
     this.noExamPaperFound          = false;
   }
 
+  onQuestionPaperChange(): void {
+    this.clearStudents();
+  }
+
   onExamTypeChange(): void {
     this.clearStudents();
     this.questionPapers            = [];
@@ -223,14 +227,15 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
 protected openAnswerSheet(studentId: number, fileName?: string): void {
   const params = new URLSearchParams({
-    studentId:  studentId.toString(),
-    classId:    this.selectedClass,
-    subjectId:  this.selectedSubject,
-    examTypeId: this.selectedExamType,
-    fileName:   fileName || 'answer-sheet.pdf'
+    studentId:       studentId.toString(),
+    classId:         this.selectedClass,
+    subjectId:       this.selectedSubject,
+    examTypeId:      this.selectedExamType,
+    questionPaperId: this.selectedQuestionPaperId?.toString() ?? '',
+    fileName:        fileName || 'answer-sheet.pdf',
+    _t:              Date.now().toString(),  // cache-bust
   });
-
-window.open(`/view-pdf?${params.toString()}`, '_blank');
+  window.open(`/view-pdf?${params.toString()}`, '_blank');
 }
 
   protected abstract clearStudents(): void;
