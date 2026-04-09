@@ -12,6 +12,25 @@
     </h4>
   </div>
 
+  <!-- Collapsed summary — shows selected names as chips -->
+  <div class="filter-summary" *ngIf="isCollapsed && selectedClass">
+    <span class="filter-chip" *ngIf="getClassName()">
+      <i class="fas fa-layer-group"></i> {{ getClassName() }}
+    </span>
+    <span class="filter-chip" *ngIf="getSectionName()">
+      <i class="fas fa-users"></i> {{ getSectionName() }}
+    </span>
+    <span class="filter-chip" *ngIf="getSubjectName()">
+      <i class="fas fa-book"></i> {{ getSubjectName() }}
+    </span>
+    <span class="filter-chip" *ngIf="getExamTypeName()">
+      <i class="fas fa-file-alt"></i> {{ getExamTypeName() }}
+    </span>
+    <span class="filter-chip" *ngIf="getQuestionPaperName()">
+      <i class="fas fa-file-signature"></i> {{ getQuestionPaperName() }}
+    </span>
+  </div>
+
   <!-- Collapsible body -->
   <div class="filter-card-body" [class.collapsed]="isCollapsed">
   <div class="row">

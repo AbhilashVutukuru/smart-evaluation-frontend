@@ -300,7 +300,7 @@
               <a *ngIf="student.isUploaded" href="javascript:void(0)"
                 class="download-link" [class.disabled]="isViewing"
                 (click)="!isViewing && viewAnswerSheet(student)">
-                <span *ngIf="!isViewing"><i class="fas fa-eye"></i> View Answer Sheet</span>
+                <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
               <span *ngIf="!student.isUploaded" class="text-muted">-</span>

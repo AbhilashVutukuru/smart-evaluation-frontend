@@ -45,8 +45,9 @@
 .badge-submitted { background: var(--blue-light);   color: var(--blue)       !important; }
 
 .badge.bg-secondary {
-  background: var(--gray-200) !important;
-  color: var(--gray-100) !important;
+  background: var(--blue-light) !important;
+  color: var(--blue-dark) !important;
+  font-weight: 700 !important;
 }
 
 /* ── Table min-width for this page ─────────────────────────── */
@@ -130,7 +131,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1rem;
-  background: var(--gray-50);
+  background: var(--gray-100) !important;
   border-radius: var(--border-radius);
   margin-bottom: 0.75rem;
   border-left: 4px solid var(--blue);
@@ -629,4 +630,27 @@
   .split-panel       { padding: 0.875rem; }
   .split-panel-text  { max-height: 35vh; font-size: 0.9rem; line-height: 1.6; }
   .split-panel-label { font-size: 0.75rem; }
+}
+/* ── Navigation Prev/Next — brand blue ──────────────────────── */
+.navigation-buttons .btn-secondary,
+.navigation-buttons .btn-lg {
+  background: var(--blue) !important;
+  color: white !important;
+  border: none !important;
+}
+
+.navigation-buttons .btn-secondary:hover:not(:disabled),
+.navigation-buttons .btn-lg:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(14, 164, 244, 0.4);
+}
+
+.navigation-buttons .btn-secondary:disabled,
+.navigation-buttons .btn-lg:disabled {
+  background: var(--gray-300) !important;
+  color: var(--gray-500) !important;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

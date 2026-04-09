@@ -568,12 +568,6 @@ label.btn-doc-img,
 }
 
 /* ── View Answer Sheet — brand blue ────────────────────────── */
-.download-link {
-  color: var(--blue);
-}
-
-.download-link:hover { color: var(--blue-dark); }
-
 /* ── Disabled buttons — ban cursor ─────────────────────────── */
 .btn:disabled,
 .btn[disabled] {
@@ -1195,10 +1189,9 @@ label.btn-doc-img,
 }
 
 /* ─── Absent badge — brand red ───────────────────────────────── */
-.badge-danger {
-  background: var(--red-light) !important;
-  color: var(--red) !important;
-}
+.badge-danger  { background: var(--red-light);    color: var(--red) !important; }
+.badge-success { background: var(--green-light);  color: var(--green-dark) !important; }
+.badge-warning { background: var(--yellow-light); color: var(--yellow-dark) !important; }
 
 /* ─── View Answer Sheet — single line on mobile ──────────────── */
 .download-link {
@@ -1206,7 +1199,13 @@ label.btn-doc-img,
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
+  color: var(--blue);
+  text-decoration: none;
 }
+.download-link:hover { color: var(--blue); text-decoration: none; }
+.download-link:hover .link-text { text-decoration: underline; text-decoration-color: var(--blue); text-decoration-thickness: 3px; text-underline-offset: 3px; }
+.download-link span { text-decoration: none; }
+.download-link i    { text-decoration: none !important; }
 
 
 
@@ -1263,11 +1262,18 @@ label.btn-doc-img,
   }
 }
 
+/* ─── Stat card hover ────────────────────────────────────────── */
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+.stat-card.stat-total:hover    { border-color: var(--blue); }
+.stat-card.stat-absent:hover   { border-color: var(--red); }
+.stat-card.stat-uploaded:hover { border-color: var(--green); }
+.stat-card.stat-pending:hover  { border-color: var(--yellow); }
+
 /* ─── Stat card icon brand colors ────────────────────────────── */
-.stat-card.stat-total    .stat-icon { background: var(--blue-light);    color: var(--blue); }
-.stat-card.stat-absent   .stat-icon { background: var(--red-light);     color: var(--red); }
-.stat-card.stat-uploaded .stat-icon { background: var(--green-light);   color: var(--green); }
-.stat-card.stat-pending  .stat-icon { background: var(--gray-100);      color: var(--gray-500); }
+.stat-card.stat-total    .stat-icon { background: var(--blue-light);   color: var(--blue); }
+.stat-card.stat-absent   .stat-icon { background: var(--red-light);    color: var(--red); }
+.stat-card.stat-uploaded .stat-icon { background: var(--green-light);  color: var(--green); }
+.stat-card.stat-pending  .stat-icon { background: var(--yellow-light); color: var(--yellow); }
 /* ─── Uploaded row — filename + Update button same line ─────── */
 .doc-uploaded-row {
   display: flex !important;

@@ -70,8 +70,8 @@
 
 .filter-card-body {
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
-  max-height: 600px;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 1000px;
   opacity: 1;
   margin-top: 1.25rem;
 }
@@ -82,3 +82,27 @@
   margin-top: 0;
   pointer-events: none;
 }
+
+/* ─── Collapsed summary chips ────────────────────────────────── */
+.filter-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.625rem;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--blue-light);
+  color: var(--blue-dark);
+  border-radius: 1rem;
+  padding: 0.2rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.filter-chip i { font-size: 0.65rem; }

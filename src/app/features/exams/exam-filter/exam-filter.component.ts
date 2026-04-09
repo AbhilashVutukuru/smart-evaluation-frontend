@@ -103,4 +103,11 @@ export class ExamFilterComponent {
       this.isCollapsedChange.emit(false);
     }
   }
+
+  // ─── Name lookups for collapsed summary chips ─────────────────────────────────
+  getClassName():    string { return this.classes.find(c => String(c.id)    === String(this.selectedClass))?.className    ?? ''; }
+  getSectionName():  string { return this.sections.find(s => String(s.id)   === String(this.selectedSection))?.sectionName  ?? ''; }
+  getSubjectName():  string { return this.subjects.find(s => String(s.id)   === String(this.selectedSubject))?.subjectName  ?? ''; }
+  getExamTypeName():    string { return this.examTypes.find(e => String(e.id) === String(this.selectedExamType))?.examTypeName ?? ''; }
+  getQuestionPaperName(): string { return this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? ''; }
 }

@@ -225,16 +225,16 @@ textarea.form-control {
 /* .btn:disabled — global.css */
 
 /* .btn-primary — global.css */
-.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
 
 /* .btn-secondary — global.css */
-.btn-secondary:hover:not(:disabled) { background: #374151; }
+.btn-secondary:hover:not(:disabled) { background: #374151; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
 
 /* .btn-success — global.css */
-.btn-success:hover:not(:disabled) { background: #5f8e04; }
+.btn-success:hover:not(:disabled) { background: #5f8e04; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
 
 /* .btn-danger — global.css */
-.btn-danger:hover:not(:disabled)  { background: #d04008; }
+.btn-danger:hover:not(:disabled)  { background: #d04008; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
 
 /* .btn-sm — global.css */
 
@@ -390,7 +390,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: relative;
 }
 
-.exam-card:hover {
+.exam-card:hover { border-color: var(--blue) !important;
   border-color: #0ea4f4;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(14, 164, 244, 0.15);

@@ -92,6 +92,7 @@ export class ViewQuestionPaperComponent implements OnInit {
   showDetailPage            = false;  // true = show paper detail, hide list/filters
  
   // ─── Edit state ───────────────────────────────────────────────────────────
+  isFilterCollapsed = false;
   isEditMode     = false;
   questionsEdited = false;   // true only when a question field is actually changed
   draft:       PaperDraft | null = null;
@@ -431,9 +432,10 @@ export class ViewQuestionPaperComponent implements OnInit {
  
   backToList(): void {
     // Cancel any in-progress edit without saving
-    this.isEditMode      = false;
-    this.draft           = null;
-    this.showDetailPage  = false;
+    this.isEditMode       = false;
+    this.draft            = null;
+    this.showDetailPage   = false;
+    this.isFilterCollapsed = false;
     this.questionPaper   = null;
     this.currentQuestion = null;
 
@@ -603,6 +605,11 @@ export class ViewQuestionPaperComponent implements OnInit {
     }
   }
  
+  // ─── Filter collapse name getters ────────────────────────────────────────────
+  getClassName():    string { return this.classes.find(c => String(c.id)  === String(this.selectedClass))?.className    ?? ''; }
+  getSubjectName():  string { return this.subjects.find(s => String(s.id) === String(this.selectedSubject))?.subjectName  ?? ''; }
+  getExamTypeName(): string { return this.examTypes.find(e => String(e.id) === String(this.selectedExamType))?.examTypeName ?? ''; }
+
   // ─── Helpers ──────────────────────────────────────────────────────────────
  
   private clearPapers(): void {
@@ -620,10 +627,11 @@ export class ViewQuestionPaperComponent implements OnInit {
   }
  
   private resetAll(): void {
-    this.selectedSubject  = '';
-    this.selectedExamType = '';
-    this.subjects         = [];
-    this.examTypes        = [];
+    this.selectedSubject   = '';
+    this.selectedExamType  = '';
+    this.subjects          = [];
+    this.examTypes         = [];
+    this.isFilterCollapsed = false;
     this.clearPapers();
   }
 }
