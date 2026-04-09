@@ -684,8 +684,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
 .download-link:hover .link-text {
   text-decoration: underline;
   text-decoration-color: var(--blue);
-  text-decoration-thickness: 3px;
-  text-underline-offset: 3px;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
 }
 
 .download-link i {
