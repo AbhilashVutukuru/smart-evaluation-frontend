@@ -538,6 +538,11 @@ export class CreateExamComponent implements OnInit {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+  // ─── Name getters for collapsed exam info chips ──────────────────────────────
+  getClassName():    string { return this.allClasses.find(c  => String(c.id)  === String(this.examFormData.classId))?.className    ?? ''; }
+  getSubjectName():  string { return this.allSubjects.find(s => String(s.id)  === String(this.examFormData.subjectId))?.subjectName  ?? ''; }
+  getExamTypeName(): string { return this.allExamTypes.find(e => String(e.id) === String(this.examFormData.examTypeId))?.examTypeName ?? ''; }
+
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
     try {

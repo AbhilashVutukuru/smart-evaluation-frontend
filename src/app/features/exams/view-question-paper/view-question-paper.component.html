@@ -10,8 +10,33 @@
 
   <!-- ── Filter Card ───────────────────────────────────────────────────────── -->
   <div class="card">
-    <h4><i class="fas fa-filter"></i> Select Question Paper</h4>
+    <!-- Header — clickable to expand when collapsed -->
+    <div class="filter-card-header"
+      [class.is-collapsed]="isFilterCollapsed"
+      (click)="isFilterCollapsed && (isFilterCollapsed = false)">
+      <h4 style="margin:0">
+        <i class="fas fa-filter"></i> Select Question Paper
+        <i *ngIf="isFilterCollapsed"
+          class="fas fa-chevron-down collapse-indicator"
+          title="Click to expand filters"></i>
+      </h4>
+    </div>
 
+    <!-- Collapsed summary chips -->
+    <div class="filter-summary" *ngIf="isFilterCollapsed && selectedClass">
+      <span class="filter-chip" *ngIf="getClassName()">
+        <i class="fas fa-layer-group"></i> {{ getClassName() }}
+      </span>
+      <span class="filter-chip" *ngIf="getSubjectName()">
+        <i class="fas fa-book"></i> {{ getSubjectName() }}
+      </span>
+      <span class="filter-chip" *ngIf="getExamTypeName()">
+        <i class="fas fa-file-alt"></i> {{ getExamTypeName() }}
+      </span>
+    </div>
+
+    <!-- Collapsible body -->
+    <div class="filter-card-body" [class.collapsed]="isFilterCollapsed">
     <div class="row align-items-end">
 
       <!-- Class -->
@@ -30,13 +55,13 @@
       <div class="col-md-3 mb-3">
         <label class="form-label">Subject <span class="required">*</span></label>
         <div class="select-wrapper">
-          <select class="form-control" [(ngModel)]="selectedSubject"
+          <select class="form-control subject-select" [(ngModel)]="selectedSubject"
             [disabled]="!selectedClass || isLoadingSubjects"
             (change)="onSubjectChange()">
-            <option value="">
-              {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'Select Subject' }}
+            <option value="" style="color: #1f2937;">
+              {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'All Subjects' }}
             </option>
-            <option [value]="ALL_SUBJECTS">— All Subjects —</option>
+            <!-- <option [value]="ALL_SUBJECTS">— All Subjects —</option> -->
             <option *ngFor="let sub of subjects" [value]="sub.id">{{ sub.subjectName }}</option>
           </select>
           <i class="fas fa-chevron-down select-icon"></i>
@@ -44,8 +69,15 @@
       </div>
 
       <!-- Show Papers button — inline next to Subject when All Subjects is chosen -->
-      <div class="col-md-2 mb-3" *ngIf="isAllSubjects">
+      <!-- <div class="col-md-2 mb-3" *ngIf="isAllSubjects">
         <button class="btn btn-primary" (click)="showPapers()" [disabled]="isLoadingAllPapers">
+          <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+          {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
+        </button>
+      </div> -->
+      <div class="col-md-2 mb-3" *ngIf="selectedClass && isAllSubjects">
+        <label class="form-label">&nbsp;</label>
+        <button class="btn btn-primary w-100" (click)="showPapers()" [disabled]="isLoadingAllPapers">
           <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
           {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
         </button>
@@ -110,6 +142,7 @@
       </div>
 
     </div>
+    </div><!-- /filter-card-body -->
   </div>
 
   <!-- ── Empty state (single-subject) ──────────────────────────────────────── -->
@@ -255,11 +288,7 @@
       </div>
     </div>
 
-    <div class="student-info-grid">
-      <div class="info-item" *ngIf="questionPaper.questionPaperName">
-        <span class="info-label"><i class="fas fa-file-signature"></i> Paper Name</span>
-        <span class="info-value">{{ questionPaper.questionPaperName }}</span>
-      </div>
+    <div class="student-info-grid">     
       <div class="info-item">
         <span class="info-label"><i class="fas fa-layer-group"></i> Class</span>
         <span class="info-value">{{ questionPaper.className }}</span>
@@ -271,6 +300,10 @@
       <div class="info-item">
         <span class="info-label"><i class="fas fa-tag"></i> Exam Type</span>
         <span class="info-value">{{ questionPaper.examTypeName }}</span>
+      </div>
+       <div class="info-item" *ngIf="questionPaper.questionPaperName">
+        <span class="info-label"><i class="fas fa-file-signature"></i> Paper Name</span>
+        <span class="info-value">{{ questionPaper.questionPaperName }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-graduation-cap"></i> Academic Year</span>
@@ -291,13 +324,16 @@
           {{ questionPaper.examDate ? (questionPaper.examDate | date:'dd MMM yyyy') : '—' }}
         </span>
         <div *ngIf="isEditMode && !isLocked" class="exam-date-edit-group">
-          <input type="date" class="form-control form-control-sm meta-edit-input"
+          <input type="date" #dateInput class="form-control form-control-sm meta-edit-input"
             [(ngModel)]="draft!.examDate" [min]="todayIso"
             [class.input-date-error]="draft!.examDate && isExamDateInPast(draft!.examDate)" />
           <button *ngIf="draft!.examDate" class="btn-clear-date"
             (click)="draft!.examDate = null" title="Clear date">
-            <i class="fas fa-times"></i>
+            &#x2715;
           </button>
+          <i class="fas fa-calendar-alt date-cal-icon"
+            *ngIf="!draft!.examDate"
+            (click)="dateInput.showPicker()"></i>
         </div>
         <span class="exam-date-error"
           *ngIf="isEditMode && !isLocked && draft!.examDate && isExamDateInPast(draft!.examDate)">
@@ -309,8 +345,7 @@
     <!-- Edit mode banner -->
     <div class="edit-mode-banner" *ngIf="isEditMode && !isLocked">
       <i class="fas fa-pencil-alt"></i>
-      You are editing this question paper. Navigate between questions, make changes, then click
-      <strong>Save All Changes</strong> to save everything at once.
+      <span>Edit mode — navigate between questions, make changes to all, then click <strong>Save All Changes</strong> to save everything at once.</span>
     </div>
 
     <!-- Progress Bar -->
@@ -351,7 +386,7 @@
 
       <div class="question-section">
         <div class="section-header">
-          <label class="section-label"><i class="fas fa-clipboard-question"></i> Question Text:</label>
+          <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
           <button class="btn-expand" (click)="openFullscreen('questionText')"><i class="fas fa-expand"></i></button>
         </div>
         <div class="scrollable-text">{{ currentQuestion.questionText }}</div>
@@ -433,11 +468,15 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label"><i class="fas fa-clipboard-question"></i> Question Text:</label>
+        <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
         <textarea class="form-control edit-textarea"
           [(ngModel)]="currentDraftQuestion.questionText"
           (ngModelChange)="questionsEdited = true"
-          rows="4" placeholder="Enter question text..."></textarea>
+          rows="4" placeholder="Enter question text..."
+          [class.input-date-error]="!currentDraftQuestion.questionText.trim()"></textarea>
+        <span class="error-text" *ngIf="!currentDraftQuestion.questionText.trim()">
+          <i class="fas fa-exclamation-circle"></i> Question text is required
+        </span>
       </div>
 
       <div class="question-section">

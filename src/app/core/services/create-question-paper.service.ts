@@ -141,7 +141,7 @@ export class CreateQuestionPaperService {
     if (!questionSet.maxMarks || questionSet.maxMarks <= 0)
       errors.push('Maximum marks field is required and must be greater than 0');
     if (!questionSet.validationRulesCount || questionSet.validationRulesCount < 1)
-      errors.push('Validation rules count is required');
+      errors.push('Validation rules count is required when Maximum marks is greater than 1');
 
     questionSet.rubricPoints.forEach((rule, i) => {
       const ruleNum = i + 1;

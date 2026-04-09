@@ -56,6 +56,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   isViewing        = false;
   showResultsCard  = false;
   searchCompleted  = false;
+  isFilterCollapsed = false;
 
   // ─── Fullscreen modal ─────────────────────────────────────────────────────────
   fullscreenContent: string | null = null;
@@ -74,12 +75,14 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
     this.showResultsCard       = false;
     this.searchCompleted       = false;
     this.answerSheetsSubmitted = false;
+    this.isFilterCollapsed     = false;
     this.statistics = { totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0 };
   }
 
   // ─── Clear list on any filter change ────────────────────────────────────────
   onFiltersChanged(): void {
     this.clearStudents();
+    this.isFilterCollapsed = false;
   }
 
   // ─── Get Students ─────────────────────────────────────────────────────────────
@@ -110,6 +113,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
           this.showResultsCard       = false;
           this.searchCompleted       = true;
           this.isLoading             = false;
+          this.isFilterCollapsed     = true;
           this.noExamPaperFound      = this.students.length === 0;
         },
         error: (error) => {

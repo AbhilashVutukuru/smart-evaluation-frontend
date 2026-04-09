@@ -15,7 +15,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea4f4 0%, #0882c4 100%);
   padding: 20px;
   box-sizing: border-box;
 }
@@ -84,7 +84,7 @@
   align-items: center;
   width: 80px;
   height: 80px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea4f4 0%, #0882c4 100%);
   border-radius: 50%;
   margin-bottom: 24px;
   animation: pulse 2s ease-in-out infinite;
@@ -277,14 +277,14 @@
 
 /* Primary */
 .btn-primary {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #0ea4f4 0%, #0882c4 100%);
   color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(14, 164, 244, 0.4);
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  box-shadow: 0 6px 20px rgba(14, 164, 244, 0.5);
   color: white;
 }
 
@@ -293,14 +293,14 @@
 /* Secondary */
 .btn-secondary {
   background: white;
-  color: #667eea;
-  border: 2px solid #667eea;
+  color: #0ea4f4;
+  border: 2px solid #0ea4f4;
 }
 
 .btn-secondary:hover {
   background: #f7fafc;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px rgba(14, 164, 244, 0.2);
 }
 
 .btn-secondary:active { transform: translateY(0); }
@@ -332,14 +332,14 @@
 }
 
 .help-link {
-  color: #667eea;
+  color: #0ea4f4;
   font-weight: 600;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
 .help-link:hover {
-  color: #764ba2;
+  color: #0882c4;
   text-decoration: underline;
 }
 

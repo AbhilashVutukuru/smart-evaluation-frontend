@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 
@@ -10,38 +10,35 @@ export class ViewAnswerSheetService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
-  /**
-   * Get answer sheet URL for viewing/downloading
-   * ✅ Production: Use environment-based URL
-   */
   getAnswerSheetUrl(
-    studentId: number,
-    classId: number,
-    subjectId: number,
-    examTypeId: number
+    studentId:       number,
+    classId:         number,
+    subjectId:       number,
+    examTypeId:      number,
+    questionPaperId?: number
   ): string {
-    // ✅ Validate parameters
     if (!studentId || !classId || !subjectId || !examTypeId) {
       throw new Error('All parameters are required');
     }
 
-    return (
-      `${this.apiUrl}/student-answer-sheet/download/${studentId}` +
-      `?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`
-    );
+    let url = `${this.apiUrl}/student-answer-sheet/download/${studentId}` +
+              `?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+
+    if (questionPaperId) {
+      url += `&questionPaperId=${questionPaperId}`;
+    }
+
+    return url;
   }
 
-  /**
-   * Check if answer sheet exists before opening
-   * ✅ Optional: Verify file exists
-   */
   checkAnswerSheetExists(
-    studentId: number,
-    classId: number,
-    subjectId: number,
+    studentId:  number,
+    classId:    number,
+    subjectId:  number,
     examTypeId: number
   ): Observable<boolean> {
-    const url = `${this.apiUrl}/student-answer-sheet/exists/${studentId}?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
+    const url = `${this.apiUrl}/student-answer-sheet/exists/${studentId}` +
+                `?classId=${classId}&subjectId=${subjectId}&examTypeId=${examTypeId}`;
     return this.http.get<boolean>(url);
   }
 }
