@@ -225,16 +225,16 @@ textarea.form-control {
 /* .btn:disabled — global.css */
 
 /* .btn-primary — global.css */
-.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
 
 /* .btn-secondary — global.css */
-.btn-secondary:hover:not(:disabled) { background: #374151; }
+.btn-secondary:hover:not(:disabled) { background: #374151; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
 
 /* .btn-success — global.css */
-.btn-success:hover:not(:disabled) { background: #5f8e04; }
+.btn-success:hover:not(:disabled) { background: #5f8e04; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
 
 /* .btn-danger — global.css */
-.btn-danger:hover:not(:disabled)  { background: #d04008; }
+.btn-danger:hover:not(:disabled)  { background: #d04008; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
 
 /* .btn-sm — global.css */
 
@@ -390,7 +390,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: relative;
 }
 
-.exam-card:hover {
+.exam-card:hover { border-color: var(--blue) !important;
   border-color: #0ea4f4;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(14, 164, 244, 0.15);
@@ -452,8 +452,9 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .question-badge {
-  background: #f85310;
-  color: white;
+  background: #fee8e0;
+  color: #f85310;
+  border: 1.5px solid #f85310;
   padding: 0.625rem 1.25rem;
   border-radius: 50px;
   font-weight: 600;
@@ -819,7 +820,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   gap: 1rem;
 }
 
@@ -857,17 +858,77 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   border-color: #0ea4f4;
 }
 
-/* ─── Collapsed section ──────────────────────────────────────────────────────── */
+/* ─── Collapsed section — smooth max-height transition (like exam-filter) ──── */
 .collapsed-section {
-  display: none;
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  pointer-events: none;
 }
+
+.expanded-section {
+  overflow: hidden;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 2000px;
+  opacity: 1;
+  margin-top: 0;
+}
+
+/* ─── Collapsed summary chips ────────────────────────────────── */
+.exam-info-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.625rem;
+  margin-bottom: 0;
+}
+
+.exam-info-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--blue-light, #e0f4fe);
+  color: var(--blue-dark, #0882c4);
+  border-radius: 1rem;
+  padding: 0.2rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.exam-info-chip i { font-size: 0.65rem; }
 
 /* ─── ms-auto ────────────────────────────────────────────────────────────────── */
 .ms-auto { margin-left: auto; }
-/* ─── Exam info header chevron ───────────────────────────────────────────────── */
-.exam-info-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 0.75rem; }
-.exam-info-header:hover h4 { color: #0ea4f4; }
-.exam-chevron { transition: transform 0.25s ease; }
+/* ─── Exam info header ───────────────────────────────────────────────────────── */
+.exam-info-header {
+  cursor: default;
+}
+
+/* Only when collapsible (chevron visible) — pointer + blue hover */
+.exam-info-header.is-collapsible {
+  cursor: pointer;
+}
+
+.exam-info-header.is-collapsible:hover h4 {
+  color: var(--blue, #0ea4f4);
+  transition: color 0.2s;
+}
+
+.exam-info-header.is-collapsible:hover .exam-chevron {
+  color: var(--blue-dark, #0882c4) !important;
+}
+
+/* Chevron icon — brand blue color + smooth rotate */
+.exam-chevron {
+  color: var(--blue, #0ea4f4) !important;
+  font-size: 0.875rem !important;
+  transition: transform 0.3s ease, color 0.2s;
+  margin-left: 0.25rem;
+}
 /* ─── Previous button — distinct color ──────────────────────────────────────── */
 .btn-prev {
   background: #0ea4f4;
@@ -908,4 +969,21 @@ label.disabled {
 .btn[disabled] {
   pointer-events: auto !important;
   cursor: not-allowed !important;
+}
+
+.form-label .fa-question {
+  background: #0ea4f4;
+  color: white;
+  border-radius: 50%;
+  width: 1.125rem;
+  height: 1.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.625rem;
+}
+
+.form-label .fa-check-circle {
+  color: #7fbb06;
+  font-size: 1rem;
 }

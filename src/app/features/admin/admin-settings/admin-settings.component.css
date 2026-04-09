@@ -50,8 +50,8 @@
 
 .page-title > i {
   font-size: 28px;
-  color: #6366f1;
-  background: #eef2ff;
+  color: #0ea4f4;
+  background: #e0f4fe;
   width: 52px;
   height: 52px;
   border-radius: 12px;
@@ -183,19 +183,19 @@
 }
 
 .main-tab:hover {
-  border-color: #a5b4fc;
+  border-color: #7dd3f8;
   background: #f9fafb;
 }
 
 .main-tab.active {
-  border-color: #6366f1;
-  background: #eef2ff;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.15);
+  border-color: #0ea4f4;
+  background: #e0f4fe;
+  box-shadow: 0 4px 14px rgba(14, 164, 244, 0.15);
 }
 
-.main-tab.active i     { color: #6366f1; }
-.main-tab.active span  { color: #6366f1; }
-.main-tab.active small { color: #818cf8; }
+.main-tab.active i     { color: #0ea4f4; }
+.main-tab.active span  { color: #0ea4f4; }
+.main-tab.active small { color: #0882c4; }
 
 /* Tablet tweaks */
 @media (max-width: 767px) {
@@ -255,16 +255,16 @@
 .sub-tab i { font-size: 13px; }
 
 .sub-tab:hover {
-  background: #eef2ff;
-  border-color: #a5b4fc;
-  color: #6366f1;
+  background: #e0f4fe;
+  border-color: #7dd3f8;
+  color: #0ea4f4;
 }
 
 .sub-tab.active {
-  background: #6366f1;
-  border-color: #6366f1;
+  background: #0ea4f4;
+  border-color: #0ea4f4;
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 3px 10px rgba(14, 164, 244, 0.3);
 }
 
 /* Tablet / Mobile: stretch sub-tabs to fill row */
@@ -314,9 +314,9 @@
 }
 
 .flow-step.active {
-  background: #eef2ff;
-  border-color: #6366f1;
-  color: #6366f1;
+  background: #e0f4fe;
+  border-color: #0ea4f4;
+  color: #0ea4f4;
 }
 
 .flow-step i { font-size: 13px; }
@@ -391,12 +391,12 @@
   border-bottom: 2px solid #f3f4f6;
 }
 
-.panel-header i { color: #6366f1; font-size: 15px; }
+.panel-header i { color: #0ea4f4; font-size: 15px; }
 
 .count-badge {
   margin-left: auto;
-  background: #eef2ff;
-  color: #6366f1;
+  background: #e0f4fe;
+  color: #0ea4f4;
   font-size: 12px;
   font-weight: 700;
   padding: 2px 10px;
@@ -478,8 +478,8 @@
 }
 
 .field-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+  border-color: #0ea4f4;
+  box-shadow: 0 0 0 3px rgba(14,164,244,0.12);
   background: white;
 }
 
@@ -525,7 +525,7 @@ select.field-input { cursor: pointer; }
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #6366f1;
+  color: #0ea4f4;
   font-size: 0.75rem;
   z-index: 1;
 }
@@ -573,7 +573,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(135deg, #6366f1, #818cf8);
+  background: linear-gradient(135deg, #0ea4f4, #0882c4);
   color: white;
   border: none;
   border-radius: 9px;
@@ -589,7 +589,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 
 .btn-add:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 6px 16px rgba(14, 164, 244, 0.4);
 }
 
 .btn-add:disabled {
@@ -631,9 +631,9 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: #eff6ff;
-  color: #2563eb;
-  border: 1.5px solid #bfdbfe;
+  background: var(--blue-light, #e0f4fe);
+  color: var(--blue-dark, #0882c4);
+  border: 1.5px solid #7dd3f8;
   border-radius: 7px;
   cursor: pointer;
   font-size: 12px;
@@ -644,9 +644,9 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .btn-set-active:hover:not(:disabled) {
-  background: #2563eb;
+  background: #0882c4;
   color: white;
-  border-color: #2563eb;
+  border-color: #0882c4;
 }
 
 .btn-set-active:disabled {
@@ -707,8 +707,8 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .search-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  border-color: #0ea4f4;
+  box-shadow: 0 0 0 3px rgba(14,164,244,0.1);
   background: white;
 }
 
@@ -796,7 +796,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 
 .status-badge.used       { background: #fef3c7; color: #92400e; }
 .status-badge.free       { background: #d1fae5; color: #065f46; }
-.status-badge.active-year{ background: #dbeafe; color: #1e40af; }
+.status-badge.active-year{ background: var(--blue-light, #e0f4fe); color: var(--blue-dark, #0882c4); }
 
 /* ---- Active Year Label ---- */
 .active-label {
@@ -805,7 +805,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   gap: 5px;
   font-size: 12px;
   font-weight: 700;
-  color: #1e40af;
+  color: #0882c4;
   white-space: nowrap;
 }
 
@@ -893,7 +893,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #6366f1;
+  color: #0ea4f4;
   font-size: 0.75rem;
   z-index: 1;
 }

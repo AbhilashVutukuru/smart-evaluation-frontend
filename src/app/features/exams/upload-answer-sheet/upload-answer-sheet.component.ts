@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener } from '@angular/core';
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,6 +12,22 @@ import {
 import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 
+// ─── Page slot state ──────────────────────────────────────────────────────────
+export interface PageSlot {
+  pageNumber: number;       // 1-based
+  dataUrl:    string | null; // null = not yet captured
+  deleted:    boolean;      // true = was captured then removed
+}
+
+// ─── Modal state ─────────────────────────────────────────────────────────────
+export interface PagePickerModal {
+  studentId:  number;
+  isUpdate:   boolean;
+  pageCount:  number | null;  // null = step 1 (ask count), number = step 2 (show slots)
+  slots:      PageSlot[];
+  inputCount: number | null;   // bound to the number input in step 1
+}
+
 @Component({
   selector: 'app-upload-student-marks',
   standalone: true,
@@ -22,30 +38,50 @@ import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   private uploadService = inject(UploadAnswerSheetService);
 
-  // ─── Student data ─────────────────────────────────────────────────────────────
+  // ─── Student data ────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];
   absentStudentIds: number[] = [];
 
-  // ─── UI state ─────────────────────────────────────────────────────────────────
+  // ─── UI state ────────────────────────────────────────────────────────────────
   loading = false;
   isViewing = false;
   isSubmittingAll = false;
   isSubmittedForEvaluation = false;
 
-  // ─── Mobile image capture state ──────────────────────────────────────────────
-  // Map of studentId → array of base64 data-URLs (one per captured page)
+  // ─── Filter collapse ──────────────────────────────────────────────────────────
+  isFilterCollapsed = false;
+
+  // ─── Page picker modal ───────────────────────────────────────────────────────
+  modal: PagePickerModal | null = null;
+
+  // ─── Upload/Update dropdown menu ─────────────────────────────────────────────
+  openMenuId: number | null = null;
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.openMenuId = null;
+  }
+
+  toggleMenu(studentId: number): void {
+    this.openMenuId = this.openMenuId === studentId ? null : studentId;
+  }
+
+  closeMenu(): void {
+    this.openMenuId = null;
+  }
+
+  // ─── Legacy preview strip (PDF direct upload still uses this) ────────────────
   private capturedImages = new Map<number, string[]>();
-  // Tracks which students are in "update" (replace) mode during mobile image capture
   private updateModeStudentIds = new Set<number>();
 
-  // ─── Lightbox state ───────────────────────────────────────────────────────────
-  lightboxSrc:        string | null = null;
-  lightboxPage        = 0;   // 1-based for display
-  lightboxTotal       = 0;
-  lightboxStudentId   = 0;
-  lightboxIndex       = 0;   // 0-based current index
+  // ─── Lightbox ────────────────────────────────────────────────────────────────
+  lightboxSrc:      string | null = null;
+  lightboxPage      = 0;
+  lightboxTotal     = 0;
+  lightboxStudentId = 0;
+  lightboxIndex     = 0;
 
-  // ─── Computed statistics ──────────────────────────────────────────────────────
+  // ─── Stats ───────────────────────────────────────────────────────────────────
   get totalStudents(): number { return this.students.length; }
   get absentCount():   number { return this.students.filter(s => s.isAbsent).length; }
   get uploadedCount(): number { return this.students.filter(s => s.isUploaded).length; }
@@ -53,6 +89,115 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   get canEvaluate():  boolean { return this.students.length > 0 && this.students.every(s => s.isUploaded || s.isAbsent); }
 
   override get canShowStudents(): boolean { return super.canShowStudents; }
+
+  // ─── Modal helpers ───────────────────────────────────────────────────────────
+
+  /** Called when user clicks the "Images" button */
+  openPagePicker(student: StudentUploadStatus, isUpdate: boolean): void {
+    this.openMenuId = null;
+    this.modal = {
+      studentId:  student.studentId,
+      isUpdate,
+      pageCount:  null,
+      slots:      [],
+      inputCount: null,
+    };
+  }
+
+  /** Step 1 → Step 2: user confirmed page count */
+  confirmPageCount(): void {
+    if (!this.modal) return;
+    const n = Math.max(1, Math.min(50, this.modal.inputCount || 1));
+    this.modal.pageCount = n;
+    this.modal.slots = Array.from({ length: n }, (_, i) => ({
+      pageNumber: i + 1,
+      dataUrl:    null,
+      deleted:    false,
+    }));
+  }
+
+  /** Triggered by hidden file input for each page slot */
+  onSlotImageSelected(event: Event, slot: PageSlot): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif'];
+    if (!validTypes.includes(file.type)) {
+      this.toastService.showError('Error', 'Only PNG / JPEG images are supported');
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+    this.readFileAsDataUrl(file).then(dataUrl => {
+      slot.dataUrl = dataUrl;
+      slot.deleted = false;
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  /** Remove a page from a slot — highlights button red */
+  deleteSlotImage(slot: PageSlot): void {
+    slot.dataUrl = null;
+    slot.deleted = true;
+  }
+
+  /** True only when ALL slots have images (none empty, none deleted) */
+  get modalAllReady(): boolean {
+    if (!this.modal?.slots?.length) return false;
+    return this.modal.slots.every(s => s.dataUrl !== null);
+  }
+
+  /** Count of filled slots */
+  get modalFilledCount(): number {
+    return this.modal?.slots.filter(s => s.dataUrl !== null).length ?? 0;
+  }
+
+  /** Collect all non-null slot images in order and upload */
+  uploadModalImages(): void {
+    if (!this.modal) return;
+    const student = this.students.find(s => s.studentId === this.modal!.studentId);
+    if (!student) return;
+
+    const dataUrls = this.modal.slots
+      .filter(s => s.dataUrl !== null)
+      .map(s => s.dataUrl as string);
+
+    const isUpdate = this.modal.isUpdate;
+    this.closeModal();
+    this.convertImagesToPdfAndUpload(dataUrls, student, isUpdate);
+  }
+
+  closeModal(): void {
+    this.modal = null;
+    this.modalPreviewSrc = null;
+    this.openMenuId = null;
+  }
+
+  // ─── Slot preview lightbox ────────────────────────────────────────────────────
+  modalPreviewSrc:   string | null = null;
+  modalPreviewPage:  number = 0;
+  modalPreviewTotal: number = 0;
+
+  openSlotPreview(slot: PageSlot): void {
+    if (!slot.dataUrl || !this.modal) return;
+    const filled = this.modal.slots.filter(s => s.dataUrl !== null);
+    const idx    = filled.indexOf(slot);
+    this.modalPreviewSrc   = slot.dataUrl;
+    this.modalPreviewPage  = idx + 1;
+    this.modalPreviewTotal = filled.length;
+  }
+
+  closeSlotPreview(): void {
+    this.modalPreviewSrc = null;
+  }
+
+  navSlotPreview(dir: -1 | 1): void {
+    if (!this.modal) return;
+    const filled = this.modal.slots.filter(s => s.dataUrl !== null);
+    const idx    = filled.findIndex(s => s.dataUrl === this.modalPreviewSrc);
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= filled.length) return;
+    this.modalPreviewSrc  = filled[newIdx].dataUrl;
+    this.modalPreviewPage = newIdx + 1;
+  }
 
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
@@ -63,6 +208,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.noExamPaperFound         = false;
     this.capturedImages.clear();
     this.updateModeStudentIds.clear();
+    this.modal           = null;
+    this.isFilterCollapsed = false;
   }
 
   // ─── Filter change overrides ──────────────────────────────────────────────────
@@ -70,6 +217,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   override onSectionChange(): void { this.clearStudents(); super.onSectionChange(); }
   override onSubjectChange(): void { this.clearStudents(); super.onSubjectChange(); }
   override onExamTypeChange(): void { this.clearStudents(); super.onExamTypeChange(); }
+  override onQuestionPaperChange(): void { this.clearStudents(); super.onQuestionPaperChange(); }
 
   // ─── Show Students ────────────────────────────────────────────────────────────
   showStudents(): void {
@@ -98,6 +246,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
               this.students = this.mapStudents(rawStudents);
               this.absentStudentIds = this.students.filter(s => s.isAbsent).map(s => s.studentId);
               this.toastService.showSuccess('Success', 'Students loaded successfully');
+              this.isFilterCollapsed = true;
+              this.isFilterCollapsed = true;
             } else {
               this.students = [];
             }
@@ -135,7 +285,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     });
   }
 
-  // ─── Desktop: PDF file selection ─────────────────────────────────────────────
+  // ─── Desktop: PDF file selection ──────────────────────────────────────────────
   onFileSelected(event: Event, student: StudentUploadStatus, isUpdate: boolean): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file?.type === 'application/pdf') {
@@ -144,23 +294,16 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     } else {
       this.toastService.showError('Error', 'Please select a PDF file');
     }
-    // Reset input so same file can be re-selected
     (event.target as HTMLInputElement).value = '';
   }
 
-  // ─── Mobile: image / camera selection ────────────────────────────────────────
-  /**
-   * Mobile & Desktop: called when user selects PNG/JPEG images or captures via camera.
-   * Images are ALWAYS accumulated into the preview strip first.
-   * Upload only happens when user explicitly taps "Upload X page(s) as PDF".
-   */
+  // ─── Mobile camera (still uses old preview strip) ─────────────────────────────
   onImagesSelected(event: Event, student: StudentUploadStatus, isUpdate: boolean): void {
     const input = event.target as HTMLInputElement;
     const files = Array.from(input.files ?? []);
-
     if (files.length === 0) { input.value = ''; return; }
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif'];
     const invalid = files.find(f => !validTypes.includes(f.type));
     if (invalid) {
       this.toastService.showError('Error', 'Only PNG and JPEG images are supported');
@@ -168,23 +311,17 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       return;
     }
 
-    // Track whether this is an update (replace) or new upload
-    if (isUpdate) {
-      this.updateModeStudentIds.add(student.studentId);
-    } else {
-      this.updateModeStudentIds.delete(student.studentId);
-    }
+    if (isUpdate) { this.updateModeStudentIds.add(student.studentId); }
+    else          { this.updateModeStudentIds.delete(student.studentId); }
 
-    // Read all selected images as base64 data-URLs and accumulate into preview
     Promise.all(files.map(f => this.readFileAsDataUrl(f))).then(dataUrls => {
       const existing = this.capturedImages.get(student.studentId) ?? [];
       this.capturedImages.set(student.studentId, [...existing, ...dataUrls]);
     });
 
-    input.value = ''; // reset so same file can be re-selected
+    input.value = '';
   }
 
-  // ─── Preview strip helpers ────────────────────────────────────────────────────
   getPreviewImages(studentId: number): string[] {
     return this.capturedImages.get(studentId) ?? [];
   }
@@ -194,41 +331,28 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.updateModeStudentIds.delete(studentId);
   }
 
-  /** Called by "Upload X page(s) as PDF" button in the preview strip */
-  /**
-   * Called by "Upload X page(s) as PDF" button.
-   * isUpdate is tracked internally via updateModeStudentIds set during onImagesSelected.
-   */
   uploadCapturedImages(student: StudentUploadStatus): void {
     const images = this.capturedImages.get(student.studentId);
     if (!images || images.length === 0) return;
-
     const isUpdate = this.updateModeStudentIds.has(student.studentId);
     this.capturedImages.delete(student.studentId);
     this.updateModeStudentIds.delete(student.studentId);
     this.convertImagesToPdfAndUpload(images, student, isUpdate);
   }
 
-  // ─── Core conversion: images → PDF → upload ──────────────────────────────────
+  // ─── Core: images → PDF → upload ─────────────────────────────────────────────
   private async convertImagesToPdfAndUpload(
     dataUrls: string[],
     student: StudentUploadStatus,
     isUpdate: boolean,
   ): Promise<void> {
     student.isUploading = true;
-
     try {
       const pdfBlob = await this.imagesToPdf(dataUrls, student.studentName);
-      //const fileName = `${student.studentName.replace(/\s+/g, '_')}_answers.pdf`;
       const fileName = `${student.studentName.replace(/\s+/g, '_')}.pdf`;
       const pdfFile  = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
       student.answerSheetFile = pdfFile;
-
-      isUpdate
-        ? this.updateAnswerSheet(student)
-        : this.uploadAnswerSheet(student);
-
+      isUpdate ? this.updateAnswerSheet(student) : this.uploadAnswerSheet(student);
     } catch (err) {
       student.isUploading = false;
       this.toastService.showError('Error', 'Failed to convert images to PDF. Please try again.');
@@ -236,55 +360,36 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     }
   }
 
-  /**
-   * Converts an array of image data-URLs to a single PDF Blob.
-   * Each image becomes one A4 page; image is scaled to fit within the page.
-   * Uses jsPDF installed via npm (import jsPDF from 'jspdf').
-   */
   private async imagesToPdf(dataUrls: string[], studentName: string): Promise<Blob> {
     const A4_W_MM = 210;
     const A4_H_MM = 297;
     const MARGIN  = 8;
     const maxW    = A4_W_MM - MARGIN * 2;
     const maxH    = A4_H_MM - MARGIN * 2;
-
     const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
 
     for (let i = 0; i < dataUrls.length; i++) {
       if (i > 0) doc.addPage();
-
-      const dataUrl = dataUrls[i];
+      const dataUrl  = dataUrls[i];
       const imgProps = doc.getImageProperties(dataUrl);
-
-      // Scale to fit within the A4 content area, preserving aspect ratio
-      const ratio  = Math.min(maxW / imgProps.width, maxH / imgProps.height);
-      const imgW   = imgProps.width  * ratio;
-      const imgH   = imgProps.height * ratio;
-      const x      = MARGIN + (maxW - imgW) / 2; // center horizontally
-      const y      = MARGIN;
-
-      const fmt = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+      const ratio    = Math.min(maxW / imgProps.width, maxH / imgProps.height);
+      const imgW     = imgProps.width  * ratio;
+      const imgH     = imgProps.height * ratio;
+      const x        = MARGIN + (maxW - imgW) / 2;
+      const y        = MARGIN;
+      const fmt      = dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
       doc.addImage(dataUrl, fmt, x, y, imgW, imgH, undefined, 'FAST');
-
-      // Small page number footer
       doc.setFontSize(8);
       doc.setTextColor(150);
-      doc.text(
-        `${studentName} — Page ${i + 1} of ${dataUrls.length}`,
-        A4_W_MM / 2,
-        A4_H_MM - 4,
-        { align: 'center' }
-      );
+      doc.text(`${studentName} — Page ${i + 1} of ${dataUrls.length}`, A4_W_MM / 2, A4_H_MM - 4, { align: 'center' });
     }
-
     return doc.output('blob') as Blob;
   }
 
-  // ─── Upload / Update helpers ──────────────────────────────────────────────────
+  // ─── Upload / Update ──────────────────────────────────────────────────────────
   uploadAnswerSheet(student: StudentUploadStatus): void {
     if (!student.answerSheetFile) return;
     student.isUploading = true;
-
     this.uploadService.uploadStudentAnswer(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
@@ -307,7 +412,6 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       return;
     }
     student.isUploading = true;
-
     this.uploadService.updateAnswerSheet(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
@@ -336,7 +440,6 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     return fd;
   }
 
-  // ─── Utility ──────────────────────────────────────────────────────────────────
   private readFileAsDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -368,24 +471,20 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
         'Please upload answer sheets for all students or mark them as absent');
       return;
     }
-
     this.isSubmittingAll = true;
-
     const payload: SubmitAllPayload = {
-      classId:         +this.selectedClass,
-      sectionId:       +this.selectedSection,
-      subjectId:       +this.selectedSubject,
-      examTypeId:      +this.selectedExamType,
-      questionPaperId: this.selectedQuestionPaperId!,
+      classId:          +this.selectedClass,
+      sectionId:        +this.selectedSection,
+      subjectId:        +this.selectedSubject,
+      examTypeId:       +this.selectedExamType,
+      questionPaperId:  this.selectedQuestionPaperId!,
       absentStudentIds: this.absentStudentIds,
     };
-
     this.uploadService.submitAllStudents(payload).subscribe({
       next: (response) => {
         if (response.success) {
           this.isSubmittedForEvaluation = true;
-          this.toastService.showSuccess('Success',
-            response.message ?? 'Evaluation started successfully');
+          this.toastService.showSuccess('Success', response.message ?? 'Evaluation started successfully');
           this.isSubmittingAll = false;
         }
       },
@@ -401,7 +500,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.openAnswerSheet(student.studentId);
   }
 
-  // ─── Delete single preview image ─────────────────────────────────────────────
+  // ─── Delete preview image ─────────────────────────────────────────────────────
   deletePreviewImage(studentId: number, index: number): void {
     const images = this.capturedImages.get(studentId);
     if (!images) return;
@@ -412,11 +511,9 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     } else {
       this.capturedImages.set(studentId, [...images]);
     }
-    // If lightbox is open for this student, update or close it
     if (this.lightboxStudentId === studentId) {
-      if (images.length === 0) {
-        this.closeLightbox();
-      } else {
+      if (images.length === 0) { this.closeLightbox(); }
+      else {
         const newIdx = Math.min(this.lightboxIndex, images.length - 1);
         this.lightboxIndex = newIdx;
         this.lightboxSrc   = images[newIdx];

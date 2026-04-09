@@ -59,7 +59,13 @@ export class ExamFilterComponent {
   @Output() examTypeChanged    = new EventEmitter<void>();
   @Output() showStudentsClick  = new EventEmitter<void>();
   /** Fires on ANY filter change so parents can clear their list */
-  @Output() filtersChanged     = new EventEmitter<void>();
+  @Output() filtersChanged       = new EventEmitter<void>();
+  /** Fires when question paper dropdown changes */
+  @Output() questionPaperChanged = new EventEmitter<void>();
+
+  // ─── Collapse state ───────────────────────────────────────────────────────────
+  @Input()  isCollapsed       = false;
+  @Output() isCollapsedChange = new EventEmitter<boolean>();
 
   onClassChange(value: string): void {
     this.selectedClassChange.emit(value);
@@ -88,5 +94,20 @@ export class ExamFilterComponent {
   onQuestionPaperChange(): void {
     this.selectedQuestionPaperIdChange.emit(this.selectedQuestionPaperId);
     this.filtersChanged.emit();
+    this.questionPaperChanged.emit();
   }
+
+  expandIfCollapsed(): void {
+    if (this.isCollapsed) {
+      this.isCollapsed = false;
+      this.isCollapsedChange.emit(false);
+    }
+  }
+
+  // ─── Name lookups for collapsed summary chips ─────────────────────────────────
+  getClassName():    string { return this.classes.find(c => String(c.id)    === String(this.selectedClass))?.className    ?? ''; }
+  getSectionName():  string { return this.sections.find(s => String(s.id)   === String(this.selectedSection))?.sectionName  ?? ''; }
+  getSubjectName():  string { return this.subjects.find(s => String(s.id)   === String(this.selectedSubject))?.subjectName  ?? ''; }
+  getExamTypeName():    string { return this.examTypes.find(e => String(e.id) === String(this.selectedExamType))?.examTypeName ?? ''; }
+  getQuestionPaperName(): string { return this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? ''; }
 }
