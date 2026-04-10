@@ -106,3 +106,7 @@
 }
 
 .filter-chip i { font-size: 0.65rem; }
+
+.col-md-2 .btn {
+  margin-top: 12px; 
+}
