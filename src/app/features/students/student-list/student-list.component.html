@@ -12,28 +12,6 @@
   <div class="card">
     <div class="search-section">
 
-      <!-- Search Input -->
-      <div class="search-wrapper">
-        <div class="search-input-wrapper">
-          <i class="fas fa-search search-icon"></i>
-          <input
-            type="text"
-            class="form-control search-input"
-            placeholder="Search by name, roll number, email..."
-            [(ngModel)]="searchTerm"
-            (input)="onSearchInput()"
-          />
-          <button
-            *ngIf="searchTerm"
-            class="clear-search"
-            (click)="clearSearch()"
-            type="button"
-          >
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-      </div>
-
       <!-- Class Dropdown -->
       <div class="filter-wrapper">
         <div class="select-wrapper">
@@ -71,6 +49,36 @@
         </div>
       </div>
 
+      <!-- Show Button -->
+      <div class="filter-wrapper justify-content-end">
+        <button
+          class="btn btn-primary"
+          (click)="onShowStudents()"
+          [disabled]="!selectedClass || !selectedSection || loading"
+        >
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          <i class="fas fa-search" *ngIf="!loading"></i>
+          {{ loading ? 'Loading...' : 'Show' }}
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Search — visible only after Show clicked -->
+    <div class="search-below" *ngIf="studentsLoaded">
+      <div class="search-input-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by name, roll number..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+        />
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()" type="button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Loading State -->
@@ -87,7 +95,7 @@
     </div>
 
     <!-- Empty State - No Students Found -->
-    <div *ngIf="!loading && selectedClass && selectedSection && students.length === 0" class="empty-state">
+    <div *ngIf="!loading && studentsLoaded && students.length === 0" class="empty-state">
       <i class="fas fa-users-slash"></i>
       <h5>No Students Found</h5>
       <p>No students found for the selected class and section</p>
@@ -101,13 +109,13 @@
       <i class="fas fa-search"></i>
       <h5>No Results Found</h5>
       <p>No students match your search criteria</p>
-      <button class="btn btn-secondary mt-3" (click)="clearSearch()">
+      <button class="btn btn-clear-search mt-3" (click)="clearSearch()">
         <i class="fas fa-times"></i> Clear Search
       </button>
     </div>
 
     <!-- Students Table - Desktop -->
-    <div *ngIf="!loading && filteredStudents.length > 0" class="table-responsive">
+    <div *ngIf="!loading && studentsLoaded && filteredStudents.length > 0" class="table-responsive">
       <table class="table">
         <thead>
           <tr>
@@ -118,7 +126,6 @@
             <!-- <th>Email</th> -->
             <th>Phone</th>
             <th>Admission Date</th>
-            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -140,20 +147,11 @@
             <td>{{ student.phoneNumber }}</td>
             <td>{{ student.admissionDate | date:'dd/MM/yyyy' }}</td>
             <td>
-              <span
-                class="badge"
-                [class.badge-success]="student.isActive"
-                [class.badge-danger]="!student.isActive"
-              >
-                {{ student.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
-            <td>
               <div class="action-buttons">
                 <button class="btn-action btn-view" (click)="viewDetails(student.id)" title="View Details">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="editStudent(student.id)" title="Edit Student">
+                <button class="btn-action btn-edit btn-se-edit" (click)="editStudent(student.id)" title="Edit Student">
                   <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn-action btn-delete" (click)="deleteStudent(student)" title="Delete Student">
@@ -167,7 +165,7 @@
     </div>
 
     <!-- Students Cards - Mobile -->
-    <div *ngIf="!loading && filteredStudents.length > 0" class="students-cards">
+    <div *ngIf="!loading && studentsLoaded && filteredStudents.length > 0" class="students-cards">
       <div *ngFor="let student of filteredStudents" class="student-card">
         <div class="card-header">
           <div class="student-avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div>
@@ -175,13 +173,6 @@
             <h4>{{ student.firstName }} {{ student.lastName }}</h4>
             <p class="text-muted">{{ student.gender }} • Roll: {{ student.rollNumber }}</p>
           </div>
-          <span
-            class="badge"
-            [class.badge-success]="student.isActive"
-            [class.badge-danger]="!student.isActive"
-          >
-            {{ student.isActive ? 'Active' : 'Inactive' }}
-          </span>
         </div>
 
         <div class="card-body">
@@ -204,13 +195,13 @@
         </div>
 
         <div class="card-footer">
-          <button class="btn btn-sm btn-view" (click)="viewDetails(student.id)">
+          <button class="btn btn-sm btn-action btn-view" (click)="viewDetails(student.id)">
             <i class="fas fa-eye"></i> View
           </button>
-          <button class="btn btn-sm btn-edit" (click)="editStudent(student.id)">
+          <button class="btn btn-sm btn-action btn-se-edit" (click)="editStudent(student.id)">
             <i class="fas fa-edit"></i> Edit
           </button>
-          <button class="btn btn-sm btn-delete" (click)="deleteStudent(student)">
+          <button class="btn btn-sm btn-action btn-delete" (click)="deleteStudent(student)">
             <i class="fas fa-trash"></i> Delete
           </button>
         </div>
@@ -218,7 +209,7 @@
     </div>
 
     <!-- Results Count -->
-    <div *ngIf="!loading && filteredStudents.length > 0" class="results-footer">
+    <div *ngIf="!loading && studentsLoaded && filteredStudents.length > 0" class="results-footer">
       <p>
         Showing <strong>{{ filteredStudents.length }}</strong>
         of <strong>{{ students.length }}</strong>

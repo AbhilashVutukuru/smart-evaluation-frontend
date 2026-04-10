@@ -1,104 +1,91 @@
 /* ============================================================
    STUDENT LIST — RESPONSIVE COMPONENT STYLES
+   Uses CSS variables from global.css / styles.css
    Breakpoints:
      Mobile  : < 480px
      Tablet  : 480px – 767px  → card view
      Laptop  : 768px – 1023px → table view
      Desktop : ≥ 1024px       → table view
-   Key pattern: Desktop/Laptop = scrollable table
-                Tablet/Mobile  = card per student
    ============================================================ */
 
 /* ─── Container ─────────────────────────────────────────────────────────────── */
 .list-container {
-  padding: 1.5rem;
-  background: #f8f9fa;
+  padding: 1.25rem;
+  background: var(--gray-100);
   min-height: 100vh;
   max-width: 100%;
   margin: 0;
   box-sizing: border-box;
 }
 
-@media (max-width: 1023px) { .list-container { padding: 1.25rem; } }
-@media (max-width: 767px)  { .list-container { padding: 1rem; } }
-@media (max-width: 479px)  { .list-container { padding: 0.75rem; } }
+@media (max-width: 1023px) { .list-container { padding: 1rem; } }
+@media (max-width: 767px)  { .list-container { padding: 0.875rem; } }
+@media (max-width: 479px)  { .list-container { padding: 0.625rem; } }
 
 /* ─── Page Header ───────────────────────────────────────────────────────────── */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+/* global.css provides .page-header base; only override what differs */
+.list-container .page-header {
+  margin-bottom: 1.25rem;
 }
 
-.page-header h2 {
-  color: #1f2937;
-  font-weight: 600;
-  margin: 0;
-  font-size: 1.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+.list-container .page-header h2 {
+  font-size: 1.375rem;
 }
-
-.page-header h2 i { color: #6366f1; }
 
 @media (max-width: 767px) {
-  .page-header { margin-bottom: 1.25rem; }
-  .page-header h2 { font-size: 1.4rem; }
+  .list-container .page-header { margin-bottom: 1rem; }
+  .list-container .page-header h2 { font-size: 1.15rem; }
 }
 
 @media (max-width: 479px) {
-  .page-header { flex-direction: column; align-items: stretch; }
-  .page-header h2 { font-size: 1.2rem; gap: 0.5rem; }
-  .page-header .btn { width: 100%; justify-content: center; }
+  .list-container .page-header { flex-direction: column; align-items: stretch; }
+  .list-container .page-header h2 { font-size: 1rem; gap: 0.4rem; }
+  .list-container .page-header .btn { width: 100%; justify-content: center; }
 }
 
 /* ─── Card ──────────────────────────────────────────────────────────────────── */
-.card {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  animation: fadeIn 0.3s ease;
-  box-sizing: border-box;
+/* global.css provides .card; override padding/margin for this component */
+.list-container .card {
+  padding: 1.25rem;
+  margin-bottom: 0;
 }
 
-@media (max-width: 767px) { .card { padding: 1.25rem; } }
-@media (max-width: 479px) { .card { padding: 1rem; border-radius: 10px; } }
+@media (max-width: 767px) { .list-container .card { padding: 1rem; } }
+@media (max-width: 479px) { .list-container .card { padding: 0.875rem; } }
 
 /* ─── Search Section ────────────────────────────────────────────────────────── */
-/* Desktop: [search 2fr] [class 1fr] [section 1fr] */
-/* Tablet : [search full-width] [class 1fr] [section 1fr] */
-/* Mobile : all stacked */
 .search-section {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
 }
 
 @media (max-width: 767px) {
   .search-section {
     grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    gap: 0.625rem;
+    margin-bottom: 0.875rem;
   }
-  .search-wrapper { grid-column: 1 / -1; }  /* search always spans full width */
+  /* Show button spans full width on tablet */
+  .search-section .filter-wrapper:last-child { grid-column: 1 / -1; }
+  .search-section .filter-wrapper:last-child .btn { width: 100%; }
 }
 
 @media (max-width: 479px) {
-  .search-section { grid-template-columns: 1fr; gap: 0.625rem; }
+  /* All stack on mobile, button full width */
+  .search-section { grid-template-columns: 1fr; gap: 0.5rem; }
+  .search-section .filter-wrapper:last-child { grid-column: 1; }
+  .search-section .filter-wrapper:last-child .btn { width: 100%; }
+
+  /* search-below full width on mobile */
+  .search-below { margin-bottom: 0.75rem; }
+  .search-below .search-input { font-size: 0.8125rem; }
 }
 
 /* ─── Search Input ──────────────────────────────────────────────────────────── */
-.search-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
+.search-wrapper { display: flex; flex-direction: column; gap: 0.375rem; }
 
 .search-input-wrapper {
   position: relative;
@@ -108,20 +95,20 @@
 
 .search-icon {
   position: absolute;
-  left: 1rem;
-  color: #9ca3af;
-  font-size: 1rem;
+  left: 0.875rem;
+  color: #0ea4f4;
+  font-size: 0.875rem;
   pointer-events: none;
   z-index: 1;
 }
 
 .search-input {
   width: 100%;
-  padding: 0.625rem 0.875rem 0.625rem 2.75rem !important;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem !important;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  transition: var(--transition);
   outline: none;
   background: white;
   background-image: none !important;
@@ -130,417 +117,355 @@
 }
 
 .search-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
 }
 
 .search-input:focus-visible { outline: none; }
 
 .clear-search {
   position: absolute;
-  right: 0.75rem;
+  right: 0.625rem;
   background: none;
   border: none;
-  color: #9ca3af;
+  color: #f85310;
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.375rem;
+  height: 1.375rem;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 
-.clear-search:hover { background: #f3f4f6; color: #1f2937; }
+.clear-search:hover { background: #fee8e0; color: #d04008; }
 
 @media (max-width: 479px) {
-  .search-icon  { left: 0.75rem; font-size: 0.875rem; }
-  .search-input { padding-left: 2.5rem !important; font-size: 0.8125rem; }
+  .search-icon  { left: 0.625rem; font-size: 0.8125rem; }
+  .search-input { padding-left: 2.25rem !important; font-size: 0.8125rem; }
 }
 
 /* ─── Filter Wrappers ───────────────────────────────────────────────────────── */
 .filter-wrapper { display: flex; flex-direction: column; }
+.filter-wrapper:last-child .btn { min-width: 6rem; }
 
-/* ─── Form Controls ─────────────────────────────────────────────────────────── */
-.form-control {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  outline: none;
-  background: white;
-  background-image: none !important;
-  box-sizing: border-box;
-  font-family: inherit;
+/* ─── Table — compact rows ───────────────────────────────────────────────────── */
+/* global.css sets td/th padding: 0.75–1rem — reduce here */
+.list-container .table th {
+  padding: 0.5rem 0.875rem;
+  font-size: var(--font-size-xs);
 }
 
-.form-control:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+.list-container .table td {
+  padding: 0.45rem 0.875rem;
+  font-size: var(--font-size-sm);
 }
 
-.form-control:focus-visible { outline: none; }
+.list-container .table-responsive { display: block; }
 
-.form-control:disabled {
-  background: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
+@media (max-width: 767px) { .list-container .table-responsive { display: none !important; } }
 
-@media (max-width: 479px) {
-  .form-control { font-size: 0.8125rem; padding: 0.5rem 0.75rem; }
-}
-
-/* ─── Custom Select ─────────────────────────────────────────────────────────── */
-.select-wrapper { position: relative; }
-
-.select-wrapper .select-icon {
-  position: absolute;
-  right: 0.85rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: #6366f1;
-  font-size: 0.8rem;
-  z-index: 1;
-}
-
-.select-wrapper select.form-control {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: none !important;
-  padding-right: 2.5rem;
-  cursor: pointer;
-  color: #1f2937;
-}
-
-.select-wrapper select.form-control:focus         { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
-.select-wrapper select.form-control:disabled       { background-color: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
-.select-wrapper select.form-control:disabled + .select-icon { color: #9ca3af; }
-.select-wrapper select.form-control option[value=""]        { color: #9ca3af; }
-.select-wrapper select.form-control option:not([value=""])  { color: #1f2937; }
-
-@media (max-width: 479px) {
-  .select-wrapper select.form-control { padding-right: 2.25rem; }
-}
-
-/* ─── Buttons ───────────────────────────────────────────────────────────────── */
-.btn {
-  padding: 0.625rem 1.25rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  white-space: nowrap;
-  font-family: inherit;
-}
-
-.btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
-
-.btn-primary   { background: #6366f1; color: white; }
-.btn-primary:hover { background: #4f46e5; transform: translateY(-1px); }
-
-.btn-secondary { background: #6b7280; color: white; }
-.btn-secondary:hover { background: #4b5563; }
-
-.mt-3 { margin-top: 1rem; }
-
-@media (max-width: 479px) {
-  .btn { font-size: 0.8125rem; padding: 0.5rem 1rem; }
-}
-
-/* ─── Loading State ─────────────────────────────────────────────────────────── */
-.loading-state { text-align: center; padding: 3rem 1rem; }
-
-.spinner {
-  width: 3rem;
-  height: 3rem;
-  border: 3px solid #e5e7eb;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 0 auto 1rem;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.loading-state p { color: #6b7280; font-size: 0.875rem; margin: 0; }
-
-/* ─── Empty State ───────────────────────────────────────────────────────────── */
-.empty-state { text-align: center; padding: 3rem 1rem; }
-.empty-state i  { font-size: 4rem; color: #d1d5db; margin-bottom: 1rem; display: block; }
-.empty-state h5 { font-size: 1.125rem; font-weight: 600; color: #374151; margin-bottom: 0.5rem; }
-.empty-state p  { color: #6b7280; margin: 0 0 1rem 0; font-size: 0.875rem; }
-
-@media (max-width: 479px) {
-  .empty-state    { padding: 2rem 0.75rem; }
-  .empty-state i  { font-size: 3rem; }
-  .empty-state h5 { font-size: 1rem; }
-}
-
-/* ─── Desktop Table (hidden on tablet/mobile) ───────────────────────────────── */
-.table-responsive {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  display: block;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 780px;
-}
-
-.table thead { background: #f9fafb; }
-
-.table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
-}
-
-.table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.875rem;
-  vertical-align: middle;
-}
-
-.table tbody tr:hover { background: #f9fafb; }
-
-/* Hide table on tablet + mobile, show cards instead */
-@media (max-width: 767px) { .table-responsive { display: none !important; } }
-
-/* ─── Student info (table cell) ─────────────────────────────────────────────── */
+/* ─── Student info cell ──────────────────────────────────────────────────────── */
 .student-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.avatar {
-  width: 2.5rem;
-  height: 2.5rem;
+.list-container .avatar {
+  width: 1.875rem;
+  height: 1.875rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #0ea4f4 !important;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.6875rem;
   flex-shrink: 0;
 }
 
-.name      { font-weight: 600; color: #1f2937; font-size: 0.875rem; }
-.text-muted { color: #9ca3af; font-size: 0.75rem; }
-.roll-number { color: #6366f1; font-weight: 600; }
-
-/* ─── Badges ────────────────────────────────────────────────────────────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.badge-success { background: #d1fae5; color: #059669; }
-.badge-danger  { background: #fee2e2; color: #dc2626; }
+.name        { font-weight: 600; color: var(--gray-900); font-size: var(--font-size-sm); line-height: 1.2; }
+.roll-number { color: var(--primary); font-weight: 600; }
 
 /* ─── Table Action Buttons ──────────────────────────────────────────────────── */
-.action-buttons { display: flex; gap: 0.5rem; }
+/*
+  CRITICAL: global.css .action-buttons = form footer layout with
+  margin-top:2rem, padding-top:2rem, border-top.
+  We must fully reset it for the inline table icon group.
+*/
+.list-container .table .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.3rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
 
 .btn-action {
-  width: 2rem;
-  height: 2rem;
+  width: 1.875rem;
+  height: 1.875rem;
   border: none;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.875rem;
+  transition: var(--transition);
+  font-size: 0.75rem;
   flex-shrink: 0;
+  padding: 0 !important; /* reset global .btn padding */
 }
 
-.btn-view   { background: #dbeafe; color: #1e40af; }
-.btn-view:hover   { background: #bfdbfe; transform: translateY(-2px); }
+/* View */
+.list-container .btn-action.btn-view {
+  background: var(--blue-light) !important;
+  color: var(--blue) !important;
+}
 
-.btn-edit   { background: #fef3c7; color: #d97706; }
-.btn-edit:hover   { background: #fde68a; transform: translateY(-2px); }
+/* icon normal */
+.list-container .btn-action.btn-view i {
+  color: var(--blue) !important;
+}
 
-.btn-delete { background: #fee2e2; color: #dc2626; }
-.btn-delete:hover { background: #fecaca; transform: translateY(-2px); }
+/* FULL BLUE on hover */
+.list-container .btn-action.btn-view:hover {
+  background: var(--blue) !important;
+  color: #fff !important;
+}
+
+/* icon also white on hover */
+.list-container .btn-action.btn-view:hover i {
+  color: #fff !important;
+}
+
+/* Edit */
+.list-container .btn-action.btn-se-edit {
+  background: var(--yellow-light) !important;
+  color: var(--yellow-dark) !important;
+}
+
+.list-container .btn-action.btn-se-edit i {
+  color: var(--yellow-dark) !important;
+}
+
+/*  FULL YELLOW on hover */
+.list-container .btn-action.btn-se-edit:hover {
+  background: var(--yellow) !important;
+  color: #fff !important;
+}
+
+.list-container .btn-action.btn-se-edit:hover i {
+  color: #fff !important;
+}
+
+/* Delete */
+.list-container .btn-action.btn-delete {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+}
+
+.list-container .btn-action.btn-delete i {
+  color: var(--red) !important;
+}
+
+/* FULL RED on hover */
+.list-container .btn-action.btn-delete:hover {
+  background: var(--red) !important;
+  color: #fff !important;
+}
+
+.list-container .btn-action.btn-delete:hover i {
+  color: #fff !important;
+}
+
+/* ─── Badges ────────────────────────────────────────────────────────────────── */
+/* global.css provides .badge + .badge-success / .badge-danger already */
 
 /* ─── Student Cards (tablet + mobile only) ──────────────────────────────────── */
-/* Hidden on desktop/laptop, shown on tablet/mobile */
 .students-cards { display: none; }
 
 @media (max-width: 767px) {
-  .students-cards {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+  .students-cards { display: flex; flex-direction: column; gap: 0.875rem; }
 }
-
-@media (max-width: 479px) {
-  .students-cards { gap: 0.75rem; }
-}
+@media (max-width: 479px) { .students-cards { gap: 0.625rem; } }
 
 .student-card {
   background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
-  transition: box-shadow 0.2s;
+  transition: var(--transition);
 }
 
-.student-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.student-card:hover { box-shadow: var(--shadow-md); }
 
-.card-header {
+/* Override global .card-header (gradient bg, large padding, border-bottom:2px) */
+.student-card .card-header {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 1rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--primary-light);
   flex-wrap: wrap;
+  font-weight: normal;
+  font-size: inherit;
+  color: inherit;
 }
 
-.student-avatar {
-  width: 3rem;
-  height: 3rem;
+.list-container .student-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #0ea4f4 !important;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   flex-shrink: 0;
 }
 
-.student-details {
-  flex: 1;
-  min-width: 0;
-}
+.student-details { flex: 1; min-width: 0; }
 
 .student-details h4 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--gray-900);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.student-details p {
-  margin: 0.2rem 0 0;
-  font-size: 0.8125rem;
-}
+.student-details p { margin: 0.15rem 0 0; font-size: 0.8125rem; }
 
-.card-body {
-  padding: 1rem;
+/* Override global .card-body padding */
+.student-card .card-body {
+  padding: 0.75rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .info-row {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.875rem;
-  color: #6b7280;
+  gap: 0.625rem;
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
   min-width: 0;
 }
 
-.info-row i {
-  width: 1.25rem;
-  color: #6366f1;
-  flex-shrink: 0;
-  text-align: center;
-}
+.info-row i { width: 1.125rem; color: var(--primary); flex-shrink: 0; text-align: center; font-size: 0.8125rem; }
+.info-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.info-row span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.card-footer {
+/* Override global .card-footer */
+.student-card .card-footer {
   display: flex;
   gap: 0.5rem;
-  padding: 0.875rem 1rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
 }
 
-.card-footer .btn { flex: 1; }
+.student-card .card-footer .btn { flex: 1; }
+
+/* Card footer btn-action — same colors as desktop, wider to fill card */
+.student-card .card-footer .btn-action {
+  width: auto !important;
+  flex: 1;
+  height: 2rem !important;
+  font-size: 0.8125rem !important;
+  padding: 0 0.5rem !important;
+  gap: 0.375rem;
+}
 
 @media (max-width: 479px) {
-  .student-avatar { width: 2.5rem; height: 2.5rem; font-size: 0.875rem; }
-  .student-details h4 { font-size: 0.9375rem; }
-  .card-body { padding: 0.875rem; gap: 0.625rem; }
-  .card-footer { padding: 0.75rem; gap: 0.375rem; }
-  .card-footer .btn { font-size: 0.75rem; padding: 0.4rem 0.5rem; }
-  .info-row { font-size: 0.8125rem; gap: 0.5rem; }
+  .student-avatar              { width: 2rem; height: 2rem; font-size: 0.75rem; }
+  .student-details h4          { font-size: 0.875rem; }
+  .student-card .card-body     { padding: 0.625rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer   { padding: 0.5rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer .btn { font-size: 0.75rem; padding: 0.375rem 0.5rem; }
+  .info-row                    { font-size: 0.8125rem; gap: 0.5rem; }
 }
 
 /* ─── Results Footer ────────────────────────────────────────────────────────── */
 .results-footer {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
   text-align: center;
 }
 
-.results-footer p { color: #6b7280; font-size: 0.875rem; margin: 0; }
-.results-footer strong { color: #1f2937; font-weight: 600; }
+.results-footer p      { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+.results-footer strong { color: var(--primary); font-weight: 600; }
 
-/* ─── Animations ────────────────────────────────────────────────────────────── */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+/* ─── Utility ───────────────────────────────────────────────────────────────── */
+.mt-3 { margin-top: 0.875rem; }
 
 /* ─── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
   .list-container { padding: 0; background: white; }
-  .btn, .action-buttons, .search-section, .card-footer { display: none; }
-  .card { box-shadow: none; }
-  .table-responsive { display: block !important; }
-  .students-cards   { display: none !important; }
+  .list-container .table .action-buttons,
+  .search-section, .student-card .card-footer { display: none !important; }
+  .list-container .card { box-shadow: none; }
+  .list-container .table-responsive { display: block !important; }
+  .students-cards { display: none !important; }
 }
+/* ─── Search below filters ───────────────────────────────────────────────────── */
+.search-below {
+  margin-bottom: 1rem;
+  position: relative;
+}
+.search-below .search-input-wrapper { position: relative; display: flex; align-items: center; }
+.search-below .search-icon { position: absolute; left: 0.875rem; color: #0ea4f4; font-size: 0.875rem; pointer-events: none; z-index: 1; }
+.search-below .search-input { padding-left: 2.5rem !important; }
+.search-below .clear-search { position: absolute; right: 0.625rem; background: none; border: none; color: #f85310; cursor: pointer; padding: 0.2rem; display: flex; align-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; }
+.search-below .clear-search:hover { background: #fee8e0; color: #d04008; }
+.w-100 { width: 100%; }
 
-/* ============================================================
-   RESPONSIVE SUMMARY
-   ┌──────────────┬──────────────────────────────────────────┐
-   │ ≥ 768px      │ Table view; search 2fr + 2 filters 1fr   │
-   │ 480–767px    │ Card view; search full-width + 2 filters  │
-   │ < 480px      │ Card view; all stacked, compact footer    │
-   └──────────────┴──────────────────────────────────────────┘
-   ============================================================ */
+/* ─── Action Button Brand Colors — appended last to always win cascade ──────── */
+.btn-action { width: 1.875rem; height: 1.875rem; border: none !important; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 0.8rem; flex-shrink: 0; padding: 0 !important; }
+
+.btn-action.btn-view             { background: #e0f4fe !important; }
+.btn-action.btn-view i           { color: #0882c4 !important; }
+.btn-action.btn-view:hover       { background: #0ea4f4 !important; box-shadow: 0 4px 14px rgba(14,164,244,0.55) !important; }
+.btn-action.btn-view:hover i     { color: #ffffff !important; }
+
+.btn-action.btn-se-edit          { background: #fff8e0 !important; }
+.btn-action.btn-se-edit i        { color: #d69900 !important; }
+.btn-action.btn-se-edit:hover    { background: #ffbb0a !important; box-shadow: 0 4px 14px rgba(255,187,10,0.55) !important; }
+.btn-action.btn-se-edit:hover i  { color: #ffffff !important; }
+
+.btn-action.btn-delete           { background: #fee8e0 !important; }
+.btn-action.btn-delete i         { color: #d04008 !important; }
+.btn-action.btn-delete:hover     { background: #f85310 !important; box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; }
+.btn-action.btn-delete:hover i   { color: #ffffff !important; }
+
+.list-container .table .action-buttons { display: flex !important; flex-direction: row !important; gap: 0.3rem !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; flex-wrap: nowrap !important; align-items: center !important; }
+
+.list-container .avatar, .list-container .student-avatar { background: #0ea4f4 !important; }
+
+/* ─── Clear Search Button — brand red-orange ─────────────────────────────────── */
+.btn-clear-search {
+  background: #fee8e0 !important;
+  color: #d04008 !important;
+  border: none;
+}
+.btn-clear-search i { color: #d04008 !important; }
+.btn-clear-search:hover {
+  background: #f85310 !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(248,83,16,0.45) !important;
+}
+.btn-clear-search:hover i { color: white !important; }

@@ -33,7 +33,7 @@
             placeholder="Enter first name"
           />
           <div class="error-message" *ngIf="shouldShowError('firstName')">
-            {{ getErrorMessage('firstName') }}
+            ⚠ {{ getErrorMessage('firstName') }}
           </div>
         </div>
 
@@ -48,7 +48,7 @@
             placeholder="Enter last name"
           />
           <div class="error-message" *ngIf="shouldShowError('lastName')">
-            {{ getErrorMessage('lastName') }}
+            ⚠ {{ getErrorMessage('lastName') }}
           </div>
         </div>
       </div>
@@ -66,7 +66,7 @@
             [max]="today"
           />
           <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
-            {{ getErrorMessage('dateOfBirth') }}
+            ⚠ {{ getErrorMessage('dateOfBirth') }}
           </div>
         </div>
 
@@ -88,7 +88,7 @@
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
           <div class="error-message" *ngIf="shouldShowError('gender')">
-            {{ getErrorMessage('gender') }}
+            ⚠ {{ getErrorMessage('gender') }}
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
             placeholder="teacher@example.com"
           />
           <div class="error-message" *ngIf="shouldShowError('email')">
-            {{ getErrorMessage('email') }}
+            ⚠ {{ getErrorMessage('email') }}
           </div>
         </div>
 
@@ -128,7 +128,7 @@
             maxlength="10"
           />
           <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
-            {{ getErrorMessage('phoneNumber') }}
+            ⚠ {{ getErrorMessage('phoneNumber') }}
           </div>
         </div>
       </div>
@@ -144,7 +144,7 @@
           placeholder="Enter complete address"
         ></textarea>
         <div class="error-message" *ngIf="shouldShowError('address')">
-          {{ getErrorMessage('address') }}
+          ⚠ {{ getErrorMessage('address') }}
         </div>
       </div>
 
@@ -166,7 +166,7 @@
             placeholder="e.g., M.Sc, B.Ed"
           />
           <div class="error-message" *ngIf="shouldShowError('qualification')">
-            {{ getErrorMessage('qualification') }}
+            ⚠ {{ getErrorMessage('qualification') }}
           </div>
         </div>
 
@@ -183,13 +183,13 @@
             min="0"
           />
           <div class="error-message" *ngIf="shouldShowError('experience')">
-            {{ getErrorMessage('experience') }}
+            ⚠ {{ getErrorMessage('experience') }}
           </div>
         </div>
       </div>
 
       <!-- Joining Date -->
-      <div class="col-md-6 mb-3">
+      <div class="col-md-6 col-sm-6 mb-3">
         <label class="form-label">Joining Date <span class="required">*</span></label>
         <input
           type="date"
@@ -200,7 +200,7 @@
           [max]="today"
         />
         <div class="error-message" *ngIf="shouldShowError('dateOfJoining')">
-          {{ getErrorMessage('dateOfJoining') }}
+          ⚠ {{ getErrorMessage('dateOfJoining') }}
         </div>
       </div>
 
@@ -209,7 +209,7 @@
           <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
           {{ loading ? 'Registering...' : 'Register Teacher' }}
         </button>
-        <button type="button" class="btn btn-secondary btn-lg" (click)="resetForm()" [disabled]="loading">
+        <button type="button" class="btn btn-reset btn-lg" (click)="resetForm()" [disabled]="loading">
           <i class="fas fa-redo"></i> Reset Form
         </button>
       </div>
@@ -228,7 +228,7 @@
         <li><i class="fas fa-check"></i><span>Upload the completed Excel file (.xlsx or .xls format)</span></li>
         <li><i class="fas fa-check"></i><span>Review the upload results and fix any errors if needed</span></li>
       </ul>
-      <button class="btn btn-secondary" (click)="downloadTemplate()" [disabled]="isDownloading">
+      <button class="btn btn-outline-primary" (click)="downloadTemplate()" [disabled]="isDownloading">
         <i [class]="isDownloading ? 'fas fa-spinner fa-spin' : 'fas fa-download'"></i>
         {{ isDownloading ? 'Downloading...' : 'Download Template' }}
       </button>

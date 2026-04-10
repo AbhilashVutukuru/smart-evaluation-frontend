@@ -43,6 +43,7 @@ import { CommonModule } from '@angular/common';
               class="btn btn-secondary" 
               (click)="onCancel()"
               [disabled]="loading">
+              <i class="fas fa-times"></i>
               {{ cancelText }}
             </button>
             <button 
@@ -123,24 +124,25 @@ import { CommonModule } from '@angular/common';
     flex-shrink: 0;
   }
 
-  .icon-circle.danger {
-    background: #fee2e2;
-    color: #dc2626;
-  }
+ .icon-circle.danger {
+  background: var(--red-light) !important; 
+  color: var(--red) !important;             
+  border: 2px solid var(--red) !important;  
+}
 
   .icon-circle.warning {
     background: #fef3c7;
-    color: #f59e0b;
+    color: #ffbb0a;
   }
 
   .icon-circle.info {
     background: #dbeafe;
-    color: #3b82f6;
+    color: #0ea4f4;
   }
 
   .icon-circle.success {
-    background: #d1fae5;
-    color: #10b981;
+    background: #eef7d6;
+    color: #5f8e04;
   }
 
   .modal-title {
@@ -197,7 +199,7 @@ import { CommonModule } from '@angular/common';
 
   .warning-box {
     background: #fef3c7;
-    border: 1px solid #fbbf24;
+    border: 1px solid #ffbb0a;
     border-radius: 8px;
     padding: 12px;
     display: flex;
@@ -208,7 +210,7 @@ import { CommonModule } from '@angular/common';
   }
 
   .warning-box i {
-    color: #f59e0b;
+    color: #ffbb0a;
     font-size: 18px;
   }
 
@@ -236,32 +238,41 @@ import { CommonModule } from '@angular/common';
     cursor: not-allowed;
   }
 
-  .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-  }
+.btn-secondary {
+  background: var(--green) !important;
+  color: #fff !important;
+  border: 2px solid var(--green) !important;
+}
 
-  .btn-secondary:hover:not(:disabled) {
-    background: #e5e7eb;
-  }
+.btn-secondary:hover:not(:disabled) {
+  background: #5f8e04 !important;
+  border-color: #5f8e04 !important;
+  color: #fff !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(127,187,6,0.55) !important; 
+}
 
   .btn-primary {
-    background: #3b82f6;
+    background: #0ea4f4;
     color: white;
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: #2563eb;
+    background: #0882c4;
   }
 
-  .btn-danger {
-    background: #dc2626;
-    color: white;
-  }
+.btn-danger {
+  background: var(--red) !important;
+  color: #fff !important;
+  border: 2px solid var(--red) !important;
+}
 
-  .btn-danger:hover:not(:disabled) {
-    background: #b91c1c;
-  }
+.btn-danger:hover:not(:disabled) {
+  background: #d04008 !important;
+  border-color: #d04008 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; 
+}
 
   .btn-warning {
     background: #f59e0b;
