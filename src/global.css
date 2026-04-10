@@ -356,6 +356,20 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
 .btn-primary:hover:not(:disabled)   { background: #0ea4f4; transform: translateY(-1px); } */
 
 .btn-primary   { background: #0ea4f4; color: white; }
+
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  background: #0ea4f4 !important;
+  color: #ffffff !important;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled i,
+.btn-primary i.fa-spinner {
+  color: #ffffff !important;
+}
+
 .btn-primary:hover:not(:disabled)   { background: #0882c4; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
 
 .btn-secondary { background: var(--gray-500); color: white; }
@@ -743,3 +757,6 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator {
 input[type="checkbox"] {
   accent-color: #0882c4;
 }
+
+/* Info icon style */
+.header-info-icon { margin-left: 0.1rem; font-size: 0.87rem; cursor: help; color: var(--red) !important;}
