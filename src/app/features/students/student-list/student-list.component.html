@@ -121,6 +121,7 @@
           <tr>
             <th>Roll No</th>
             <th>Name</th>
+            <th>Gender</th>
             <th>Class</th>
             <th>Section</th>
             <!-- <th>Email</th> -->
@@ -137,10 +138,11 @@
                 <div class="avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div>
                 <div>
                   <div class="name">{{ student.firstName }} {{ student.lastName }}</div>
-                  <small class="text-muted">{{ student.gender }}</small>
+                  <!-- <small class="text-muted">{{ student.gender }}</small> -->
                 </div>
               </div>
             </td>
+            <td>{{ student.gender }}</td>
             <td>{{ student.className }}</td>
             <td>{{ student.sectionName }}</td>
             <!-- <td>{{ student.email }}</td> -->

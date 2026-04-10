@@ -72,6 +72,7 @@
           <tr>
             <th>Employee Code</th>
             <th>Name</th>
+            <th>Gender</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Qualification</th>
@@ -89,10 +90,11 @@
                 <div class="avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div>
                 <div>
                   <div class="name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
-                  <small class="text-muted">{{ teacher.gender }}</small>
+                  <!-- <small class="text-muted">{{ teacher.gender }}</small> -->
                 </div>
               </div>
             </td>
+            <td>{{ teacher.gender }}</td>
             <td>{{ teacher.email }}</td>
             <td>{{ teacher.phoneNumber }}</td>
             <td>{{ teacher.qualification }}</td>
