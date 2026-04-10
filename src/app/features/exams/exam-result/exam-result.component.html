@@ -22,6 +22,8 @@
     [canShowStudents]="canShowStudents"
     [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
     [noExamPaperFound]="noExamPaperFound"
+    [isCollapsed]="isFilterCollapsed"
+    (isCollapsedChange)="isFilterCollapsed = $event"
     (classChanged)="onClassChange($event)"
     (sectionChanged)="onSectionChange()"
     (subjectChanged)="onSubjectChange()"
