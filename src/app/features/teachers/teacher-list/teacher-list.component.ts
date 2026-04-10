@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeacherService } from '../../../core/services/teacher.service';
@@ -13,6 +13,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   imports: [CommonModule, FormsModule, DeleteConfirmationComponent],
   templateUrl: './teacher-list.component.html',
   styleUrls: ['./teacher-list.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class TeacherListComponent implements OnInit {
   private teacherService = inject(TeacherService);

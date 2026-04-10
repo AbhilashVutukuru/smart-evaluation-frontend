@@ -34,7 +34,7 @@
       </div>
 
       <!-- Refresh Button -->
-      <button class="btn btn-secondary" (click)="loadTeachers()">
+      <button class="btn btn-primary" (click)="loadTeachers()">
         <i class="fas fa-sync"></i> Refresh
       </button>
     </div>
@@ -60,7 +60,7 @@
       <i class="fas fa-search"></i>
       <h5>No Results Found</h5>
       <p>No teachers match your search criteria</p>
-      <button class="btn btn-secondary mt-3" (click)="clearSearch()">
+      <button class="btn btn-clear-search mt-3" (click)="clearSearch()">
         <i class="fas fa-times"></i> Clear Search
       </button>
     </div>
@@ -77,7 +77,7 @@
             <th>Qualification</th>
             <th>Subjects</th>
             <th>Joining Date</th>
-            <th>Status</th>
+            <!-- <th>Status</th> -->
             <th>Actions</th>
           </tr>
         </thead>
@@ -104,21 +104,14 @@
               </div>
             </td>
             <td>{{ teacher.joiningDate | date:'dd/MM/yyyy' }}</td>
-            <td>
-              <span
-                class="badge"
-                [class.badge-success]="teacher.isActive"
-                [class.badge-danger]="!teacher.isActive"
-              >
-                {{ teacher.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
+            <!-- <td>
+            </td> -->
             <td>
               <div class="action-buttons">
                 <button class="btn-action btn-view" (click)="viewDetails(teacher.id)" title="View Details">
                   <i class="fas fa-eye"></i>
                 </button>
-                <button class="btn-action btn-edit" (click)="editTeacher(teacher.id)" title="Edit Teacher">
+                <button class="btn-action btn-edit btn-se-edit" (click)="editTeacher(teacher.id)" title="Edit Teacher">
                   <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn-action btn-delete" (click)="deleteTeacher(teacher)" title="Delete Teacher">
@@ -140,13 +133,6 @@
             <h4>{{ teacher.firstName }} {{ teacher.lastName }}</h4>
             <p class="text-muted">{{ teacher.gender }} • {{ teacher.employeeCode }}</p>
           </div>
-          <span
-            class="badge"
-            [class.badge-success]="teacher.isActive"
-            [class.badge-danger]="!teacher.isActive"
-          >
-            {{ teacher.isActive ? 'Active' : 'Inactive' }}
-          </span>
         </div>
 
         <div class="card-body">
@@ -177,13 +163,13 @@
         </div>
 
         <div class="card-footer">
-          <button class="btn btn-sm btn-view" (click)="viewDetails(teacher.id)">
+          <button class="btn btn-sm btn-action btn-view" (click)="viewDetails(teacher.id)">
             <i class="fas fa-eye"></i> View
           </button>
-          <button class="btn btn-sm btn-edit" (click)="editTeacher(teacher.id)">
+          <button class="btn btn-sm btn-action btn-se-edit" (click)="editTeacher(teacher.id)">
             <i class="fas fa-edit"></i> Edit
           </button>
-          <button class="btn btn-sm btn-delete" (click)="deleteTeacher(teacher)">
+          <button class="btn btn-sm btn-action btn-delete" (click)="deleteTeacher(teacher)">
             <i class="fas fa-trash"></i> Delete
           </button>
         </div>

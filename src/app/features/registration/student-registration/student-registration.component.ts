@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -31,6 +31,7 @@ interface UploadResults {
   imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './student-registration.component.html',
   styleUrls: ['./student-registration.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class StudentRegistrationComponent implements OnInit {
   private fb                  = inject(FormBuilder);

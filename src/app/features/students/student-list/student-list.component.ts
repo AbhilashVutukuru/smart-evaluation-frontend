@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StudentService } from '../../../core/services/student.service';
@@ -14,6 +14,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   imports: [CommonModule, FormsModule, DeleteConfirmationComponent],
   templateUrl: './student-list.component.html',
   styleUrls: ['./student-list.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class StudentListComponent implements OnInit {
   private studentService    = inject(StudentService);
@@ -31,6 +32,7 @@ export class StudentListComponent implements OnInit {
 
   // State
   loading         = false;
+  studentsLoaded  = false;
   searchTerm      = '';
   selectedClass   = '';
   selectedSection = '';
@@ -96,6 +98,7 @@ export class StudentListComponent implements OnInit {
         if (response.success && response.data) {
           this.students         = response.data;
           this.filteredStudents = response.data;
+          this.studentsLoaded   = true;
 
           if (this.students.length === 0) {
             this.toastService.showInfo('No Results', 'No students found for the selected class and section');
@@ -124,6 +127,8 @@ export class StudentListComponent implements OnInit {
     this.sections         = [];
     this.students         = [];
     this.filteredStudents = [];
+    this.studentsLoaded   = false;
+    this.searchTerm       = '';
 
     if (this.selectedClass) {
       this.loadSections(+this.selectedClass);
@@ -133,10 +138,14 @@ export class StudentListComponent implements OnInit {
   onSectionChange(): void {
     this.students         = [];
     this.filteredStudents = [];
+    this.studentsLoaded   = false;
+    this.searchTerm       = '';
+  }
 
-    if (this.selectedClass && this.selectedSection) {
-      this.loadStudents();
-    }
+  onShowStudents(): void {
+    this.studentsLoaded = false;
+    this.searchTerm     = '';
+    this.loadStudents();
   }
 
   // ============================================

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,7 +13,8 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DeleteConfirmationComponent, CancelConfirmationComponent],
   templateUrl: './teacher-view-edit.component.html',
-  styleUrls: ['./teacher-view-edit.component.css']
+  styleUrls: ['./teacher-view-edit.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class TeacherViewEditComponent implements OnInit {
   private fb             = inject(FormBuilder);
