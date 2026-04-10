@@ -19,12 +19,12 @@
     <div class="page-header">
       <div class="header-left">
         <h1>Dashboard</h1>
-        <p>Welcome back, <strong>{{ summary.userName }}</strong></p>
+        <!-- <p>Welcome back, <strong>{{ summary.userName }}</strong></p> -->
       </div>
-      <div class="academic-year-badge">
+      <!-- <div class="academic-year-badge">
         <i class="fas fa-calendar-alt"></i>
         <span>{{ summary.academicYear }}</span>
-      </div>
+      </div> -->
     </div>
 
     <!-- ══════════════════════════════════════════════════════════ -->
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Evaluation Progress Bar -->
-      <div class="card" *ngIf="admin.pendingEvaluations + admin.completedEvaluations > 0">
+      <!-- <div class="card" *ngIf="admin.pendingEvaluations + admin.completedEvaluations > 0">
         <h4><i class="fas fa-tasks"></i> Evaluation Progress</h4>
         <div class="progress-row">
           <span class="progress-label">
@@ -95,7 +95,31 @@
             [style.width]="getProgressWidth(admin.completedEvaluations, admin.pendingEvaluations + admin.completedEvaluations)">
           </div>
         </div>
+      </div> -->
+
+      <!-- Quick Actions -->
+      <div class="card">
+        <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
+        <div class="quick-actions">
+          <a routerLink="/registration/student" class="action-btn action-purple">
+            <i class="fas fa-user-plus"></i>
+            <span>Register Student</span>
+          </a>
+          <a routerLink="/registration/teacher" class="action-btn action-blue">
+            <i class="fas fa-user-tie"></i>
+            <span>Register Teacher</span>
+          </a>
+          <a routerLink="/create/exam" class="action-btn action-indigo">
+            <i class="fas fa-file-alt"></i>
+            <span>Create Question Paper</span>
+          </a>
+          <a routerLink="/admin-settings" class="action-btn action-teal">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
       </div>
+
 
       <!-- ── Class-wise Evaluation Breakdown ─────────────────────────────── -->
       <div class="card" *ngIf="admin.classBreakdown && admin.classBreakdown.length > 0">
@@ -160,29 +184,7 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="card">
-        <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
-        <div class="quick-actions">
-          <a routerLink="/registration/student" class="action-btn action-purple">
-            <i class="fas fa-user-plus"></i>
-            <span>Register Student</span>
-          </a>
-          <a routerLink="/registration/teacher" class="action-btn action-blue">
-            <i class="fas fa-user-tie"></i>
-            <span>Register Teacher</span>
-          </a>
-          <a routerLink="/create/exam" class="action-btn action-indigo">
-            <i class="fas fa-file-alt"></i>
-            <span>Create Question Paper</span>
-          </a>
-          <a routerLink="/admin-settings" class="action-btn action-teal">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </a>
-        </div>
-      </div>
-
+      
       <!-- Recent Uploads -->
       <!-- <div class="card" *ngIf="admin.recentActivity.length > 0">
         <h4><i class="fas fa-history"></i> Recent Uploads</h4>
