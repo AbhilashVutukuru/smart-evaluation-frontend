@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeacherSubjectService } from '../../../core/services/teacher-subject.service';
@@ -23,6 +23,7 @@ interface Assignment {
   imports: [CommonModule, FormsModule, ConfirmationModalComponent],
   templateUrl: './assign-teacher-subjects.component.html',
   styleUrls: ['./assign-teacher-subjects.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class AssignTeacherSubjectsComponent implements OnInit {
   private teacherSubjectService = inject(TeacherSubjectService);

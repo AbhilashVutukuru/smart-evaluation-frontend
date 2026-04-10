@@ -56,7 +56,7 @@
                 placeholder="Enter first name"
               />
               <div class="error-message" *ngIf="shouldShowError('firstName')">
-                {{ getErrorMessage('firstName') }}
+                ⚠ {{ getErrorMessage('firstName') }}
               </div>
             </div>
 
@@ -72,7 +72,7 @@
                 placeholder="Enter last name"
               />
               <div class="error-message" *ngIf="shouldShowError('lastName')">
-                {{ getErrorMessage('lastName') }}
+                ⚠ {{ getErrorMessage('lastName') }}
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@
                 [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
-                {{ getErrorMessage('dateOfBirth') }}
+                ⚠ {{ getErrorMessage('dateOfBirth') }}
               </div>
             </div>
 
@@ -112,7 +112,7 @@
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
               <div class="error-message" *ngIf="shouldShowError('gender')">
-                {{ getErrorMessage('gender') }}
+                ⚠ {{ getErrorMessage('gender') }}
               </div>
             </div>
           </div>
@@ -126,24 +126,23 @@
           <span>Contact Information</span>
         </div>
         <div class="card-body">
-          <div class="row">
-
-            <!-- Email -->
-            <div class="col-md-6 mb-3">
-              <label class="form-label">Email <span class="required">*</span></label>
-              <input
-                type="email"
-                class="form-control"
-                [class.is-invalid]="shouldShowError('email')"
-                formControlName="email"
-                (blur)="onFieldBlur('email')"
-                placeholder="student@example.com"
-              />
-              <div class="error-message" *ngIf="shouldShowError('email')">
-                {{ getErrorMessage('email') }}
-              </div>
+          <!-- Address -->
+          <div class="mb-3">
+            <label class="form-label">Address <span class="required">*</span></label>
+            <textarea
+              class="form-control"
+              [class.is-invalid]="shouldShowError('address')"
+              formControlName="address"
+              (blur)="onFieldBlur('address')"
+              rows="2"
+              placeholder="Enter complete address"
+            ></textarea>
+            <div class="error-message" *ngIf="shouldShowError('address')">
+              ⚠ {{ getErrorMessage('address') }}
             </div>
+          </div>
 
+          <div class="row">
             <!-- Phone -->
             <div class="col-md-6 mb-3">
               <label class="form-label">Phone Number <span class="required">*</span></label>
@@ -158,24 +157,8 @@
                 maxlength="10"
               />
               <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
-                {{ getErrorMessage('phoneNumber') }}
+                ⚠ {{ getErrorMessage('phoneNumber') }}
               </div>
-            </div>
-          </div>
-
-          <!-- Address -->
-          <div class="mb-3">
-            <label class="form-label">Address <span class="required">*</span></label>
-            <textarea
-              class="form-control"
-              [class.is-invalid]="shouldShowError('address')"
-              formControlName="address"
-              (blur)="onFieldBlur('address')"
-              rows="3"
-              placeholder="Enter complete address"
-            ></textarea>
-            <div class="error-message" *ngIf="shouldShowError('address')">
-              {{ getErrorMessage('address') }}
             </div>
           </div>
         </div>
@@ -208,7 +191,7 @@
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
               <div class="error-message" *ngIf="shouldShowError('classId')">
-                {{ getErrorMessage('classId') }}
+                ⚠ {{ getErrorMessage('classId') }}
               </div>
             </div>
 
@@ -230,7 +213,7 @@
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
               <div class="error-message" *ngIf="shouldShowError('sectionId')">
-                {{ getErrorMessage('sectionId') }}
+                ⚠ {{ getErrorMessage('sectionId') }}
               </div>
             </div>
 
@@ -261,7 +244,7 @@
                 [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('admissionDate')">
-                {{ getErrorMessage('admissionDate') }}
+                ⚠ {{ getErrorMessage('admissionDate') }}
               </div>
             </div>
           </div>
@@ -272,7 +255,7 @@
       <div *ngIf="mode === 'edit'" class="action-buttons">
         <button
           type="button"
-          class="btn btn-secondary btn-lg"
+          class="btn btn-cancel btn-lg"
           (click)="cancelEdit()"
           [disabled]="loading"
         >

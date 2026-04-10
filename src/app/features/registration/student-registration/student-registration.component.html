@@ -37,7 +37,7 @@
             placeholder="Enter first name"
           />
           <div class="error-message" *ngIf="shouldShowError('firstName')">
-            {{ getErrorMessage("firstName") }}
+            ⚠ {{ getErrorMessage("firstName") }}
           </div>
         </div>
 
@@ -54,7 +54,7 @@
             placeholder="Enter last name"
           />
           <div class="error-message" *ngIf="shouldShowError('lastName')">
-            {{ getErrorMessage("lastName") }}
+            ⚠ {{ getErrorMessage("lastName") }}
           </div>
         </div>
       </div>
@@ -74,7 +74,7 @@
             [max]="todayDate"
           />
           <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
-            {{ getErrorMessage("dateOfBirth") }}
+            ⚠ {{ getErrorMessage("dateOfBirth") }}
           </div>
         </div>
 
@@ -97,7 +97,7 @@
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
           <div class="error-message" *ngIf="shouldShowError('gender')">
-            {{ getErrorMessage("gender") }}
+            ⚠ {{ getErrorMessage("gender") }}
           </div>
         </div>
       </div>
@@ -120,7 +120,7 @@
             placeholder="student@example.com"
           />
           <div class="error-message" *ngIf="shouldShowError('email')">
-            {{ getErrorMessage('email') }}
+            ⚠ {{ getErrorMessage('email') }}
           </div>
         </div> -->
 
@@ -137,7 +137,7 @@
             placeholder="Enter complete address"
           ></textarea>
           <div class="error-message" *ngIf="shouldShowError('address')">
-            {{ getErrorMessage("address") }}
+            ⚠ {{ getErrorMessage("address") }}
           </div>
         </div>
 
@@ -156,7 +156,7 @@
             maxlength="10"
           />
           <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
-            {{ getErrorMessage("phoneNumber") }}
+            ⚠ {{ getErrorMessage("phoneNumber") }}
           </div>
         </div>
       </div>
@@ -188,7 +188,7 @@
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
           <div class="error-message" *ngIf="shouldShowError('classId')">
-            {{ getErrorMessage("classId") }}
+            ⚠ {{ getErrorMessage("classId") }}
           </div>
         </div>
 
@@ -214,12 +214,12 @@
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
           <div class="error-message" *ngIf="shouldShowError('sectionId')">
-            {{ getErrorMessage("sectionId") }}
+            ⚠ {{ getErrorMessage("sectionId") }}
           </div>
         </div>
 
         <!-- Roll Number (auto-generated) -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-4 col-sm-6 mb-3">
           <label class="form-label"
             >Roll Number <span class="required">*</span></label
           >
@@ -231,11 +231,9 @@
             placeholder="Auto-generated"
           />
         </div>
-      </div>
 
-      <div class="row">
         <!-- Admission Date -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-4 col-sm-6 mb-3">
           <label class="form-label"
             >Admission Date <span class="required">*</span></label
           >
@@ -248,7 +246,7 @@
             [max]="todayDate"
           />
           <div class="error-message" *ngIf="shouldShowError('admissionDate')">
-            {{ getErrorMessage("admissionDate") }}
+            ⚠ {{ getErrorMessage("admissionDate") }}
           </div>
         </div>
       </div>
@@ -266,7 +264,7 @@
         </button>
         <button
           type="button"
-          class="btn btn-secondary btn-lg"
+          class="btn btn-reset btn-lg"
           (click)="resetForm()"
           [disabled]="loading"
         >
@@ -305,7 +303,7 @@
         </li>
       </ul>
       <button
-        class="btn btn-secondary"
+        class="btn btn-outline-primary"
         (click)="downloadTemplate()"
         [disabled]="isDownloading"
       >
@@ -320,13 +318,7 @@
     <div class="card">
       <h4><i class="fas fa-cloud-upload-alt"></i> Upload Student Data</h4>
 
-      <!-- Step 1 -->
-      <div class="section-header">
-        <i class="fas fa-list-ol"></i>
-        <span>Step 1: Select Class and Section</span>
-      </div>
-
-      <div class="row">
+      <div class="row" style="padding: 0 0.125rem;">
         <!-- Bulk Class -->
         <div class="col-md-6 mb-3">
           <label class="form-label"
@@ -370,12 +362,6 @@
         </div>
       </div>
 
-      <!-- Step 2 -->
-      <div class="section-header">
-        <i class="fas fa-file-excel"></i>
-        <span>Step 2: Upload Excel File</span>
-      </div>
-
       <div class="upload-section">
         <input
           type="file"
@@ -411,26 +397,18 @@
           <div class="file-info">
             <i class="fas fa-file-excel file-icon"></i>
             <div class="file-details">
-              <strong>{{ selectedFile.name }}</strong>
-              <span>{{ (selectedFile.size / 1024).toFixed(2) }} KB</span>
-            </div>
-            <button
-              type="button"
-              class="btn btn-danger btn-sm"
-              (click)="removeFile()"
-              [disabled]="uploadProgress"
-            >
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="selected-info">
-            <div class="info-badge">
-              <i class="fas fa-school"></i>
-              <span>{{ getClassName(bulkClassId) }}</span>
-            </div>
-            <div class="info-badge">
-              <i class="fas fa-users"></i>
-              <span>{{ getSectionName(bulkSectionId) }}</span>
+              <span class="file-name-row">
+                <strong>{{ selectedFile.name }}</strong>
+                <span class="file-size">{{ (selectedFile.size / 1024).toFixed(2) }} KB</span>
+                <button
+                  type="button"
+                  class="btn btn-close-file"
+                  (click)="removeFile()"
+                  [disabled]="uploadProgress"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </span>
             </div>
           </div>
         </div>

@@ -56,7 +56,7 @@
                 placeholder="Enter first name"
               />
               <div class="error-message" *ngIf="shouldShowError('firstName')">
-                {{ getErrorMessage('firstName') }}
+                ⚠ {{ getErrorMessage('firstName') }}
               </div>
             </div>
 
@@ -72,7 +72,7 @@
                 placeholder="Enter last name"
               />
               <div class="error-message" *ngIf="shouldShowError('lastName')">
-                {{ getErrorMessage('lastName') }}
+                ⚠ {{ getErrorMessage('lastName') }}
               </div>
             </div>
           </div>
@@ -91,7 +91,7 @@
                 [max]="today"
               />
               <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
-                {{ getErrorMessage('dateOfBirth') }}
+                ⚠ {{ getErrorMessage('dateOfBirth') }}
               </div>
             </div>
 
@@ -113,7 +113,7 @@
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
               <div class="error-message" *ngIf="shouldShowError('gender')">
-                {{ getErrorMessage('gender') }}
+                ⚠ {{ getErrorMessage('gender') }}
               </div>
             </div>
           </div>
@@ -141,7 +141,7 @@
                 placeholder="teacher@example.com"
               />
               <div class="error-message" *ngIf="shouldShowError('email')">
-                {{ getErrorMessage('email') }}
+                ⚠ {{ getErrorMessage('email') }}
               </div>
             </div>
 
@@ -159,7 +159,7 @@
                 maxlength="10"
               />
               <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
-                {{ getErrorMessage('phoneNumber') }}
+                ⚠ {{ getErrorMessage('phoneNumber') }}
               </div>
             </div>
           </div>
@@ -176,7 +176,7 @@
               placeholder="Enter complete address"
             ></textarea>
             <div class="error-message" *ngIf="shouldShowError('address')">
-              {{ getErrorMessage('address') }}
+              ⚠ {{ getErrorMessage('address') }}
             </div>
           </div>
         </div>
@@ -214,7 +214,7 @@
                 placeholder="e.g., M.Sc, B.Ed"
               />
               <div class="error-message" *ngIf="shouldShowError('qualification')">
-                {{ getErrorMessage('qualification') }}
+                ⚠ {{ getErrorMessage('qualification') }}
               </div>
             </div>
 
@@ -232,7 +232,7 @@
                 min="0"
               />
               <div class="error-message" *ngIf="shouldShowError('experience')">
-                {{ getErrorMessage('experience') }}
+                ⚠ {{ getErrorMessage('experience') }}
               </div>
             </div>
           </div>
@@ -249,7 +249,7 @@
               [max]="today"
             />
             <div class="error-message" *ngIf="shouldShowError('dateOfJoining')">
-              {{ getErrorMessage('dateOfJoining') }}
+              ⚠ {{ getErrorMessage('dateOfJoining') }}
             </div>
           </div>
         </div>
@@ -259,7 +259,7 @@
       <div *ngIf="mode === 'edit'" class="action-buttons">
         <button
           type="button"
-          class="btn btn-secondary btn-lg"
+          class="btn btn-cancel btn-lg"
           (click)="cancelEdit()"
           [disabled]="loading"
         >

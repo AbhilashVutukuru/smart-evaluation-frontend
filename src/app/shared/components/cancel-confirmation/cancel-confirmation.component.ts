@@ -132,7 +132,7 @@ import { CommonModule } from '@angular/common';
 
     .icon-warning i {
       font-size: 28px;
-      color: #f59e0b;
+      color: #ffbb0a;
     }
 
     .modal-header h3 {
@@ -155,7 +155,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .warning-message {
-      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      background: #fee8e0;
       border: 2px solid #ef4444;
       border-radius: 10px;
       padding: 12px;
@@ -166,12 +166,12 @@ import { CommonModule } from '@angular/common';
     }
 
     .warning-message i {
-      color: #ef4444;
+      color: #f85310;
       font-size: 16px;
     }
 
     .warning-message span {
-      color: #991b1b;
+      color: #7a2400;
       font-weight: 600;
       font-size: 14px;
     }
@@ -209,13 +209,13 @@ import { CommonModule } from '@angular/common';
     }
 
     .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
+      background: #f85310;
       color: white;
     }
 
     .btn-danger:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 12px rgba(248,83,16, 0.4);
     }
 
     .btn:active {

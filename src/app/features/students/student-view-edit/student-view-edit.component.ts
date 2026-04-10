@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -15,7 +15,8 @@ import { RegistrationService } from '../../../core/services/registration.service
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, DeleteConfirmationComponent, CancelConfirmationComponent],
   templateUrl: './student-view-edit.component.html',
-  styleUrls: ['./student-view-edit.component.css']
+  styleUrls: ['./student-view-edit.component.css'],
+  encapsulation: ViewEncapsulation.None,
 })
 export class StudentViewEditComponent implements OnInit {
   private fb                = inject(FormBuilder);

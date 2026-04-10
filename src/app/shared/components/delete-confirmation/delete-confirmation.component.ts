@@ -120,8 +120,8 @@ import { CommonModule } from '@angular/common';
       width: 60px;
       height: 60px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #fef2f2, #fee2e2);
-      border: 3px solid #ef4444;
+      background: #fee8e0;
+      border: 3px solid #f85310;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -136,7 +136,7 @@ import { CommonModule } from '@angular/common';
 
     .icon-warning i {
       font-size: 28px;
-      color: #ef4444;
+      color: #f85310;
     }
 
     .modal-header h3 {
@@ -171,7 +171,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .item-info i {
-      color: #6366f1;
+      color: #0ea4f4;
       font-size: 18px;
     }
 
@@ -192,7 +192,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .warning-message i {
-      color: #f59e0b;
+      color: #ffbb0a;
       font-size: 16px;
     }
 
@@ -223,25 +223,40 @@ import { CommonModule } from '@angular/common';
       font-family: inherit;
     }
 
-    .btn-secondary {
-      background: #6b7280;
-      color: white;
-    }
+/* Cancel button → brand green */
+.btn-secondary {
+  background: var(--green) !important;
+  color: #fff !important;
+  border: 2px solid var(--green) !important;
+  box-shadow: 0 2px 6px rgba(127,187,6,0.35) !important;
+}
 
-    .btn-secondary:hover {
-      background: #4b5563;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
-    }
+/* icon */
+.btn-secondary i {
+  color: #fff !important;
+}
+
+/*  hover */
+.btn-secondary:hover {
+  background: #5f8e04 !important; /* darker green */
+  border-color: #5f8e04 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(127,187,6,0.55) !important;
+}
+
+/* icon hover */
+.btn-secondary:hover i {
+  color: #fff !important;
+}
 
     .btn-danger {
-      background: linear-gradient(135deg, #ef4444, #dc2626);
+      background: #f85310;
       color: white;
     }
 
     .btn-danger:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 12px rgba(248,83,16, 0.4);
     }
 
     .btn:active {
