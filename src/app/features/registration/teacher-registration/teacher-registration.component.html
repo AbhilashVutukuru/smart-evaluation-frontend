@@ -262,10 +262,10 @@
             <div class="file-details">
               <strong>{{ selectedFile.name }}</strong>
               <span>{{ (selectedFile.size / 1024).toFixed(2) }} KB</span>
-            </div>
-            <button type="button" class="btn btn-danger btn-sm" (click)="removeFile()" [disabled]="uploadProgress">
+               <button type="button" class="btn btn-danger btn-sm" (click)="removeFile()" [disabled]="uploadProgress">
               <i class="fas fa-times"></i>
             </button>
+            </div>
           </div>
         </div>
       </div>
