@@ -654,3 +654,12 @@ select.form-control:disabled { cursor: not-allowed !important; }
 }
 
 .filter-chip i { font-size: 0.65rem; }
+
+.section-label i {
+  font-size: 1rem !important;
+  color: var(--blue);
+}
+
+.section-label .fa-check-circle {
+  color: var(--green) !important;
+}
