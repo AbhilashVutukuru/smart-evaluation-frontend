@@ -12,7 +12,7 @@
    ============================================================ */
 .dashboard-container {
   padding: 2rem;
-  background: #f8f9fa;
+  background: #f0f4f8;
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -51,12 +51,12 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: #ede9fe;
-  color: #6366f1;
+  background: #e0f4fe;
+  color: #0ea4f4;
   border-radius: 2rem;
   font-size: 0.875rem;
   font-weight: 600;
-  border: 1px solid #c4b5fd;
+  border: 1px solid #7dd3fc;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -97,7 +97,7 @@
   gap: 0.5rem;
 }
 
-.card h4 i { color: #6366f1; }
+.card h4 i { color: #0ea4f4; }
 
 @media (max-width: 767px) {
   .card { padding: 1.25rem; margin-bottom: 1rem; }
@@ -206,12 +206,12 @@
 }
 
 /* Colour variants */
-.stat-purple .stat-icon { background: #ede9fe; color: #7c3aed; }
-.stat-blue   .stat-icon { background: #dbeafe; color: #2563eb; }
-.stat-teal   .stat-icon { background: #ccfbf1; color: #0d9488; }
-.stat-indigo .stat-icon { background: #e0e7ff; color: #4338ca; }
-.stat-orange .stat-icon { background: #ffedd5; color: #ea580c; }
-.stat-green  .stat-icon { background: #dcfce7; color: #16a34a; }
+.stat-purple .stat-icon { background: #e0f4fe; color: var(--blue); }
+.stat-blue   .stat-icon { background: #e0f4fe; color: var(--blue); }
+.stat-teal   .stat-icon { background: #eef7d6; color: var(--green); }
+.stat-indigo .stat-icon { background: #e0f4fe; color: var(--blue); }
+.stat-orange .stat-icon { background: #fee8e0; color: #f85310; }
+.stat-green  .stat-icon { background: #eef7d6; color: var(--green); }
 
 /* Tablet — compact card */
 @media (max-width: 767px) {
@@ -244,7 +244,7 @@
 
 .progress-percent {
   font-weight: 600;
-  color: #6366f1;
+  color: #0ea4f4;
 }
 
 .progress-bar-track {
@@ -259,7 +259,7 @@
 
 .progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: linear-gradient(90deg, #0ea4f4, #0ea4f4);
   border-radius: 5px;
   transition: width 0.6s ease;
 }
@@ -297,14 +297,14 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
 }
 
-.action-purple         { background: #ede9fe; color: #7c3aed; }
-.action-purple:hover   { background: #ddd6fe; }
-.action-blue           { background: #dbeafe; color: #2563eb; }
-.action-blue:hover     { background: #bfdbfe; }
-.action-indigo         { background: #e0e7ff; color: #4338ca; }
-.action-indigo:hover   { background: #c7d2fe; }
-.action-teal           { background: #ccfbf1; color: #0d9488; }
-.action-teal:hover     { background: #99f6e4; }
+.action-purple         { background: #e0f4fe; color: #0882c4; }
+.action-purple:hover   { background: #bae6fd; }
+.action-blue           { background: #e0f4fe; color: #0882c4; }
+.action-blue:hover     { background: #bae6fd; }
+.action-indigo         { background: #e0f4fe; color: #0882c4; }
+.action-indigo:hover   { background: #bae6fd; }
+.action-teal           { background: #e0f4fe; color: #0882c4; }
+.action-teal:hover     { background: #bae6fd; }
 
 /* Mobile — stack, full-width */
 @media (max-width: 479px) {
@@ -381,11 +381,11 @@
   font-weight: 700;
 }
 
-.count-total     { background: #e0e7ff; color: #4338ca; }
-.count-uploaded  { background: #dbeafe; color: #2563eb; }
-.count-evaluated { background: #dcfce7; color: #16a34a; }
+.count-total     { background: #e0f4fe; color: #0882c4; }
+.count-uploaded  { background: #e0f4fe; color: #0882c4; }
+.count-evaluated { background: #eef7d6; color: #5f8e04; }
 .count-pending   { background: #fef3c7; color: #d97706; }
-.count-absent    { background: #fee2e2; color: #dc2626; }
+.count-absent    { background: #fee8e0; color: #d04008; }
 
 /* Inline progress + label */
 .breakdown-progress-wrap {
@@ -398,7 +398,7 @@
 .breakdown-pct {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6366f1;
+  color: #0ea4f4;
   white-space: nowrap;
 }
 
@@ -415,7 +415,7 @@
   white-space: nowrap;
 }
 
-.badge-success { background: #dcfce7; color: #16a34a; }
+.badge-success { background: #eef7d6; color: #5f8e04; }
 .badge-warning { background: #fef3c7; color: #d97706; }
 
 /* Score badge */
@@ -427,9 +427,9 @@
   font-weight: 700;
 }
 
-.score-high { background: #dcfce7; color: #16a34a; }
+.score-high { background: #eef7d6; color: #5f8e04; }
 .score-mid  { background: #fef3c7; color: #d97706; }
-.score-low  { background: #fee2e2; color: #dc2626; }
+.score-low  { background: #fee8e0; color: #d04008; }
 
 /* ============================================================
    EMPTY STATE
@@ -477,13 +477,13 @@
   text-align: center;
 }
 
-.error-state i { font-size: 3rem; color: #ef4444; }
+.error-state i { font-size: 3rem; color: #f85310; }
 
 .spinner {
   width: 3rem;
   height: 3rem;
   border: 3px solid #e5e7eb;
-  border-top-color: #6366f1;
+  border-top-color: #0ea4f4;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -513,7 +513,7 @@
 .coming-soon-icon {
   width: 100px;
   height: 100px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0ea4f4, #0ea4f4);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -525,7 +525,7 @@
 .coming-soon-icon i { font-size: 2.5rem; color: white; }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(14,164,244,0.4); }
   50%       { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
 }
 
@@ -539,7 +539,7 @@
 .coming-soon-text {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #6366f1;
+  color: #0ea4f4;
   margin: 0 0 0.75rem;
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -581,3 +581,155 @@
    │              │ compact cards, 0.75rem pad               │
    └──────────────┴──────────────────────────────────────────┘
    ============================================================ */
+/* ─── Breakdown table — column widths & alignment ───────────────────────────── */
+.breakdown-table {
+  table-layout: fixed;
+  min-width: 600px;
+}
+
+.breakdown-table th:nth-child(1),
+.breakdown-table td:nth-child(1) { width: 10%; }  /* Class */
+
+.breakdown-table th:nth-child(2),
+.breakdown-table td:nth-child(2) { width: 9%; }   /* Section */
+
+.breakdown-table th:nth-child(3),
+.breakdown-table td:nth-child(3) { width: 18%; }  /* Subject */
+
+.breakdown-table th:nth-child(4),
+.breakdown-table td:nth-child(4) { width: 13%; }  /* Exam Type */
+
+.breakdown-table th:nth-child(5),
+.breakdown-table td:nth-child(5) { width: 35%; white-space: normal; word-break: break-word; } /* Question Paper */
+
+.breakdown-table th:nth-child(6),
+.breakdown-table td:nth-child(6) { width: 10%; text-align: center; } /* Total Marks */
+
+/* Row hover subtle */
+.breakdown-table tbody tr:hover td { filter: brightness(0.97); }
+
+/* Clean row backgrounds */
+.breakdown-table tr.row-complete td { background: #f0fdf4; }
+.breakdown-table tr.row-partial  td { background: #fffbeb; }
+.breakdown-table tr.row-low      td { background: #fff8f6; }
+
+/* ─── Dashboard table alignment fixes ───────────────────────────────────────── */
+
+/* Wider min-width for breakdown table with 6+ columns */
+.dashboard-container .breakdown-table {
+  min-width: 640px;
+}
+
+/* Vertical align all cells to middle */
+.dashboard-container .table td {
+  vertical-align: middle;
+}
+
+/* Subtle striped rows for readability */
+.dashboard-container .breakdown-table tbody tr:nth-child(even) td {
+  background: #f8fafc;
+}
+
+.dashboard-container .breakdown-table tbody tr:nth-child(even):hover td,
+.dashboard-container .breakdown-table tbody tr:hover td {
+  background: #f0f9ff;
+}
+
+/* Remove row-complete/partial/low bg on breakdown since columns are fewer now */
+.dashboard-container .breakdown-table tr.row-complete td,
+.dashboard-container .breakdown-table tr.row-partial td,
+.dashboard-container .breakdown-table tr.row-low td {
+  background: inherit;
+}
+
+/* Card h4 brand icon color */
+.dashboard-container .card h4 i { color: #0ea4f4; }
+
+/* Table header brand accent bottom border */
+.dashboard-container .table thead {
+  background: #f8fafc;
+  border-bottom: 2px solid #e0f4fe;
+}
+
+.dashboard-container .table th {
+  color: #64748b;
+  border-bottom: 2px solid #e0f4fe;
+  letter-spacing: 0.04em;
+}
+
+/* Quick action buttons — fix icon alignment */
+.dashboard-container .action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.dashboard-container .action-btn i {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+/* ─── Dashboard table fixes ──────────────────────────────────────────────────── */
+
+/* Compact row padding */
+.dashboard-container .table th,
+.dashboard-container .table td {
+  padding: 0.5rem 0.75rem !important;
+  vertical-align: middle;
+}
+
+/* Card h4 brand icon */
+.dashboard-container .card h4 i { color: #0ea4f4; }
+
+/* Table header brand style */
+.dashboard-container .table thead { background: #f8fafc; }
+.dashboard-container .table th {
+  color: #64748b;
+  border-bottom: 2px solid #e0f4fe !important;
+  letter-spacing: 0.04em;
+}
+
+/* Striped rows */
+.dashboard-container .breakdown-table tbody tr:nth-child(even) td { background: #f8fafc; }
+.dashboard-container .breakdown-table tbody tr:hover td { background: #f0f9ff; }
+
+/* Remove row-complete/partial/low color since count columns are hidden */
+.dashboard-container .breakdown-table tr.row-complete td,
+.dashboard-container .breakdown-table tr.row-partial td,
+.dashboard-container .breakdown-table tr.row-low td { background: inherit; }
+
+/* ─── Equal column distribution fix ─────────────────────────────────────────── */
+.dashboard-container .breakdown-table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 600px;
+}
+
+/* Tight columns — shrink to content */
+.dashboard-container .breakdown-table th:nth-child(1),
+.dashboard-container .breakdown-table td:nth-child(1) { width: 9%; }   /* Class */
+
+.dashboard-container .breakdown-table th:nth-child(2),
+.dashboard-container .breakdown-table td:nth-child(2) { width: 8%; }   /* Section */
+
+/* Subject and Question Paper — equal large columns */
+.dashboard-container .breakdown-table th:nth-child(3),
+.dashboard-container .breakdown-table td:nth-child(3) { width: 26%; }  /* Subject */
+
+.dashboard-container .breakdown-table th:nth-child(4),
+.dashboard-container .breakdown-table td:nth-child(4) { width: 14%; }  /* Exam Type */
+
+.dashboard-container .breakdown-table th:nth-child(5),
+.dashboard-container .breakdown-table td:nth-child(5) { width: 26%; }  /* Question Paper */
+
+.dashboard-container .breakdown-table th:nth-child(6),
+.dashboard-container .breakdown-table td:nth-child(6) {
+  width: 10%;
+  text-align: center;  /* Total Marks */
+}
+
+/* Prevent text overflow in fixed columns */
+.dashboard-container .breakdown-table td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

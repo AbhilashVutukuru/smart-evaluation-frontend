@@ -10,7 +10,7 @@
 
 /* ─── Container ─────────────────────────────────────────────────────────────── */
 .list-container {
-  padding: 1.25rem;
+  padding: 1.5rem;
   background: var(--gray-100);
   min-height: 100vh;
   max-width: 100%;
@@ -24,13 +24,7 @@
 
 /* ─── Page Header ───────────────────────────────────────────────────────────── */
 /* global.css provides .page-header base; only override what differs */
-.list-container .page-header {
-  margin-bottom: 1.25rem;
-}
 
-.list-container .page-header h2 {
-  font-size: 1.375rem;
-}
 
 @media (max-width: 767px) {
   .list-container .page-header { margin-bottom: 1rem; }
@@ -45,10 +39,10 @@
 
 /* ─── Card ──────────────────────────────────────────────────────────────────── */
 /* global.css provides .card; override padding/margin for this component */
-.list-container .card {
+/* .list-container .card {
   padding: 1.25rem;
   margin-bottom: 0;
-}
+} */
 
 @media (max-width: 767px) { .list-container .card { padding: 1rem; } }
 @media (max-width: 479px) { .list-container .card { padding: 0.875rem; } }

@@ -2,7 +2,7 @@
 <div class="list-container">
   <!-- Page Header -->
   <div class="page-header">
-    <h2><i class="fas fa-chalkboard-teacher"></i> Teachers List</h2>
+    <h2><i class="fas fa-chalkboard-teacher"></i> Teachers</h2>
     <button class="btn btn-primary" (click)="addTeacher()">
       <i class="fas fa-user-plus"></i> Add Teacher
     </button>
@@ -72,6 +72,7 @@
           <tr>
             <th>Employee Code</th>
             <th>Name</th>
+            <th>Gender</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Qualification</th>
@@ -89,10 +90,11 @@
                 <div class="avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div>
                 <div>
                   <div class="name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
-                  <small class="text-muted">{{ teacher.gender }}</small>
+                  <!-- <small class="text-muted">{{ teacher.gender }}</small> -->
                 </div>
               </div>
             </td>
+            <td>{{ teacher.gender }}</td>
             <td>{{ teacher.email }}</td>
             <td>{{ teacher.phoneNumber }}</td>
             <td>{{ teacher.qualification }}</td>

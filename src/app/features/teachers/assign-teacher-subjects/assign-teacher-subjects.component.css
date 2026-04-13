@@ -38,7 +38,7 @@
   gap: 0.75rem;
 }
 
-.page-header h2 {
+/* .page-header h2 {
   color: #1f2937;
   font-weight: 600;
   margin: 0;
@@ -46,7 +46,7 @@
   display: flex;
   align-items: center;
   gap: 0.625rem;
-}
+} */
 
 .assignment-container {
   margin-top: 1rem; /* move content down */
