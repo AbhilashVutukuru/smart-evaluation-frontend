@@ -35,21 +35,10 @@
     </ng-container>
   </div>
 
-  <!-- User Info -->
-  <div class="user-info-minimal" *ngIf="userName">
-    <i class="fas fa-user" [title]="isCollapsed ? (userName || '') : ''"></i>
-    <ng-container *ngIf="!isCollapsed">
-      <div class="user-info-text">
-        <span class="user-name-simple" [title]="userName || ''">{{ userName }}</span>
-      </div>
-    </ng-container>
-    <span class="user-role-badge" *ngIf="userRole && !isCollapsed">{{ userRole }}</span>
-  </div>
-
   <!-- Nav -->
   <nav class="sidebar-nav">
 
-    <!-- ── Common Items (skip Change Password — shown in footer) ── -->
+    <!-- Common Items -->
     <ng-container *ngFor="let item of commonMenuItems">
       <a
         *ngIf="item.route !== '/change-password'"
@@ -64,10 +53,8 @@
       </a>
     </ng-container>
 
-    <!-- ── Admin Submenu ── -->
+    <!-- Admin Submenu -->
     <ng-container *ngIf="isAdmin">
-
-      <!-- Admin section toggle -->
       <div
         class="nav-item nav-group-header"
         [class.open]="isAdminMenuOpen"
@@ -79,7 +66,6 @@
         <i *ngIf="!isCollapsed" class="fas fa-chevron-down submenu-arrow"></i>
       </div>
 
-      <!-- Admin sub-items -->
       <div class="submenu" [class.open]="isAdminMenuOpen && !isCollapsed">
         <a
           *ngFor="let item of adminMenuItems"
@@ -93,7 +79,6 @@
           <span *ngIf="!isCollapsed">{{ item.label }}</span>
         </a>
       </div>
-
     </ng-container>
 
     <!-- Empty state -->
@@ -103,24 +88,6 @@
     </div>
 
   </nav>
-
-  <!-- Footer — Change Password + Logout stacked -->
-  <div class="sidebar-footer-stack">
-    <a
-      routerLink="/change-password"
-      routerLinkActive="active"
-      class="change-pwd-btn"
-      [title]="isCollapsed ? 'Change Password' : ''"
-      (click)="closeMobileSidebar()"
-    >
-      <i class="fas fa-key"></i>
-      <span *ngIf="!isCollapsed">Change Password</span>
-    </a>
-    <button (click)="logout()" class="logout-btn" [title]="isCollapsed ? 'Logout' : ''">
-      <i class="fas fa-sign-out-alt"></i>
-      <span *ngIf="!isCollapsed">Logout</span>
-    </button>
-  </div>
 
 </div>
 

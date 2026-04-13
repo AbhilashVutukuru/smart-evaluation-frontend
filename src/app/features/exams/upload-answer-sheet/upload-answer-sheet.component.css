@@ -13,7 +13,7 @@
 /* ── Container ─────────────────────────────────────────────── */
 .upload-container {
   padding: 1.5rem;
-  background: var(--gray-100);
+  background: #f8f9fa;
   min-height: 100vh;
   max-width: 100%;
   margin: 0;

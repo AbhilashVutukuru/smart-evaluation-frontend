@@ -20,7 +20,7 @@
   max-width: 100%;
   padding: 1rem 1.25rem;          /* 30px */
   box-sizing: border-box;
-  background: var(--gray-100);
+  background: #f8f9fa;
   min-height: 100vh;
 }
 
@@ -47,10 +47,6 @@
   align-items: center;
   gap: 0.625rem;
 } */
-
-.assignment-container {
-  margin-top: 1rem; /* move content down */
-}
 
 .page-header h2 i { color: #0ea4f4; }
 

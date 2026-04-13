@@ -21,6 +21,7 @@
   padding: 28px;
   box-sizing: border-box;
   font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #f8f9fa; 
 }
 
 @media (max-width: 1023px) {
