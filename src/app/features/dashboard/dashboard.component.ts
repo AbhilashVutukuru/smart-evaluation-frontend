@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardSummary } from '../../core/models/dashboard-summary';
 
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -20,18 +21,10 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.dashboardService.getSummary().subscribe({
-      next: (data) => {
-        this.summary = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load dashboard data.';
-        this.isLoading = false;
-      },
+      next: (data) => { this.summary = data; this.isLoading = false; },
+      error: ()     => { this.error = 'Failed to load dashboard data.'; this.isLoading = false; },
     });
   }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   get isAdmin():   boolean { return this.summary?.role === 'Admin'; }
   get isTeacher(): boolean { return this.summary?.role === 'Teacher'; }
@@ -49,12 +42,9 @@ export class DashboardComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    });
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  // Returns CSS class based on how complete the evaluation is
   getBreakdownRowClass(evaluated: number, total: number): string {
     if (total === 0) return '';
     const pct = (evaluated / total) * 100;
