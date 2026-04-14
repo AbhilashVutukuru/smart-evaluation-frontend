@@ -10,20 +10,6 @@
    Breakpoints: Mobile <480 | Tablet 480-767 | Laptop 768-1023 | Desktop ≥1024
    ============================================================ */
 
-/* ── Container ─────────────────────────────────────────────── */
-.upload-container {
-  padding: 0.5rem 1.5rem 1.5rem;
-  background: var(--app-bg);
-  min-height: 100vh;
-  max-width: 100%;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1023px) { .upload-container { padding: 1.25rem; } }
-@media (max-width: 767px)  { .upload-container { padding: 1rem; } }
-@media (max-width: 479px)  { .upload-container { padding: 0.75rem; } }
-
 /* ── Table — component-specific sizing ─────────────────────── */
 .table              { min-width: 640px; }
 .table tbody tr     { height: 60px; }
@@ -561,8 +547,8 @@ label.btn-doc-img,
 
 /* ── Print ──────────────────────────────────────────────────── */
 @media print {
-  .upload-container     { padding: 0; background: var(--app-bg); }
-  .btn, .submit-section { display: none; }
+  /* .upload-container → .page-container (global.css) */
+.btn, .submit-section { display: none; }
   .card                 { box-shadow: none; page-break-inside: avoid; }
   .table                { min-width: auto; }
 }

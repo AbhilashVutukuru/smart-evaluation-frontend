@@ -1,0 +1,199 @@
+<div class="page-container">
+
+  <!-- Loading -->
+  <div *ngIf="isLoadingProfile" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading profile...</p>
+  </div>
+
+  <ng-container *ngIf="!isLoadingProfile">
+    <div class="profile-wrapper">
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- CARD 1 — User Info                                  -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="profile-card">
+
+        <!-- Avatar + Name -->
+        <div class="profile-header">
+          <div class="profile-avatar">{{ getInitials() }}</div>
+          <div class="profile-meta">
+            <h2 class="profile-name">{{ getFullName() }}</h2>
+            <span class="profile-role-badge">
+              <i class="fas fa-shield-alt"></i> {{ profile?.role }}
+            </span>
+          </div>
+        </div>
+
+        <div class="profile-divider"></div>
+
+        <!-- Info rows -->
+        <div class="info-section">
+          <div class="section-label">
+            <i class="fas fa-id-card"></i> Personal Details
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">First Name</span>
+              <span class="info-value">{{ profile?.firstName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Last Name</span>
+              <span class="info-value">{{ profile?.lastName }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value">
+                <i class="fas fa-envelope info-icon"></i> {{ profile?.email }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Phone</span>
+              <span class="info-value">
+                <i class="fas fa-phone info-icon"></i>
+                {{ profile?.phoneNumber || '—' }}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">School</span>
+              <span class="info-value">
+                <i class="fas fa-school info-icon"></i> {{ profile?.schoolName }}
+              </span>
+            </div>
+            </div>
+        </div>
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════ -->
+      <!-- CARD 2 — Change Password                            -->
+      <!-- ═══════════════════════════════════════════════════ -->
+      <div class="profile-card">
+
+        <div class="section-label" style="margin-bottom:1.25rem">
+          <i class="fas fa-lock"></i> Change Password
+        </div>
+
+        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" autocomplete="off">
+
+          <!-- Current Password -->
+          <div class="form-group">
+            <label class="form-label">Current Password <span class="required">*</span></label>
+            <div class="pwd-input-wrap" [class.invalid]="showError('oldPassword')">
+              <input
+                [type]="showCurrent ? 'text' : 'password'"
+                class="form-control"
+                formControlName="oldPassword"
+                (blur)="onBlur('oldPassword')"
+                placeholder="Enter current password"
+                autocomplete="current-password"
+              />
+              <button type="button" class="eye-btn" (click)="showCurrent = !showCurrent" tabindex="-1">
+                <i [class]="showCurrent ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+            <div class="error-msg" *ngIf="showError('oldPassword')">
+              <i class="fas fa-exclamation-circle"></i> {{ getError('oldPassword') }}
+            </div>
+          </div>
+
+          <!-- New Password -->
+          <div class="form-group">
+            <label class="form-label">New Password <span class="required">*</span></label>
+            <div class="pwd-input-wrap" [class.invalid]="showError('newPassword')">
+              <input
+                [type]="showNew ? 'text' : 'password'"
+                class="form-control"
+                formControlName="newPassword"
+                (blur)="onBlur('newPassword')"
+                placeholder="Min 8 chars, uppercase, number, symbol"
+                autocomplete="new-password"
+              />
+              <button type="button" class="eye-btn" (click)="showNew = !showNew" tabindex="-1">
+                <i [class]="showNew ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+
+            <!-- Strength Bar -->
+            <div class="strength-bar-wrap" *ngIf="strength !== 'none'">
+              <div class="strength-bar">
+                <div class="strength-fill" [class]="'fill-' + strength"></div>
+              </div>
+              <span class="strength-label" [class]="'label-' + strength">{{ strengthLabel }}</span>
+            </div>
+
+            <!-- Requirements checklist -->
+            <ul class="pwd-requirements">
+              <li [class.met]="requirements.length">
+                <i [class]="requirements.length ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
+                Minimum 8 characters
+              </li>
+              <li [class.met]="requirements.upper">
+                <i [class]="requirements.upper ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
+                Uppercase letter (A–Z)
+              </li>
+              <li [class.met]="requirements.lower">
+                <i [class]="requirements.lower ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
+                Lowercase letter (a–z)
+              </li>
+              <li [class.met]="requirements.number">
+                <i [class]="requirements.number ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
+                Number (0–9)
+              </li>
+              <li [class.met]="requirements.symbol">
+                <i [class]="requirements.symbol ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
+                Symbol (e.g. !&#64;#%^)
+              </li>
+            </ul>
+
+            <div class="error-msg" *ngIf="showError('newPassword')">
+              <i class="fas fa-exclamation-circle"></i> {{ getError('newPassword') }}
+            </div>
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="form-group">
+            <label class="form-label">Confirm New Password <span class="required">*</span></label>
+            <div class="pwd-input-wrap" [class.invalid]="showError('confirmPassword') || confirmMismatch">
+              <input
+                [type]="showConfirm ? 'text' : 'password'"
+                class="form-control"
+                formControlName="confirmPassword"
+                (blur)="onBlur('confirmPassword')"
+                placeholder="Re-enter new password"
+                autocomplete="new-password"
+              />
+              <button type="button" class="eye-btn" (click)="showConfirm = !showConfirm" tabindex="-1">
+                <i [class]="showConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+              </button>
+            </div>
+            <div class="error-msg" *ngIf="showError('confirmPassword')">
+              <i class="fas fa-exclamation-circle"></i> {{ getError('confirmPassword') }}
+            </div>
+            <div class="error-msg" *ngIf="confirmMismatch">
+              <i class="fas fa-exclamation-circle"></i> Passwords do not match
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" [disabled]="isChangingPassword">
+            <i [class]="isChangingPassword ? 'fas fa-spinner fa-spin' : 'fas fa-key'"></i>
+            {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
+          </button>
+
+        </form>
+
+        <div class="profile-divider"></div>
+
+        <div class="logout-wrap">
+          <button class="btn btn-logout" (click)="onLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>

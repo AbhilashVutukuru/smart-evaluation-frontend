@@ -1,72 +1,16 @@
-/* ============================================================
-   SMART EVALUATE SYSTEM — GLOBAL SHARED STYLES
-   global.css (or styles.css)
-
-   Add to angular.json styles array:
-   "styles": ["src/styles.css", "src/global.css"]
-
-   Then REMOVE these classes from individual component CSS files.
-   ============================================================ */
-
-/* ─── CSS Custom Properties ─────────────────────────────────────────────────── */
-:root {
-  /* ─── Brand Colors ──────────────────────────── */
-  --green:          #7fbb06;
-  --green-dark:     #5f8e04;
-  --green-light:    #eef7d6;
-  --blue:           #0ea4f4;
-  --blue-dark:      #0882c4;
-  --blue-light:     #e0f4fe;
-  --red:            #f85310;
-  --red-dark:       #d04008;
-  --red-light:      #fee8e0;
-  --yellow:         #ffbb0a;
-  --yellow-dark:    #d69900;
-  --yellow-light:   #fff8e0;
-
-  /* ─── Semantic Mappings ─────────────────────── */
-  --primary:        #0882c4;
-  --primary-dark:   #0ea4f4;
-  --primary-light:  #e0f4fe;
-  --success:        #7fbb06;
-  --success-light:  #eef7d6;
-  --danger:         #f85310;
-  --danger-light:   #fee8e0;
-  --warning:        #ffbb0a;
-  --warning-light:  #fff8e0;
-  --info:           #0ea4f4;
-  --info-light:     #e0f4fe;
-
-  /* ─── Neutrals ──────────────────────────────── */
-  --gray-50:        #f9fafb;
-  --gray-100:       #f3f4f6;
-  --gray-200:       #e5e7eb;
-  --gray-300:       #d1d5db;
-  --gray-400:       #9ca3af;
-  --gray-500:       #6b7280;
-  --gray-700:       #374151;
-  --gray-900:       #1f2937;
-
-  /* ─── Tokens ────────────────────────────────── */
-  --border-radius:    8px;
-  --border-radius-lg: 12px;
-  --shadow-sm:        0 1px 3px rgba(0,0,0,0.1);
-  --shadow-md:        0 4px 12px rgba(0,0,0,0.1);
-  --transition:       all 0.2s ease;
-  --font-size-sm:     0.875rem;
-  --font-size-xs:     0.75rem;
-
-  /* ─── Sidebar ───────────────────────────────── */
-  --sidebar-bg:           #f7f7f8;   /* grey sidebar background */
-  --sidebar-bg-from:      #0ea4f4;
-  --sidebar-bg-to:        #0882c4;
-  --sidebar-toggle:       #0ea4f4;
-  --sidebar-active:       #ffbb0a;
-  --sidebar-pill-bg:      rgba(255, 255, 255, 0.2);
-  --sidebar-pill-border:  rgba(255, 255, 255, 0.35);
-  --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
-  --sidebar-badge-border: rgba(255, 255, 255, 0.4);
+/* ─── Page Container ────────────────────────────────────────── */
+.page-container {
+  padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
+
+@media (max-width: 1023px) { .page-container { padding: 0.5rem 1.25rem 1.25rem; } }
+@media (max-width: 767px)  { .page-container { padding: 0.5rem 1rem 1rem; } }
+@media (max-width: 479px)  { .page-container { padding: 0.5rem 0.75rem 0.75rem; } }
 
 /* ─── Page Header ───────────────────────────────────────────────────────────── */
 .page-header {
@@ -99,6 +43,20 @@
   .page-header { flex-direction: column; align-items: stretch; }
   .page-header h2 { font-size: 1.2rem; }
 }
+
+/* ─── Page Container (shared by all pages) ─────────────────── */
+.page-container {
+  padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) { .page-container { padding: 0.5rem 1.25rem 1.25rem; } }
+@media (max-width: 767px)  { .page-container { padding: 0.5rem 1rem 1rem; } }
+@media (max-width: 479px)  { .page-container { padding: 0.5rem 0.75rem 0.75rem; } }
 
 /* ─── Card ──────────────────────────────────────────────────────────────────── */
 .card {

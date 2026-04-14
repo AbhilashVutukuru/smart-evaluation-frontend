@@ -11,7 +11,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Brand Colors ─── */
+/* ─── All CSS Variables — single :root ─── */
 :root {
   /* ─── 4 Core Brand Colors ────────────────────── */
   --green:          #7fbb06;
@@ -64,6 +64,7 @@ body {
   --font-size-xs:     0.75rem;
 
   /* ─── Sidebar ────────────────────────────────── */
+  --sidebar-bg:           #f0ede8;
   --sidebar-bg-from:      var(--blue);
   --sidebar-bg-to:        var(--blue-dark);
   --sidebar-toggle:       var(--blue);
@@ -73,6 +74,6 @@ body {
   --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
   --sidebar-badge-border: rgba(255, 255, 255, 0.4);
 
-  /* ─── background ────────────────────────────────── */
+  /* ─── App Background ─────────────────────────── */
   --app-bg: #ffffff;
 }

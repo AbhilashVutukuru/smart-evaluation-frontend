@@ -5,7 +5,6 @@ import { environment } from '../../../environments/environment';
 import {
   StudentRegisterRequest,
   TeacherRegisterRequest,
-  BulkUploadResponse,
   ApiResponse,
   NextRollNumber,
 } from '../models/registration.model';
@@ -18,7 +17,7 @@ export class RegistrationService {
 
   constructor(private http: HttpClient) {}
 
-  // ✅ Download template method
+  //  Download template method
   downloadTemplate(type: 'student' | 'teacher'): Observable<Blob> {
     const headers = new HttpHeaders({
       Authorization: `Bearer ${localStorage.getItem('token') || ''}`,

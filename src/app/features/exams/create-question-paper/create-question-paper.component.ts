@@ -1,9 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
+
 import {
   MasterDataService,
   ClassDto,
@@ -12,10 +13,9 @@ import {
 } from '../../../core/services/master-data.service';
 import {
   ExamFormData,
-  ExamFilters,
   QuestionSet,
-  Exam,
 } from '../../../core/models/exam';
+import { CreateQuestionPaperStateService } from '../../../core/services/create-question-paper.state.service';
 
 interface UploadProgress {
   visible: boolean;
@@ -30,18 +30,22 @@ interface UploadProgress {
   templateUrl: './create-question-paper.component.html',
   styleUrls: ['./create-question-paper.component.css'],
 })
-export class CreateExamComponent implements OnInit {
+export class CreateExamComponent implements OnInit, OnDestroy {
   private toastService = inject(ToastService);
   private errorHandler = inject(ErrorHandlerService);
   private createQuestionPaperService = inject(CreateQuestionPaperService);
   private masterDataService = inject(MasterDataService);
+  private stateService    = inject(CreateQuestionPaperStateService);
 
   // ─── Mode state ───────────────────────────────────────────────────────────────
-  examMode: 'upload' | 'update' = 'upload';
   questionsGenerated = false;
   currentQuestionIndex = 0;
-  examInfoCollapsed = false;   // collapses after Set Questions clicked
-  showExamInfoChevron = false;  // only show after Set Questions clicked
+  examInfoCollapsed = false;
+  showExamInfoChevron = false;
+
+  expandExamInfoIfCollapsed(): void {
+    if (this.examInfoCollapsed) this.examInfoCollapsed = false;
+  }
 
   // ─── Loading states ───────────────────────────────────────────────────────────
   isLoading = false;
@@ -56,10 +60,6 @@ export class CreateExamComponent implements OnInit {
   allClasses: ClassDto[] = [];
   allSubjects: SubjectDto[] = [];
   allExamTypes: ExamTypeDto[] = [];
-
-  // ─── Update mode data ─────────────────────────────────────────────────────────
-  existingExams: Exam[] = [];
-  selectedExamForUpdate: Exam | null = null;
 
   // ─── Question sets ────────────────────────────────────────────────────────────
   questionSets: QuestionSet[] = [];
@@ -96,17 +96,43 @@ export class CreateExamComponent implements OnInit {
     return selected < today;
   }
 
-  // ─── Filter data (update mode) ────────────────────────────────────────────────
-  examFilters: ExamFilters = {
-    filterExamClass: '',
-    filterExamSubject: '',
-    filterExamExamType: '',
-  };
-
   // ─────────────────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     this.loadClasses();
+    this.restoreState();
+  }
+
+  ngOnDestroy(): void {
+    this.saveState();
+  }
+
+  private saveState(): void {
+    this.stateService.save({
+      examFormData:        this.examFormData,
+      questionSets:        this.questionSets,
+      questionsGenerated:  this.questionsGenerated,
+      currentQuestionIndex:this.currentQuestionIndex,
+      examInfoCollapsed:   this.examInfoCollapsed,
+      showExamInfoChevron: this.showExamInfoChevron,
+      allSubjects:         this.allSubjects,
+      allExamTypes:        this.allExamTypes,
+    });
+  }
+
+  private restoreState(): void {
+    const saved = this.stateService.restore();
+    if (!saved) return;
+    this.examFormData         = saved.examFormData;
+    this.questionSets         = saved.questionSets;
+    this.questionsGenerated   = saved.questionsGenerated;
+    this.currentQuestionIndex = saved.currentQuestionIndex;
+    this.examInfoCollapsed    = saved.examInfoCollapsed;
+    this.showExamInfoChevron  = saved.showExamInfoChevron;
+    this.allSubjects          = saved.allSubjects;
+    this.allExamTypes         = saved.allExamTypes;
+    // Sync questionSets back into formData
+    this.examFormData.questionSets = this.questionSets;
   }
 
   // ─── Load Initial Data ────────────────────────────────────────────────────────
@@ -180,34 +206,6 @@ export class CreateExamComponent implements OnInit {
 
   onQuestionPaperNameChange(): void {
     this.resetQuestions();
-  }
-
-  // ─── Filter Handlers (Update Mode) ───────────────────────────────────────────
-
-  onFilterClassSelected(classId: string): void {
-    this.resetFilterDependents();
-    if (!classId) return;
-    this.loadFilterSubjectsAndExamTypes(classId);
-  }
-
-  private resetFilterDependents(): void {
-    this.examFilters.filterExamSubject = '';
-    this.examFilters.filterExamExamType = '';
-    this.existingExams = [];
-    this.allSubjects = [];
-    this.allExamTypes = [];
-  }
-
-  private loadFilterSubjectsAndExamTypes(classId: string): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => (this.allSubjects = subjects),
-      error: (error) => this.errorHandler.handle('Failed to load subjects', error),
-    });
-
-    this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => (this.allExamTypes = examTypes),
-      error: (error) => this.errorHandler.handle('Failed to load exam types', error),
-    });
   }
 
   // ─── Generate Questions ───────────────────────────────────────────────────────
@@ -426,49 +424,6 @@ export class CreateExamComponent implements OnInit {
     });
   }
 
-  // // ─── Load Existing Exams (Update Mode) ───────────────────────────────────────
-
-  // loadExistingExams(): void {
-  //   if (!this.validateFilters()) return;
-
-  //   this.isLoading = true;
-
-  //   this.createQuestionPaperService.getMockExams(this.examFilters).subscribe({
-  //     next: (exams) => {
-  //       this.existingExams = exams;
-  //       this.isLoading = false;
-  //       if (exams.length === 0) {
-  //         this.toastService.showInfo('Info', 'No exams found with selected filters');
-  //       } else {
-  //         this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.isLoading = false;
-  //       this.errorHandler.handle('Failed to load exams', error);
-  //     },
-  //   });
-  // }
-
-  private validateFilters(): boolean {
-    if (!this.examFilters.filterExamClass) {
-      this.toastService.showWarning('Warning', 'Please select a class');
-      return false;
-    }
-    if (!this.examFilters.filterExamSubject) {
-      this.toastService.showWarning('Warning', 'Please select a subject');
-      return false;
-    }
-    if (!this.examFilters.filterExamExamType) {
-      this.toastService.showWarning('Warning', 'Please select an exam type');
-      return false;
-    }
-    return true;
-  }
-
-  selectExamForUpdate(exam: Exam): void {
-    this.selectedExamForUpdate = exam;
-  }
 
   // ─── Validation Rules ─────────────────────────────────────────────────────────
 
@@ -523,19 +478,6 @@ export class CreateExamComponent implements OnInit {
     return this.createQuestionPaperService.validateQuestionSet(this.currentQuestionSet).errors;
   }
 
-  // ─── Mode Management ──────────────────────────────────────────────────────────
-
-  setExamMode(mode: 'upload' | 'update'): void {
-    this.examMode = mode;
-    this.resetForm();
-  }
-
-  clearFilters(): void {
-    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
-    this.existingExams = [];
-    this.selectedExamForUpdate = null;
-  }
-
   // ─── Helpers ──────────────────────────────────────────────────────────────────
 
   // ─── Name getters for collapsed exam info chips ──────────────────────────────
@@ -574,6 +516,7 @@ export class CreateExamComponent implements OnInit {
   }
 
   private resetForm(): void {
+    this.stateService.clear();
     this.examFormData = {
       academicYear: this.createQuestionPaperService.getCurrentAcademicYear(),
       classId: '',
@@ -591,9 +534,6 @@ export class CreateExamComponent implements OnInit {
     this.examInfoCollapsed = false;
     this.showExamInfoChevron = false;
     this.rulesGenerated = false;
-    this.existingExams = [];
-    this.selectedExamForUpdate = null;
-    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
     this.allSubjects = [];
     this.allExamTypes = [];
   }

@@ -15,13 +15,9 @@
   <!-- Dropdown -->
   <div class="user-dropdown" [class.open]="isOpen">
     <div class="dropdown-divider"></div>
-    <!-- <a routerLink="/profile" class="dropdown-item" (click)="close()">
+    <a routerLink="/profile" class="dropdown-item" (click)="close()">
       <i class="fas fa-user-circle"></i>
       <span>View Profile</span>
-    </a> -->
-    <a routerLink="/change-password" class="dropdown-item" (click)="close()">
-      <i class="fas fa-key"></i>
-      <span>Change Password</span>
     </a>
     <div class="dropdown-divider"></div>
     <button class="dropdown-item dropdown-logout" (click)="logout()">

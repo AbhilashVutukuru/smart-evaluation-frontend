@@ -1,218 +1,46 @@
 <!-- Create Exam Component - Complete HTML with Fixed Alignment -->
-<div class="exam-container">  
-
-  <!-- UPDATE MODE: Select Exam -->
-  <div *ngIf="examMode === 'update'" class="card">
-    <h4><i class="fas fa-clipboard-list"></i> Step 2: Select Exam to Update</h4>
-
-    <div class="info-box">
-      <i class="fas fa-info-circle"></i>
-      <span
-        ><strong>Sequential Selection Required:</strong> Select Class first,
-        then Subject, then Exam Type.</span
-      >
-    </div>
-
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        <label class="form-label"
-          >Filter by Class <span class="required">*</span></label
-        >
-        <div class="select-wrapper">
-          <select
-            [(ngModel)]="examFilters.filterExamClass"
-            (change)="onFilterClassSelected(examFilters.filterExamClass)"
-            class="form-control"
-          >
-            <option value="">Select Class</option>
-            <option *ngFor="let cls of allClasses" [value]="cls.id">
-              {{ cls.className }}
-            </option>
-          </select>
-          <i class="fas fa-chevron-down select-icon"></i>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <label class="form-label"
-          >Filter by Subject <span class="required">*</span></label
-        >
-        <div class="select-wrapper">
-          <select
-            [(ngModel)]="examFilters.filterExamSubject"
-            [disabled]="!examFilters.filterExamClass"
-            (change)="examFilters.filterExamExamType = ''; existingExams = []"
-            class="form-control"
-          >
-            <option value="">
-              {{
-                examFilters.filterExamClass
-                  ? "Select Subject"
-                  : "Select Class First"
-              }}
-            </option>
-            <option *ngFor="let subject of allSubjects" [value]="subject.id">
-              {{ subject.subjectName }}
-            </option>
-          </select>
-          <i class="fas fa-chevron-down select-icon"></i>
-        </div>
-      </div>
-
-      <div class="col-md-4 mb-3">
-        <label class="form-label"
-          >Filter by Exam Type <span class="required">*</span></label
-        >
-        <div class="select-wrapper">
-          <select
-            [(ngModel)]="examFilters.filterExamExamType"
-            [disabled]="!examFilters.filterExamSubject"
-            (change)="existingExams = []"
-            class="form-control"
-          >
-            <option value="">
-              {{
-                examFilters.filterExamSubject
-                  ? "Select Exam Type"
-                  : "Select Subject First"
-              }}
-            </option>
-            <option *ngFor="let examType of allExamTypes" [value]="examType.id">
-              {{ examType.examTypeName }}
-            </option>
-          </select>
-          <i class="fas fa-chevron-down select-icon"></i>
-        </div>
-      </div>
-    </div>
-
-    <!-- <div class="d-flex gap-2">
-      <button
-        class="btn btn-primary"
-        (click)="loadExistingExams()"
-        [disabled]="
-          !examFilters.filterExamClass ||
-          !examFilters.filterExamSubject ||
-          !examFilters.filterExamExamType ||
-          isLoading
-        "
-      >
-        <i
-          class="fas"
-          [ngClass]="isLoading ? 'fa-spinner fa-spin' : 'fa-search'"
-        ></i>
-        <span *ngIf="!isLoading">Load Exams</span>
-        <span *ngIf="isLoading">Loading...</span>
-      </button>
-      <button class="btn btn-secondary" (click)="clearFilters()">
-        <i class="fas fa-redo"></i> Clear Filters
-      </button>
-    </div> -->
-
-    <!-- Exams List -->
-    <div *ngIf="existingExams.length > 0" class="mt-4">
-      <h5 class="mb-3">Select Exam to Update:</h5>
-      <div class="exams-grid">
-        <div
-          *ngFor="let exam of existingExams"
-          class="exam-card"
-          [class.selected]="
-            selectedExamForUpdate?.questionPaperId === exam.questionPaperId
-          "
-          (click)="selectExamForUpdate(exam)"
-        >
-          <h5>{{ exam.examTitle }}</h5>
-          <p class="exam-meta">
-            <span><i class="fas fa-tag"></i> {{ exam.examTypeName }}</span>
-            <span
-              ><i class="fas fa-calendar"></i>
-              {{ formatDate(exam.examDate) }}</span
-            >
-          </p>
-          <p class="exam-meta" *ngIf="exam.sectionName || exam.academicYear">
-            <span *ngIf="exam.sectionName"
-              ><i class="fas fa-users"></i> {{ exam.sectionName }}</span
-            >
-            <span
-              ><i class="fas fa-graduation-cap"></i>
-              {{ exam.academicYear }}</span
-            >
-          </p>
-          <i
-            class="fas fa-check-circle check-icon"
-            *ngIf="
-              selectedExamForUpdate?.questionPaperId === exam.questionPaperId
-            "
-          ></i>
-        </div>
-      </div>
-    </div>
-  </div>
+<div class="page-container">
 
   <!-- EXAM FORM -->
   <div class="card">
-    <div class="exam-info-header"
-         [class.is-collapsible]="showExamInfoChevron"
-         (click)="showExamInfoChevron && (examInfoCollapsed = !examInfoCollapsed)">
-      <h4 style="margin-bottom:0; display:flex; align-items:center; gap:0.5rem; user-select:none">
+    <div class="filter-card-header"
+         [class.is-collapsed]="examInfoCollapsed"
+         (click)="expandExamInfoIfCollapsed()">
+      <h4>
         <i class="fas fa-clipboard-list"></i>
-        {{ examMode === "upload" ? "Exam Information" : "Step 3: Update Exam Information" }}
-        <i *ngIf="showExamInfoChevron"
-           class="fas exam-chevron"
-           [class.fa-chevron-down]="examInfoCollapsed"
-           [class.fa-chevron-up]="!examInfoCollapsed">
-        </i>
+        Exam Information
+        <i *ngIf="examInfoCollapsed"
+           class="fas fa-chevron-down collapse-indicator"
+           title="Click to expand"></i>
       </h4>
     </div>
 
     <!-- Collapsed summary chips — show selected exam info when collapsed -->
-    <div class="exam-info-summary" *ngIf="examInfoCollapsed && examFormData.classId">
-      <span class="exam-info-chip" *ngIf="getClassName()">
+    <div class="filter-summary" *ngIf="examInfoCollapsed && examFormData.classId">
+      <span class="filter-chip" *ngIf="getClassName()">
         <i class="fas fa-layer-group"></i> {{ getClassName() }}
       </span>
-      <span class="exam-info-chip" *ngIf="getSubjectName()">
+      <span class="filter-chip" *ngIf="getSubjectName()">
         <i class="fas fa-book"></i> {{ getSubjectName() }}
       </span>
-      <span class="exam-info-chip" *ngIf="getExamTypeName()">
+      <span class="filter-chip" *ngIf="getExamTypeName()">
         <i class="fas fa-file-alt"></i> {{ getExamTypeName() }}
       </span>
-      <span class="exam-info-chip" *ngIf="examFormData.totalMarks">
+      <span class="filter-chip" *ngIf="examFormData.totalMarks">
         <i class="fas fa-star"></i> {{ examFormData.totalMarks }} Marks
       </span>
-      <span class="exam-info-chip" *ngIf="examFormData.numberOfQuestions">
+      <span class="filter-chip" *ngIf="examFormData.numberOfQuestions">
         <i class="fas fa-list-ol"></i> {{ examFormData.numberOfQuestions }} Questions
       </span>
-      <span class="exam-info-chip" *ngIf="examFormData.questionPaperName">
+      <span class="filter-chip" *ngIf="examFormData.questionPaperName">
         <i class="fas fa-file-signature"></i> {{ examFormData.questionPaperName }}
       </span>
-      <span class="exam-info-chip" *ngIf="examFormData.examDate">
+      <span class="filter-chip" *ngIf="examFormData.examDate">
         <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate }}
       </span>
     </div>
 
-    <div [class.collapsed-section]="examInfoCollapsed" [class.expanded-section]="!examInfoCollapsed">
-    <div
-      *ngIf="examMode === 'update' && selectedExamForUpdate"
-      class="info-box"
-    >
-      <i class="fas fa-info-circle"></i>
-      <div>
-        <strong>Updating:</strong> {{ selectedExamForUpdate.examTitle }}
-        <p class="mb-0">
-          You can update question paper, answer scheme, or exam date. Leave
-          fields empty to keep existing content.
-        </p>
-      </div>
-    </div>
-
-    <!-- <div *ngIf="examMode === 'upload'" class="info-box">
-      <i class="fas fa-info-circle"></i>
-      <span
-        ><strong>Note:</strong> All questions, answers, and validation rules are
-        required.</span
-      >
-    </div> -->
-
+    <div class="filter-card-body" [class.collapsed]="examInfoCollapsed">
     <!-- Form Fields -->
     <div class="row">
       <div class="col-md-3 mb-3">
@@ -221,7 +49,7 @@
           <select
             [(ngModel)]="examFormData.classId"
             (change)="onClassSelected(examFormData.classId)"
-            [disabled]="examMode === 'update'"
+            [disabled]="false"
             required
             class="form-control"
           >
@@ -242,7 +70,7 @@
           <select
             [(ngModel)]="examFormData.subjectId"
             (change)="onSubjectChange()"
-            [disabled]="examMode === 'update' || !examFormData.classId"
+            [disabled]="!examFormData.classId"
             required
             class="form-control"
           >
@@ -265,7 +93,7 @@
           <select
             [(ngModel)]="examFormData.examTypeId"
             (change)="onExamTypeChange()"
-            [disabled]="examMode === 'update' || !examFormData.classId"
+            [disabled]="!examFormData.classId"
             required
             class="form-control"
           >
@@ -388,7 +216,7 @@
 
     <!-- Generate Questions Prompt -->
     <!-- <div
-      *ngIf="examMode === 'upload' && !questionsGenerated"
+      *ngIf="!questionsGenerated"
       class="warning-box"
     >
       <i class="fas fa-exclamation-triangle"></i>
@@ -399,7 +227,8 @@
         ></span
       >
     </div> -->
-  </div>
+    </div><!-- /filter-card-body -->
+  </div><!-- /EXAM FORM card -->
 
   <!-- QUESTIONS SECTION -->
   <div *ngIf="questionsGenerated" class="card" style="margin-top:0.5rem">
@@ -595,7 +424,7 @@
       </button>
       <span *ngIf="currentQuestionIndex === 0"></span>
 
-      <div class="d-flex gap-2" style="margin-left:auto">
+      <div class="d-flex gap-2 ms-auto">
         <button
           class="btn btn-primary"
           *ngIf="!isLastQuestion"

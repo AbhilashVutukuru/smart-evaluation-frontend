@@ -1,12 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
   Exam,
   ExamFormData,
-  ExamFilters,
   ExamApiRequest,
   ExamQuestion,
   ExamRubric,
@@ -15,18 +14,6 @@ import {
   QuestionPaperDto,
 } from '../models/exam';
 import { ApiResponse } from './master-data.service';
-
-/** Shape of a single exam returned by the question-papers API */
-interface ExamApiItem {
-  id: number;
-  title?: string;
-  examTitle?: string;
-  examTypeName?: string;
-  examDate?: string;
-  sectionName?: string;
-  academicYear?: string;
-  classId?: number;
-}
 
 /** Validation result used throughout the service */
 export interface ValidationResult {
@@ -68,13 +55,6 @@ export class CreateQuestionPaperService {
     }
 
   // ─── Fetch Exams ──────────────────────────────────────────────────────────────
-
-  // getMockExams(filters: ExamFilters): Observable<Exam[]> {
-  //   const { filterExamClass, filterExamSubject, filterExamExamType } = filters;
-
-  //   if (!filterExamClass || !filterExamSubject || !filterExamExamType) {
-  //     return of([]);
-  //   }
 
   //   return this.http
   //     .get<{ data?: ExamApiItem[] }>(
@@ -241,12 +221,6 @@ export class CreateQuestionPaperService {
   createExam(apiRequest: ExamApiRequest): Observable<unknown> {
     return this.http.post(`${this.apiUrl}/question-paper/create`, apiRequest).pipe(
       catchError((error) => { console.error('Upload error:', error); throw error; }),
-    );
-  }
-
-  updateExam(examId: number, apiRequest: ExamApiRequest): Observable<unknown> {
-    return this.http.put(`${this.apiUrl}/exams/${examId}`, apiRequest).pipe(
-      catchError((error) => { console.error('Update error:', error); throw error; }),
     );
   }
 
