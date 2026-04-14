@@ -72,4 +72,7 @@ body {
   --sidebar-pill-border:  rgba(255, 255, 255, 0.35);
   --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
   --sidebar-badge-border: rgba(255, 255, 255, 0.4);
+
+  /* ─── background ────────────────────────────────── */
+  --app-bg: #ffffff;
 }

@@ -57,8 +57,9 @@
   --font-size-xs:     0.75rem;
 
   /* ─── Sidebar ───────────────────────────────── */
-  --sidebar-bg-from:      #0ea4f4;   /* brand blue */
-  --sidebar-bg-to:        #0882c4;   /* deeper blue at bottom */
+  --sidebar-bg:           #f7f7f8;   /* grey sidebar background */
+  --sidebar-bg-from:      #0ea4f4;
+  --sidebar-bg-to:        #0882c4;
   --sidebar-toggle:       #0ea4f4;
   --sidebar-active:       #ffbb0a;
   --sidebar-pill-bg:      rgba(255, 255, 255, 0.2);
