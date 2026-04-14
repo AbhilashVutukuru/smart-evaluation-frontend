@@ -5,8 +5,8 @@
 
 /* ─── Container ─────────────────────────────────────────────────────────────── */
 .registration-container {
-  padding: 1.5rem;
-  background:#f8f9fa;
+padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
   min-height: 100vh;
   max-width: 100%;
   margin: 0;
@@ -40,7 +40,7 @@
    margin-left: 1rem;
 } */
 
-.registration-container .page-header h2 i { color: #0ea4f4; flex-shrink: 0; }
+.registration-container .page-header h2 i { color: var(--blue); flex-shrink: 0; }
 
 @media (max-width: 479px) {
   .registration-container .page-header { flex-direction: column; align-items: stretch; }
@@ -74,16 +74,16 @@
   gap: 0.625rem;
   padding: 0.625rem 1.125rem !important;
   background: white !important;
-  border-bottom: 1px solid #f1f5f9 !important;
-  border-top: 3px solid #0ea4f4 !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  border-top: 3px solid var(--blue) !important;
   font-weight: 600 !important;
-  color: #1e293b !important;
+  color: var(--gray-900) !important;
   font-size: 1.15rem !important;
   margin-bottom: 0 !important;
   letter-spacing: 0.01em;
 }
 
-.registration-container .card h4 i { color: #0ea4f4 !important; font-size: 1rem !important; }
+.registration-container .card h4 i { color: var(--blue) !important; font-size: 1rem !important; }
 
 /* ─── Card Body (wraps the form content) ────────────────────────────────────── */
 .registration-container form {
@@ -97,7 +97,7 @@
   gap: 0.5rem;
   padding: 0.45rem 0.875rem;
   background: var(--gray-50);
-  border-left: 3px solid #0ea4f4;
+  border-left: 3px solid var(--blue);
   border-radius: var(--border-radius);
   margin: 0.875rem 0 0.625rem 0;
   font-weight: 500;
@@ -107,7 +107,7 @@
   letter-spacing: 0.04em;
 }
 
-.registration-container .section-header i { color: #0ea4f4; font-size: 0.875rem; }
+.registration-container .section-header i { color: var(--blue); font-size: 0.875rem; }
 
 /* ─── Form Labels ───────────────────────────────────────────────────────────── */
 .registration-container .form-label {
@@ -118,29 +118,29 @@
   font-size: 0.875rem;
 }
 
-.registration-container .required { color: #f85310; font-weight: 700; }
+.registration-container .required { color: var(--red); font-weight: 700; }
 
 /* ─── Form Controls ─────────────────────────────────────────────────────────── */
 .registration-container .form-control {
   width: 100%;
   padding: 0.45rem 0.75rem !important;
-  border: 1.5px solid #e2e8f0 !important;
+  border: 1.5px solid var(--gray-200) !important;
   border-radius: 8px;
   font-size: 0.875rem;
   transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-  background: #f8fafc !important;
+  background: var(--gray-50) !important;
   outline: none;
   box-sizing: border-box;
   font-family: inherit;
   background-image: none !important;
-  color: #1e293b;
+  color: var(--gray-900);
   font-weight: 400;
 }
 
-.registration-container .form-control::placeholder { color: #94a3b8; font-weight: 400; }
+.registration-container .form-control::placeholder { color: var(--gray-400); font-weight: 400; }
 
 .registration-container .form-control:focus {
-  border-color: #0ea4f4 !important;
+  border-color: var(--blue) !important;
   box-shadow: 0 0 0 3px rgba(14,164,244,0.12) !important;
   background: white !important;
 }
@@ -148,16 +148,16 @@
 .registration-container .form-control:focus-visible { outline: none; }
 
 .registration-container .form-control:disabled {
-  background: #f1f5f9 !important;
-  color: #64748b !important;
+  background: var(--gray-100) !important;
+  color: var(--gray-500) !important;
   cursor: not-allowed;
-  border-color: #e2e8f0 !important;
+  border-color: var(--gray-200) !important;
 }
 
 .registration-container .form-control.is-invalid {
-  border-color: #f85310 !important;
+  border-color: var(--red) !important;
   box-shadow: 0 0 0 3px rgba(248,83,16,0.1) !important;
-  background: #fff8f6 !important;
+  background: var(--red-light) !important;
 }
 
 .registration-container textarea.form-control { resize: vertical; font-family: inherit; min-height: 3.5rem; line-height: 1.5; }
@@ -176,7 +176,7 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
-  color: #0ea4f4;
+  color: var(--blue);
   font-size: 0.7rem;
   z-index: 1;
 }
@@ -188,15 +188,15 @@
   cursor: pointer;
 }
 
-.registration-container .select-wrapper select.form-control:focus { border-color: #0ea4f4 !important; box-shadow: 0 0 0 3px rgba(14,164,244,0.12) !important; background: white !important; }
-.registration-container .select-wrapper select.form-control:disabled { background: #f1f5f9 !important; color: #94a3b8; cursor: not-allowed; }
-.registration-container .select-wrapper select.form-control:disabled + .select-icon { color: #94a3b8; }
-.registration-container .select-wrapper select.form-control.is-invalid + .select-icon { color: #f85310; }
+.registration-container .select-wrapper select.form-control:focus { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(14,164,244,0.12) !important; background: white !important; }
+.registration-container .select-wrapper select.form-control:disabled { background: var(--gray-100) !important; color: var(--gray-400); cursor: not-allowed; }
+.registration-container .select-wrapper select.form-control:disabled + .select-icon { color: var(--gray-400); }
+.registration-container .select-wrapper select.form-control.is-invalid + .select-icon { color: var(--red); }
 
 /* ─── Error Message ─────────────────────────────────────────────────────────── */
 .registration-container .error-message,
 .registration-container .error-message * {
-  color: #f85310 !important;
+  color: var(--red) !important;
   font-size: 0.8rem !important;
   font-weight: 500 !important;
 }
@@ -263,24 +263,24 @@
 .registration-container .btn-primary:hover:not(:disabled) { background: #0882c4 !important; box-shadow: 0 4px 14px rgba(14,164,244,0.45) !important; transform: translateY(-1px); }
 
 /* Outline primary (Bulk Upload toggle) */
-.registration-container .btn-outline-primary { background: transparent !important; color: #0ea4f4 !important; border: 1.5px solid #0ea4f4 !important; box-shadow: none !important; }
+.registration-container .btn-outline-primary { background: transparent !important; color: var(--blue) !important; border: 1.5px solid #0ea4f4 !important; box-shadow: none !important; }
 .registration-container .btn-outline-primary:hover:not(:disabled) { background: #0ea4f4 !important; color: white !important; }
 
 /* Reset — brand red-orange */
 .registration-container .btn-reset,
 .registration-container .btn-secondary {
   background: #fee8e0 !important;
-  color: #f85310 !important;
+  color: var(--red) !important;
   border: 1.5px solid #f85310 !important;
   box-shadow: none !important;
 }
 .registration-container .btn-reset i,
-.registration-container .btn-secondary i { color: #f85310 !important; }
+.registration-container .btn-secondary i { color: var(--red) !important; }
 .registration-container .btn-reset:hover:not(:disabled),
 .registration-container .btn-secondary:hover:not(:disabled) {
   background: #f85310 !important;
   color: white !important;
-  border-color: #f85310 !important;
+  border-color: var(--red) !important;
   box-shadow: 0 4px 14px rgba(248,83,16,0.4) !important;
   transform: translateY(-1px);
 }
@@ -358,11 +358,11 @@
   transition: var(--transition);
 }
 
-.registration-container .upload-section:hover { border-color: #0ea4f4; background: #f0f9ff; }
+.registration-container .upload-section:hover { border-color: var(--blue); background: #f0f9ff; }
 .registration-container .upload-placeholder i { font-size: 3rem; color: var(--gray-300); margin-bottom: 0.75rem; display: block; }
 .registration-container .upload-placeholder p { color: var(--gray-500); font-size: 0.875rem; margin: 0.25rem 0; }
 .registration-container .file-icon { font-size: 2.5rem; color: #7fbb06; flex-shrink: 0; }
-.registration-container .file-details strong { color: #1e293b; font-size: 0.875rem; word-break: break-all; }
+.registration-container .file-details strong { color: var(--gray-900); font-size: 0.875rem; word-break: break-all; }
 .registration-container .file-details span { color: var(--gray-500); font-size: 0.8125rem; }
 
 .btn-sm {
@@ -403,14 +403,14 @@
 .registration-container .upload-results h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--gray-900);
   margin-bottom: 1rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.registration-container .upload-results h5 i { color: #0ea4f4; }
+.registration-container .upload-results h5 i { color: var(--blue); }
 
 .registration-container .results-grid {
   display: grid;
@@ -422,7 +422,7 @@
 @media (max-width: 479px) { .registration-container .results-grid { grid-template-columns: repeat(3,1fr); gap: 0.5rem; } }
 
 .registration-container .result-card {
-  background: white;
+  background: var(--app-bg);
   border-radius: 8px;
   padding: 1rem;
   display: flex;
@@ -435,21 +435,21 @@
 .registration-container .result-card strong { font-size: 1.375rem; font-weight: 700; line-height: 1; }
 .registration-container .result-card span   { font-size: 0.8rem; color: var(--gray-500); font-weight: 500; }
 
-.registration-container .result-card.total   { border-color: #0ea4f4; }
-.registration-container .result-card.total i { color: #0ea4f4; }
-.registration-container .result-card.total strong { color: #0882c4; }
+.registration-container .result-card.total   { border-color: var(--blue); }
+.registration-container .result-card.total i { color: var(--blue); }
+.registration-container .result-card.total strong { color: var(--blue-dark); }
 
 .registration-container .result-card.success   { border-color: #7fbb06; }
 .registration-container .result-card.success i { color: #7fbb06; }
 .registration-container .result-card.success strong { color: #5f8e04; }
 
-.registration-container .result-card.failed   { border-color: #f85310; }
-.registration-container .result-card.failed i { color: #f85310; }
+.registration-container .result-card.failed   { border-color: var(--red); }
+.registration-container .result-card.failed i { color: var(--red); }
 .registration-container .result-card.failed strong { color: #d04008; }
 
 /* ─── Error table ────────────────────────────────────────────────────────────── */
 .registration-container .error-details {
-  background: white;
+  background: var(--app-bg);
   border-radius: 8px;
   padding: 0.875rem;
   border: 1px solid #fee8e0;
@@ -466,7 +466,7 @@
   gap: 0.5rem;
 }
 
-.registration-container .error-details h6 i { color: #f85310; }
+.registration-container .error-details h6 i { color: var(--red); }
 .registration-container .error-table-wrap { max-height: 360px; overflow-y: auto; overflow-x: auto; border-radius: 8px; border: 1px solid #fee8e0; }
 .registration-container .error-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; min-width: 400px; }
 .registration-container .error-table thead { background: #fff8f6; position: sticky; top: 0; z-index: 1; }
@@ -477,7 +477,7 @@
 .registration-container .row-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; background: #fee8e0; color: #d04008; border-radius: 6px; font-size: 0.8rem; font-weight: 700; padding: 0 4px; }
 .registration-container .row-badge.unknown { background: var(--gray-100); color: var(--gray-400); }
 .registration-container .col-error-item { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.8rem; color: #7a2400; line-height: 1.4; }
-.registration-container .col-error-item i { color: #f85310; font-size: 0.75rem; margin-top: 0.15rem; flex-shrink: 0; }
+.registration-container .col-error-item i { color: var(--red); font-size: 0.75rem; margin-top: 0.15rem; flex-shrink: 0; }
 
 /* ─── Success msg ────────────────────────────────────────────────────────────── */
 .registration-container .all-success-msg {
@@ -496,12 +496,12 @@
 .registration-container .d-flex { display: flex; }
 .registration-container .gap-2  { gap: 0.5rem; }
 .registration-container .mt-3   { margin-top: 0.875rem; }
-.registration-container .text-danger { color: #f85310 !important; }
+.registration-container .text-danger { color: var(--red) !important; }
 .registration-container .text-muted  { color: var(--gray-400) !important; }
 
 /* ─── Print ──────────────────────────────────────────────────────────────────── */
 @media print {
-  .registration-container { padding: 0; background: white; }
+  .registration-container { padding: 0; background: var(--app-bg); }
   .registration-container .btn, .registration-container .button-group { display: none; }
   .registration-container .card { box-shadow: none !important; }
 }
@@ -512,20 +512,20 @@
 .registration-container .info-card {
   background: #f0f9ff !important;
   border: 1px solid #bae6fd !important;
-  border-top: 3px solid #0ea4f4 !important;
+  border-top: 3px solid var(--blue) !important;
   border-radius: 12px !important;
   padding: 0 !important;
 }
 
 .registration-container .info-card h4 {
   background: white !important;
-  border-top: 3px solid #0ea4f4 !important;
+  border-top: 3px solid var(--blue) !important;
   border-bottom: 1px solid #e0f2fe !important;
   color: #0369a1 !important;
   font-size: 1rem !important;
 }
 
-.registration-container .info-card h4 i { color: #0ea4f4 !important; }
+.registration-container .info-card h4 i { color: var(--blue) !important; }
 
 /* Instructions list inside card body */
 .registration-container .instructions-list {
@@ -543,7 +543,7 @@
 /* Download template button — outline style, not full width */
 .registration-container .info-card .btn-outline-primary {
   background: white !important;
-  color: #f85310 !important;
+  color: var(--red) !important;
   border: 1.5px solid #f85310 !important;
   box-shadow: none !important;
   margin: 0 1.125rem 0.875rem !important;
@@ -568,13 +568,13 @@
 }
 
 .registration-container .upload-section:hover {
-  border-color: #0ea4f4;
+  border-color: var(--blue);
 }
 
 /* Upload placeholder icon */
 .registration-container .upload-placeholder i {
   font-size: 2.5rem;
-  color: #94a3b8;
+  color: var(--gray-400);
   margin-bottom: 0.75rem;
   display: block;
 }
@@ -633,7 +633,7 @@
 
 /* ─── Download Template button icon — brand red-orange ───────────────────────── */
 .registration-container .info-card .btn-outline-primary i {
-  color: #f85310 !important;
+  color: var(--red) !important;
 }
 .registration-container .info-card .btn-outline-primary:hover:not(:disabled) i {
   color: white !important;
@@ -642,15 +642,15 @@
 /* ─── Reset any orange hover bleeding from info-card icon rule ───────────────── */
 /* Page header Bulk Upload toggle — keep blue */
 .registration-container .page-header .btn-outline-primary {
-  border-color: #0ea4f4 !important;
-  color: #0ea4f4 !important;
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
   box-shadow: none !important;
 }
 .registration-container .page-header .btn-outline-primary:hover:not(:disabled) {
   background: #0ea4f4 !important;
   color: white !important;
-  border-color: #0ea4f4 !important;
+  border-color: var(--blue) !important;
   box-shadow: 0 4px 12px rgba(14,164,244,0.35) !important;
 }
-.registration-container .page-header .btn-outline-primary i { color: #0ea4f4 !important; }
+.registration-container .page-header .btn-outline-primary i { color: var(--blue) !important; }
 .registration-container .page-header .btn-outline-primary:hover:not(:disabled) i { color: white !important; }

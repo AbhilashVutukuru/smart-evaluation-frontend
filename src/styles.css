@@ -73,6 +73,6 @@ body {
   --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
   --sidebar-badge-border: rgba(255, 255, 255, 0.4);
 
-  /* ─── Sidebar ────────────────────────────────── */
-  --app-bg: #f8f9fa;
+  /* ─── background ────────────────────────────────── */
+  --app-bg: #ffffff;
 }

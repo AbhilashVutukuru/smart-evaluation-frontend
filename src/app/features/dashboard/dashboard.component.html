@@ -15,19 +15,11 @@
   <!-- Content -->
   <ng-container *ngIf="summary && !isLoading">
 
-    <!-- Page Header -->
-    <div class="page-header">
-      <div class="header-left">
-        <h1>Dashboard</h1>
-      </div>
-    </div>
-
     <!-- ══════════════════════════════════════════════════════════ -->
     <!-- ADMIN VIEW                                                 -->
     <!-- ══════════════════════════════════════════════════════════ -->
     <ng-container *ngIf="isAdmin && summary.admin as admin">
 
-      <!-- Stat Cards -->
       <div class="stats-grid">
         <div class="stat-card stat-blue">
           <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
@@ -55,6 +47,20 @@
           <div class="stat-body">
             <span class="stat-number">{{ admin.totalQuestionPapers }}</span>
             <span class="stat-label">Question Papers</span>
+          </div>
+        </div>
+        <div class="stat-card stat-red">
+          <div class="stat-icon"><i class="fas fa-clock"></i></div>
+          <div class="stat-body">
+            <span class="stat-number">{{ admin.pendingEvaluations }}</span>
+            <span class="stat-label">Pending Evaluations</span>
+          </div>
+        </div>
+        <div class="stat-card stat-green">
+          <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-body">
+            <span class="stat-number">{{ admin.completedEvaluations }}</span>
+            <span class="stat-label">Completed Evaluations</span>
           </div>
         </div>
       </div>
@@ -97,9 +103,9 @@
                 <th class="text-center">Questions</th>
                 <th class="text-center">Total Marks</th>
                 <th class="text-center">Exam Date</th>
-                <th class="text-center">Exam Status</th>
+                <!-- <th class="text-center">Exam Status</th>
                 <th class="text-center">Eval Status</th>
-                <th class="text-center">View</th>
+                <th class="text-center">View</th> -->
               </tr>
             </thead>
             <tbody>
@@ -112,7 +118,7 @@
                 <td class="text-center">{{ row.totalQuestions }}</td>
                 <td class="text-center">{{ row.totalMarks }}</td>
                 <td class="text-center">{{ row.examDate ? (row.examDate | date:'dd/MM/yyyy') : '—' }}</td>
-                <td class="text-center">
+                <!-- <td class="text-center">
                   <span class="status-badge" [class.badge-completed]="row.examStatus === 'Completed'" [class.badge-pending]="row.examStatus === 'Pending'">
                     {{ row.examStatus }}
                   </span>
@@ -126,7 +132,7 @@
                   <a [routerLink]="['/view/exam', row.questionPaperId]" class="btn-view">
                     <i class="fas fa-eye"></i>
                   </a>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>
@@ -140,9 +146,7 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <ng-container *ngIf="isTeacher">
       <div class="coming-soon-container">
-        <div class="coming-soon-icon">
-          <i class="fas fa-tools"></i>
-        </div>
+        <div class="coming-soon-icon"><i class="fas fa-tools"></i></div>
         <h2 class="coming-soon-title">Teacher Dashboard</h2>
         <p class="coming-soon-text">Coming Soon</p>
         <p class="coming-soon-sub">We're working hard to bring you an amazing dashboard experience.</p>
@@ -154,7 +158,6 @@
     <!-- ══════════════════════════════════════════════════════════ -->
     <ng-container *ngIf="isStudent && summary.student as student">
 
-      <!-- Stats Cards -->
       <div class="stats-grid stats-grid-4">
         <div class="stat-card stat-blue">
           <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
@@ -186,7 +189,6 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
       <div class="card">
         <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
         <div class="quick-actions">
@@ -201,7 +203,6 @@
         </div>
       </div>
 
-      <!-- Results Table -->
       <div class="card table-card" *ngIf="student.results.length > 0">
         <h4><i class="fas fa-chart-bar"></i> My Results</h4>
         <div class="table-scroll">
@@ -238,7 +239,6 @@
         </div>
       </div>
 
-      <!-- Empty results -->
       <div class="card" *ngIf="student.results.length === 0">
         <div class="empty-state">
           <i class="fas fa-clipboard"></i>

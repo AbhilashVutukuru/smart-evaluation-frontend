@@ -12,8 +12,8 @@
 
 /* ── Container ─────────────────────────────────────────────── */
 .upload-container {
-  padding: 1.5rem;
-  background: #f8f9fa;
+  padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
   min-height: 100vh;
   max-width: 100%;
   margin: 0;
@@ -96,9 +96,9 @@
 
 /* ── Checkbox ──────────────────────────────────────────────── */
 .form-check      { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; }
-.custom-checkbox { width: 1rem; height: 1rem; cursor: pointer; accent-color: #0882c4; flex-shrink: 0; margin: 0; }
+.custom-checkbox { width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--blue-dark); flex-shrink: 0; margin: 0; }
 
-input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-color: #0882c4; }
+input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-color: var(--blue-dark); }
 
 .checkbox-label  { font-size: 0.8125rem; color: var(--gray-700); cursor: pointer; white-space: nowrap; }
 
@@ -135,7 +135,7 @@ input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-colo
 
 /* ── btn-outline-blue ───────────────────────────────────────── */
 .btn-outline-indigo {
-  background: white;
+  background: var(--app-bg);
   color: var(--blue);
   border: 2px solid var(--blue);
   display: inline-flex;
@@ -561,7 +561,7 @@ label.btn-doc-img,
 
 /* ── Print ──────────────────────────────────────────────────── */
 @media print {
-  .upload-container     { padding: 0; background: white; }
+  .upload-container     { padding: 0; background: var(--app-bg); }
   .btn, .submit-section { display: none; }
   .card                 { box-shadow: none; page-break-inside: avoid; }
   .table                { min-width: auto; }
@@ -590,7 +590,7 @@ label.btn-doc-img,
 }
 
 .page-picker-box {
-  background: white;
+  background: var(--app-bg);
   border-radius: var(--border-radius-lg);
   width: 100%;
   max-width: 560px;
@@ -1098,7 +1098,7 @@ label.btn-doc-img,
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  background: white;
+  background: var(--app-bg);
   border: 1px solid var(--gray-200);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-md);

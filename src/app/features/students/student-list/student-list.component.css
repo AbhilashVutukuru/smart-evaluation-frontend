@@ -10,8 +10,8 @@
 
 /* ─── Container ─────────────────────────────────────────────────────────────── */
 .list-container {
-  padding: 1.5rem;
-  background: #f8f9fa;
+  padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
   min-height: 100vh;
   max-width: 100%;
   margin: 0;
@@ -90,7 +90,7 @@
 .search-icon {
   position: absolute;
   left: 0.875rem;
-  color: #0ea4f4;
+  color: var(--blue);
   font-size: 0.875rem;
   pointer-events: none;
   z-index: 1;
@@ -104,7 +104,7 @@
   font-size: var(--font-size-sm);
   transition: var(--transition);
   outline: none;
-  background: white;
+  background: var(--app-bg);
   background-image: none !important;
   box-sizing: border-box;
   font-family: inherit;
@@ -122,7 +122,7 @@
   right: 0.625rem;
   background: none;
   border: none;
-  color: #f85310;
+  color: var(--red);
   cursor: pointer;
   padding: 0.2rem;
   display: flex;
@@ -134,7 +134,7 @@
   transition: var(--transition);
 }
 
-.clear-search:hover { background: #fee8e0; color: #d04008; }
+.clear-search:hover { background: var(--red-light); color: var(--red-dark); }
 
 @media (max-width: 479px) {
   .search-icon  { left: 0.625rem; font-size: 0.8125rem; }
@@ -172,7 +172,7 @@
   width: 1.875rem;
   height: 1.875rem;
   border-radius: 50%;
-  background: #0ea4f4 !important;
+  background: var(--blue) !important;
   color: white;
   display: flex;
   align-items: center;
@@ -292,7 +292,7 @@
 @media (max-width: 479px) { .students-cards { gap: 0.625rem; } }
 
 .student-card {
-  background: white;
+  background: var(--app-bg);
   border: 1px solid var(--gray-200);
   border-radius: var(--border-radius-lg);
   overflow: hidden;
@@ -319,7 +319,7 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 50%;
-  background: #0ea4f4 !important;
+  background: var(--blue) !important;
   color: white;
   display: flex;
   align-items: center;
@@ -409,7 +409,7 @@
 
 /* ─── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
-  .list-container { padding: 0; background: white; }
+  .list-container { padding: 0; background: var(--app-bg); }
   .list-container .table .action-buttons,
   .search-section, .student-card .card-footer { display: none !important; }
   .list-container .card { box-shadow: none; }
@@ -422,43 +422,43 @@
   position: relative;
 }
 .search-below .search-input-wrapper { position: relative; display: flex; align-items: center; }
-.search-below .search-icon { position: absolute; left: 0.875rem; color: #0ea4f4; font-size: 0.875rem; pointer-events: none; z-index: 1; }
+.search-below .search-icon { position: absolute; left: 0.875rem; color: var(--blue); font-size: 0.875rem; pointer-events: none; z-index: 1; }
 .search-below .search-input { padding-left: 2.5rem !important; }
-.search-below .clear-search { position: absolute; right: 0.625rem; background: none; border: none; color: #f85310; cursor: pointer; padding: 0.2rem; display: flex; align-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; }
-.search-below .clear-search:hover { background: #fee8e0; color: #d04008; }
+.search-below .clear-search { position: absolute; right: 0.625rem; background: none; border: none; color: var(--red); cursor: pointer; padding: 0.2rem; display: flex; align-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; }
+.search-below .clear-search:hover { background: var(--red-light); color: var(--red-dark); }
 .w-100 { width: 100%; }
 
 /* ─── Action Button Brand Colors — appended last to always win cascade ──────── */
 .btn-action { width: 1.875rem; height: 1.875rem; border: none !important; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 0.8rem; flex-shrink: 0; padding: 0 !important; }
 
-.btn-action.btn-view             { background: #e0f4fe !important; }
-.btn-action.btn-view i           { color: #0882c4 !important; }
-.btn-action.btn-view:hover       { background: #0ea4f4 !important; box-shadow: 0 4px 14px rgba(14,164,244,0.55) !important; }
+.btn-action.btn-view             { background: var(--blue-light) !important; }
+.btn-action.btn-view i           { color: var(--blue-dark) !important; }
+.btn-action.btn-view:hover       { background: var(--blue) !important; box-shadow: 0 4px 14px rgba(14,164,244,0.55) !important; }
 .btn-action.btn-view:hover i     { color: #ffffff !important; }
 
-.btn-action.btn-se-edit          { background: #fff8e0 !important; }
-.btn-action.btn-se-edit i        { color: #d69900 !important; }
-.btn-action.btn-se-edit:hover    { background: #ffbb0a !important; box-shadow: 0 4px 14px rgba(255,187,10,0.55) !important; }
+.btn-action.btn-se-edit          { background: var(--yellow-light) !important; }
+.btn-action.btn-se-edit i        { color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit:hover    { background: var(--yellow) !important; box-shadow: 0 4px 14px rgba(255,187,10,0.55) !important; }
 .btn-action.btn-se-edit:hover i  { color: #ffffff !important; }
 
-.btn-action.btn-delete           { background: #fee8e0 !important; }
-.btn-action.btn-delete i         { color: #d04008 !important; }
-.btn-action.btn-delete:hover     { background: #f85310 !important; box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; }
+.btn-action.btn-delete           { background: var(--red-light) !important; }
+.btn-action.btn-delete i         { color: var(--red-dark) !important; }
+.btn-action.btn-delete:hover     { background: var(--red) !important; box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; }
 .btn-action.btn-delete:hover i   { color: #ffffff !important; }
 
 .list-container .table .action-buttons { display: flex !important; flex-direction: row !important; gap: 0.3rem !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; flex-wrap: nowrap !important; align-items: center !important; }
 
-.list-container .avatar, .list-container .student-avatar { background: #0ea4f4 !important; }
+.list-container .avatar, .list-container .student-avatar { background: var(--blue) !important; }
 
 /* ─── Clear Search Button — brand red-orange ─────────────────────────────────── */
 .btn-clear-search {
-  background: #fee8e0 !important;
-  color: #d04008 !important;
+  background: var(--red-light) !important;
+  color: var(--red-dark) !important;
   border: none;
 }
-.btn-clear-search i { color: #d04008 !important; }
+.btn-clear-search i { color: var(--red-dark) !important; }
 .btn-clear-search:hover {
-  background: #f85310 !important;
+  background: var(--red) !important;
   color: white !important;
   box-shadow: 0 4px 14px rgba(248,83,16,0.45) !important;
 }

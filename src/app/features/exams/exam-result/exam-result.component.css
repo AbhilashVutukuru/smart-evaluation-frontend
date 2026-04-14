@@ -10,8 +10,8 @@
 
 /* ── Container ──────────────────────────────────────────────── */
 .result-container {
-  padding: 1.5rem;
-  background: #f8f9fa;
+  padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -205,7 +205,7 @@
 
 .question-number-btn {
   padding: 0.5rem 0.875rem;
-  background: white;
+  background: var(--app-bg);
   border: 2px solid var(--gray-200);
   border-radius: var(--border-radius);
   font-size: 0.875rem;
@@ -465,7 +465,7 @@
 }
 
 .fullscreen-content {
-  background: white;
+  background: var(--app-bg);
   border-radius: var(--border-radius-lg);
   width: 90%;
   max-width: 1200px;

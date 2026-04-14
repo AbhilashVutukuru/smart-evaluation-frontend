@@ -1,10 +1,5 @@
 <div class="result-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
-  </div>
-
-  <app-exam-filter
+<app-exam-filter
     [hidden]="showResultsCard"
     [classes]="classes"
     [sections]="sections"
@@ -40,7 +35,7 @@
   >
     <!-- Header -->
     <div class="card-header-flex">
-      <h4><i class="fas fa-users"></i> Back to List</h4>
+      <h4><i class="fas fa-users"></i> Students List</h4>
       <span class="badge badge-primary"
         >{{ statistics.totalStudents }} Students</span
       >
