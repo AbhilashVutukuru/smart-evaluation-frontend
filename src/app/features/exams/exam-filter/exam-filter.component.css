@@ -45,6 +45,7 @@
   border-color: var(--blue);
   box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.12);
 }
+
 /* ─── Collapsible filter card ────────────────────────────────── */
 .filter-card-header {
   display: flex;
@@ -52,14 +53,10 @@
   margin-bottom: 0;
 }
 
-/* Only show pointer cursor when collapsed (clickable to expand) */
-.filter-card-header.is-collapsed {
-  cursor: pointer;
-}
-
+/* Only show pointer cursor when hasSearched (set via [style.cursor] in template) */
 .filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
 
-/* Chevron icon inline beside title */
+/* Chevron icon inline beside title — toggles fa-chevron-down / fa-chevron-up via template */
 .collapse-indicator {
   font-size: 0.75rem;
   color: var(--blue);
@@ -68,15 +65,20 @@
   transition: var(--transition);
 }
 
+/* ─── Expanded state: overflow VISIBLE so absolutely-positioned
+       .select-icon chevrons are never clipped.
+       overflow:hidden is only needed while animating closed.      ── */
 .filter-card-body {
-  overflow: hidden;
+  overflow: visible;                        /* ← allows .select-icon to paint correctly */
   transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
   max-height: 1000px;
   opacity: 1;
   margin-top: 1.25rem;
 }
 
+/* Collapsed: overflow:hidden is required to clip the sliding content */
 .filter-card-body.collapsed {
+  overflow: hidden;                         /* ← only hidden when actually collapsed */
   max-height: 0;
   opacity: 0;
   margin-top: 0;
@@ -108,5 +110,5 @@
 .filter-chip i { font-size: 0.65rem; }
 
 .col-md-2 .btn {
-  margin-top: 12px; 
+  margin-top: 12px;
 }

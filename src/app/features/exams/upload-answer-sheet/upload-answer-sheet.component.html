@@ -17,159 +17,229 @@
     [canShowStudents]="canShowStudents"
     [showEmptyState]="showStudentsCard && students.length === 0 && !loading"
     [noExamPaperFound]="noExamPaperFound"
-    [isCollapsed]="isFilterCollapsed"
-    (isCollapsedChange)="isFilterCollapsed = $event"
+    [hasSearched]="hasSearched"
+    [(isCollapsed)]="isFilterCollapsed"
     (classChanged)="onClassChange($event)"
     (sectionChanged)="onSectionChange()"
     (subjectChanged)="onSubjectChange()"
     (examTypeChanged)="onExamTypeChange()"
     (questionPaperChanged)="onQuestionPaperChange()"
-    [isCollapsed]="isFilterCollapsed"
-    (isCollapsedChange)="isFilterCollapsed = $event"
     (showStudentsClick)="showStudents()"
   ></app-exam-filter>
 
   <!-- Students Table -->
   <div class="card" *ngIf="showStudentsCard && students.length > 0">
-    <div class="card-header-flex">
-      <h4><i class="fas fa-users"></i> Students List</h4>
-      <span class="badge badge-primary">{{ totalStudents }} Students</span>
+
+    <!-- Header row: title + submitted notice | search | View Results button -->
+    <div class="papers-header-row">
+
+      <!-- Left: title + submitted timestamp -->
+      <div class="header-title-group">
+        <h4><i class="fas fa-users"></i> Students</h4>
+        <span class="submitted-notice" *ngIf="isSubmittedForEvaluation && submittedAt">
+          <i class="fas fa-check-circle"></i>
+          Submitted for evaluation on {{ getSubmittedAtDisplay() }}
+        </span>
+      </div>
+
+      <!-- Centre: search -->
+      <div class="search-input-wrapper" *ngIf="students.length > 0">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by name or roll no..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+        />
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()" type="button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Right: View Results button (only after submitted) -->
+      <button class="btn btn-primary btn-sm"
+        *ngIf="isSubmittedForEvaluation"
+        (click)="viewResults()">
+        <i class="fas fa-chart-bar"></i> View Results
+      </button>
+
     </div>
 
     <!-- Statistics Summary -->
     <div class="stats-grid">
       <div class="stat-card stat-total">
         <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-content">
-          <h3>{{ totalStudents }}</h3>
-          <p>Total Students</p>
-        </div>
+        <div class="stat-content"><h3>{{ totalStudents }}</h3><p>Total Students</p></div>
       </div>
       <div class="stat-card stat-absent">
         <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
-        <div class="stat-content">
-          <h3>{{ absentCount }}</h3>
-          <p>Absent</p>
-        </div>
+        <div class="stat-content"><h3>{{ absentCount }}</h3><p>Absent</p></div>
       </div>
       <div class="stat-card stat-uploaded">
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-        <div class="stat-content">
-          <h3>{{ uploadedCount }}</h3>
-          <p>Uploaded</p>
-        </div>
+        <div class="stat-content"><h3>{{ uploadedCount }}</h3><p>Uploaded</p></div>
       </div>
       <div class="stat-card stat-pending">
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
-        <div class="stat-content">
-          <h3>{{ pendingCount }}</h3>
-          <p>Pending</p>
-        </div>
+        <div class="stat-content"><h3>{{ pendingCount }}</h3><p>Pending</p></div>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="table-responsive">
-      <table class="table">
+    <div class="table-responsive" *ngIf="students.length > 0">
+
+      <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
+        <i class="fas fa-search"></i>
+        <h5>No Students Found</h5>
+        <p>No students match "<strong>{{ searchTerm }}</strong>"</p>
+      </div>
+
+      <table class="table" *ngIf="filteredStudents.length > 0">
         <thead>
           <tr>
             <th>Roll No</th>
             <th>Student Name</th>
-            <th>Class</th>
-            <th>Section</th>
-            <th>Status</th>
-            <th>Answer Sheet 
-              <i class="fas fa-info-circle header-info-icon"
-                title="If it is PDF upload all answer sheets in single PDF"
-              ></i>
-            </th>
             <th>Attendance</th>
+            <th>Answer Sheet Type</th>
+            <th>
+              Answer Sheet(s)
+              <i class="fas fa-info-circle header-info-icon"
+                title="If it is a PDF file, please make sure that all pages are merged into one single file">
+              </i>
+            </th>
+            <th>Evaluation Status</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let student of students">
-            <td><strong class="roll-number">{{ student.rollNumber }}</strong></td>
-            <td>{{ student.studentName }}</td>
-            <td>{{ student.className }}</td>
-            <td>{{ student.sectionName }}</td>
+          <tr *ngFor="let student of filteredStudents">
 
-            <!-- STATUS -->
+            <!-- ROLL NO -->
+            <td><strong class="roll-number">{{ student.rollNumber }}</strong></td>
+
+            <!-- STUDENT NAME -->
+            <td>{{ student.studentName }}</td>
+
+            <!-- ATTENDANCE -->
             <td>
-              <span *ngIf="student.isAbsent" class="badge badge-danger">
-                <i class="fas fa-user-slash"></i> Absent
-              </span>
-              <span *ngIf="!student.isAbsent && student.isUploaded" class="badge badge-success">
-                <i class="fas fa-check-circle"></i> Uploaded
-              </span>
-              <span *ngIf="isSubmittedForEvaluation && !student.isAbsent && !student.isUploaded"
-                class="badge badge-submitted">
-                <i class="fas fa-paper-plane"></i> Submission Completed
-              </span>
-              <span *ngIf="!isSubmittedForEvaluation && !student.isAbsent && !student.isUploaded"
-                class="badge badge-secondary">
-                <i class="fas fa-clock"></i> Pending
-              </span>
+              <!-- After submission — readonly labels -->
+              <ng-container *ngIf="isSubmittedForEvaluation">
+                <span *ngIf="student.isAbsent" class="badge badge-danger">
+                  <i class="fas fa-user-slash"></i> Absent
+                </span>
+                <span *ngIf="!student.isAbsent" class="badge badge-success">
+                  <i class="fas fa-user-check"></i> Attended
+                </span>
+              </ng-container>
+              <!-- Before submission -->
+              <ng-container *ngIf="!isSubmittedForEvaluation">
+                <!-- Already marked absent — show badge -->
+                <span *ngIf="student.isAbsent" class="badge badge-danger"
+                  style="cursor:pointer" (click)="toggleAbsent(student)" title="Click to mark as attended">
+                  <i class="fas fa-user-slash"></i> Absent
+                </span>
+                <!-- Not absent — show checkbox -->
+                <div *ngIf="!student.isAbsent" class="form-check">
+                  <input type="checkbox" [id]="'absent-' + student.studentId"
+                    [checked]="student.isAbsent" (change)="toggleAbsent(student)"
+                    class="custom-checkbox" />
+                  <label [for]="'absent-' + student.studentId" class="checkbox-label">
+                    Mark as Absent
+                  </label>
+                </div>
+              </ng-container>
             </td>
 
-            <!-- DOCUMENT -->
+            <!-- ANSWER SHEET TYPE -->
+            <td>
+              <span *ngIf="student.isAbsent" class="text-muted">—</span>
+              <ng-container *ngIf="!student.isAbsent && student.isUploaded">
+                <span class="badge badge-type-pdf" *ngIf="student.answerSheetType === 'PDF'">
+                  <i class="fas fa-file-pdf"></i> PDF
+                </span>
+                <span class="badge badge-type-img" *ngIf="student.answerSheetType === 'Images'">
+                  <i class="fas fa-images"></i> Images
+                </span>
+                <span *ngIf="!student.answerSheetType" class="text-muted">—</span>
+              </ng-container>
+              <span *ngIf="!student.isAbsent && !student.isUploaded" class="text-muted">—</span>
+            </td>
+
+            <!-- ANSWER SHEET(S) -->
             <td class="doc-cell">
+              <!-- Absent -->
+              <span *ngIf="student.isAbsent" class="text-muted">—</span>
 
-              <!-- ABSENT -->
-              <span *ngIf="student.isAbsent" class="text-muted">-</span>
-
-              <!-- PENDING + SUBMITTED -->
-              <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation"
-                class="text-muted">-</span>
-
-              <!-- UPLOADED: filename + Update dropdown -->
+              <!-- Uploaded -->
               <ng-container *ngIf="student.isUploaded && !student.isAbsent">
                 <div class="doc-uploaded-row">
-                  <span class="pdf-info">
-                    <i class="fas fa-file-pdf text-danger"></i>
-                    <span class="pdf-name" [title]="student.fileName || 'PDF'">{{ student.fileName || 'PDF' }}</span>
+                  <span class="pdf-info" [title]="getAnswerSheetDisplay(student)">
+                    <i class="fas fa-file-pdf text-danger" *ngIf="student.answerSheetType === 'PDF'"></i>
+                    <i class="fas fa-images text-success"  *ngIf="student.answerSheetType === 'Images'"></i>
+                    <span class="pdf-name">{{ getAnswerSheetDisplay(student) }}</span>
                   </span>
-                  <ng-container *ngIf="!isSubmittedForEvaluation">
-                    <ng-container *ngIf="!student.isUploading">
-                      <!-- Update dropdown — desktop + mobile -->
-                      <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
-                        <button type="button"
-                          class="btn-action btn-action-update"
-                          (click)="toggleMenu(student.studentId)"
-                          title="Update answer sheet">
-                          <i class="fas fa-sync-alt"></i> Update
-                          <i class="fas fa-chevron-down menu-chevron"></i>
+
+                  <!-- Images type: Update dropdown with PDF + Preview & Edit -->
+                  <ng-container *ngIf="student.answerSheetType === 'Images' && !isSubmittedForEvaluation && !student.isUploading">
+                    <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
+                      <button type="button" class="btn-action btn-action-update"
+                        (click)="toggleMenu(student.studentId)" title="Update answer sheet">
+                        <i class="fas fa-sync-alt"></i> Update
+                        <i class="fas fa-chevron-down menu-chevron"></i>
+                      </button>
+                      <div class="action-dropdown" *ngIf="openMenuId === student.studentId">
+                        <!-- Replace all with PDF -->
+                        <input type="file" [id]="'file-update-img-' + student.studentId"
+                          accept=".pdf" (change)="onFileSelected($event, student, true); closeMenu()"
+                          style="display:none" />
+                        <label [for]="'file-update-img-' + student.studentId" class="dropdown-item">
+                          <i class="fas fa-file-pdf text-danger"></i> Upload PDF
+                        </label>
+                        <!-- Preview existing images & replace individually -->
+                        <button type="button" class="dropdown-item"
+                          (click)="openImagePreview(student); closeMenu()">
+                          <i class="fas fa-eye text-success"></i> Preview &amp; Edit Images
                         </button>
-                        <div class="action-dropdown" *ngIf="openMenuId === student.studentId">
-                          <input type="file" [id]="'file-update-' + student.studentId"
-                            accept=".pdf" (change)="onFileSelected($event, student, true); closeMenu()"
-                            style="display:none" />
-                          <label [for]="'file-update-' + student.studentId" class="dropdown-item">
-                            <i class="fas fa-file-pdf text-danger"></i> PDF
-                          </label>
-                          <button type="button" class="dropdown-item"
-                            (click)="openPagePicker(student, true); closeMenu()">
-                            <i class="fas fa-images text-success"></i> Images
-                          </button>
-                        </div>
                       </div>
-                    </ng-container>
-                    <span *ngIf="student.isUploading" class="capture-spinner">
-                      <i class="fas fa-spinner fa-spin"></i> Updating...
-                    </span>
+                    </div>
                   </ng-container>
+
+                  <!-- PDF type: Update dropdown with PDF + Images options -->
+                  <ng-container *ngIf="student.answerSheetType !== 'Images' && !isSubmittedForEvaluation && !student.isUploading">
+                    <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
+                      <button type="button" class="btn-action btn-action-update"
+                        (click)="toggleMenu(student.studentId)" title="Update answer sheet">
+                        <i class="fas fa-sync-alt"></i> Update
+                        <i class="fas fa-chevron-down menu-chevron"></i>
+                      </button>
+                      <div class="action-dropdown" *ngIf="openMenuId === student.studentId">
+                        <input type="file" [id]="'file-update-' + student.studentId"
+                          accept=".pdf" (change)="onFileSelected($event, student, true); closeMenu()"
+                          style="display:none" />
+                        <label [for]="'file-update-' + student.studentId" class="dropdown-item">
+                          <i class="fas fa-file-pdf text-danger"></i> PDF
+                        </label>
+                        <button type="button" class="dropdown-item"
+                          (click)="openPagePicker(student, true); closeMenu()">
+                          <i class="fas fa-images text-success"></i> Images
+                        </button>
+                      </div>
+                    </div>
+                  </ng-container>
+
+                  <span *ngIf="student.isUploading" class="capture-spinner">
+                    <i class="fas fa-spinner fa-spin"></i> Updating...
+                  </span>
                 </div>
               </ng-container>
 
-              <!-- PENDING: Upload dropdown -->
+              <!-- Pending: upload dropdown -->
               <ng-container *ngIf="!student.isUploaded && !student.isAbsent && !isSubmittedForEvaluation">
                 <ng-container *ngIf="!student.isUploading">
-                  <!-- Upload dropdown — desktop + mobile -->
                   <div class="doc-action-menu" (click)="$event.stopPropagation()">
-                    <button type="button"
-                      class="btn-action btn-action-upload"
-                      (click)="toggleMenu(student.studentId)"
-                      title="Upload answer sheet">
+                    <button type="button" class="btn-action btn-action-upload"
+                      (click)="toggleMenu(student.studentId)" title="Upload answer sheet">
                       <i class="fas fa-upload"></i> Upload
                       <i class="fas fa-chevron-down menu-chevron"></i>
                     </button>
@@ -192,30 +262,27 @@
                 </span>
               </ng-container>
 
-              <!-- IMAGE PREVIEW STRIP — desktop & mobile -->
+              <!-- Not uploaded + submitted -->
+              <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation" class="text-muted">—</span>
+
+              <!-- IMAGE PREVIEW STRIP -->
               <div class="image-preview-strip"
                 *ngIf="getPreviewImages(student.studentId).length > 0 && !student.isAbsent">
-
-                <!-- Row 1: count label + Add More button -->
                 <div class="preview-top-row">
                   <span class="preview-count-label">
                     <i class="fas fa-images"></i>
                     {{ getPreviewImages(student.studentId).length }} image(s) ready
                   </span>
                   <div class="preview-add-btns">
-                    <!-- Desktop: add more images from gallery -->
                     <input type="file" accept="image/png,image/jpeg" multiple
                       [id]="'add-img-' + student.studentId"
                       (change)="onImagesSelected($event, student, student.isUploaded)"
                       [disabled]="student.isUploading" style="display:none" />
                     <label [for]="'add-img-' + student.studentId"
                       class="btn-doc btn-doc-img desktop-only"
-                      [class.disabled]="student.isUploading"
-                      title="Add more images">
-                      <i class="fas fa-plus"></i>
-                      <span>Add</span>
+                      [class.disabled]="student.isUploading" title="Add more images">
+                      <i class="fas fa-plus"></i><span>Add</span>
                     </label>
-                    <!-- Mobile: add via camera or gallery -->
                     <input type="file" accept="image/*" capture="environment"
                       [id]="'add-cam-' + student.studentId"
                       (change)="onImagesSelected($event, student, student.isUploaded)"
@@ -238,36 +305,24 @@
                     </label>
                   </div>
                 </div>
-
-                <!-- Row 2: scrollable thumbnails, each with delete button -->
                 <div class="preview-thumbs-row">
                   <div *ngFor="let src of getPreviewImages(student.studentId); let i = index"
                     class="preview-thumb-wrap">
-                    <img [src]="src" class="preview-thumb"
-                      [attr.alt]="'Page ' + (i+1)"
-                      (click)="openLightbox(student.studentId, i)"
-                      title="Click to view full size" />
+                    <img [src]="src" class="preview-thumb" [attr.alt]="'Page ' + (i+1)"
+                      (click)="openLightbox(student.studentId, i)" title="Click to view full size" />
                     <span class="preview-page-num">{{ i + 1 }}</span>
-                    <!-- Delete this image -->
                     <button class="preview-thumb-delete"
                       (click)="deletePreviewImage(student.studentId, i)"
-                      [disabled]="student.isUploading"
-                      title="Remove page {{ i + 1 }}">
+                      [disabled]="student.isUploading" title="Remove page {{ i + 1 }}">
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
                 </div>
-
-                <!-- Row 3: Upload + Discard -->
                 <div class="preview-actions">
                   <button class="btn btn-sm btn-primary"
-                    (click)="uploadCapturedImages(student)"
-                    [disabled]="student.isUploading">
+                    (click)="uploadCapturedImages(student)" [disabled]="student.isUploading">
                     <i [class]="student.isUploading ? 'fas fa-spinner fa-spin' : 'fas fa-file-pdf'"></i>
-                <!-- {{ student.isUploading ? 'Uploading...' :
-                       'Upload ' + getPreviewImages(student.studentId).length + ' page(s) as PDF' }} -->
-                          {{ student.isUploading ? 'Uploading...' :
-                       'Upload' }}
+                    {{ student.isUploading ? 'Uploading...' : 'Upload' }}
                   </button>
                   <button class="btn btn-sm btn-danger"
                     (click)="clearPreviewImages(student.studentId)"
@@ -276,21 +331,21 @@
                   </button>
                 </div>
               </div>
-
             </td>
-            <!-- MARK ABSENT -->
+
+            <!-- EVALUATION STATUS -->
             <td>
-              <span *ngIf="isSubmittedForEvaluation" class="text-muted">-</span>
-              <ng-container *ngIf="!isSubmittedForEvaluation">
-                <span *ngIf="student.isUploaded" class="text-muted">-</span>
-                <div *ngIf="!student.isUploaded" class="form-check">
-                  <input type="checkbox" [id]="'absent-' + student.studentId"
-                    [checked]="student.isAbsent" (change)="toggleAbsent(student)"
-                    class="custom-checkbox" />
-                  <label [for]="'absent-' + student.studentId" class="checkbox-label">
-                    Mark Absent
-                  </label>
-                </div>
+              <span *ngIf="student.isAbsent" class="text-muted">—</span>
+              <ng-container *ngIf="!student.isAbsent">
+                <span *ngIf="student.isUploaded && student.evaluationStatus === 'Evaluated'"
+                  class="badge badge-success">
+                  <i class="fas fa-check-circle"></i> Completed
+                </span>
+                <span *ngIf="student.isUploaded && student.evaluationStatus !== 'Evaluated'"
+                  class="badge badge-warning">
+                  <i class="fas fa-clock"></i> Pending
+                </span>
+                <span *ngIf="!student.isUploaded" class="text-muted">—</span>
               </ng-container>
             </td>
 
@@ -299,11 +354,12 @@
               <a *ngIf="student.isUploaded" href="javascript:void(0)"
                 class="download-link" [class.disabled]="isViewing"
                 (click)="!isViewing && viewAnswerSheet(student)">
-                <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
+                <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View</span></span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
-              <span *ngIf="!student.isUploaded" class="text-muted">-</span>
+              <span *ngIf="!student.isUploaded" class="text-muted">—</span>
             </td>
+
           </tr>
         </tbody>
       </table>
@@ -324,44 +380,32 @@
 <!-- ── PAGE PICKER MODAL ── -->
 <div class="page-picker-overlay" *ngIf="modal" (click)="closeModal()">
   <div class="page-picker-box" (click)="$event.stopPropagation()">
-
-    <!-- Header -->
     <div class="page-picker-header">
       <span class="page-picker-title">
-        <i class="fas fa-images"></i>
-        Upload Answer Sheet Images
+        <i class="fas fa-images"></i> Upload Answer Sheet Images
       </span>
       <button class="page-picker-close" (click)="closeModal()" title="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
-
-    <!-- STEP 1: Ask page count -->
     <div class="page-picker-body" *ngIf="modal.pageCount === null">
       <p class="page-picker-hint">
-        <i class="fas fa-info-circle"></i>
-        How many pages does this answer sheet have?
+        <i class="fas fa-info-circle"></i> How many pages does this answer sheet have?
       </p>
       <div class="page-count-input-row">
         <input type="number" class="form-control page-count-input"
-          [(ngModel)]="modal.inputCount"
-          min="1" max="50" placeholder="e.g. 4" />
+          [(ngModel)]="modal.inputCount" min="1" max="50" placeholder="e.g. 4" />
         <button class="btn btn-primary" (click)="confirmPageCount()"
           [disabled]="!modal.inputCount || modal.inputCount < 1">
           <i class="fas fa-arrow-right"></i> Continue
         </button>
       </div>
     </div>
-
-    <!-- STEP 2: Page slot buttons -->
     <div class="page-picker-body" *ngIf="modal.pageCount !== null">
-
-      <!-- Progress bar -->
       <div class="slot-progress-bar-wrap">
         <div class="slot-progress-fill"
           [style.width.%]="(modalFilledCount / modal.pageCount) * 100"
-          [class.all-done]="modalAllReady">
-        </div>
+          [class.all-done]="modalAllReady"></div>
       </div>
       <p class="page-picker-hint">
         <i class="fas fa-hand-pointer"></i>
@@ -372,66 +416,39 @@
           <span class="legend-dot legend-deleted"></span> Removed
         </span>
       </p>
-
       <div class="page-slots-grid">
         <div *ngFor="let slot of modal.slots" class="page-slot-wrap">
-          <!-- Camera input -->
+          <input type="file" accept="image/*" capture="environment"
+            [id]="'slot-cam-' + slot.pageNumber" (change)="onSlotImageSelected($event, slot)" style="display:none" />
           <input type="file" accept="image/*"
-            capture="environment"
-            [id]="'slot-cam-' + slot.pageNumber"
-            (change)="onSlotImageSelected($event, slot)"
-            style="display:none" />
-          <!-- Gallery input -->
-          <input type="file" accept="image/*"
-            [id]="'slot-gal-' + slot.pageNumber"
-            (change)="onSlotImageSelected($event, slot)"
-            style="display:none" />
-
+            [id]="'slot-gal-' + slot.pageNumber" (change)="onSlotImageSelected($event, slot)" style="display:none" />
           <div class="page-slot-btn"
             [class.slot-done]="slot.dataUrl !== null"
             [class.slot-deleted]="slot.deleted && slot.dataUrl === null">
-
-            <!-- Empty / deleted: entire card is clickable -->
-            <!-- Desktop → gallery, Mobile → camera or gallery buttons shown below -->
-            <label *ngIf="slot.dataUrl === null"
-              [for]="'slot-gal-' + slot.pageNumber"
-              class="slot-upload-area"
+            <label *ngIf="slot.dataUrl === null" [for]="'slot-gal-' + slot.pageNumber" class="slot-upload-area"
               [title]="slot.deleted ? 'Re-upload page ' + slot.pageNumber : 'Upload page ' + slot.pageNumber">
               <span class="slot-number">{{ slot.pageNumber }}</span>
               <span class="slot-status-icon">
                 <i *ngIf="!slot.deleted" class="fas fa-plus"></i>
-                <i *ngIf="slot.deleted"  class="fas fa-exclamation"></i>
+                <i *ngIf="slot.deleted" class="fas fa-exclamation"></i>
               </span>
               <span class="slot-label">{{ slot.deleted ? 'Removed' : 'Page ' + slot.pageNumber }}</span>
-              <!-- Mobile only: camera button inside the card -->
               <div class="slot-capture-btns mobile-only" (click)="$event.stopPropagation()">
-                <label [for]="'slot-cam-' + slot.pageNumber"
-                  class="slot-capture-btn slot-cam-btn"
-                  title="Take photo">
+                <label [for]="'slot-cam-' + slot.pageNumber" class="slot-capture-btn slot-cam-btn" title="Take photo">
                   <i class="fas fa-camera"></i>
                 </label>
-                <label [for]="'slot-gal-' + slot.pageNumber"
-                  class="slot-capture-btn slot-gal-btn"
-                  title="Gallery">
+                <label [for]="'slot-gal-' + slot.pageNumber" class="slot-capture-btn slot-gal-btn" title="Gallery">
                   <i class="fas fa-images"></i>
                 </label>
               </div>
             </label>
-
-            <!-- Uploaded: click to preview -->
-            <div *ngIf="slot.dataUrl !== null"
-              class="slot-done-area"
-              (click)="openSlotPreview(slot)"
+            <div *ngIf="slot.dataUrl !== null" class="slot-done-area" (click)="openSlotPreview(slot)"
               title="Click to preview page {{ slot.pageNumber }}">
               <span class="slot-number">{{ slot.pageNumber }}</span>
               <span class="slot-status-icon"><i class="fas fa-check"></i></span>
               <span class="slot-label"><i class="fas fa-eye"></i> Preview</span>
             </div>
-
-            <!-- Delete × button -->
-            <button *ngIf="slot.dataUrl !== null"
-              class="slot-delete-btn"
-              type="button"
+            <button *ngIf="slot.dataUrl !== null" class="slot-delete-btn" type="button"
               (click)="$event.stopPropagation(); deleteSlotImage(slot)"
               title="Remove page {{ slot.pageNumber }}">
               <i class="fas fa-times"></i>
@@ -439,103 +456,188 @@
           </div>
         </div>
       </div>
-
-      <!-- Upload action -->
       <div class="page-picker-footer">
-        <span class="page-picker-count"
-          [class.count-ready]="modalAllReady"
-          [class.count-warn]="!modalAllReady">
+        <span class="page-picker-count" [class.count-ready]="modalAllReady" [class.count-warn]="!modalAllReady">
           <i [class]="modalAllReady ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
           {{ modalFilledCount }} of {{ modal.pageCount }} pages uploaded
           <span *ngIf="!modalAllReady" class="count-note">— upload all to continue</span>
         </span>
         <div class="page-picker-actions">
-          <button class="btn btn-secondary" (click)="closeModal()">
-            <i class="fas fa-times"></i> Cancel
-          </button>
-          <button class="btn btn-success"
-            (click)="uploadModalImages()"
-            [disabled]="!modalAllReady"
+          <button class="btn btn-secondary" (click)="closeModal()"><i class="fas fa-times"></i> Cancel</button>
+          <button class="btn btn-success" (click)="uploadModalImages()" [disabled]="!modalAllReady"
             [title]="!modalAllReady ? 'Upload all ' + modal.pageCount + ' pages first' : 'Convert to PDF and upload'">
-            <i class="fas fa-file-pdf"></i>
-            Upload
+            <i class="fas fa-file-pdf"></i> Upload
           </button>
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
-<!-- ── SLOT PREVIEW LIGHTBOX (inside modal) ── -->
+<!-- ── SLOT PREVIEW LIGHTBOX ── -->
 <div class="slot-lightbox-overlay" *ngIf="modalPreviewSrc" (click)="closeSlotPreview()">
   <div class="slot-lightbox-box" (click)="$event.stopPropagation()">
     <div class="slot-lightbox-header">
-      <span class="slot-lightbox-label">
-        <i class="fas fa-file-image"></i>
-        Page {{ modalPreviewPage }} of {{ modalPreviewTotal }}
-      </span>
-      <button class="page-picker-close" (click)="closeSlotPreview()">
-        <i class="fas fa-times"></i>
-      </button>
+      <span class="slot-lightbox-label"><i class="fas fa-file-image"></i> Page {{ modalPreviewPage }} of {{ modalPreviewTotal }}</span>
+      <button class="page-picker-close" (click)="closeSlotPreview()"><i class="fas fa-times"></i></button>
     </div>
     <div class="slot-lightbox-body">
-      <button class="lightbox-nav lightbox-prev"
-        (click)="navSlotPreview(-1)"
-        [disabled]="modalPreviewPage <= 1">
+      <button class="lightbox-nav lightbox-prev" (click)="navSlotPreview(-1)" [disabled]="modalPreviewPage <= 1">
         <i class="fas fa-chevron-left"></i>
       </button>
       <img [src]="modalPreviewSrc" class="slot-lightbox-img" alt="Preview" />
-      <button class="lightbox-nav lightbox-next"
-        (click)="navSlotPreview(1)"
-        [disabled]="modalPreviewPage >= modalPreviewTotal">
+      <button class="lightbox-nav lightbox-next" (click)="navSlotPreview(1)" [disabled]="modalPreviewPage >= modalPreviewTotal">
         <i class="fas fa-chevron-right"></i>
       </button>
     </div>
   </div>
 </div>
 
-<!-- ── LIGHTBOX MODAL ── -->
-<div class="lightbox-overlay" *ngIf="lightboxSrc" (click)="closeLightbox()">
-  <div class="lightbox-box" (click)="$event.stopPropagation()">
+<!-- ── IMAGE PREVIEW & EDIT MODAL ── -->
+<div class="page-picker-overlay" *ngIf="imagePreviewModal" (click)="closeImagePreview()">
+  <div class="page-picker-box image-preview-modal" (click)="$event.stopPropagation()"
+    style="max-width: 720px;">
 
     <!-- Header -->
-    <div class="lightbox-header">
-      <span class="lightbox-label">
-        <i class="fas fa-images"></i> Page {{ lightboxPage }} of {{ lightboxTotal }}
-      </span>
-      <button class="lightbox-close" (click)="closeLightbox()" title="Close (Esc)">
+    <div class="page-picker-header">
+      <div class="page-picker-title">
+        <i class="fas fa-images text-success"></i>
+        Answer Sheet Images — {{ imagePreviewModal.studentName }}
+      </div>
+      <button class="page-picker-close" (click)="closeImagePreview()" title="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
-    <!-- Prev / Next + Image -->
-    <div class="lightbox-body">
-      <button class="lightbox-nav lightbox-prev"
-        (click)="lightboxNav(-1)"
-        [disabled]="lightboxPage <= 1"
-        title="Previous (←)">
-        <i class="fas fa-chevron-left"></i>
-      </button>
+    <!-- Image grid -->
+    <div class="page-picker-body">
+      <p class="image-preview-hint">
+        <i class="fas fa-info-circle"></i>
+        Click <strong>Replace</strong> on any image to upload a new one in its place.
+        Only replaced images will be updated.
+      </p>
 
-      <div class="lightbox-img-wrap">
-        <img [src]="lightboxSrc" class="lightbox-img" alt="Full size preview" />
+      <div class="image-preview-grid">
+        <div class="image-preview-slot" *ngFor="let slot of imagePreviewModal.slots">
+
+          <!-- Thumbnail -->
+          <div class="preview-thumb-wrap">
+            <!-- Loading spinner -->
+            <div *ngIf="slot.isLoadingPreview" class="preview-thumb-placeholder">
+              <i class="fas fa-spinner fa-spin"></i>
+              <span class="preview-page-label">Loading...</span>
+            </div>
+            <!-- New replacement image selected -->
+            <img *ngIf="!slot.isLoadingPreview && slot.newPreviewUrl"
+              [src]="slot.newPreviewUrl"
+              class="preview-thumb"
+              [class.preview-thumb-new]="slot.isReplaced"
+              [class.preview-thumb-added]="slot.isNew"
+              [title]="slot.newFile?.name" />
+            <!-- Existing image loaded from blob -->
+            <img *ngIf="!slot.isLoadingPreview && !slot.newPreviewUrl && slot.previewUrl"
+              [src]="slot.previewUrl"
+              class="preview-thumb"
+              [title]="slot.fileName" />
+            <!-- Fallback placeholder -->
+            <div *ngIf="!slot.isLoadingPreview && !slot.newPreviewUrl && !slot.previewUrl"
+              class="preview-thumb-placeholder">
+              <i class="fas fa-image"></i>
+              <span class="preview-page-label">Image {{ slot.index + 1 }}</span>
+            </div>
+            <!-- Replaced badge -->
+            <span class="replaced-badge" *ngIf="slot.isReplaced">
+              <i class="fas fa-check-circle"></i> Replaced
+            </span>
+            <!-- New addition badge -->
+            <span class="replaced-badge badge-new-addition" *ngIf="slot.isNew">
+              <i class="fas fa-plus-circle"></i> Added
+            </span>
+          </div>
+
+          <!-- Filename -->
+          <div class="preview-filename" [title]="slot.isReplaced || slot.isNew ? slot.newFile!.name : slot.fileName">
+            <i class="fas fa-file-image text-muted"></i>
+            {{ (slot.isReplaced || slot.isNew) ? slot.newFile!.name : slot.fileName }}
+          </div>
+
+          <!-- Replace/Remove button -->
+          <ng-container *ngIf="!slot.isNew">
+            <input type="file"
+              [id]="'replace-img-' + slot.index"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+              (change)="onReplaceImageSelected($event, slot)"
+              style="display:none" />
+            <label [for]="'replace-img-' + slot.index"
+              class="btn-replace"
+              [class.btn-replace-changed]="slot.isReplaced">
+              <i class="fas fa-sync-alt"></i>
+              {{ slot.isReplaced ? 'Change Again' : 'Replace' }}
+            </label>
+          </ng-container>
+
+          <!-- Remove button for newly added images -->
+          <ng-container *ngIf="slot.isNew">
+            <button type="button" class="btn-replace btn-replace-remove"
+              (click)="removeNewSlot(slot)">
+              <i class="fas fa-trash-alt"></i> Remove
+            </button>
+          </ng-container>
+
+        </div>
       </div>
-
-      <button class="lightbox-nav lightbox-next"
-        (click)="lightboxNav(1)"
-        [disabled]="lightboxPage >= lightboxTotal"
-        title="Next (→)">
-        <i class="fas fa-chevron-right"></i>
-      </button>
     </div>
 
     <!-- Footer -->
-    <div class="lightbox-footer">
-      <span class="lightbox-hint">
-        <i class="fas fa-info-circle"></i>
-        Click outside or press Esc to close &nbsp;·&nbsp; ← → to navigate
-      </span>
+    <div class="page-picker-footer">
+      <div class="page-picker-count">
+        <ng-container *ngIf="hasReplacedImages">
+          <span *ngIf="replacedCount > 0" class="text-warning" style="margin-right:0.5rem">
+            <i class="fas fa-sync-alt"></i> {{ replacedCount }} replaced
+          </span>
+          <span *ngIf="newCount > 0" class="text-success">
+            <i class="fas fa-plus-circle"></i> {{ newCount }} added
+          </span>
+        </ng-container>
+      </div>
+      <div class="page-picker-actions">
+
+        <!-- Cancel -->
+        <button type="button" class="btn-secondary img-modal-cancel"
+          (click)="closeImagePreview()"
+          [disabled]="imagePreviewModal.isSaving">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+
+        <!-- Add More Images -->
+        <input type="file"
+          id="add-more-images"
+          accept="image/png,image/jpeg,image/jpg,image/webp"
+          multiple
+          (change)="onAddMoreImages($event)"
+          style="display:none" />
+        <label for="add-more-images"
+          class="btn-secondary img-modal-add"
+          [class.disabled]="imagePreviewModal.isSaving">
+          <i class="fas fa-plus"></i> Add Images
+        </label>
+
+        <!-- Save Changes -->
+        <button type="button" class="btn-primary img-modal-save"
+          [disabled]="imagePreviewModal.isSaving || !hasReplacedImages"
+          (click)="saveImageReplacements()">
+          <ng-container *ngIf="!imagePreviewModal.isSaving">
+            <i class="fas fa-save"></i> Save Changes
+          </ng-container>
+          <ng-container *ngIf="imagePreviewModal.isSaving">
+            <i class="fas fa-spinner fa-spin"></i> Saving...
+          </ng-container>
+        </button>
+
+      </div>
     </div>
+
   </div>
+</div>
+
 </div>

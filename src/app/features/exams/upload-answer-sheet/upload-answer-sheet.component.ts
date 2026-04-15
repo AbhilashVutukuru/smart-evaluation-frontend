@@ -2,30 +2,33 @@ import { Component, inject, HostListener } from '@angular/core';
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
 
 import {
   StudentUploadStatus,
   SubmitAllPayload,
+  ImagePreviewSlot,
+  ImagePreviewModal,
 } from '../../../core/models/upload-answer-sheet.models';
 import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
 
 // ─── Page slot state ──────────────────────────────────────────────────────────
 export interface PageSlot {
-  pageNumber: number;       // 1-based
-  dataUrl:    string | null; // null = not yet captured
-  deleted:    boolean;      // true = was captured then removed
+  pageNumber: number;
+  dataUrl:    string | null;
+  deleted:    boolean;
+  imageFile:  File | null;   // original File object for backend upload
 }
 
-// ─── Modal state ─────────────────────────────────────────────────────────────
+// ─── Modal state ──────────────────────────────────────────────────────────────
 export interface PagePickerModal {
   studentId:  number;
   isUpdate:   boolean;
   pageCount:  number | null;  // null = step 1 (ask count), number = step 2 (show slots)
   slots:      PageSlot[];
-  inputCount: number | null;   // bound to the number input in step 1
+  inputCount: number | null;  // bound to the number input in step 1
 }
 
 @Component({
@@ -37,24 +40,34 @@ export interface PagePickerModal {
 })
 export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   private uploadService = inject(UploadAnswerSheetService);
+  private router        = inject(Router);
 
-  // ─── Student data ────────────────────────────────────────────────────────────
+  // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];
   absentStudentIds: number[] = [];
 
-  // ─── UI state ────────────────────────────────────────────────────────────────
+  // ─── UI state ─────────────────────────────────────────────────────────────────
   loading = false;
   isViewing = false;
   isSubmittingAll = false;
   isSubmittedForEvaluation = false;
+  submittedAt: Date | null = null;        // timestamp shown next to header after submit
 
   // ─── Filter collapse ──────────────────────────────────────────────────────────
   isFilterCollapsed = false;
+  hasSearched       = false;
 
-  // ─── Page picker modal ───────────────────────────────────────────────────────
+  // ─── Table search ─────────────────────────────────────────────────────────────
+  searchTerm        = '';
+  filteredStudents: StudentUploadStatus[] = [];
+
+  // ─── Page picker modal ────────────────────────────────────────────────────────
   modal: PagePickerModal | null = null;
 
-  // ─── Upload/Update dropdown menu ─────────────────────────────────────────────
+  // ─── Image preview & per-slot replace modal ───────────────────────────────────
+  imagePreviewModal: ImagePreviewModal | null = null;
+
+  // ─── Upload/Update dropdown menu ──────────────────────────────────────────────
   openMenuId: number | null = null;
 
   @HostListener('document:click')
@@ -70,27 +83,66 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.openMenuId = null;
   }
 
-  // ─── Legacy preview strip (PDF direct upload still uses this) ────────────────
-  private capturedImages = new Map<number, string[]>();
+  // ─── Table search ─────────────────────────────────────────────────────────────
+  onSearchInput(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      this.filteredStudents = [...this.students];
+      return;
+    }
+    this.filteredStudents = this.students.filter(s =>
+      s.studentName?.toLowerCase().includes(term) ||
+      s.rollNumber?.toLowerCase().includes(term)
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm       = '';
+    this.filteredStudents = [...this.students];
+  }
+
+  // ─── Legacy preview strip (PDF direct upload still uses this) ─────────────────
+  private capturedImages     = new Map<number, string[]>();
+  private capturedImageFiles = new Map<number, File[]>();   // original Files for backend
   private updateModeStudentIds = new Set<number>();
 
-  // ─── Lightbox ────────────────────────────────────────────────────────────────
+  // ─── Lightbox ─────────────────────────────────────────────────────────────────
   lightboxSrc:      string | null = null;
   lightboxPage      = 0;
   lightboxTotal     = 0;
   lightboxStudentId = 0;
   lightboxIndex     = 0;
 
-  // ─── Stats ───────────────────────────────────────────────────────────────────
+  // ─── Stats ────────────────────────────────────────────────────────────────────
   get totalStudents(): number { return this.students.length; }
   get absentCount():   number { return this.students.filter(s => s.isAbsent).length; }
   get uploadedCount(): number { return this.students.filter(s => s.isUploaded).length; }
   get pendingCount():  number { return this.students.filter(s => !s.isUploaded && !s.isAbsent).length; }
   get canEvaluate():  boolean { return this.students.length > 0 && this.students.every(s => s.isUploaded || s.isAbsent); }
 
+  /** True when the image preview modal has at least one replaced or new slot */
+  get hasReplacedImages(): boolean {
+    return this.imagePreviewModal?.slots.some(s => s.isReplaced || s.isNew) ?? false;
+  }
+
+  /** Count of replaced + new slots in the image preview modal */
+  get replacedImageCount(): number {
+    return this.imagePreviewModal?.slots.filter(s => s.isReplaced || s.isNew).length ?? 0;
+  }
+
+  /** Count of replaced (existing) slots */
+  get replacedCount(): number {
+    return this.imagePreviewModal?.slots.filter(s => s.isReplaced).length ?? 0;
+  }
+
+  /** Count of newly added slots */
+  get newCount(): number {
+    return this.imagePreviewModal?.slots.filter(s => s.isNew).length ?? 0;
+  }
+
   override get canShowStudents(): boolean { return super.canShowStudents; }
 
-  // ─── Modal helpers ───────────────────────────────────────────────────────────
+  // ─── Modal helpers ────────────────────────────────────────────────────────────
 
   /** Called when user clicks the "Images" button */
   openPagePicker(student: StudentUploadStatus, isUpdate: boolean): void {
@@ -113,6 +165,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       pageNumber: i + 1,
       dataUrl:    null,
       deleted:    false,
+      imageFile:  null,
     }));
   }
 
@@ -127,16 +180,18 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       return;
     }
     this.readFileAsDataUrl(file).then(dataUrl => {
-      slot.dataUrl = dataUrl;
-      slot.deleted = false;
+      slot.dataUrl   = dataUrl;
+      slot.deleted   = false;
+      slot.imageFile = file;   // store original File for backend upload
     });
     (event.target as HTMLInputElement).value = '';
   }
 
   /** Remove a page from a slot — highlights button red */
   deleteSlotImage(slot: PageSlot): void {
-    slot.dataUrl = null;
-    slot.deleted = true;
+    slot.dataUrl   = null;
+    slot.deleted   = true;
+    slot.imageFile = null;
   }
 
   /** True only when ALL slots have images (none empty, none deleted) */
@@ -156,19 +211,207 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     const student = this.students.find(s => s.studentId === this.modal!.studentId);
     if (!student) return;
 
-    const dataUrls = this.modal.slots
-      .filter(s => s.dataUrl !== null)
-      .map(s => s.dataUrl as string);
-
-    const isUpdate = this.modal.isUpdate;
+    const dataUrls   = this.modal.slots.filter(s => s.dataUrl !== null).map(s => s.dataUrl as string);
+    const imageFiles = this.modal.slots.filter(s => s.imageFile !== null).map(s => s.imageFile as File);
+    const isUpdate   = this.modal.isUpdate;
     this.closeModal();
-    this.convertImagesToPdfAndUpload(dataUrls, student, isUpdate);
+    this.convertImagesToPdfAndUpload(dataUrls, student, isUpdate, imageFiles);
   }
 
   closeModal(): void {
     this.modal = null;
     this.modalPreviewSrc = null;
     this.openMenuId = null;
+  }
+
+  // ─── Image Preview Modal ──────────────────────────────────────────────────────
+
+  /** Opens the image preview modal and loads thumbnails from blob */
+  openImagePreview(student: StudentUploadStatus): void {
+    const fileNames  = (student.fileName ?? '').split('|').filter(f => f);
+    const blobPaths  = student.imageBlobPaths?.split('|').filter(p => p) ?? [];
+
+    const slots: ImagePreviewSlot[] = fileNames.map((name, i) => ({
+      index:            i,
+      fileName:         name,
+      blobPath:         blobPaths[i] ?? '',
+      previewUrl:       null,
+      newFile:          null,
+      newPreviewUrl:    null,
+      isLoadingPreview: true,
+      isReplaced:       false,
+      isNew:            false,   // existing uploaded image
+    }));
+
+    this.imagePreviewModal = {
+      studentId:   student.studentId,
+      studentName: student.studentName,
+      slots,
+      isSaving:    false,
+    };
+
+    // Load each image thumbnail from blob in parallel
+    slots.forEach((slot, i) => {
+      this.uploadService.downloadImage(
+        student.studentId, i, this.selectedQuestionPaperId!
+      ).subscribe({
+        next: (dataUrl) => {
+          slot.previewUrl       = dataUrl;
+          slot.isLoadingPreview = false;
+        },
+        error: () => {
+          slot.isLoadingPreview = false; // show placeholder on error
+        },
+      });
+    });
+  }
+
+  closeImagePreview(): void {
+    this.imagePreviewModal = null;
+  }
+
+  /** Adds more images as new slots to the existing image preview modal */
+  onAddMoreImages(event: Event): void {
+    if (!this.imagePreviewModal) return;
+    const files = Array.from((event.target as HTMLInputElement).files ?? []);
+    if (!files.length) return;
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+    const invalid = files.find(f => !validTypes.includes(f.type));
+    if (invalid) {
+      this.toastService.showError('Error', 'Only PNG / JPEG / WebP images are supported');
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+
+    const currentCount = this.imagePreviewModal.slots.length;
+
+    files.forEach((file, i) => {
+      this.readFileAsDataUrl(file).then(dataUrl => {
+        this.imagePreviewModal?.slots.push({
+          index:            currentCount + i,
+          fileName:         file.name,
+          blobPath:         '',
+          previewUrl:       null,
+          newFile:          file,
+          newPreviewUrl:    dataUrl,
+          isLoadingPreview: false,
+          isReplaced:       false,  // not a replacement
+          isNew:            true,   // brand new addition
+        });
+      });
+    });
+
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  /** Removes a newly added slot (not an existing image) */
+  removeNewSlot(slot: ImagePreviewSlot): void {
+    if (!this.imagePreviewModal || !slot.isNew) return;
+    const idx = this.imagePreviewModal.slots.indexOf(slot);
+    if (idx > -1) {
+      this.imagePreviewModal.slots.splice(idx, 1);
+      // Re-index remaining slots
+      this.imagePreviewModal.slots.forEach((s, i) => s.index = i);
+    }
+  }
+
+  /** User picks a replacement image for a specific slot */
+  onReplaceImageSelected(event: Event, slot: ImagePreviewSlot): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/heif'];
+    if (!validTypes.includes(file.type)) {
+      this.toastService.showError('Error', 'Only image files are supported');
+      (event.target as HTMLInputElement).value = '';
+      return;
+    }
+    this.readFileAsDataUrl(file).then(dataUrl => {
+      slot.newFile         = file;
+      slot.newPreviewUrl   = dataUrl;
+      slot.isReplaced      = true;
+    });
+    (event.target as HTMLInputElement).value = '';
+  }
+
+  /** Saves all replaced images — only changed slots re-uploaded, then PDF regenerated */
+  async saveImageReplacements(): Promise<void> {
+    if (!this.imagePreviewModal) return;
+    const modal   = this.imagePreviewModal;
+    const changed = modal.slots.filter(s => (s.isReplaced || s.isNew) && s.newFile);
+    if (!changed.length) {
+      this.toastService.showWarning('Warning', 'No images were replaced');
+      return;
+    }
+
+    modal.isSaving = true;
+    const student  = this.students.find(s => s.studentId === modal.studentId);
+
+    try {
+      // ── Step 1: Process each changed slot ────────────────────────────
+      // New slots (blobPath empty) → use SlotIndex = -1 to signal append
+      // Existing slots (blobPath set) → replace at SlotIndex
+      for (const slot of changed) {
+        const fd = new FormData();
+        fd.append('NewImageFile',    slot.newFile!);
+        fd.append('StudentId',       modal.studentId.toString());
+        fd.append('ClassId',         this.selectedClass);
+        fd.append('SectionId',       this.selectedSection);
+        fd.append('SubjectId',       this.selectedSubject);
+        fd.append('ExamTypeId',      this.selectedExamType);
+        fd.append('QuestionPaperId', this.selectedQuestionPaperId!.toString());
+        // SlotIndex: use actual index for replace, -1 for new append
+        fd.append('SlotIndex', slot.isNew ? '-1' : slot.index.toString());
+        fd.append('OldBlobPath',     slot.blobPath ?? '');
+
+        await this.uploadService.replaceImage(fd).toPromise();
+
+        // Update local slot state
+        slot.fileName         = slot.newFile!.name;
+        slot.previewUrl       = slot.newPreviewUrl;  // save before clearing
+        slot.isReplaced       = false;
+        slot.isNew            = false;
+        slot.newFile          = null;
+        slot.newPreviewUrl    = null;
+      }
+
+      // ── Step 2: Collect all current image dataUrls ────────────────────
+      // Use previewUrl (already updated above for changed slots)
+      const allDataUrls: string[] = modal.slots
+        .map(s => s.previewUrl ?? '')
+        .filter(u => u.length > 0);
+
+      const validDataUrls = allDataUrls;
+
+      // ── Step 3: Regenerate PDF from all images ────────────────────────
+      if (validDataUrls.length > 0 && student) {
+        const pdfBlob = await this.imagesToPdf(validDataUrls, student.studentName);
+        const pdfFile = new File(
+          [pdfBlob],
+          `${student.studentName.replace(/\s+/g, '_')}.pdf`,
+          { type: 'application/pdf' }
+        );
+        student.answerSheetFile = pdfFile;
+        student.answerSheetType = 'Images';
+        // Update PDF on server
+        await this.uploadService.updateAnswerSheet(
+          this.buildFormData(student)
+        ).toPromise();
+      }
+
+      // ── Step 4: Update local student display ─────────────────────────
+      if (student) {
+        student.fileName       = modal.slots.map(s => s.fileName).join('|');
+        student.imageFileNames = modal.slots.map(s => s.fileName);
+      }
+
+      this.toastService.showSuccess('Success', 'Images updated successfully');
+      this.closeImagePreview();
+    } catch (err) {
+      this.errorHandler.handle('Failed to replace image', err);
+    } finally {
+      modal.isSaving = false;
+    }
   }
 
   // ─── Slot preview lightbox ────────────────────────────────────────────────────
@@ -202,22 +445,27 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
     this.students                 = [];
+    this.filteredStudents         = [];
+    this.searchTerm               = '';
     this.showStudentsCard         = false;
     this.isSubmittedForEvaluation = false;
+    this.submittedAt              = null;
     this.absentStudentIds         = [];
     this.noExamPaperFound         = false;
     this.capturedImages.clear();
+    this.capturedImageFiles.clear();
     this.updateModeStudentIds.clear();
     this.modal           = null;
     this.isFilterCollapsed = false;
+    this.hasSearched       = false;
   }
 
   // ─── Filter change overrides ──────────────────────────────────────────────────
   override onClassChange(classId: string): void { this.clearStudents(); super.onClassChange(classId); }
-  override onSectionChange(): void { this.clearStudents(); super.onSectionChange(); }
-  override onSubjectChange(): void { this.clearStudents(); super.onSubjectChange(); }
-  override onExamTypeChange(): void { this.clearStudents(); super.onExamTypeChange(); }
-  override onQuestionPaperChange(): void { this.clearStudents(); super.onQuestionPaperChange(); }
+  override onSectionChange(): void               { this.clearStudents(); super.onSectionChange(); }
+  override onSubjectChange(): void               { this.clearStudents(); super.onSubjectChange(); }
+  override onExamTypeChange(): void              { this.clearStudents(); super.onExamTypeChange(); }
+  override onQuestionPaperChange(): void         { this.clearStudents(); super.onQuestionPaperChange(); }
 
   // ─── Show Students ────────────────────────────────────────────────────────────
   showStudents(): void {
@@ -241,15 +489,22 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
         next: (response) => {
           if (response.success && response.data) {
             this.isSubmittedForEvaluation = response.data.isEvaluationSubmitted ?? false;
+            // Use submittedAt from API (EvaluationQueue.CreatedDate) if already submitted
+            if (response.data.submittedAt) {
+              this.submittedAt = this.parseUtcDate(response.data.submittedAt);
+            }
             const rawStudents = response.data.students ?? [];
             if (rawStudents.length > 0) {
-              this.students = this.mapStudents(rawStudents);
+              this.students         = this.mapStudents(rawStudents);
+              this.filteredStudents = [...this.students];
               this.absentStudentIds = this.students.filter(s => s.isAbsent).map(s => s.studentId);
               this.toastService.showSuccess('Success', 'Students loaded successfully');
-              this.isFilterCollapsed = true;
+              // Unlock collapse toggle and auto-collapse the filter card
+              this.hasSearched       = true;
               this.isFilterCollapsed = true;
             } else {
-              this.students = [];
+              this.students         = [];
+              this.filteredStudents = [];
             }
             this.showStudentsCard = true;
           }
@@ -269,18 +524,23 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   private mapStudents(raw: unknown[]): StudentUploadStatus[] {
     return raw.map(item => {
       const s = item as Record<string, unknown>;
+      const isUploaded =
+        typeof s['status'] === 'string' &&
+        s['status'].toLowerCase().includes('uploaded') &&
+        !s['status'].toLowerCase().includes('not');
       return {
-        studentId:   s['studentId']  as number,
-        rollNumber:  s['rollNumber'] as string,
-        studentName: s['studentName'] as string,
-        className:   s['className']  as string,
-        sectionName: s['sectionName'] as string,
-        isAbsent:    (s['isAbsent']  as boolean) ?? false,
-        isUploaded:
-          typeof s['status'] === 'string' &&
-          s['status'].toLowerCase().includes('uploaded') &&
-          !s['status'].toLowerCase().includes('not'),
-        fileName: (s['fileName'] as string) || (s['documentName'] as string) || '',
+        studentId:        s['studentId']        as number,
+        rollNumber:       s['rollNumber']        as string,
+        studentName:      s['studentName']       as string,
+        className:        s['className']         as string,
+        sectionName:      s['sectionName']       as string,
+        isAbsent:         (s['isAbsent']         as boolean) ?? false,
+        isUploaded,
+        fileName:         (s['fileName']         as string) || (s['documentName'] as string) || '',
+        answerSheetType:  (s['answerSheetType']  as 'PDF' | 'Images' | null) ?? null,
+        imageFileNames:   (s['imageFileNames']   as string[]) ?? [],
+        evaluationStatus: (s['evaluationStatus'] as string) ?? 'Pending',
+        imageBlobPaths:   (s['imageBlobPaths']   as string) ?? '',
       };
     });
   }
@@ -290,6 +550,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file?.type === 'application/pdf') {
       student.answerSheetFile = file;
+      student.answerSheetType = 'PDF';
+      student.imageFileNames  = [];
       isUpdate ? this.updateAnswerSheet(student) : this.uploadAnswerSheet(student);
     } else {
       this.toastService.showError('Error', 'Please select a PDF file');
@@ -315,8 +577,10 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     else          { this.updateModeStudentIds.delete(student.studentId); }
 
     Promise.all(files.map(f => this.readFileAsDataUrl(f))).then(dataUrls => {
-      const existing = this.capturedImages.get(student.studentId) ?? [];
+      const existing      = this.capturedImages.get(student.studentId) ?? [];
+      const existingFiles = this.capturedImageFiles.get(student.studentId) ?? [];
       this.capturedImages.set(student.studentId, [...existing, ...dataUrls]);
+      this.capturedImageFiles.set(student.studentId, [...existingFiles, ...files]);
     });
 
     input.value = '';
@@ -328,16 +592,19 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
   clearPreviewImages(studentId: number): void {
     this.capturedImages.delete(studentId);
+    this.capturedImageFiles.delete(studentId);
     this.updateModeStudentIds.delete(studentId);
   }
 
   uploadCapturedImages(student: StudentUploadStatus): void {
-    const images = this.capturedImages.get(student.studentId);
+    const images     = this.capturedImages.get(student.studentId);
+    const imageFiles = this.capturedImageFiles.get(student.studentId);
     if (!images || images.length === 0) return;
     const isUpdate = this.updateModeStudentIds.has(student.studentId);
     this.capturedImages.delete(student.studentId);
+    this.capturedImageFiles.delete(student.studentId);
     this.updateModeStudentIds.delete(student.studentId);
-    this.convertImagesToPdfAndUpload(images, student, isUpdate);
+    this.convertImagesToPdfAndUpload(images, student, isUpdate, imageFiles ?? []);
   }
 
   // ─── Core: images → PDF → upload ─────────────────────────────────────────────
@@ -345,13 +612,18 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     dataUrls: string[],
     student: StudentUploadStatus,
     isUpdate: boolean,
+    imageFiles?: File[],   // original File objects to send to backend
   ): Promise<void> {
     student.isUploading = true;
     try {
       const pdfBlob = await this.imagesToPdf(dataUrls, student.studentName);
       const fileName = `${student.studentName.replace(/\s+/g, '_')}.pdf`;
       const pdfFile  = new File([pdfBlob], fileName, { type: 'application/pdf' });
-      student.answerSheetFile = pdfFile;
+      student.answerSheetFile  = pdfFile;
+      student.answerSheetType  = 'Images';
+      // Store original filenames for display and for DB FileName column
+      student.imageFileNames   = (imageFiles ?? []).map(f => f.name);
+      student.imageFiles       = imageFiles ?? [];
       isUpdate ? this.updateAnswerSheet(student) : this.uploadAnswerSheet(student);
     } catch (err) {
       student.isUploading = false;
@@ -393,8 +665,9 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.uploadService.uploadStudentAnswer(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
-          student.isUploaded = true;
-          student.fileName   = student.answerSheetFile?.name;
+          student.isUploaded       = true;
+          student.fileName         = student.answerSheetFile?.name;
+          student.answerSheetType  = student.answerSheetType ?? 'PDF'; // preserve if Images already set
           this.toastService.showSuccess('Success', `Answer sheet uploaded for ${student.studentName}`);
         }
         student.isUploading = false;
@@ -415,8 +688,9 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.uploadService.updateAnswerSheet(this.buildFormData(student)).subscribe({
       next: (response) => {
         if (response.success) {
-          student.isUploaded = true;
-          student.fileName   = student.answerSheetFile?.name;
+          student.isUploaded       = true;
+          student.fileName         = student.answerSheetFile?.name;
+          student.answerSheetType  = student.answerSheetType ?? 'PDF';
           this.toastService.showSuccess('Success', `Answer sheet updated for ${student.studentName}`);
         }
         student.isUploading = false;
@@ -431,12 +705,17 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   private buildFormData(student: StudentUploadStatus): FormData {
     const fd = new FormData();
     fd.append('StudentAnswerSheetFile', student.answerSheetFile!);
-    fd.append('StudentId',       student.studentId.toString());
-    fd.append('ClassId',         this.selectedClass);
-    fd.append('SectionId',       this.selectedSection);
-    fd.append('SubjectId',       this.selectedSubject);
-    fd.append('ExamTypeId',      this.selectedExamType);
-    fd.append('QuestionPaperId', this.selectedQuestionPaperId!.toString());
+    fd.append('StudentId',        student.studentId.toString());
+    fd.append('ClassId',          this.selectedClass);
+    fd.append('SectionId',        this.selectedSection);
+    fd.append('SubjectId',        this.selectedSubject);
+    fd.append('ExamTypeId',       this.selectedExamType);
+    fd.append('QuestionPaperId',  this.selectedQuestionPaperId!.toString());
+    fd.append('AnswerSheetType',  student.answerSheetType ?? 'PDF');
+    // Send individual image files when type is Images
+    if (student.answerSheetType === 'Images' && student.imageFiles?.length) {
+      student.imageFiles.forEach(f => fd.append('ImageFiles', f));
+    }
     return fd;
   }
 
@@ -484,6 +763,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       next: (response) => {
         if (response.success) {
           this.isSubmittedForEvaluation = true;
+          // Use server UTC timestamp from EvaluationQueue INSERT — not browser time
+          this.submittedAt = this.parseUtcDate(response.data?.submittedAt) ?? new Date();
           this.toastService.showSuccess('Success', response.message ?? 'Evaluation started successfully');
           this.isSubmittingAll = false;
         }
@@ -493,6 +774,63 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
         this.errorHandler.handle('Failed to start evaluation', error);
       },
     });
+  }
+
+  // ─── Navigate to View Results ─────────────────────────────────────────────────
+  viewResults(): void {
+    this.router.navigate(['/results'], {
+      queryParams: {
+        classId:         this.selectedClass,
+        sectionId:       this.selectedSection,
+        subjectId:       this.selectedSubject,
+        examTypeId:      this.selectedExamType,
+        questionPaperId: this.selectedQuestionPaperId,
+      },
+    });
+  }
+
+  // ─── Format submission timestamp for display ──────────────────────────────────
+  getSubmittedAtDisplay(): string {
+    if (!this.submittedAt) return '';
+    return this.submittedAt.toLocaleString('en-GB', {
+      day:    '2-digit',
+      month:  '2-digit',
+      year:   'numeric',
+      hour:   '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  }
+
+  // ─── Safely parse UTC date string ─────────────────────────────────────────────
+  // DB stores datetime2 as "2026-04-15 07:37:48" (no T, no Z).
+  // C# JSON serializer may emit "2026-04-15T07:37:48" (no Z).
+  // Without Z, new Date() treats it as LOCAL time — wrong.
+  // This helper normalises both formats to ISO UTC by ensuring Z suffix.
+  private parseUtcDate(value: string | null | undefined): Date | null {
+    if (!value) return null;
+    // Replace space with T if needed: "2026-04-15 07:37:48" → "2026-04-15T07:37:48"
+    const withT = value.replace(' ', 'T');
+    // Append Z if missing: "2026-04-15T07:37:48" → "2026-04-15T07:37:48Z"
+    const iso   = withT.endsWith('Z') ? withT : withT + 'Z';
+    return new Date(iso);
+  }
+
+  // ─── Display helper: answer sheet file names for the Answer Sheet(s) column ───
+  getAnswerSheetDisplay(student: StudentUploadStatus): string {
+    if (student.answerSheetType === 'Images') {
+      // If imageFileNames set locally (just uploaded) — use them
+      if (student.imageFileNames?.length) {
+        return student.imageFileNames.join(', ');
+      }
+      // If fileName from DB contains pipe-separated original names
+      if (student.fileName?.includes('|')) {
+        return student.fileName.split('|').join(', ');
+      }
+      // Single image name
+      if (student.fileName) return student.fileName;
+    }
+    return student.fileName || '';
   }
 
   // ─── View Answer Sheet ────────────────────────────────────────────────────────

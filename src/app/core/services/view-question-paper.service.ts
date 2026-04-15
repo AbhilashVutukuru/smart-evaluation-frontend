@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -74,10 +74,13 @@ export class ViewQuestionPaperService {
   }
 
   // Returns all question papers for a class (all subjects, all exam types)
-  getAllPapersByClass(classId: number): Observable<QuestionPaperSummaryDto[]> {
+  getAllPapersByClass(classId: number, subjectId: number = 0): Observable<QuestionPaperSummaryDto[]> {
+    let params = new HttpParams();
+    if (subjectId > 0) params = params.set('subjectId', subjectId);
     return this.http
       .get<{ success: boolean; data: any[] }>(
         `${this.apiUrl}/question-paper/by-class/${classId}`,
+        { params }
       )
       .pipe(map((res) => (res.data ?? []).map((d: any) => ({
         ...d,

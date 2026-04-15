@@ -5,18 +5,21 @@
   <div class="card">
     <div class="filter-card-header"
          [class.is-collapsed]="examInfoCollapsed"
-         (click)="expandExamInfoIfCollapsed()">
+         [style.cursor]="questionsGenerated ? 'pointer' : 'default'"
+         (click)="questionsGenerated && (examInfoCollapsed = !examInfoCollapsed)">
       <h4>
         <i class="fas fa-clipboard-list"></i>
-        Exam Information
-        <i *ngIf="examInfoCollapsed"
-           class="fas fa-chevron-down collapse-indicator"
-           title="Click to expand"></i>
+        Exam Details
+        <i *ngIf="questionsGenerated"
+           class="fas collapse-indicator"
+           [class.fa-chevron-down]="examInfoCollapsed"
+           [class.fa-chevron-up]="!examInfoCollapsed"
+           [title]="examInfoCollapsed ? 'Click to expand' : 'Click to collapse'"></i>
       </h4>
     </div>
 
     <!-- Collapsed summary chips — show selected exam info when collapsed -->
-    <div class="filter-summary" *ngIf="examInfoCollapsed && examFormData.classId">
+    <div class="filter-summary" *ngIf="examInfoCollapsed && examFormData.classId && questionsGenerated">
       <span class="filter-chip" *ngIf="getClassName()">
         <i class="fas fa-layer-group"></i> {{ getClassName() }}
       </span>
@@ -147,8 +150,8 @@
       <div class="col-md-3 mb-3">
         <label class="form-label">
           Question Paper Name <span class="required">*</span>
-          <i class="fas fa-info-circle qp-name-info-icon"
-             title="Give a unique name for this question paper e.g. Mid Term-1, Unit Test-2. If same as Exam Type, no dropdown will appear during upload.">
+          <i class="fas fa-info-circle header-info-icon"
+             title="Please use this field to uniquely identify an exam within the same exam type.&#10;(e.g., Unit Test 1, Unit Test 2).">
           </i>
         </label>
         <input
@@ -231,12 +234,27 @@
   </div><!-- /EXAM FORM card -->
 
   <!-- QUESTIONS SECTION -->
-  <div *ngIf="questionsGenerated" class="card" style="margin-top:0.5rem">
-    <!-- Question Header -->
-    <div class="question-header">
+  <div *ngIf="questionsGenerated" class="card card-mt">
+    <!-- Q&A Section Header -->
+    <div class="filter-card-header">
+      <h4>
+        <i class="fas fa-question-circle"></i>
+        Question &amp; Answers
+      </h4>
+    </div>
+
+    <!-- Question Header: badge + progress bar + clear button -->
+    <div class="question-header" style="margin-top:1rem">
       <div class="question-badge">
         <i class="fas fa-question-circle"></i>
         Question {{ currentQuestionIndex + 1 }} of {{ questionSets.length }}
+      </div>
+      <!-- Progress bar inline next to badge -->
+      <div class="q-progress-inline">
+        <div class="q-progress-bar-wrap">
+          <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
+        </div>
+        <span class="q-progress-text">{{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%</span>
       </div>
       <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()">
         <i class="fas fa-trash"></i> Clear
@@ -313,10 +331,10 @@
       <ng-container *ngIf="currentQuestionSet.maxMarks !== 1">
         <div class="col-md-4 mb-3">
           <label class="form-label">
-            <strong>No: of Validation Rules</strong>
+            <strong>No. of Validation Rules</strong>
             <span class="required">*</span>
-            <i class="fas fa-info-circle qp-name-info-icon"
-               title="Enter the number of marking criteria (1–10). Each criterion will have a description and marks. Click Set Rules after entering the count.">
+            <i class="fas fa-info-circle header-info-icon"
+               title="Please choose how many checks (rules) should be used to evaluate this answer.&#10;For example, content accuracy, keywords, or steps.">
             </i>
           </label>
           <input
@@ -443,17 +461,6 @@
           <span *ngIf="isSubmitting">Submitting...</span>
         </button>
       </div>
-    </div>
-
-    <!-- Progress Bar — below nav -->
-    <div class="q-progress">
-      <div class="q-progress-bar-wrap">
-        <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
-      </div>
-      <span class="q-progress-text">
-        Progress: {{ currentQuestionIndex + 1 }} / {{ questionSets.length }} questions
-        ({{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%)
-      </span>
     </div>
 
     <!-- Upload Progress -->

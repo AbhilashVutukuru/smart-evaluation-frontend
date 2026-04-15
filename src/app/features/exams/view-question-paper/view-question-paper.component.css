@@ -23,7 +23,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
@@ -612,7 +612,7 @@ select.form-control:disabled { cursor: not-allowed !important; }
 }
 
 .filter-card-body {
-  overflow: hidden;
+  overflow: visible;                        /* ← expanded: never clips .select-icon */
   transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
   max-height: 1000px;
   opacity: 1;
@@ -620,6 +620,7 @@ select.form-control:disabled { cursor: not-allowed !important; }
 }
 
 .filter-card-body.collapsed {
+  overflow: hidden;                         /* ← only hidden when actually collapsed */
   max-height: 0;
   opacity: 0;
   margin-top: 0;
@@ -656,4 +657,68 @@ select.form-control:disabled { cursor: not-allowed !important; }
 
 .section-label .fa-check-circle {
   color: var(--green) !important;
+}
+/* ─── Table — NO overrides. global.css handles .table, .table th,
+   .table td, .table thead fully. Same as upload-answer-sheet.  ── */
+
+/* ─── Search box above table ─────────────────────────────────── */
+.search-box-wrap {
+  margin-bottom: 0.75rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.25rem !important;
+  padding-right: 2.25rem !important;
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.clear-search:hover { color: var(--red); }
+/* ─── Papers header row: title | search | badge — all same line ─ */
+.papers-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.papers-header-row h4 {
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.papers-header-row .search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.papers-header-row .badge-primary {
+  flex-shrink: 0;
+  white-space: nowrap;
 }

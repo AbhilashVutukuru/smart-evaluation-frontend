@@ -172,7 +172,7 @@ export class LayoutComponent implements OnInit {
   };
 
   private readonly routePrefixes: Array<{ prefix: string; title: string; icon: string }> = [
-    { prefix: '/view/exam',            title: 'View Question Paper',        icon: 'fa-file-alt' },
+    { prefix: '/view/exam',            title: 'View Question Papers',        icon: 'fa-file-alt' },
     { prefix: '/create/exam',          title: 'Create Question Paper',      icon: 'fa-file-alt' },
     { prefix: '/upload-answer-sheets', title: 'Upload Answer Sheets',       icon: 'fa-cloud-upload-alt' },
     { prefix: '/results',              title: 'View Exam Results',          icon: 'fa-chart-bar' },

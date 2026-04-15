@@ -43,9 +43,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   examInfoCollapsed = false;
   showExamInfoChevron = false;
 
-  expandExamInfoIfCollapsed(): void {
-    if (this.examInfoCollapsed) this.examInfoCollapsed = false;
-  }
+  // collapse toggle handled inline in HTML via questionsGenerated flag
 
   // ─── Loading states ───────────────────────────────────────────────────────────
   isLoading = false;

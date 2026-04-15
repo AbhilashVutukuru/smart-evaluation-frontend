@@ -654,21 +654,6 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 /* ============================================================
-   UTILITY
-   ============================================================ */
-.me-2 { margin-right: 0.5rem; }
-
-.qp-name-info-icon {
-  color: #f85310;
-  font-size: 0.87rem;
-  margin-left: 0.25rem;
-  cursor: help;
-  vertical-align: middle;
-}
-
-.qp-name-info-icon:hover { color:#d04008; }
-
-/* ============================================================
    PRINT
    ============================================================ */
 @media print {
@@ -919,3 +904,58 @@ label.disabled {
   color: #7fbb06;
   font-size: 1rem;
 }
+
+/* ─── Inline progress bar (next to question badge) ─────────── */
+.question-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.q-progress-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 120px;
+}
+
+.q-progress-inline .q-progress-bar-wrap {
+  flex: 1;
+  height: 7px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.q-progress-inline .q-progress-fill {
+  height: 100%;
+  background: var(--blue);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.q-progress-inline .q-progress-text {
+  font-size: var(--font-size-xs);
+  color: var(--gray-500);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ─── Remove background from 1-mark info box ───────────────── */
+.alert-info-no-bg {
+  background: transparent !important;
+  border: none !important;
+  padding-left: 0 !important;
+  color: var(--gray-500) !important;
+  font-size: var(--font-size-sm);
+}
+
+.alert-info-no-bg i {
+  color: var(--red) !important;
+}
+
+/* ─── Q&A card section header ───────────────────────────────── */
+.card-mt { margin-top: 0.5rem; }

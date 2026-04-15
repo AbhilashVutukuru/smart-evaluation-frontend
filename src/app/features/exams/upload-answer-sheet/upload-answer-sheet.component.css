@@ -4,33 +4,133 @@
                    🔴 Red var(--red)   | 🟡 Yellow var(--yellow)
    Global CSS handles: .page-header, .card, .btn + variants,
    .badge, .form-label, .required, .form-control, .row, .col-md-*,
-   .mb-*, .mt-*, .d-flex, .gap-2, .table, .empty-state,
-   .loading-state, .spinner, .stats-grid + .stat-*, .download-link,
-   .upload-section, .text-*, @keyframes, print
+   .mb-*, .mt-*, .d-flex, .gap-2, .table + .table th/td/thead,
+   .roll-number, .empty-state, .loading-state, .spinner,
+   .stats-grid + .stat-* (compact sizes now in global),
+   .download-link, .text-*, @keyframes, print
+   Component-only: .papers-header-row, .search-input-wrapper,
+   .search-icon, .search-input, .clear-search, doc/upload/action
+   menu, page-picker modal, lightbox, preview strip, slot grid
    Breakpoints: Mobile <480 | Tablet 480-767 | Laptop 768-1023 | Desktop ≥1024
    ============================================================ */
 
-/* ── Table — component-specific sizing ─────────────────────── */
-.table              { min-width: 640px; }
-.table tbody tr     { height: 60px; }
-.table td           { padding: 8px 12px; }
-
+/* ── Table — NO overrides. global.css handles .table, .table th,
+   .table td, .table thead, .roll-number fully. Same as
+   view-question-paper which has zero table overrides.          ── */
 .student-row.absent   { background: var(--warning-light); }
 .student-row.uploaded { background: var(--success-light); }
 .student-name         { font-weight: 600; color: var(--gray-900); }
-.roll-number          { color: var(--blue); font-weight: 500; }
 
-@media (max-width: 767px) {
-  .table               { min-width: 560px; }
-  .table th, .table td { padding: 6px 8px; }
-  .table tbody tr      { height: auto; }
+/* ── Header title group: stacks title + submitted notice ──────── */
+.header-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-shrink: 0;
 }
 
-@media (max-width: 479px) {
-  .table th, .table td { padding: 5px 6px; font-size: 0.75rem; }
+.header-title-group h4 { margin: 0; }
+
+/* ── Submitted notice ────────────────────────────────────────── */
+.submitted-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--green-dark);
+  white-space: nowrap;
 }
 
-/* ── Stats grid — responsive (sizing handled in global.css) ─── */
+.submitted-notice i { color: var(--green); font-size: 0.75rem; }
+
+/* ── Answer Sheet Type badges ─────────────────────────────────── */
+.badge-type-pdf {
+  background: var(--red-light);
+  color: var(--red);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 1rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-type-img {
+  background: var(--green-light);
+  color: var(--green-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 1rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ── Search bar row: title | search input | count badge ─────── */
+/* Exact same pattern as view-question-paper component           */
+.papers-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.papers-header-row h4 {
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.papers-header-row .search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.papers-header-row .badge-primary {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.25rem !important;
+  padding-right: 2.25rem !important;
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.clear-search:hover { color: var(--red); }
+
+/* ── Stats grid — sizing handled by global.css ─────────────── */
 @media (max-width: 767px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
@@ -1318,4 +1418,304 @@ label.btn-doc-img,
   white-space: nowrap !important;
   max-width: 120px !important;
   display: inline-block !important;
+}
+
+/* Overwrite */
+.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--red) !important;}
+/* .header-info-icon:hover { color:var(--red-dark); } */
+/* ══════════════════════════════════════════════════════════════
+   IMAGE PREVIEW & EDIT MODAL
+   ══════════════════════════════════════════════════════════════ */
+
+/* Preview & Edit button in the Answer Sheet(s) cell */
+.btn-action-preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1.5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.btn-action-preview:hover {
+  background: var(--blue);
+  color: #fff;
+}
+
+/* Override page-picker-box width for image preview modal */
+.image-preview-modal.page-picker-box {
+  max-width: 720px !important;
+}
+
+/* Hint text */
+.image-preview-hint {
+  font-size: 0.82rem;
+  color: var(--gray-600);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+.image-preview-hint i { margin-top: 2px; color: var(--blue); flex-shrink: 0; }
+
+/* Image grid — 3 columns on desktop, 2 on tablet, 1 on mobile */
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+@media (max-width: 600px) { .image-preview-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 380px) { .image-preview-grid { grid-template-columns: 1fr; } }
+
+/* Each slot card */
+.image-preview-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 0.75rem 0.5rem;
+  background: var(--gray-50);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.image-preview-slot:has(.replaced-badge) {
+  border-color: var(--success);
+  box-shadow: 0 0 0 2px var(--success-light);
+}
+
+/* Thumbnail wrapper */
+.preview-thumb-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Actual thumbnail image */
+.preview-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.preview-thumb-new {
+  border: 2px solid var(--success);
+}
+
+/* Placeholder when no preview available */
+.preview-thumb-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  height: 100%;
+  color: var(--gray-400);
+}
+.preview-thumb-placeholder i   { font-size: 2rem; }
+.preview-page-label            { font-size: 0.72rem; font-weight: 600; color: var(--gray-500); }
+
+/* "New" badge overlay */
+.replaced-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Filename label below thumbnail */
+.preview-filename {
+  font-size: 0.72rem;
+  color: var(--gray-700);
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+.preview-filename i { flex-shrink: 0; }
+
+/* Replace button (label acting as button) */
+.btn-replace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1.5px solid var(--blue);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  text-align: center;
+}
+.btn-replace:hover         { background: var(--blue); color: #fff; }
+.btn-replace-changed       { border-color: var(--success); color: var(--success); }
+.btn-replace-changed:hover { background: var(--success); color: #fff; }
+
+/* Loading spinner inside preview slot */
+.preview-thumb-placeholder i.fa-spinner {
+  font-size: 1.5rem;
+  color: var(--blue);
+}
+
+/* ── Image preview modal — Save Changes button green ─────────── */
+.image-preview-modal .page-picker-actions .btn-primary {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.image-preview-modal .page-picker-actions .btn-primary:hover:not(:disabled) {
+  background: var(--green-dark);
+  border-color: var(--green-dark);
+  transform: translateY(-1px);
+}
+.image-preview-modal .page-picker-actions .btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Image preview modal footer buttons ──────────────────────── */
+.img-modal-cancel {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 2px solid var(--red) !important;
+  border-radius: var(--border-radius) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.img-modal-cancel:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: #fff !important;
+}
+
+.img-modal-add {
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 2px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.img-modal-add:hover:not(.disabled) {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: var(--blue);
+}
+.img-modal-add.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+.img-modal-save {
+  background: var(--success) !important;
+  border-color: var(--success) !important;
+  color: #fff !important;
+  border-radius: var(--border-radius) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: var(--transition);
+}
+.img-modal-save:hover:not(:disabled) {
+  background: var(--green-dark) !important;
+  border-color: var(--green-dark) !important;
+  transform: translateY(-1px);
+}
+.img-modal-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Image preview modal footer — fix overlap with scrollable body ── */
+.image-preview-modal .page-picker-footer {
+  background: var(--app-bg);
+  border-top: 2px solid var(--gray-200);
+  padding: 1rem 1.5rem;
+  flex-shrink: 0;
+  z-index: 1;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.image-preview-modal .page-picker-body {
+  overflow-y: auto;
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+  min-height: 0; /* critical — prevents flex child from overflowing */
+}
+
+/* ── Ensure image preview modal box clips overflow correctly ──── */
+.image-preview-modal.page-picker-box {
+  max-width: 720px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Added badge — blue, distinct from green Replaced badge */
+.badge-new-addition {
+  background: var(--blue) !important;
+}
+
+/* Blue border for newly added image slot */
+.preview-thumb-added {
+  border: 2px solid var(--blue) !important;
+}
+
+/* Remove button for new slots — red style */
+.btn-replace-remove {
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+  background: var(--red-light) !important;
+  cursor: pointer;
+}
+.btn-replace-remove:hover {
+  background: var(--red) !important;
+  color: #fff !important;
 }
