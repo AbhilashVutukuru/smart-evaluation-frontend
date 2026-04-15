@@ -453,9 +453,9 @@ export class AdminSettingsComponent implements OnInit {
 
     const titles: any = {
       class: 'Delete Class',
-      section: 'Delete Section',
-      subject: 'Delete Subject',
-      examtype: 'Delete Exam Type',
+      'master-section': 'Delete Section',
+      'master-subject': 'Delete Subject',
+      'master-examtype': 'Delete Exam Type',
       'assigned-section': 'Remove Section Assignment',
       'assigned-subject': 'Remove Subject Assignment',
       'assigned-examtype': 'Remove Exam Type Assignment',
@@ -485,7 +485,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      section: () =>
+      'master-section': () =>
         this.svc.deleteMasterSection(id).subscribe({
           next: () => {
             this.showSuccess('Section deleted!');
@@ -497,7 +497,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      subject: () =>
+      'master-subject': () =>
         this.svc.deleteMasterSubject(id).subscribe({
           next: () => {
             this.showSuccess('Subject deleted!');
@@ -509,7 +509,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      examtype: () =>
+      'master-examtype': () =>
         this.svc.deleteMasterExamType(id).subscribe({
           next: () => {
             this.showSuccess('Exam type deleted!');

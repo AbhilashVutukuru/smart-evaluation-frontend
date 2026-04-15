@@ -333,7 +333,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 /* .btn-success   { background: #0882c4; color: white; }
 .btn-success:hover:not(:disabled)   { background: #7fbb06; } */
 
-.btn-success   { background: #7fbb06; color: white; }
+.btn-success   { background: #7fbb06; color: white; border: none; }
 .btn-success:hover:not(:disabled)   { background: #5f8e04; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
 
 .btn-danger    { background: #f85310; color: white; }

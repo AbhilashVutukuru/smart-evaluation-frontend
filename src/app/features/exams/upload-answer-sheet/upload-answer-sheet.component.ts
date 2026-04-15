@@ -228,8 +228,22 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
   /** Opens the image preview modal and loads thumbnails from blob */
   openImagePreview(student: StudentUploadStatus): void {
-    const fileNames  = (student.fileName ?? '').split('|').filter(f => f);
-    const blobPaths  = student.imageBlobPaths?.split('|').filter(p => p) ?? [];
+    // Prefer imageFileNames (set locally after upload) over fileName from DB
+    // because fileName may be stale (old PDF name) before page reload
+    let fileNames: string[] = [];
+
+    if (student.imageFileNames?.length) {
+      // Just uploaded — use local names
+      fileNames = student.imageFileNames;
+    } else if (student.fileName?.includes('|')) {
+      // Loaded from API — pipe-separated original names
+      fileNames = student.fileName.split('|').filter(f => f);
+    } else if (student.fileName && !student.fileName.endsWith('.pdf')) {
+      // Single image name
+      fileNames = [student.fileName];
+    }
+
+    const blobPaths = student.imageBlobPaths?.split('|').filter(p => p) ?? [];
 
     const slots: ImagePreviewSlot[] = fileNames.map((name, i) => ({
       index:            i,
@@ -383,30 +397,31 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
       const validDataUrls = allDataUrls;
 
-      // ── Step 3: Regenerate PDF from all images ────────────────────────
+      // ── Step 3: Regenerate PDF and update BlobPath only ──────────────
       if (validDataUrls.length > 0 && student) {
         const pdfBlob = await this.imagesToPdf(validDataUrls, student.studentName);
-        const pdfFile = new File(
-          [pdfBlob],
-          `${student.studentName.replace(/\s+/g, '_')}.pdf`,
-          { type: 'application/pdf' }
-        );
-        student.answerSheetFile = pdfFile;
-        student.answerSheetType = 'Images';
-        // Update PDF on server
-        await this.uploadService.updateAnswerSheet(
-          this.buildFormData(student)
-        ).toPromise();
+        const pdfFileName = `${student.studentName.replace(/\s+/g, '_')}.pdf`;
+        const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+
+        // Use SlotIndex = -2 → signals backend to update BlobPath only
+        // FileName and ImageBlobPaths are NOT touched
+        const pdfFd = new FormData();
+        pdfFd.append('NewImageFile',    pdfFile);
+        pdfFd.append('StudentId',       modal.studentId.toString());
+        pdfFd.append('ClassId',         this.selectedClass);
+        pdfFd.append('SectionId',       this.selectedSection);
+        pdfFd.append('SubjectId',       this.selectedSubject);
+        pdfFd.append('ExamTypeId',      this.selectedExamType);
+        pdfFd.append('QuestionPaperId', this.selectedQuestionPaperId!.toString());
+        pdfFd.append('SlotIndex',       '-2');  // PDF-only update signal
+
+        await this.uploadService.replaceImage(pdfFd).toPromise();
       }
 
-      // ── Step 4: Update local student display ─────────────────────────
-      if (student) {
-        student.fileName       = modal.slots.map(s => s.fileName).join('|');
-        student.imageFileNames = modal.slots.map(s => s.fileName);
-      }
-
+      // ── Step 4: Reload students from server — ensures UI matches DB ──
       this.toastService.showSuccess('Success', 'Images updated successfully');
       this.closeImagePreview();
+      this.showStudents();   // full reload — correct answerSheetType, fileName, imageBlobPaths
     } catch (err) {
       this.errorHandler.handle('Failed to replace image', err);
     } finally {
@@ -538,7 +553,14 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
         isUploaded,
         fileName:         (s['fileName']         as string) || (s['documentName'] as string) || '',
         answerSheetType:  (s['answerSheetType']  as 'PDF' | 'Images' | null) ?? null,
-        imageFileNames:   (s['imageFileNames']   as string[]) ?? [],
+        // Auto-split pipe-separated fileName into imageFileNames for Images type
+        imageFileNames:   (() => {
+          const fn = s['fileName'] as string;
+          if ((s['answerSheetType'] as string) === 'Images' && fn?.includes('|')) {
+            return fn.split('|').filter(f => f);
+          }
+          return [];
+        })(),
         evaluationStatus: (s['evaluationStatus'] as string) ?? 'Pending',
         imageBlobPaths:   (s['imageBlobPaths']   as string) ?? '',
       };
