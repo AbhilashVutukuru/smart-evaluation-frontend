@@ -59,7 +59,7 @@
           <select class="form-control subject-select" [(ngModel)]="selectedSubject"
             [disabled]="!selectedClass || isLoadingSubjects"
             (change)="onSubjectChange()">
-            <option value="" style="color: #1f2937;">
+            <option value="">
               {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'All Subjects' }}
             </option>
             <!-- <option [value]="ALL_SUBJECTS">— All Subjects —</option> -->

@@ -35,11 +35,6 @@
 
 .qp-readonly-input { padding-right: 2rem; }
 
-/* ─── Select accent color — brand blue (overrides global green) ─ */
-.select-wrapper select.form-control {
-  accent-color: var(--blue);
-}
-
 /* ─── Select dropdowns — brand blue border only when selected ── */
 .select-wrapper select.form-control.selected {
   border-color: var(--blue);
@@ -52,6 +47,8 @@
   align-items: center;
   margin-bottom: 0;
 }
+
+.filter-card-header h4 { margin: 0; }
 
 /* Only show pointer cursor when hasSearched (set via [style.cursor] in template) */
 .filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
