@@ -67,6 +67,11 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── Image preview & per-slot replace modal ───────────────────────────────────
   imagePreviewModal: ImagePreviewModal | null = null;
 
+  // ─── Image preview lightbox (fullscreen view within preview modal) ────────────
+  previewLightboxSrc:   string | null = null;
+  previewLightboxIndex: number = 0;
+  previewLightboxTotal: number = 0;
+
   // ─── Upload/Update dropdown menu ──────────────────────────────────────────────
   openMenuId: number | null = null;
 
@@ -281,7 +286,43 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   }
 
   closeImagePreview(): void {
-    this.imagePreviewModal = null;
+    this.imagePreviewModal    = null;
+    this.previewLightboxSrc   = null;
+    this.previewLightboxIndex = 0;
+  }
+
+  // ─── Image preview lightbox ───────────────────────────────────────────────────
+  openPreviewLightbox(slot: ImagePreviewSlot): void {
+    if (!this.imagePreviewModal) return;
+    const src = slot.newPreviewUrl ?? slot.previewUrl;
+    if (!src) return;
+    this.previewLightboxSrc   = src;
+    this.previewLightboxIndex = slot.index;
+    this.previewLightboxTotal = this.imagePreviewModal.slots.length;
+  }
+
+  closePreviewLightbox(): void {
+    this.previewLightboxSrc = null;
+  }
+
+  navPreviewLightbox(dir: -1 | 1): void {
+    if (!this.imagePreviewModal) return;
+    const slots  = this.imagePreviewModal.slots;
+    const newIdx = this.previewLightboxIndex + dir;
+    if (newIdx < 0 || newIdx >= slots.length) return;
+    const slot = slots[newIdx];
+    this.previewLightboxSrc   = slot.newPreviewUrl ?? slot.previewUrl ?? null;
+    this.previewLightboxIndex = newIdx;
+  }
+
+  /** Removes an existing uploaded image (marks for deletion on save) */
+  removeExistingSlot(slot: ImagePreviewSlot): void {
+    if (!this.imagePreviewModal || slot.isNew) return;
+    const idx = this.imagePreviewModal.slots.indexOf(slot);
+    if (idx > -1) {
+      this.imagePreviewModal.slots.splice(idx, 1);
+      this.imagePreviewModal.slots.forEach((s, i) => s.index = i);
+    }
   }
 
   /** Adds more images as new slots to the existing image preview modal */
@@ -360,6 +401,13 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
 
     modal.isSaving = true;
     const student  = this.students.find(s => s.studentId === modal.studentId);
+
+    // Track removed slots — slots that were in original but are now missing
+    const originalCount = (this.students.find(s => s.studentId === modal.studentId)
+      ?.imageBlobPaths?.split('|').filter(p => p).length) ?? 0;
+    const removedBlobPaths = modal.slots
+      .filter(s => !s.isNew && s.blobPath && s.isReplaced === false && s.previewUrl === null)
+      .map(s => s.blobPath);
 
     try {
       // ── Step 1: Process each changed slot ────────────────────────────

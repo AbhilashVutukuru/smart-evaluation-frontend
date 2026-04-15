@@ -196,12 +196,12 @@
       </div>
 
       <div class="button-group">
-        <button type="submit" class="btn btn-primary btn-lg" [disabled]="loading">
-          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
-          {{ loading ? 'Registering...' : 'Register Teacher' }}
-        </button>
         <button type="button" class="btn btn-reset btn-lg" (click)="resetForm()" [disabled]="loading">
           <i class="fas fa-redo"></i> Reset Form
+        </button>
+        <button type="submit" class="btn btn-success btn-lg" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
+          {{ loading ? 'Registering...' : 'Register Teacher' }}
         </button>
       </div>
     </form>

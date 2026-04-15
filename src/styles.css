@@ -64,7 +64,7 @@ body {
   --font-size-xs:     0.75rem;
 
   /* ─── Sidebar ────────────────────────────────── */
-  --sidebar-bg:           #f0ede8;
+  --sidebar-bg:           var(--gray-100);
   --sidebar-bg-from:      var(--blue);
   --sidebar-bg-to:        var(--blue-dark);
   --sidebar-toggle:       var(--blue);

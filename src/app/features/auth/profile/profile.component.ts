@@ -28,6 +28,7 @@ export class ProfileComponent implements OnInit {
   // ─── Change Password ──────────────────────────────────────────────────────
   passwordForm!: FormGroup;
   isChangingPassword = false;
+  showPasswordForm   = false;
   showCurrent = false;
   showNew     = false;
   showConfirm = false;
@@ -121,6 +122,7 @@ export class ProfileComponent implements OnInit {
           this.touchedFields.clear();
           this.strength = 'none';
           this.requirements = { length: false, upper: false, lower: false, number: false, symbol: false };
+          this.showPasswordForm = false;
           // Invalidate local session — backend already revoked the token
           setTimeout(() => {
             this.authService.logoutLocal();

@@ -3,14 +3,16 @@
    ============================================================ */
 
 .profile-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 1.25rem;
   max-width: 900px;
+  width: 100%;
   margin: 0 auto;
+  justify-content: center;
+  flex-wrap: wrap;
+  box-sizing: border-box;
 }
 
-/* ── Card ──────────────────────────────────────────────────── */
 .profile-card {
   background: var(--app-bg);
   border-radius: var(--border-radius-lg);
@@ -19,6 +21,8 @@
   padding: 1.5rem;
   box-sizing: border-box;
   align-self: start;
+  flex: 0 1 380px;
+  min-width: 0;
 }
 
 /* ── Header ────────────────────────────────────────────────── */
@@ -189,9 +193,16 @@
 /* ── Buttons ───────────────────────────────────────────────── */
 .btn-full { width: 100%; justify-content: center; margin-top: 0.25rem; }
 
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
 .btn-logout {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.45rem 1.125rem;
   border-radius: var(--border-radius);
@@ -203,6 +214,7 @@
   cursor: pointer;
   transition: var(--transition);
   font-family: inherit;
+  align-self: flex-end;
 }
 .btn-logout:hover { background: var(--red); color: white; }
 
@@ -221,7 +233,6 @@
   .profile-meta { align-items: center; }
 }
 
-/* ── Password Strength ─────────────────────────────────────── */
 .strength-bar-wrap {
   display: flex;
   align-items: center;

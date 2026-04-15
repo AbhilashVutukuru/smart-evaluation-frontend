@@ -77,6 +77,7 @@ export class AdminSettingsComponent implements OnInit {
 
   // ── UI state ───────────────────────────────────────────────
   loading = false;
+  deleting = false;
   // success = '';
   // error = '';
 
@@ -471,6 +472,7 @@ export class AdminSettingsComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.itemToDelete) return;
     const id = this.itemToDelete.id;
+    this.deleting = true;
 
     const actions: any = {
       class: () =>
@@ -573,7 +575,8 @@ export class AdminSettingsComponent implements OnInit {
     this.showDeleteModal = false;
     this.deleteType = '';
     this.itemToDelete = null;
-    this.loading = false;     
+    this.loading = false;
+    this.deleting = false;
   }
 
   // ── Filtered getters ──────────────────────────────────────

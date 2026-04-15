@@ -1719,3 +1719,154 @@ label.btn-doc-img,
   background: var(--red) !important;
   color: #fff !important;
 }
+/* ══════════════════════════════════════════════════════════════
+   IMAGE PREVIEW MODAL — FIXES
+   ══════════════════════════════════════════════════════════════ */
+
+/* Fix horizontal scroll — grid wraps, no overflow */
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);  /* 4 per row desktop */
+  gap: 0.75rem;
+  overflow-x: hidden !important;  /* no horizontal scroll */
+}
+@media (max-width: 700px) { .image-preview-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px) { .image-preview-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* Smaller slot card */
+.image-preview-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1.5px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.4rem;
+  background: var(--gray-50);
+  transition: border-color 0.15s;
+}
+
+/* Smaller thumbnail */
+.preview-thumb-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.preview-thumb-wrap.has-image:hover .preview-view-overlay { opacity: 1; }
+
+/* View overlay on hover */
+.preview-view-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+  border-radius: var(--radius-sm);
+}
+.preview-view-overlay i {
+  color: #fff;
+  font-size: 1.4rem;
+}
+
+/* Slot actions row — Replace + Camera + Remove side by side */
+.preview-slot-actions {
+  display: flex;
+  gap: 0.25rem;
+  width: 100%;
+}
+.preview-slot-actions .btn-replace {
+  flex: 1;
+  padding: 0.28rem 0.3rem;
+  font-size: 0.68rem;
+}
+.preview-slot-actions .btn-replace-cam {
+  flex: 0 0 auto;
+  width: 2rem;
+  padding: 0.28rem 0;
+  border-color: var(--gray-400);
+  color: var(--gray-600);
+}
+.preview-slot-actions .btn-replace-cam:hover {
+  background: var(--gray-600);
+  color: #fff;
+  border-color: var(--gray-600);
+}
+.preview-slot-actions .btn-replace-remove {
+  flex: 0 0 auto;
+  width: 2rem;
+  padding: 0.28rem 0;
+}
+
+/* mobile-only helper */
+.mobile-only { display: none !important; }
+@media (max-width: 767px) { .mobile-only { display: inline-flex !important; } }
+
+/* ── Thumbnail image fills box with cover ────────────────────── */
+.preview-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Remove button for new slots — full width, centered ─────── */
+.btn-remove-new {
+  width: 100% !important;
+  justify-content: center !important;
+  border-color: var(--red) !important;
+  color: var(--red) !important;
+  background: var(--red-light) !important;
+}
+.btn-remove-new:hover {
+  background: var(--red) !important;
+  color: #fff !important;
+}
+
+/* ── Camera button — brand blue ──────────────────────────────── */
+.btn-replace-cam {
+  background: var(--blue-light, #e8f4fd) !important;
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+}
+.btn-replace-cam:hover {
+  background: var(--blue) !important;
+  color: #fff !important;
+}
+
+/* ── Force all slots to same fixed size — no stretching ─────── */
+.image-preview-slot {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+.preview-thumb-wrap {
+  width: 100% !important;
+  height: 130px !important;       /* fixed height — never grows */
+  aspect-ratio: unset !important; /* remove aspect-ratio so height wins */
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.preview-thumb {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+.preview-thumb-placeholder {
+  width: 100% !important;
+  height: 100% !important;
+}

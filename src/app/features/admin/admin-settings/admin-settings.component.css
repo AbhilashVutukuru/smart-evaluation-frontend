@@ -413,19 +413,19 @@
    INFO TIP  &  WARN TIP
    ============================================================ */
 .info-tip {
-  background: #f0f9ff;
-  border-left: 3px solid #38bdf8;
+  background: var(--red-light);
+  border-left: 3px solid var(--red);
   padding: 10px 12px;
   border-radius: 6px;
   font-size: 12.5px;
-  color: #0369a1;
+  color: var(--red-dark);
   margin-bottom: 16px;
   line-height: 1.5;
 }
 
 .info-tip i {
   margin-right: 6px;
-  color: #38bdf8;
+  color: var(--red);
 }
 
 .warn-tip {
@@ -574,7 +574,7 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   align-items: center;
   gap: 8px;
   padding: 11px 20px;
-  background: linear-gradient(135deg, #0ea4f4, #0882c4);
+  background: var(--green);
   color: white;
   border: none;
   border-radius: 9px;
@@ -589,8 +589,9 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .btn-add:hover:not(:disabled) {
+  background: var(--green-dark);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(14, 164, 244, 0.4);
+  box-shadow: 0 6px 16px rgba(127, 187, 6, 0.4);
 }
 
 .btn-add:disabled {
@@ -607,8 +608,8 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   width: 32px;
   height: 32px;
   background: var(--red-light);
-  color: #ef4444;
-  border: 1px solid #fecaca;
+  color: var(--red);
+  border: 1px solid var(--red);
   border-radius: 7px;
   cursor: pointer;
   font-size: 12px;
@@ -616,9 +617,9 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
 }
 
 .btn-del:hover:not(:disabled) {
-  background: #ef4444;
+  background: var(--red);
   color: white;
-  border-color: #ef4444;
+  border-color: var(--red);
 }
 
 .btn-del:disabled {
@@ -795,9 +796,9 @@ input[type="date"].date-input::-webkit-calendar-picker-indicator:hover {
   white-space: nowrap;
 }
 
-.status-badge.used       { background: #fef3c7; color: #92400e; }
-.status-badge.free       { background: #d1fae5; color: var(--green-dark); }
-.status-badge.active-year{ background: var(--blue-light, #e0f4fe); color: var(--blue-dark, #0882c4); }
+.status-badge.used       { background: var(--yellow-light); color: var(--yellow-dark); border: 1px solid var(--yellow); }
+.status-badge.free       { background: var(--green-light);  color: var(--green-dark);  border: 1px solid var(--green); }
+.status-badge.active-year{ background: var(--blue-light);   color: var(--blue-dark);   border: 1px solid var(--blue); }
 
 /* ---- Active Year Label ---- */
 .active-label {

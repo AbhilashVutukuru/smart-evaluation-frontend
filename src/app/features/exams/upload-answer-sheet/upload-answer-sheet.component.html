@@ -180,7 +180,7 @@
                     <span class="pdf-name">{{ getAnswerSheetDisplay(student) }}</span>
                   </span>
 
-                  <!-- Images type: Update dropdown with PDF + Preview & Edit -->
+                  <!-- Images type: Update dropdown with PDF + Preview & Edit + Remove -->
                   <ng-container *ngIf="student.answerSheetType === 'Images' && !isSubmittedForEvaluation && !student.isUploading">
                     <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
                       <button type="button" class="btn-action btn-action-update"
@@ -200,6 +200,11 @@
                         <button type="button" class="dropdown-item"
                           (click)="openImagePreview(student); closeMenu()">
                           <i class="fas fa-eye text-success"></i> Preview &amp; Edit Images
+                        </button>
+                        <!-- Replace all with new images -->
+                        <button type="button" class="dropdown-item"
+                          (click)="openPagePicker(student, true); closeMenu()">
+                          <i class="fas fa-images text-success"></i> Replace All Images
                         </button>
                       </div>
                     </div>
@@ -513,28 +518,29 @@
     <div class="page-picker-body">
       <p class="image-preview-hint">
         <i class="fas fa-info-circle"></i>
-        Click <strong>Replace</strong> on any image to upload a new one in its place.
-        Only replaced images will be updated.
+        Click an image to <strong>view full size</strong>. Click <strong>Replace</strong> to upload a new one.
       </p>
 
       <div class="image-preview-grid">
         <div class="image-preview-slot" *ngFor="let slot of imagePreviewModal.slots">
 
-          <!-- Thumbnail -->
-          <div class="preview-thumb-wrap">
+          <!-- Thumbnail — clickable to open lightbox -->
+          <div class="preview-thumb-wrap" (click)="openPreviewLightbox(slot)"
+            [class.has-image]="slot.previewUrl || slot.newPreviewUrl"
+            title="Click to view full size">
             <!-- Loading spinner -->
             <div *ngIf="slot.isLoadingPreview" class="preview-thumb-placeholder">
               <i class="fas fa-spinner fa-spin"></i>
               <span class="preview-page-label">Loading...</span>
             </div>
-            <!-- New replacement image selected -->
+            <!-- New replacement image -->
             <img *ngIf="!slot.isLoadingPreview && slot.newPreviewUrl"
               [src]="slot.newPreviewUrl"
               class="preview-thumb"
               [class.preview-thumb-new]="slot.isReplaced"
               [class.preview-thumb-added]="slot.isNew"
               [title]="slot.newFile?.name" />
-            <!-- Existing image loaded from blob -->
+            <!-- Existing blob image -->
             <img *ngIf="!slot.isLoadingPreview && !slot.newPreviewUrl && slot.previewUrl"
               [src]="slot.previewUrl"
               class="preview-thumb"
@@ -544,6 +550,10 @@
               class="preview-thumb-placeholder">
               <i class="fas fa-image"></i>
               <span class="preview-page-label">Image {{ slot.index + 1 }}</span>
+            </div>
+            <!-- View icon overlay -->
+            <div class="preview-view-overlay" *ngIf="slot.previewUrl || slot.newPreviewUrl">
+              <i class="fas fa-search-plus"></i>
             </div>
             <!-- Replaced badge -->
             <span class="replaced-badge" *ngIf="slot.isReplaced">
@@ -556,33 +566,47 @@
           </div>
 
           <!-- Filename -->
-          <div class="preview-filename" [title]="slot.isReplaced || slot.isNew ? slot.newFile!.name : slot.fileName">
+          <div class="preview-filename" [title]="(slot.isReplaced || slot.isNew) ? slot.newFile!.name : slot.fileName">
             <i class="fas fa-file-image text-muted"></i>
             {{ (slot.isReplaced || slot.isNew) ? slot.newFile!.name : slot.fileName }}
           </div>
 
-          <!-- Replace/Remove button -->
-          <ng-container *ngIf="!slot.isNew">
-            <input type="file"
-              [id]="'replace-img-' + slot.index"
-              accept="image/png,image/jpeg,image/jpg,image/webp"
-              (change)="onReplaceImageSelected($event, slot)"
-              style="display:none" />
-            <label [for]="'replace-img-' + slot.index"
-              class="btn-replace"
-              [class.btn-replace-changed]="slot.isReplaced">
-              <i class="fas fa-sync-alt"></i>
-              {{ slot.isReplaced ? 'Change Again' : 'Replace' }}
-            </label>
-          </ng-container>
+          <!-- Buttons row -->
+          <div class="preview-slot-actions">
+            <ng-container *ngIf="!slot.isNew">
+              <!-- Replace via gallery -->
+              <input type="file"
+                [id]="'replace-img-' + slot.index"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                (change)="onReplaceImageSelected($event, slot)"
+                style="display:none" />
+              <label [for]="'replace-img-' + slot.index"
+                class="btn-replace"
+                [class.btn-replace-changed]="slot.isReplaced">
+                <i class="fas fa-sync-alt"></i>
+                {{ slot.isReplaced ? 'Change Again' : 'Replace' }}
+              </label>
+              <!-- Camera capture (mobile only) -->
+              <input type="file"
+                [id]="'replace-cam-' + slot.index"
+                accept="image/*" capture="environment"
+                (change)="onReplaceImageSelected($event, slot)"
+                style="display:none" />
+              <label [for]="'replace-cam-' + slot.index"
+                class="btn-replace btn-replace-cam mobile-only"
+                title="Take photo">
+                <i class="fas fa-camera"></i>
+              </label>
+            </ng-container>
 
-          <!-- Remove button for newly added images -->
-          <ng-container *ngIf="slot.isNew">
-            <button type="button" class="btn-replace btn-replace-remove"
-              (click)="removeNewSlot(slot)">
-              <i class="fas fa-trash-alt"></i> Remove
-            </button>
-          </ng-container>
+            <!-- Remove button only for newly added images -->
+            <ng-container *ngIf="slot.isNew">
+              <button type="button" class="btn-replace btn-replace-remove btn-remove-new"
+                (click)="removeNewSlot(slot)">
+                <i class="fas fa-trash-alt"></i> Remove
+              </button>
+            </ng-container>
+          </div>
 
         </div>
       </div>
@@ -609,7 +633,7 @@
           <i class="fas fa-times"></i> Cancel
         </button>
 
-        <!-- Add More Images -->
+        <!-- Add More Images (gallery) -->
         <input type="file"
           id="add-more-images"
           accept="image/png,image/jpeg,image/jpg,image/webp"
@@ -620,6 +644,19 @@
           class="btn-secondary img-modal-add"
           [class.disabled]="imagePreviewModal.isSaving">
           <i class="fas fa-plus"></i> Add Images
+        </label>
+
+        <!-- Camera capture (mobile only) -->
+        <input type="file"
+          id="add-more-camera"
+          accept="image/*" capture="environment"
+          (change)="onAddMoreImages($event)"
+          style="display:none" />
+        <label for="add-more-camera"
+          class="btn-secondary img-modal-add mobile-only"
+          [class.disabled]="imagePreviewModal.isSaving"
+          title="Take photo">
+          <i class="fas fa-camera"></i>
         </label>
 
         <!-- Save Changes -->
@@ -637,6 +674,42 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ── IMAGE PREVIEW LIGHTBOX ── -->
+<div class="lightbox-overlay" *ngIf="previewLightboxSrc" (click)="closePreviewLightbox()">
+  <div class="lightbox-box" (click)="$event.stopPropagation()">
+    <div class="lightbox-header">
+      <span class="lightbox-label">
+        <i class="fas fa-images"></i>
+        Image {{ previewLightboxIndex + 1 }} of {{ previewLightboxTotal }}
+      </span>
+      <button class="lightbox-close" (click)="closePreviewLightbox()" title="Close">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="lightbox-body">
+      <button class="lightbox-nav lightbox-prev"
+        (click)="navPreviewLightbox(-1)"
+        [disabled]="previewLightboxIndex <= 0">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <div class="lightbox-img-wrap">
+        <img [src]="previewLightboxSrc" class="lightbox-img" alt="Full size preview" />
+      </div>
+      <button class="lightbox-nav lightbox-next"
+        (click)="navPreviewLightbox(1)"
+        [disabled]="previewLightboxIndex >= previewLightboxTotal - 1">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+    <div class="lightbox-footer">
+      <span class="lightbox-hint">
+        <i class="fas fa-info-circle"></i>
+        Click outside or press Esc to close &nbsp;·&nbsp; ← → to navigate
+      </span>
+    </div>
   </div>
 </div>
 
