@@ -1,13 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import {
   Observable,
   BehaviorSubject,
+  Subject,
   tap,
   catchError,
   throwError,
   firstValueFrom,
+  fromEvent,
+  merge,
 } from 'rxjs';
+import { throttleTime, takeUntil } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { LoggerService } from './logger.service'; 
@@ -28,11 +32,61 @@ export class AuthService {
   public currentUser$ = this.currentUserSubject.asObservable();
   private refreshTokenTimeout?: any;
 
+  // ── Idle Logout ───────────────────────────────────────────
+  //private readonly IDLE_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute (testing)
+  private readonly IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes production
+  private idleTimeout?: any;
+  private stopIdle$ = new Subject<void>();
+
   constructor(
     private http: HttpClient,
     private router: Router,
     private logger: LoggerService,
+    private ngZone: NgZone,
   ) {}
+
+  // ============================================================
+  // ✅ Idle Logout Timer
+  // ============================================================
+  private startIdleTimer(): void {
+    this.stopIdleTimer();
+
+    this.ngZone.runOutsideAngular(() => {
+      const activity$ = merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'keydown'),
+        fromEvent(window, 'mousedown'),
+        fromEvent(window, 'touchstart'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'click'),
+      ).pipe(
+        throttleTime(500),
+        takeUntil(this.stopIdle$),
+      );
+
+      // Reset timer on activity
+      activity$.subscribe(() => {
+        clearTimeout(this.idleTimeout);
+        this.idleTimeout = setTimeout(() => this.onIdle(), this.IDLE_TIMEOUT_MS);
+      });
+
+      // Start initial timer
+      this.idleTimeout = setTimeout(() => this.onIdle(), this.IDLE_TIMEOUT_MS);
+    });
+  }
+
+  private onIdle(): void {
+    this.ngZone.run(() => {
+      this.logger.info('Session expired due to inactivity');
+      this.stopIdleTimer();
+      this.logout();
+    });
+  }
+
+  private stopIdleTimer(): void {
+    clearTimeout(this.idleTimeout);
+    this.stopIdle$.next();
+  }
 
   // ============================================================
   // ✅ Initialize - Called by APP_INITIALIZER
@@ -56,6 +110,7 @@ export class AuthService {
         });
         // Pass expiry so the timer fires at the right time, not always 50 min from now
         this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
+        this.startIdleTimer();
       }
     } catch (error: any) {
       this.logger.info('No active session');
@@ -110,6 +165,7 @@ export class AuthService {
             this.logger.info('Login successful');
             this.currentUserSubject.next(response.data);
             this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
+            this.startIdleTimer();
           }
         }),
         catchError((error) => {
@@ -182,6 +238,7 @@ export class AuthService {
    logout(): void {
     this.logger.info('Logging out...');
     this.stopRefreshTokenTimer();
+    this.stopIdleTimer();
     
     this.http
       .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
@@ -202,6 +259,7 @@ export class AuthService {
   logoutLocal(): void {
     this.logger.info('Clearing local session...');
     this.stopRefreshTokenTimer();
+    this.stopIdleTimer();
     this.currentUserSubject.next(null);
     this.router.navigate(['/auth/login']);
   }
