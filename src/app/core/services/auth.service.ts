@@ -207,7 +207,6 @@ export class AuthService {
     this.logger.info('Logging out...');
     this.stopRefreshTokenTimer();
     this.stopIdleTimer();
-
     this.http
       .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
       .subscribe({
