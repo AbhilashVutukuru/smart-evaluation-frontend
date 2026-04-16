@@ -300,6 +300,10 @@ export class AuthService {
     return this.getUserRole() === 'Teacher';
   }
 
+  isStaff(): boolean {
+  return this.getUserRole() === 'NonTeachingStaff';
+}
+
   isStudent(): boolean {
     return this.getUserRole() === 'Student';
   }

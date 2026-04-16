@@ -6,7 +6,7 @@ import { MasterDataService } from '../../../core/services/master-data.service';
 import { Subscription } from 'rxjs';
 
 interface MenuItem {
-  icon:  string;
+  icon: string;
   label: string;
   route: string;
   roles: string[];
@@ -20,16 +20,16 @@ interface MenuItem {
   styleUrls: ['./sidebar.component.css'],
 })
 export class SidebarComponent implements OnInit, OnDestroy {
-  private authService       = inject(AuthService);
+  private authService = inject(AuthService);
   private masterDataService = inject(MasterDataService);
 
-  userRole:             string | null = null;
-  userName:             string | null = null;
-  schoolName:           string | null = null;
-  currentAcademicYear:  string | null = null;
+  userRole: string | null = null;
+  userName: string | null = null;
+  schoolName: string | null = null;
+  currentAcademicYear: string | null = null;
   isLoadingAcademicYear = false;
-  isCollapsed           = false;
-  isMobileOpen          = false;
+  isCollapsed = false;
+  isMobileOpen = false;
 
   // ── Admin submenu state ──────────────────────────────────
   isAdminMenuOpen = false;
@@ -37,7 +37,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   @Output() collapsedChange = new EventEmitter<boolean>();
 
   commonMenuItems: MenuItem[] = [];
-  adminMenuItems:  MenuItem[] = [];
+  adminMenuItems: MenuItem[] = [];
 
   private academicYearSubscription?: Subscription;
 
@@ -46,82 +46,94 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean {
-   return this.userRole === 'Admin' || this.userRole === 'SuperAdmin';
+    return this.userRole === 'Admin' || this.userRole === 'SuperAdmin';
   }
 
   // ── All menu items ───────────────────────────────────────
   private readonly allCommonItems: MenuItem[] = [
     {
-      icon:  'fas fa-th-large',
+      icon: 'fas fa-th-large',
       label: 'Dashboard',
       route: '/dashboard',
-      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-file-alt',
+      icon: 'fas fa-file-alt',
       label: 'Create Question Paper',
       route: '/create/exam',
-      roles: ['Admin', 'Teacher', 'SuperAdmin'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin', 'NonTeachingStaff'],
     },
     {
-      icon:  'fas fa-eye',
+      icon: 'fas fa-eye',
       label: 'View Question Papers',
       route: '/view/exam',
-      roles: ['Admin', 'Teacher', 'SuperAdmin'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin', 'NonTeachingStaff'],
     },
     {
-      icon:  'fas fa-upload',
+      icon: 'fas fa-upload',
       label: 'Upload Answer Sheets',
       route: '/upload-answer-sheets',
+      roles: ['Admin', 'Teacher', 'SuperAdmin', 'NonTeachingStaff'],
+    },
+    {
+      icon: 'fas fa-chart-bar',
+      label: 'View Exam Results',
+      route: '/results',
       roles: ['Admin', 'Teacher', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-chart-bar',
-      label: 'View Exam Results',
-      route: '/results',
-      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
-    },
-    {
-      icon:  'fas fa-key',
+      icon: 'fas fa-key',
       label: 'Change Password',
       route: '/change-password',
-      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin', 'NonTeachingStaff'],
     },
   ];
 
   private readonly allAdminOnlyItems: MenuItem[] = [
     {
-      icon:  'fas fa-user-graduate',
+      icon: 'fas fa-user-graduate',
       label: 'Students',
       route: '/students/list',
       roles: ['Admin', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-chalkboard-teacher',
+      icon: 'fas fa-chalkboard-teacher',
       label: 'Teachers',
       route: '/teachers/list',
       roles: ['Admin', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-user-plus',
+      icon: 'fas fa-user-tie',
+      label: 'Non-Teaching',
+      route: '/non-teaching-staff/list',
+      roles: ['Admin', 'SuperAdmin'],
+    },
+    {
+      icon: 'fas fa-user-plus',
       label: 'Student Registration',
       route: '/registration/student',
       roles: ['Admin', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-user-tie',
+      icon: 'fas fa-user-tie',
       label: 'Teacher Registration',
       route: '/registration/teacher',
       roles: ['Admin', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-user-tag',
+      icon: 'fas fa-user-plus',
+      label: 'Non-Teaching Register',
+      route: '/non-teaching-staff/register',
+      roles: ['Admin', 'SuperAdmin'],
+    },
+    {
+      icon: 'fas fa-user-tag',
       label: 'Assign Subjects',
       route: '/assign-teacher-subjects',
       roles: ['Admin', 'SuperAdmin'],
     },
     {
-      icon:  'fas fa-cog',
+      icon: 'fas fa-cog',
       label: 'Settings',
       route: '/admin-settings',
       roles: ['Admin', 'SuperAdmin'],
@@ -129,8 +141,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    this.userRole   = this.authService.getUserRole();
-    this.userName   = this.authService.getUserDisplayName();
+    this.userRole = this.authService.getUserRole();
+    this.userName = this.authService.getUserDisplayName();
     this.schoolName = this.authService.getSchoolName();
     this.filterMenuByRole();
     this.subscribeToAcademicYear();
@@ -161,7 +173,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
         this.isLoadingAcademicYear = false;
       },
       error: () => {
-        this.currentAcademicYear  = 'Not Available';
+        this.currentAcademicYear = 'Not Available';
         this.isLoadingAcademicYear = false;
       },
     });
@@ -172,7 +184,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   private filterMenuByRole(): void {
     if (!this.userRole) {
       this.commonMenuItems = [];
-      this.adminMenuItems  = [];
+      this.adminMenuItems = [];
       return;
     }
     this.commonMenuItems = this.allCommonItems.filter(item =>

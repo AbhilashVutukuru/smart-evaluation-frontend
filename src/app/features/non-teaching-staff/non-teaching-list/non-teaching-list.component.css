@@ -1,0 +1,493 @@
+/* ============================================================
+   STUDENT LIST — RESPONSIVE COMPONENT STYLES
+   Uses CSS variables from global.css / styles.css
+   Breakpoints:
+     Mobile  : < 480px
+     Tablet  : 480px – 767px  → card view
+     Laptop  : 768px – 1023px → table view
+     Desktop : ≥ 1024px       → table view
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.list-container {
+   padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1023px) { .list-container { padding: 1rem; } }
+@media (max-width: 767px)  { .list-container { padding: 0.875rem; } }
+@media (max-width: 479px)  { .list-container { padding: 0.625rem; } }
+
+/* ─── Page Header ───────────────────────────────────────────────────────────── */
+/* global.css provides .page-header base; only override what differs */
+
+@media (max-width: 767px) {
+  .list-container .page-header { margin-bottom: 1rem; }
+  .list-container .page-header h2 { font-size: 1.15rem; }
+}
+
+@media (max-width: 479px) {
+  .list-container .page-header { flex-direction: column; align-items: stretch; }
+  .list-container .page-header h2 { font-size: 1rem; gap: 0.4rem; }
+  .list-container .page-header .btn { width: 100%; justify-content: center; }
+}
+
+/* ─── Card ──────────────────────────────────────────────────────────────────── */
+/* global.css provides .card; override padding/margin for this component */
+.list-container .card {
+  padding: 1.25rem;
+  margin-bottom: 0;
+}
+
+@media (max-width: 767px) { .list-container .card { padding: 1rem; } }
+@media (max-width: 479px) { .list-container .card { padding: 0.875rem; } }
+
+/* ─── Search Section ────────────────────────────────────────────────────────── */
+.search-section {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+@media (max-width: 479px) {
+  .search-section { grid-template-columns: 1fr; gap: 0.5rem; }
+  .search-section .btn { width: 100%; }
+}
+
+/* ─── Search Input ──────────────────────────────────────────────────────────── */
+.search-wrapper { display: flex; flex-direction: column; gap: 0.375rem; }
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.875rem;
+  color: var(--blue);
+  font-size: 0.875rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 0.75rem 0.5rem 2.5rem !important;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  transition: var(--transition);
+  outline: none;
+  background: var(--app-bg);
+  background-image: none !important;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.search-input:focus-visible { outline: none; }
+
+.clear-search {
+  position: absolute;
+  right: 0.625rem;
+  background: none;
+  border: none;
+  color: var(--red);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.clear-search:hover { background: var(--red-light); color: var(--red-dark); }
+
+@media (max-width: 479px) {
+  .search-icon  { left: 0.625rem; font-size: 0.8125rem; }
+  .search-input { padding-left: 2.25rem !important; font-size: 0.8125rem; }
+}
+
+/* ─── Filter Wrappers ───────────────────────────────────────────────────────── */
+.filter-wrapper { display: flex; flex-direction: column; }
+.filter-wrapper:last-child .btn { min-width: 6rem; }
+
+/* ─── Table — NO overrides. global.css handles .table th/td fully ── */
+.list-container .table-responsive { display: block; }
+
+@media (max-width: 767px) { .list-container .table-responsive { display: none !important; } }
+
+/* ─── Student info cell ──────────────────────────────────────────────────────── */
+.teacher-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list-container .avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.6875rem;
+  flex-shrink: 0;
+}
+
+.name        { font-weight: 600; color: var(--gray-900); font-size: var(--font-size-sm); line-height: 1.2; }
+.roll-number { color: var(--primary); font-weight: 600; }
+
+/* ─── Table Action Buttons ──────────────────────────────────────────────────── */
+/*
+  CRITICAL: global.css .action-buttons = form footer layout with
+  margin-top:2rem, padding-top:2rem, border-top.
+  We must fully reset it for the inline table icon group.
+*/
+.list-container .table .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.3rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+.btn-action {
+  width: 1.875rem;
+  height: 1.875rem;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  padding: 0 !important; /* reset global .btn padding */
+}
+
+/* View */
+.list-container .btn-action.btn-view {
+  background: var(--blue-light) !important;
+  color: var(--blue) !important;
+}
+
+/* icon normal */
+.list-container .btn-action.btn-view i {
+  color: var(--blue) !important;
+}
+
+/* FULL BLUE on hover */
+.list-container .btn-action.btn-view:hover {
+  background: var(--blue) !important;
+  color: #fff !important;
+}
+
+/* icon also white on hover */
+.list-container .btn-action.btn-view:hover i {
+  color: #fff !important;
+}
+
+/* Edit */
+.list-container .btn-action.btn-se-edit {
+  background: var(--yellow-light) !important;
+  color: var(--yellow-dark) !important;
+}
+
+.list-container .btn-action.btn-se-edit i {
+  color: var(--yellow-dark) !important;
+}
+
+/*  FULL YELLOW on hover */
+.list-container .btn-action.btn-se-edit:hover {
+  background: var(--yellow) !important;
+  color: #fff !important;
+}
+
+.list-container .btn-action.btn-se-edit:hover i {
+  color: #fff !important;
+}
+
+/* Delete */
+.list-container .btn-action.btn-delete {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+}
+
+.list-container .btn-action.btn-delete i {
+  color: var(--red) !important;
+}
+
+/* FULL RED on hover */
+.list-container .btn-action.btn-delete:hover {
+  background: var(--red) !important;
+  color: #fff !important;
+}
+
+.list-container .btn-action.btn-delete:hover i {
+  color: #fff !important;
+}
+
+/* ─── Badges ────────────────────────────────────────────────────────────────── */
+/* global.css provides .badge + .badge-success / .badge-danger already */
+
+/* ─── Student Cards (tablet + mobile only) ──────────────────────────────────── */
+.teachers-cards { display: none; }
+
+@media (max-width: 767px) {
+  .teachers-cards { display: flex; flex-direction: column; gap: 0.875rem; }
+}
+@media (max-width: 479px) { .teachers-cards { gap: 0.625rem; } }
+
+.teacher-card {
+  background: var(--app-bg);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.teacher-card:hover { box-shadow: var(--shadow-md); }
+
+/* Override global .card-header (gradient bg, large padding, border-bottom:2px) */
+.teacher-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--primary-light);
+  flex-wrap: wrap;
+  font-weight: normal;
+  font-size: inherit;
+  color: inherit;
+}
+
+.list-container .teacher-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.teacher-details { flex: 1; min-width: 0; }
+
+.teacher-details h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teacher-details p { margin: 0.15rem 0 0; font-size: 0.8125rem; }
+
+/* Override global .card-body padding */
+.teacher-card .card-body {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  min-width: 0;
+}
+
+.info-row i { width: 1.125rem; color: var(--primary); flex-shrink: 0; text-align: center; font-size: 0.8125rem; }
+.info-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Override global .card-footer */
+.teacher-card .card-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.teacher-card .card-footer .btn { flex: 1; }
+
+/* Card footer btn-action — same colors as desktop, wider to fill card */
+.teacher-card .card-footer .btn-action {
+  width: auto !important;
+  flex: 1;
+  height: 2rem !important;
+  font-size: 0.8125rem !important;
+  padding: 0 0.5rem !important;
+  gap: 0.375rem;
+}
+
+@media (max-width: 479px) {
+  .teacher-avatar              { width: 2rem; height: 2rem; font-size: 0.75rem; }
+  .teacher-details h4          { font-size: 0.875rem; }
+  .teacher-card .card-body     { padding: 0.625rem 0.875rem; gap: 0.375rem; }
+  .teacher-card .card-footer   { padding: 0.5rem 0.875rem; gap: 0.375rem; }
+  .teacher-card .card-footer .btn { font-size: 0.75rem; padding: 0.375rem 0.5rem; }
+  .info-row                    { font-size: 0.8125rem; gap: 0.5rem; }
+}
+
+/* ─── Results Footer ────────────────────────────────────────────────────────── */
+.results-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
+  text-align: center;
+}
+
+.results-footer p      { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+.results-footer strong { color: var(--primary); font-weight: 600; }
+
+/* ─── Utility ───────────────────────────────────────────────────────────────── */
+.mt-3 { margin-top: 0.875rem; }
+
+/* ─── Print ─────────────────────────────────────────────────────────────────── */
+@media print {
+  .list-container { padding: 0; background: var(--app-bg); }
+  .list-container .table .action-buttons,
+  .search-section, .teacher-card .card-footer { display: none !important; }
+  .list-container .card { box-shadow: none; }
+  .list-container .table-responsive { display: block !important; }
+  .teachers-cards { display: none !important; }
+}
+/* ─── Search below filters ───────────────────────────────────────────────────── */
+.search-below {
+  margin-bottom: 1rem;
+  position: relative;
+}
+.search-below .search-input-wrapper { position: relative; display: flex; align-items: center; }
+.search-below .search-icon { position: absolute; left: 0.875rem; color: var(--blue); font-size: 0.875rem; pointer-events: none; z-index: 1; }
+.search-below .search-input { padding-left: 2.5rem !important; }
+.search-below .clear-search { position: absolute; right: 0.625rem; background: none; border: none; color: var(--red); cursor: pointer; padding: 0.2rem; display: flex; align-items: center; width: 1.375rem; height: 1.375rem; border-radius: 50%; }
+.search-below .clear-search:hover { background: var(--red-light); color: var(--red-dark); }
+.w-100 { width: 100%; }
+
+/* ─── Action Button Brand Colors — appended last to always win cascade ──────── */
+.btn-action { width: 1.875rem; height: 1.875rem; border: none !important; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 0.8rem; flex-shrink: 0; padding: 0 !important; }
+
+.btn-action.btn-view             { background: var(--blue-light) !important; }
+.btn-action.btn-view i           { color: var(--blue-dark) !important; }
+.btn-action.btn-view:hover       { background: var(--blue) !important; box-shadow: 0 4px 14px rgba(14,164,244,0.55) !important; }
+.btn-action.btn-view:hover i     { color: #ffffff !important; }
+
+.btn-action.btn-se-edit          { background: var(--yellow-light) !important; }
+.btn-action.btn-se-edit i        { color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit:hover    { background: var(--yellow) !important; box-shadow: 0 4px 14px rgba(255,187,10,0.55) !important; }
+.btn-action.btn-se-edit:hover i  { color: #ffffff !important; }
+
+.btn-action.btn-delete           { background: var(--red-light) !important; }
+.btn-action.btn-delete i         { color: var(--red-dark) !important; }
+.btn-action.btn-delete:hover     { background: var(--red) !important; box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; }
+.btn-action.btn-delete:hover i   { color: #ffffff !important; }
+
+.list-container .table .action-buttons { display: flex !important; flex-direction: row !important; gap: 0.3rem !important; margin-top: 0 !important; padding-top: 0 !important; border-top: none !important; flex-wrap: nowrap !important; align-items: center !important; }
+
+.list-container .avatar, .list-container .teacher-avatar { background: var(--blue) !important; }
+
+/* ─── Clear Search Button — brand red-orange ─────────────────────────────────── */
+.btn-clear-search {
+  background: var(--red-light) !important;
+  color: var(--red-dark) !important;
+  border: none;
+}
+.btn-clear-search i { color: var(--red-dark) !important; }
+.btn-clear-search:hover {
+  background: var(--red) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(248,83,16,0.45) !important;
+}
+.btn-clear-search:hover i { color: white !important; }
+
+/* ─── Teacher-specific ───────────────────────────────────────────────────── */
+.emp-code { color: var(--blue); font-weight: 600; }
+
+.subjects-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.subject-badge {
+  background: #e0f4fe;
+  color: #0882c4;
+  border-radius: 1rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ─── Refresh button brand blue ──────────────────────────────────────────── */
+.list-container .btn-primary {
+  background: var(--blue) !important;
+  color: white !important;
+  box-shadow: 0 2px 6px rgba(14,164,244,0.35) !important;
+}
+.list-container .btn-primary:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  box-shadow: 0 4px 12px rgba(14,164,244,0.45) !important;
+  transform: translateY(-1px);
+}
+
+/* ─── Clear Search btn ───────────────────────────────────────────────────── */
+.btn-clear-search {
+  background: var(--red-light) !important;
+  color: var(--red-dark) !important;
+  border: none;
+}
+.btn-clear-search i { color: var(--red-dark) !important; }
+.btn-clear-search:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px rgba(248,83,16,0.4) !important;
+}
+.btn-clear-search:hover:not(:disabled) i { color: white !important; }
+
+/* ─── Mobile card footer full-width buttons ──────────────────────────────── */
+.list-container .card-footer .btn-action {
+  width: auto !important;
+  flex: 1;
+  height: 2rem !important;
+  font-size: 0.8125rem !important;
+  padding: 0 0.5rem !important;
+  gap: 0.375rem;
+}
+
+/* ─── Results footer strong color ────────────────────────────────────────── */
+.results-footer strong { color: var(--blue); font-weight: 600; }

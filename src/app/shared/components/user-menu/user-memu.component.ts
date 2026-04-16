@@ -19,7 +19,7 @@ export class UserMenuComponent implements OnInit {
 
   ngOnInit(): void {
     this.userName = this.authService.getUserDisplayName();
-    this.userRole = this.authService.getUserRole();
+    this.userRole = this.getFriendlyRole();;
   }
 
   toggleDropdown(): void { this.isOpen = !this.isOpen; }
@@ -28,6 +28,18 @@ export class UserMenuComponent implements OnInit {
   logout(): void {
     this.close();
     this.authService.logout();
+  }
+
+  getFriendlyRole(): string {
+    const role = this.authService.getUserRole();
+    const roleMap: Record<string, string> = {
+      'Admin': 'Admin',
+      'SuperAdmin': 'Super Admin',
+      'Teacher': 'Teacher',
+      'Student': 'Student',
+      'NonTeachingStaff': 'Non Teaching',
+    };
+    return role ? (roleMap[role] ?? role) : '';
   }
 
   @HostListener('document:keydown.escape')
