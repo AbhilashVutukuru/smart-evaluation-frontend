@@ -148,4 +148,17 @@ export class ProfileComponent implements OnInit {
   }
 
   onLogout(): void { this.authService.logout(); }
+
+  getFriendlyRole(): string {
+  const roleMap: Record<string, string> = {
+    'Admin':            'Admin',
+    'SuperAdmin':       'Super Admin',
+    'Teacher':          'Teacher',
+    'Student':          'Student',
+    'NonTeachingStaff': 'Non Teaching',  
+  };
+  return this.profile?.role 
+    ? (roleMap[this.profile.role] ?? this.profile.role) 
+    : '';
+}
 }

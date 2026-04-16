@@ -1,0 +1,277 @@
+<!-- Non-Teaching Staff View/Edit Component -->
+<div class="view-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <button class="btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="header-title">
+        <h2>
+          <i class="fas fa-user-tie"></i>
+          {{ mode === 'view' ? 'Staff Details' : 'Edit Staff' }}
+        </h2>
+        <p class="breadcrumb">Non-Teaching Staff / {{ mode === 'view' ? 'View' : 'Edit' }}</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button *ngIf="mode === 'view'" class="btn btn-primary" (click)="enableEdit()">
+        <i class="fas fa-edit"></i> Edit
+      </button>
+      <button *ngIf="mode === 'view'" class="btn btn-danger" (click)="deleteStaff()">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && mode === 'view'" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading staff details...</p>
+  </div>
+
+  <!-- Form Content -->
+  <div *ngIf="!loading || mode === 'edit'" class="form-content">
+    <form [formGroup]="staffForm" (ngSubmit)="onSubmit()">
+
+      <!-- Personal Information -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-id-card"></i>
+          <span>Personal Information</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">First Name <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('firstName')"
+                formControlName="firstName"
+                (blur)="onFieldBlur('firstName')"
+                placeholder="Enter first name"
+              />
+              <div class="error-message" *ngIf="shouldShowError('firstName')">
+                ⚠ {{ getErrorMessage('firstName') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Last Name <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('lastName')"
+                formControlName="lastName"
+                (blur)="onFieldBlur('lastName')"
+                placeholder="Enter last name"
+              />
+              <div class="error-message" *ngIf="shouldShowError('lastName')">
+                ⚠ {{ getErrorMessage('lastName') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Date of Birth <span class="required">*</span></label>
+              <input
+                type="date"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('dateOfBirth')"
+                formControlName="dateOfBirth"
+                (blur)="onFieldBlur('dateOfBirth')"
+                [max]="today"
+              />
+              <div class="error-message" *ngIf="shouldShowError('dateOfBirth')">
+                ⚠ {{ getErrorMessage('dateOfBirth') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Gender <span class="required">*</span></label>
+              <div class="select-wrapper">
+                <select
+                  class="form-control"
+                  [class.is-invalid]="shouldShowError('gender')"
+                  formControlName="gender"
+                  (blur)="onFieldBlur('gender')"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
+              <div class="error-message" *ngIf="shouldShowError('gender')">
+                ⚠ {{ getErrorMessage('gender') }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-address-book"></i>
+          <span>Contact Information</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Email <span class="required">*</span></label>
+              <input
+                type="email"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('email')"
+                formControlName="email"
+                (blur)="onFieldBlur('email')"
+                placeholder="staff@example.com"
+              />
+              <div class="error-message" *ngIf="shouldShowError('email')">
+                ⚠ {{ getErrorMessage('email') }}
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Phone Number <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('phoneNumber')"
+                formControlName="phoneNumber"
+                (blur)="onFieldBlur('phoneNumber')"
+                (input)="onPhoneNumberInput($event)"
+                placeholder="1234567890"
+                maxlength="10"
+              />
+              <div class="error-message" *ngIf="shouldShowError('phoneNumber')">
+                ⚠ {{ getErrorMessage('phoneNumber') }}
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Address <span class="required">*</span></label>
+            <textarea
+              class="form-control"
+              [class.is-invalid]="shouldShowError('address')"
+              formControlName="address"
+              (blur)="onFieldBlur('address')"
+              rows="2"
+              placeholder="Enter complete address"
+            ></textarea>
+            <div class="error-message" *ngIf="shouldShowError('address')">
+              ⚠ {{ getErrorMessage('address') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional Information -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-briefcase"></i>
+          <span>Professional Information</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+
+            <!-- Employee Code (readonly) -->
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Employee Code</label>
+              <input
+                type="text"
+                class="form-control"
+                formControlName="employeeCode"
+                readonly
+              />
+            </div>
+
+            <!-- Department -->
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Department <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('department')"
+                formControlName="department"
+                (blur)="onFieldBlur('department')"
+                placeholder="e.g., Administration, Library"
+              />
+              <div class="error-message" *ngIf="shouldShowError('department')">
+                ⚠ {{ getErrorMessage('department') }}
+              </div>
+            </div>
+
+            <!-- Designation -->
+            <div class="col-md-4 mb-3">
+              <label class="form-label">Designation <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                [class.is-invalid]="shouldShowError('designation')"
+                formControlName="designation"
+                (blur)="onFieldBlur('designation')"
+                placeholder="e.g., Principal, Librarian"
+              />
+              <div class="error-message" *ngIf="shouldShowError('designation')">
+                ⚠ {{ getErrorMessage('designation') }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Joining Date -->
+          <div class="col-md-4 mb-3">
+            <label class="form-label">Joining Date <span class="required">*</span></label>
+            <input
+              type="date"
+              class="form-control"
+              [class.is-invalid]="shouldShowError('dateOfJoining')"
+              formControlName="dateOfJoining"
+              (blur)="onFieldBlur('dateOfJoining')"
+              [max]="today"
+            />
+            <div class="error-message" *ngIf="shouldShowError('dateOfJoining')">
+              ⚠ {{ getErrorMessage('dateOfJoining') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons (edit mode only) -->
+      <div *ngIf="mode === 'edit'" class="action-buttons">
+        <button type="button" class="btn btn-cancel btn-lg" (click)="cancelEdit()" [disabled]="loading">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="submit" class="btn btn-success btn-lg" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
+          {{ loading ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <app-delete-confirmation
+    [show]="showDeleteModal"
+    [title]="'Delete Staff'"
+    [message]="'Are you sure you want to delete this staff member? This action cannot be undone.'"
+    [itemName]="getStaffInfo()"
+    [loading]="deleting"
+    (confirmed)="onDeleteConfirmed()"
+    (cancelled)="onDeleteCancelled()"
+  ></app-delete-confirmation>
+
+  <!-- Cancel Confirmation Modal -->
+  <app-cancel-confirmation
+    [show]="showCancelModal"
+    [title]="'Unsaved Changes'"
+    [message]="'You have unsaved changes. Are you sure you want to cancel?'"
+    (confirmed)="onCancelConfirmed()"
+    (cancelled)="onCancelCancelled()"
+  ></app-cancel-confirmation>
+</div>

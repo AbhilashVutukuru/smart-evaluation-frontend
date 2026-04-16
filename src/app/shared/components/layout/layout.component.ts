@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 import { UserMenuComponent } from '../user-menu/user-memu.component';
 import { filter, map } from 'rxjs/operators';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -151,6 +152,7 @@ export class LayoutComponent implements OnInit {
   pageTitle = '';
   pageIcon = 'fa-tachometer-alt';
 
+
   private readonly routeTitles: Record<string, string> = {
     '/dashboard':            'Dashboard',
     '/create/exam':          'Create Question Paper',
@@ -203,22 +205,31 @@ export class LayoutComponent implements OnInit {
 
   @ViewChild('sidebar') sidebar!: SidebarComponent;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router,private authService: AuthService ) {}
 
-  ngOnInit(): void {
-    this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd),
-      map((e: any) => e.urlAfterRedirects.split('?')[0])
-    ).subscribe(url => {
-      const r = this.resolveRoute(url);
-      this.pageTitle = r.title;
-      this.pageIcon  = r.icon;
-    });
-    const url = this.router.url.split('?')[0];
+ngOnInit(): void {
+  // ✅ Redirect NonTeachingStaff away from dashboard
+  const role = this.authService.getUserRole();
+  const currentUrl = this.router.url.split('?')[0];
+  if (role === 'NonTeachingStaff' && currentUrl === '/dashboard') {
+    this.router.navigate(['/create/exam']);
+    return;
+  }
+
+  this.router.events.pipe(
+    filter(e => e instanceof NavigationEnd),
+    map((e: any) => e.urlAfterRedirects.split('?')[0])
+  ).subscribe(url => {
     const r = this.resolveRoute(url);
     this.pageTitle = r.title;
     this.pageIcon  = r.icon;
-  }
+  });
+
+  const url = this.router.url.split('?')[0];
+  const r = this.resolveRoute(url);
+  this.pageTitle = r.title;
+  this.pageIcon  = r.icon;
+}
 
   private titleFromUrl(url: string): string {
     const last = url.split('/').filter(Boolean).pop() ?? '';

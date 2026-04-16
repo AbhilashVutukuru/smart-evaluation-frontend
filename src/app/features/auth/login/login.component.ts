@@ -80,7 +80,6 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (response) => {
-        // ✅ Always reset loading before any navigation
         this.loading = false;
 
         if (response.success && response.data) {
@@ -89,9 +88,15 @@ export class LoginComponent implements OnInit {
           if (response.data.requirePasswordChange) {
             this.router.navigate(['/auth/change-password']);
           } else {
-            const returnUrl =
-              this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
-            this.router.navigate([returnUrl]);
+            const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+
+            if (returnUrl) {
+              this.router.navigate([returnUrl]);
+            } else if (response.data.role === 'NonTeachingStaff') {
+              this.router.navigate(['/create/exam']); //  NonTeachingStaff → skip dashboard
+            } else {
+              this.router.navigate(['/dashboard']);   // Everyone else → dashboard
+            }
           }
         } else {
           this.error = response.message || 'Login failed';
@@ -99,12 +104,9 @@ export class LoginComponent implements OnInit {
       },
       error: (error) => {
         this.loading = false;
-
         if (error.status === 401) {
           this.error = 'Invalid email or password. Please try again.';
         } else if (error.status === 403) {
-          // Student trying to log in — redirect to unauthorized page
-          // Store a flag so unauthorized page knows why
           sessionStorage.setItem('unauthorizedReason', 'student');
           this.router.navigate(['/unauthorized']);
         } else if (error.status === 429) {

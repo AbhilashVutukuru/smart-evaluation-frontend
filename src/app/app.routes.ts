@@ -147,7 +147,37 @@ export const routes: Routes = [
             (m) => m.AssignTeacherSubjectsComponent,
           ),
       },
-      // ── Exams ───────────────────────────────────────────────
+      // ── Non-Teaching Staff ──────────────────────────────────
+      {
+        path: 'non-teaching-staff/list',
+        loadComponent: () =>
+          import('./features/non-teaching-staff/non-teaching-list/non-teaching-list.component').then(
+            (m) => m.NonTeachingListComponent,
+          ),
+      },
+      {
+        path: 'non-teaching-staff/register',
+        loadComponent: () =>
+          import('./features/registration/non-teaching-registration/non-teaching-registration.component').then(
+            (m) => m.NonTeachingRegistrationComponent,
+          ),
+      },
+      {
+        path: 'non-teaching-staff/view/:id',
+        data: { mode: 'view' },
+        loadComponent: () =>
+          import('./features/non-teaching-staff/non-teaching-view-edit/non-teaching-view-edit.component').then(
+            (m) => m.NonTeachingViewEditComponent,
+          ),
+      },
+      {
+        path: 'non-teaching-staff/edit/:id',
+        data: { mode: 'edit' },
+        loadComponent: () =>
+          import('./features/non-teaching-staff/non-teaching-view-edit/non-teaching-view-edit.component').then(
+            (m) => m.NonTeachingViewEditComponent,
+          ),
+      },
       {
         path: 'create/exam',
         loadComponent: () =>
