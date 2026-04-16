@@ -14,7 +14,7 @@ import {
 import { throttleTime, takeUntil } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { LoggerService } from './logger.service'; 
+import { LoggerService } from './logger.service';
 import {
   LoginRequest,
   LoginResponse,
@@ -43,10 +43,10 @@ export class AuthService {
     private router: Router,
     private logger: LoggerService,
     private ngZone: NgZone,
-  ) {}
+  ) { }
 
   // ============================================================
-  // ✅ Idle Logout Timer
+  // Idle Logout Timer
   // ============================================================
   private startIdleTimer(): void {
     this.stopIdleTimer();
@@ -89,11 +89,10 @@ export class AuthService {
   }
 
   // ============================================================
-  // ✅ Initialize - Called by APP_INITIALIZER
+  // Initialize - Called by APP_INITIALIZER
   // ============================================================
-   async initialize(): Promise<void> {
+  async initialize(): Promise<void> {
     try {
-      
       const response = await firstValueFrom(
         this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, {
           withCredentials: true,
@@ -117,37 +116,6 @@ export class AuthService {
       this.currentUserSubject.next(null);
     }
   }
-
-//  async initialize(): Promise<void> {
-//   try {
-//     console.log('🔄 [INITIALIZE] Calling /auth/me...');
-
-//     const response = await firstValueFrom(
-//       this.http.get<ApiResponse<any>>(
-//         `${this.apiUrl}/auth/me`,
-//         { withCredentials: true }
-//       )
-//     );
-
-//     if (response.success && response.data) {
-//       console.log('✅ Session restored:', response.data.email);
-
-//       this.currentUserSubject.next({
-//         requirePasswordChange: false,
-//         accessToken: '',
-//         refreshToken: '',
-//         ...response.data
-//       });
-
-//       this.startRefreshTokenTimer();
-//     } else {
-//       this.currentUserSubject.next(null);
-//     }
-//   } catch (error) {
-//     console.log('❌ No active session');
-//     this.currentUserSubject.next(null);
-//   }
-// }
 
   // ============================================================
   // ✅ Login
@@ -176,7 +144,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // ✅ Refresh Token
+  //  Refresh Token
   // ============================================================
   refreshToken(): Observable<ApiResponse<LoginResponse>> {
     return this.http
@@ -202,7 +170,7 @@ export class AuthService {
   }
 
   // ============================================================
-  // ✅ Auto-Refresh Timer
+  //  Auto-Refresh Timer
   // ============================================================
   private startRefreshTokenTimer(expiresAt?: string | Date) {
     this.stopRefreshTokenTimer();
@@ -213,7 +181,7 @@ export class AuthService {
 
     if (expiresAt) {
       const expiryMs = new Date(expiresAt).getTime();
-      const nowMs    = Date.now();
+      const nowMs = Date.now();
       // Refresh 60 seconds before expiry; clamp to at least 5 seconds
       msUntilRefresh = Math.max(expiryMs - nowMs - 60_000, 5_000);
     }
@@ -222,7 +190,7 @@ export class AuthService {
 
     this.refreshTokenTimeout = setTimeout(() => {
       this.logger.info('Auto-refreshing token...');
-      this.refreshToken().subscribe({ error: () => {} }); // logoutLocal called in catchError
+      this.refreshToken().subscribe({ error: () => { } }); // logoutLocal called in catchError
     }, msUntilRefresh);
   }
 
@@ -233,13 +201,13 @@ export class AuthService {
   }
 
   // ============================================================
-  // ✅ Logout
+  //  Logout
   // ============================================================
-   logout(): void {
+  logout(): void {
     this.logger.info('Logging out...');
     this.stopRefreshTokenTimer();
     this.stopIdleTimer();
-    
+
     this.http
       .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
       .subscribe({
@@ -310,7 +278,6 @@ export class AuthService {
   }
 
   updateCurrentUser(user: LoginResponse): void {
-    //console.log('📝 Updating current user');
     this.currentUserSubject.next(user);
   }
 
@@ -318,8 +285,15 @@ export class AuthService {
     return this.currentUserValue?.role || null;
   }
 
+  //  SuperAdmin check
+  isSuperAdmin(): boolean {
+    return this.getUserRole() === 'SuperAdmin';
+  }
+
+  //  Admin OR SuperAdmin
   isAdmin(): boolean {
-    return this.getUserRole() === 'Admin';
+    const role = this.getUserRole();
+    return role === 'Admin' || role === 'SuperAdmin';
   }
 
   isTeacher(): boolean {
@@ -334,8 +308,10 @@ export class AuthService {
     return this.getUserRole() === role;
   }
 
+  //  SuperAdmin bypasses all role checks
   hasAnyRole(roles: string[]): boolean {
     const userRole = this.getUserRole();
+    if (userRole === 'SuperAdmin') return true;
     return userRole ? roles.includes(userRole) : false;
   }
 

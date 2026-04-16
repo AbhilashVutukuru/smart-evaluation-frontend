@@ -27,7 +27,7 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  get isAdmin():   boolean { return this.summary?.role === 'Admin'; }
+  get isAdmin():   boolean { return this.summary?.role === 'Admin' || this.summary?.role === 'SuperAdmin'; }
   get isTeacher(): boolean { return this.summary?.role === 'Teacher'; }
   get isStudent(): boolean { return this.summary?.role === 'Student'; }
 

@@ -46,7 +46,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
 
   get isAdmin(): boolean {
-    return this.userRole === 'Admin';
+   return this.userRole === 'Admin' || this.userRole === 'SuperAdmin';
   }
 
   // ── All menu items ───────────────────────────────────────
@@ -55,37 +55,37 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon:  'fas fa-th-large',
       label: 'Dashboard',
       route: '/dashboard',
-      roles: ['Admin', 'Teacher', 'Student'],
+      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-file-alt',
       label: 'Create Question Paper',
       route: '/create/exam',
-      roles: ['Admin', 'Teacher'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-eye',
       label: 'View Question Papers',
       route: '/view/exam',
-      roles: ['Admin', 'Teacher'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-upload',
       label: 'Upload Answer Sheets',
       route: '/upload-answer-sheets',
-      roles: ['Admin', 'Teacher'],
+      roles: ['Admin', 'Teacher', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-chart-bar',
       label: 'View Exam Results',
       route: '/results',
-      roles: ['Admin', 'Teacher', 'Student'],
+      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-key',
       label: 'Change Password',
       route: '/change-password',
-      roles: ['Admin', 'Teacher', 'Student'],
+      roles: ['Admin', 'Teacher', 'Student', 'SuperAdmin'],
     },
   ];
 
@@ -94,37 +94,37 @@ export class SidebarComponent implements OnInit, OnDestroy {
       icon:  'fas fa-user-graduate',
       label: 'Students',
       route: '/students/list',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-chalkboard-teacher',
       label: 'Teachers',
       route: '/teachers/list',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-user-plus',
       label: 'Student Registration',
       route: '/registration/student',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-user-tie',
       label: 'Teacher Registration',
       route: '/registration/teacher',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-user-tag',
       label: 'Assign Subjects',
       route: '/assign-teacher-subjects',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
     {
       icon:  'fas fa-cog',
       label: 'Settings',
       route: '/admin-settings',
-      roles: ['Admin'],
+      roles: ['Admin', 'SuperAdmin'],
     },
   ];
 
