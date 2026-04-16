@@ -1,0 +1,301 @@
+/* ============================================================
+   PROFILE COMPONENT
+   ============================================================ */
+
+.profile-wrapper {
+  display: flex;
+  gap: 1.25rem;
+  max-width: 900px;
+  width: 100%;
+  margin: 0 auto;
+  justify-content: center;
+  flex-wrap: wrap;
+  box-sizing: border-box;
+}
+
+.profile-card {
+  background: var(--app-bg);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  box-sizing: border-box;
+  align-self: start;
+  flex: 0 1 380px;
+  min-width: 0;
+}
+
+/* ── Header ────────────────────────────────────────────────── */
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.profile-avatar {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+
+.profile-meta { display: flex; flex-direction: column; gap: 0.35rem; min-width: 0; }
+
+.profile-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.profile-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  background: var(--blue-light);
+  color: var(--blue-dark);
+  border-radius: 1rem;
+  padding: 0.2rem 0.625rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+}
+
+/* ── Divider ───────────────────────────────────────────────── */
+.profile-divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 1.25rem 0;
+}
+
+/* ── Section Label ─────────────────────────────────────────── */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 1rem;
+}
+.section-label i { color: var(--blue); }
+
+/* ── Info Grid ─────────────────────────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.875rem 1rem;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.info-label {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.info-value {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  word-break: break-all;
+}
+
+.info-icon { color: var(--blue); font-size: 0.75rem; flex-shrink: 0; }
+
+/* ── Password Form ─────────────────────────────────────────── */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--gray-700);
+}
+
+.required { color: var(--red); }
+
+/* ── Password Input ────────────────────────────────────────── */
+.pwd-input-wrap {
+  display: flex;
+  align-items: stretch;
+  border: 1.5px solid var(--gray-300);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--app-bg);
+}
+
+.pwd-input-wrap:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(14,164,244,0.12);
+}
+
+.pwd-input-wrap.invalid { border-color: var(--red); }
+.pwd-input-wrap.invalid:focus-within { box-shadow: 0 0 0 3px rgba(248,83,16,0.1); }
+
+.pwd-input-wrap .form-control {
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  background: transparent !important;
+  padding: 0.5rem 0.875rem;
+}
+
+.eye-btn {
+  background: none;
+  border: none;
+  border-left: 1px solid var(--gray-200);
+  padding: 0 0.75rem;
+  cursor: pointer;
+  color: var(--gray-400);
+  transition: color 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.eye-btn:hover { color: var(--blue); }
+
+/* ── Error ─────────────────────────────────────────────────── */
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--red);
+}
+.error-msg i { font-size: 0.75rem; }
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn-full { width: 100%; justify-content: center; margin-top: 0.25rem; }
+
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1.125rem;
+  border-radius: var(--border-radius);
+  border: 1.5px solid var(--red);
+  background: var(--app-bg);
+  color: var(--red);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  align-self: flex-end;
+}
+.btn-logout:hover { background: var(--red); color: white; }
+
+.logout-wrap { display: flex; justify-content: flex-end; }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .profile-wrapper { grid-template-columns: 1fr; }
+  .profile-card { padding: 1.25rem; }
+}
+
+@media (max-width: 479px) {
+  .profile-card { padding: 1rem; }
+  .info-grid { grid-template-columns: 1fr; }
+  .profile-header { flex-direction: column; text-align: center; }
+  .profile-meta { align-items: center; }
+}
+
+.strength-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.strength-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--gray-200);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.strength-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+
+.fill-weak   { width: 33%; background: var(--red); }
+.fill-medium { width: 66%; background: var(--yellow); }
+.fill-strong { width: 100%; background: var(--green); }
+
+.strength-label {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  min-width: 3rem;
+  text-align: right;
+}
+.label-weak   { color: var(--red); }
+.label-medium { color: var(--yellow-dark); }
+.label-strong { color: var(--green); }
+
+/* ── Requirements List ─────────────────────────────────────── */
+.pwd-requirements {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.2rem 0.5rem;
+}
+
+.pwd-requirements li {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: var(--font-size-xs);
+  color: var(--gray-400);
+  transition: color 0.2s;
+}
+
+.pwd-requirements li i {
+  font-size: 0.7rem;
+  transition: color 0.2s;
+}
+
+.pwd-requirements li.met {
+  color: var(--green);
+}
+
+.pwd-requirements li.met i {
+  color: var(--green);
+}

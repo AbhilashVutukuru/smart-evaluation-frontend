@@ -25,14 +25,14 @@
     </div>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="loading" class="loading-state">
+  <!-- Loading State — only for initial data fetch, not save -->
+  <div *ngIf="loading && mode === 'view'" class="loading-state">
     <div class="spinner"></div>
-    <p>{{ mode === 'view' ? 'Loading teacher details...' : 'Saving changes...' }}</p>
+    <p>Loading teacher details...</p>
   </div>
 
   <!-- Form Content -->
-  <div *ngIf="!loading" class="form-content">
+  <div *ngIf="!loading || mode === 'edit'" class="form-content">
     <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()">
 
       <!-- Personal Information -->

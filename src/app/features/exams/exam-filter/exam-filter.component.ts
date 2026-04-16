@@ -10,28 +10,28 @@ import { QuestionPaperDto } from '../../../core/models/common.models';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './exam-filter.component.html',
-  styleUrl:'./exam-filter.component.css',
+  styleUrl: './exam-filter.component.css',
 })
 export class ExamFilterComponent {
   // ─── Dropdown data (passed from parent) ──────────────────────────────────────
-  @Input() classes:       ClassDto[]        = [];
-  @Input() sections:      SectionDto[]      = [];
-  @Input() subjects:      SubjectDto[]      = [];
-  @Input() examTypes:     ExamTypeDto[]     = [];
+  @Input() classes:        ClassDto[]         = [];
+  @Input() sections:       SectionDto[]       = [];
+  @Input() subjects:       SubjectDto[]       = [];
+  @Input() examTypes:      ExamTypeDto[]      = [];
   @Input() questionPapers: QuestionPaperDto[] = [];
 
   // ─── Selected values (two-way via Output + Input pair) ───────────────────────
-  @Input() selectedClass    = '';
-  @Input() selectedSection  = '';
-  @Input() selectedSubject  = '';
-  @Input() selectedExamType = '';
+  @Input() selectedClass             = '';
+  @Input() selectedSection           = '';
+  @Input() selectedSubject           = '';
+  @Input() selectedExamType          = '';
   @Input() selectedQuestionPaperId: number | null = null;
 
-  @Output() selectedClassChange            = new EventEmitter<string>();
-  @Output() selectedSectionChange          = new EventEmitter<string>();
-  @Output() selectedSubjectChange          = new EventEmitter<string>();
-  @Output() selectedExamTypeChange         = new EventEmitter<string>();
-  @Output() selectedQuestionPaperIdChange  = new EventEmitter<number | null>();
+  @Output() selectedClassChange           = new EventEmitter<string>();
+  @Output() selectedSectionChange         = new EventEmitter<string>();
+  @Output() selectedSubjectChange         = new EventEmitter<string>();
+  @Output() selectedExamTypeChange        = new EventEmitter<string>();
+  @Output() selectedQuestionPaperIdChange = new EventEmitter<number | null>();
 
   // ─── UI state (passed from parent) ───────────────────────────────────────────
   @Input() showQuestionPaperDropdown = false;
@@ -41,6 +41,13 @@ export class ExamFilterComponent {
   @Input() canShowStudents           = false;
   @Input() loadingLabel              = 'Loading...';
   @Input() buttonLabel               = 'Show Student Details';
+
+  // ─── Collapse / search state ──────────────────────────────────────────────────
+  // hasSearched: set to true by parent after the first successful "Show Students"
+  // click. Until then, the header is not clickable and no chevron is shown.
+  @Input()  hasSearched       = false;
+  @Input()  isCollapsed       = false;
+  @Output() isCollapsedChange = new EventEmitter<boolean>();
 
   // True as soon as loading starts OR papers have arrived — never goes false mid-request.
   // Computed purely from inputs already in this component so it updates in the same cycle.
@@ -53,20 +60,17 @@ export class ExamFilterComponent {
   @Input() noExamPaperFound = false;
 
   // ─── Events ───────────────────────────────────────────────────────────────────
-  @Output() classChanged       = new EventEmitter<string>();
-  @Output() sectionChanged     = new EventEmitter<void>();
-  @Output() subjectChanged     = new EventEmitter<void>();
-  @Output() examTypeChanged    = new EventEmitter<void>();
-  @Output() showStudentsClick  = new EventEmitter<void>();
+  @Output() classChanged         = new EventEmitter<string>();
+  @Output() sectionChanged       = new EventEmitter<void>();
+  @Output() subjectChanged       = new EventEmitter<void>();
+  @Output() examTypeChanged      = new EventEmitter<void>();
+  @Output() showStudentsClick    = new EventEmitter<void>();
   /** Fires on ANY filter change so parents can clear their list */
   @Output() filtersChanged       = new EventEmitter<void>();
   /** Fires when question paper dropdown changes */
   @Output() questionPaperChanged = new EventEmitter<void>();
 
-  // ─── Collapse state ───────────────────────────────────────────────────────────
-  @Input()  isCollapsed       = false;
-  @Output() isCollapsedChange = new EventEmitter<boolean>();
-
+  // ─── Change handlers ──────────────────────────────────────────────────────────
   onClassChange(value: string): void {
     this.selectedClassChange.emit(value);
     this.classChanged.emit(value);
@@ -97,17 +101,17 @@ export class ExamFilterComponent {
     this.questionPaperChanged.emit();
   }
 
-  expandIfCollapsed(): void {
-    if (this.isCollapsed) {
-      this.isCollapsed = false;
-      this.isCollapsedChange.emit(false);
-    }
+  // ─── Collapse toggle ──────────────────────────────────────────────────────────
+  // Toggles collapsed state — only called when hasSearched is true (guarded in template).
+  toggleCollapse(): void {
+    this.isCollapsed = !this.isCollapsed;
+    this.isCollapsedChange.emit(this.isCollapsed);
   }
 
   // ─── Name lookups for collapsed summary chips ─────────────────────────────────
-  getClassName():    string { return this.classes.find(c => String(c.id)    === String(this.selectedClass))?.className    ?? ''; }
-  getSectionName():  string { return this.sections.find(s => String(s.id)   === String(this.selectedSection))?.sectionName  ?? ''; }
-  getSubjectName():  string { return this.subjects.find(s => String(s.id)   === String(this.selectedSubject))?.subjectName  ?? ''; }
-  getExamTypeName():    string { return this.examTypes.find(e => String(e.id) === String(this.selectedExamType))?.examTypeName ?? ''; }
-  getQuestionPaperName(): string { return this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? ''; }
+  getClassName():         string { return this.classes.find(c       => String(c.id) === String(this.selectedClass))?.className              ?? ''; }
+  getSectionName():       string { return this.sections.find(s      => String(s.id) === String(this.selectedSection))?.sectionName          ?? ''; }
+  getSubjectName():       string { return this.subjects.find(s      => String(s.id) === String(this.selectedSubject))?.subjectName          ?? ''; }
+  getExamTypeName():      string { return this.examTypes.find(e     => String(e.id) === String(this.selectedExamType))?.examTypeName        ?? ''; }
+  getQuestionPaperName(): string { return this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName           ?? ''; }
 }

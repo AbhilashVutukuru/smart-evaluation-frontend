@@ -1,4 +1,4 @@
-// app.routes.ts - Updated with unauthorized route
+// app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { LayoutComponent } from './shared/components/layout/layout.component';
@@ -44,7 +44,7 @@ export const routes: Routes = [
   },
 
   // ============================================================
-  //  UNAUTHORIZED ROUTE (No Layout, No Guard)
+  // UNAUTHORIZED ROUTE (No Layout, No Guard)
   // ============================================================
   {
     path: 'unauthorized',
@@ -69,6 +69,15 @@ export const routes: Routes = [
             (m) => m.DashboardComponent,
           ),
       },
+      // ── Profile (includes change password) ──────────────────
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./features/auth/profile/profile.component').then(
+            (m) => m.ProfileComponent,
+          ),
+      },
+      // ── Registration ────────────────────────────────────────
       {
         path: 'registration/student',
         loadComponent: () =>
@@ -83,53 +92,12 @@ export const routes: Routes = [
             (m) => m.TeacherRegistrationComponent,
           ),
       },
+      // ── Students ────────────────────────────────────────────
       {
         path: 'students/list',
         loadComponent: () =>
           import('./features/students/student-list/student-list.component').then(
             (m) => m.StudentListComponent,
-          ),
-      },
-      {
-        path: 'teachers/list',
-        loadComponent: () =>
-          import('./features/teachers/teacher-list/teacher-list.component').then(
-            (m) => m.TeacherListComponent,
-          ),
-      },
-      {
-        path: 'create/exam',
-        loadComponent: () =>
-          import('./features/exams/create-question-paper/create-question-paper.component').then(
-            (m) => m.CreateExamComponent,
-          ),
-      },
-      {
-        path: 'view/exam',
-        loadComponent: () =>
-          import('./features/exams/view-question-paper/view-question-paper.component').then(
-            (m) => m.ViewQuestionPaperComponent,
-          ),
-      },
-      {
-        path: 'change-password',
-        loadComponent: () =>
-          import('./features/auth/change-password/change-password.component').then(
-            (m) => m.ChangePasswordComponent,
-          ),
-      },
-      {
-        path: 'upload-answer-sheets',
-        loadComponent: () =>
-          import('./features/exams/upload-answer-sheet/upload-answer-sheet.component').then(
-            (m) => m.UploadAnswerSheetsComponent,
-          ),
-      },
-      {
-        path: 'assign-teacher-subjects',
-        loadComponent: () =>
-          import('./features/teachers/assign-teacher-subjects/assign-teacher-subjects.component').then(
-            (m) => m.AssignTeacherSubjectsComponent,
           ),
       },
       {
@@ -146,6 +114,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/students/student-view-edit/student-view-edit.component').then(
             (m) => m.StudentViewEditComponent,
+          ),
+      },
+      // ── Teachers ────────────────────────────────────────────
+      {
+        path: 'teachers/list',
+        loadComponent: () =>
+          import('./features/teachers/teacher-list/teacher-list.component').then(
+            (m) => m.TeacherListComponent,
           ),
       },
       {
@@ -165,10 +141,32 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'admin-settings',
+        path: 'assign-teacher-subjects',
         loadComponent: () =>
-          import('./features/admin/admin-settings/admin-settings.component').then(
-            (m) => m.AdminSettingsComponent,
+          import('./features/teachers/assign-teacher-subjects/assign-teacher-subjects.component').then(
+            (m) => m.AssignTeacherSubjectsComponent,
+          ),
+      },
+      // ── Exams ───────────────────────────────────────────────
+      {
+        path: 'create/exam',
+        loadComponent: () =>
+          import('./features/exams/create-question-paper/create-question-paper.component').then(
+            (m) => m.CreateExamComponent,
+          ),
+      },
+      {
+        path: 'view/exam',
+        loadComponent: () =>
+          import('./features/exams/view-question-paper/view-question-paper.component').then(
+            (m) => m.ViewQuestionPaperComponent,
+          ),
+      },
+      {
+        path: 'upload-answer-sheets',
+        loadComponent: () =>
+          import('./features/exams/upload-answer-sheet/upload-answer-sheet.component').then(
+            (m) => m.UploadAnswerSheetsComponent,
           ),
       },
       {
@@ -176,6 +174,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/exams/exam-result/exam-result.component').then(
             (m) => m.ExamResultsComponent,
+          ),
+      },
+      // ── Admin ───────────────────────────────────────────────
+      {
+        path: 'admin-settings',
+        loadComponent: () =>
+          import('./features/admin/admin-settings/admin-settings.component').then(
+            (m) => m.AdminSettingsComponent,
           ),
       },
     ],

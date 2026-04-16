@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { ExamResultService } from '../../../core/services/exam-result.service';
 
 import {
@@ -12,16 +13,18 @@ import {
 } from '../../../core/models/exam-result';
 import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-exam-results',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExamFilterComponent],
+  imports: [CommonModule, FormsModule, ExamFilterComponent, RouterModule],
   templateUrl: './exam-result.component.html',
   styleUrls: ['./exam-result.component.css'],
 })
 export class ExamResultsComponent extends BaseExamFilterComponent {
   private examResultService = inject(ExamResultService);
+  private route             = inject(ActivatedRoute);
 
   // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentResultInfo[] = [];
@@ -57,6 +60,11 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   showResultsCard  = false;
   searchCompleted  = false;
   isFilterCollapsed = false;
+  hasSearched       = false;
+
+  // ─── Table search ─────────────────────────────────────────────────────────────
+  searchTerm       = '';
+  filteredStudents: StudentResultInfo[] = [];
 
   // ─── Fullscreen modal ─────────────────────────────────────────────────────────
   fullscreenContent: string | null = null;
@@ -65,24 +73,92 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   // ─── Exposed from base ────────────────────────────────────────────────────────
   override get canShowStudents(): boolean { return super.canShowStudents; }
 
+  // ─── Auto-populate from query params (navigated from View Results button) ──────
+  override ngOnInit(): void {
+    const p = this.route.snapshot.queryParams;
+    if (p['classId'] && p['sectionId'] && p['subjectId'] && p['examTypeId'] && p['questionPaperId']) {
+
+      // Set all selected values first
+      this.selectedClass           = p['classId'];
+      this.selectedSection         = p['sectionId'];
+      this.selectedSubject         = p['subjectId'];
+      this.selectedExamType        = p['examTypeId'];
+      this.selectedQuestionPaperId = +p['questionPaperId'];
+      // Force question paper dropdown visible with the pre-selected paper
+      this.showQuestionPaperDropdown = true;
+
+      // Load all dropdowns in parallel for display — without calling onChange
+      // (onChange methods reset selectedValues and cause async race conditions)
+      this.masterDataService.getClasses().subscribe({
+        next: (classes) => (this.classes = classes),
+        error: (err)    => this.errorHandler.handle('Failed to load classes', err),
+      });
+      this.masterDataService.getSectionsByClass(p['classId']).subscribe({
+        next: (sections) => (this.sections = sections),
+        error: (err)     => this.errorHandler.handle('Failed to load sections', err),
+      });
+      this.masterDataService.getSubjectsByClass(p['classId']).subscribe({
+        next: (subjects) => (this.subjects = subjects),
+        error: (err)     => this.errorHandler.handle('Failed to load subjects', err),
+      });
+      this.masterDataService.getExamTypesByClass(p['classId']).subscribe({
+        next: (examTypes) => (this.examTypes = examTypes),
+        error: (err)      => this.errorHandler.handle('Failed to load exam types', err),
+      });
+      this.createQuestionPaperService
+        .getQuestionPapers(+p['classId'], +p['subjectId'], +p['examTypeId'])
+        .subscribe({
+          next: (response) => {
+            this.questionPapers = response.data ?? [];
+            // Keep the pre-selected questionPaperId — do NOT let handleQuestionPapersResponse reset it
+          },
+          error: (err) => this.errorHandler.handle('Failed to load question papers', err),
+        });
+
+      // showStudents() — all IDs already set, fires immediately
+      this.showStudents();
+
+    } else {
+      // No query params — normal navigation, let base handle init
+      super.ngOnInit();
+    }
+  }
+
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
     this.students              = [];
+    this.filteredStudents      = [];
+    this.searchTerm            = '';
     this.selectedStudent       = null;
     this.currentResults        = null;
     this.currentQuestion       = null;
     this.showStudentsCard      = false;
     this.showResultsCard       = false;
     this.searchCompleted       = false;
+    this.hasSearched           = false;
     this.answerSheetsSubmitted = false;
     this.isFilterCollapsed     = false;
     this.statistics = { totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0 };
   }
 
+  // ─── Table search ─────────────────────────────────────────────────────────────
+  onSearchInput(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) { this.filteredStudents = [...this.students]; return; }
+    this.filteredStudents = this.students.filter(s =>
+      s.studentName?.toLowerCase().includes(term) ||
+      String(s.rollNumber).toLowerCase().includes(term)
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm       = '';
+    this.filteredStudents = [...this.students];
+  }
+
   // ─── Clear list on any filter change ────────────────────────────────────────
   onFiltersChanged(): void {
     this.clearStudents();
-    this.isFilterCollapsed = false;
   }
 
   // ─── Get Students ─────────────────────────────────────────────────────────────
@@ -104,6 +180,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
       .subscribe({
         next: (response) => {
           this.students              = response.students;
+          this.filteredStudents      = [...response.students];
           this.statistics            = response.statistics;
           this.totalMarks            = response.totalMarks;
           this.totalQuestions        = response.totalQuestions;
@@ -113,6 +190,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
           this.showResultsCard       = false;
           this.searchCompleted       = true;
           this.isLoading             = false;
+          this.hasSearched           = true;
           this.isFilterCollapsed     = true;
           this.noExamPaperFound      = this.students.length === 0;
         },

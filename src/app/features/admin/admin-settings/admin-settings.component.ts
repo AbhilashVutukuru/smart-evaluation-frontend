@@ -77,6 +77,7 @@ export class AdminSettingsComponent implements OnInit {
 
   // ── UI state ───────────────────────────────────────────────
   loading = false;
+  deleting = false;
   // success = '';
   // error = '';
 
@@ -453,9 +454,9 @@ export class AdminSettingsComponent implements OnInit {
 
     const titles: any = {
       class: 'Delete Class',
-      section: 'Delete Section',
-      subject: 'Delete Subject',
-      examtype: 'Delete Exam Type',
+      'master-section': 'Delete Section',
+      'master-subject': 'Delete Subject',
+      'master-examtype': 'Delete Exam Type',
       'assigned-section': 'Remove Section Assignment',
       'assigned-subject': 'Remove Subject Assignment',
       'assigned-examtype': 'Remove Exam Type Assignment',
@@ -471,6 +472,7 @@ export class AdminSettingsComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.itemToDelete) return;
     const id = this.itemToDelete.id;
+    this.deleting = true;
 
     const actions: any = {
       class: () =>
@@ -485,7 +487,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      section: () =>
+      'master-section': () =>
         this.svc.deleteMasterSection(id).subscribe({
           next: () => {
             this.showSuccess('Section deleted!');
@@ -497,7 +499,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      subject: () =>
+      'master-subject': () =>
         this.svc.deleteMasterSubject(id).subscribe({
           next: () => {
             this.showSuccess('Subject deleted!');
@@ -509,7 +511,7 @@ export class AdminSettingsComponent implements OnInit {
             this.resetDeleteModal();
           },
         }),
-      examtype: () =>
+      'master-examtype': () =>
         this.svc.deleteMasterExamType(id).subscribe({
           next: () => {
             this.showSuccess('Exam type deleted!');
@@ -573,7 +575,8 @@ export class AdminSettingsComponent implements OnInit {
     this.showDeleteModal = false;
     this.deleteType = '';
     this.itemToDelete = null;
-    this.loading = false;     
+    this.loading = false;
+    this.deleting = false;
   }
 
   // ── Filtered getters ──────────────────────────────────────

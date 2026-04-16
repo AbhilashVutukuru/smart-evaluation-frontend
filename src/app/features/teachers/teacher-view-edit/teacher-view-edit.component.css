@@ -7,7 +7,6 @@
 .view-container {
     padding: 0.5rem 1.5rem 1.5rem;
   background: var(--app-bg);
-  min-height: 100vh;
   max-width: 100%;
   margin: 0;
   box-sizing: border-box;
@@ -160,119 +159,14 @@
   .view-container .card-body   { padding: 0.75rem 0.875rem !important; }
 }
 
-/* ─── Form Labels ───────────────────────────────────────────────────────────── */
-.view-container .form-label {
-  display: block;
-  margin-bottom: 0.25rem !important;
-  font-weight: 500;
-  color: var(--gray-700);
-  font-size: 0.875rem;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-.view-container .required { color: var(--red); font-weight: 700; }
-
 /* ─── Form Controls ─────────────────────────────────────────────────────────── */
-.view-container .form-control {
-  width: 100%;
-  padding: 0.45rem 0.75rem !important;
-  border: 1.5px solid var(--gray-200) !important;
-  border-radius: 8px;
-  font-size: 0.875rem;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-  background: var(--gray-50) !important;
-  outline: none;
-  box-sizing: border-box;
-  font-family: inherit;
-  background-image: none !important;
-  color: var(--gray-900);
-  font-weight: 400 !important;
-}
-
-.view-container .form-control::placeholder { color: var(--gray-400); font-weight: 400; }
-
-.view-container .form-control:focus {
-  border-color: var(--blue) !important;
-  box-shadow: 0 0 0 3px rgba(14,164,244,0.12) !important;
-  background: var(--app-bg) !important;
-}
-
-.view-container .form-control:focus-visible { outline: none; }
-
-.view-container .form-control:disabled,
-.view-container .form-control[readonly] {
-  background: var(--gray-100) !important;
-  color: var(--gray-500) !important;
-  cursor: not-allowed;
-  border-color: var(--gray-200) !important;
-  font-weight: 400;
-}
-
-.view-container .form-control.is-invalid {
-  border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(248,83,16,0.1) !important;
-  background: var(--red-light) !important;
-}
-
-.view-container input[type="date"].form-control {
-  cursor: pointer;
-  font-weight: 400 !important;
-  -webkit-text-fill-color: var(--gray-900);
-}
-
-.view-container input[type="date"].form-control:disabled,
-.view-container input[type="date"].form-control[readonly] {
-  -webkit-text-fill-color: var(--gray-500);
-}
-
-.view-container textarea.form-control {
-  resize: vertical;
-  font-family: inherit;
-  min-height: 3.5rem;
-  line-height: 1.5;
-  font-weight: 400 !important;
-}
-
-@media (max-width: 479px) {
-  .view-container .form-control { font-size: 0.8125rem !important; }
-}
-
-/* ─── Custom Select ─────────────────────────────────────────────────────────── */
-.view-container .select-wrapper { position: relative; }
-
-.view-container .select-wrapper .select-icon {
-  position: absolute;
-  right: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--blue);
-  font-size: 0.7rem;
-  z-index: 1;
-}
-
-.view-container .select-wrapper select.form-control {
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: 2.25rem !important;
-  cursor: pointer;
-}
-
-.view-container .select-wrapper select.form-control:focus {
-  border-color: var(--blue) !important;
-  box-shadow: 0 0 0 3px rgba(14,164,244,0.12) !important;
-  background: var(--app-bg) !important;
-}
-
-.view-container .select-wrapper select.form-control:disabled {
-  background: var(--gray-100) !important;
-  color: var(--gray-400);
-  cursor: not-allowed;
-}
-
-.view-container .select-wrapper select.form-control:disabled + .select-icon { color: var(--gray-400); }
-.view-container .select-wrapper select.form-control.is-invalid + .select-icon { color: var(--red); }
+/* .view-container .form-label — global.css */
+/* .view-container .required — global.css */
+/* .view-container .form-control — global.css */
+/* .view-container .form-control:focus, :disabled, :focus-visible — global.css */
+/* .view-container .form-control.is-invalid — global.css */
+/* .view-container textarea.form-control — global.css */
+/* .view-container input[type="date"].form-control — global.css */
 
 /* ─── Error Message ─────────────────────────────────────────────────────────── */
 .view-container .error-message,

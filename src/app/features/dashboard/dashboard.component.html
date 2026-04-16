@@ -73,6 +73,10 @@
             <i class="fas fa-file-alt"></i>
             <span>Create Question Paper</span>
           </a>
+          <a routerLink="/view/exam" class="action-btn action-blue">
+            <i class="fas fa-eye"></i>
+            <span>View Question Papers</span>
+          </a>
           <a routerLink="/upload-answer-sheets" class="action-btn action-red">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Answer Sheets</span>
@@ -103,9 +107,9 @@
                 <th class="text-center">Questions</th>
                 <th class="text-center">Total Marks</th>
                 <th class="text-center">Exam Date</th>
-                <!-- <th class="text-center">Exam Status</th>
+                <th class="text-center">Exam Status</th>
                 <th class="text-center">Eval Status</th>
-                <th class="text-center">View</th> -->
+                <th class="text-center">View</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +122,7 @@
                 <td class="text-center">{{ row.totalQuestions }}</td>
                 <td class="text-center">{{ row.totalMarks }}</td>
                 <td class="text-center">{{ row.examDate ? (row.examDate | date:'dd/MM/yyyy') : '—' }}</td>
-                <!-- <td class="text-center">
+                <td class="text-center">
                   <span class="status-badge" [class.badge-completed]="row.examStatus === 'Completed'" [class.badge-pending]="row.examStatus === 'Pending'">
                     {{ row.examStatus }}
                   </span>
@@ -132,7 +136,7 @@
                   <a [routerLink]="['/view/exam', row.questionPaperId]" class="btn-view">
                     <i class="fas fa-eye"></i>
                   </a>
-                </td> -->
+                </td>
               </tr>
             </tbody>
           </table>

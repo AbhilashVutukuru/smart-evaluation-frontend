@@ -1,4 +1,4 @@
-<div class="result-container">
+<div class="page-container">
 <app-exam-filter
     [hidden]="showResultsCard"
     [classes]="classes"
@@ -17,6 +17,7 @@
     [canShowStudents]="canShowStudents"
     [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
     [noExamPaperFound]="noExamPaperFound"
+    [hasSearched]="hasSearched"
     [isCollapsed]="isFilterCollapsed"
     (isCollapsedChange)="isFilterCollapsed = $event"
     (classChanged)="onClassChange($event)"
@@ -29,16 +30,29 @@
 
 
   <!--  Students Table with Statistics -->
-  <div
-    class="card"
-    *ngIf="showStudentsCard && students.length > 0 && !showResultsCard"
-  >
-    <!-- Header -->
-    <div class="card-header-flex">
-      <h4><i class="fas fa-users"></i> Students List</h4>
-      <span class="badge badge-primary"
-        >{{ statistics.totalStudents }} Students</span
-      >
+  <div class="card" *ngIf="showStudentsCard && students.length > 0 && !showResultsCard">
+
+    <!-- Header row: title | search | badge — same pattern as view-question-paper -->
+    <div class="papers-header-row">
+      <h4><i class="fas fa-users"></i> Students</h4>
+
+      <div class="search-input-wrapper" *ngIf="students.length > 0">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by name or roll number..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+        />
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()" type="button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <span class="badge badge-primary" *ngIf="students.length">
+        {{ statistics.totalStudents }} Students
+      </span>
     </div>
 
     <!--  Statistics Cards -->
@@ -51,7 +65,6 @@
           <p>Total Students</p>
         </div>
       </div>
-
       <!-- Absent -->
       <div class="stat-card stat-absent">
         <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
@@ -60,8 +73,7 @@
           <p>Absent</p>
         </div>
       </div>
-
-      <!-- Uploaded/Evaluated -->
+      <!-- Evaluated -->
       <div class="stat-card stat-uploaded">
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
         <div class="stat-content">
@@ -69,8 +81,7 @@
           <p>Evaluated</p>
         </div>
       </div>
-
-      <!-- Pending/Not Evaluated -->
+      <!-- Not Evaluated -->
       <div class="stat-card stat-pending">
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
         <div class="stat-content">
@@ -82,7 +93,15 @@
 
     <!-- Students Table -->
     <div class="table-responsive">
-      <table class="table">
+
+      <!-- No results state -->
+      <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
+        <i class="fas fa-search"></i>
+        <h5>No Students Found</h5>
+        <p>No students match "<strong>{{ searchTerm }}</strong>"</p>
+      </div>
+
+      <table class="table" *ngIf="filteredStudents.length > 0">
         <thead>
           <tr>
             <th>Roll No</th>
@@ -94,7 +113,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let student of students">
+          <tr *ngFor="let student of filteredStudents">
             <td>
               <strong class="roll-number">{{ student.rollNumber }}</strong>
             </td>

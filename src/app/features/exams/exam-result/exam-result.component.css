@@ -8,22 +8,6 @@
    Breakpoints: Mobile <480 | Tablet 480-767 | Laptop 768-1023 | Desktop ≥1024
    ============================================================ */
 
-/* ── Container ──────────────────────────────────────────────── */
-.result-container {
-  padding: 0.5rem 1.5rem 1.5rem;
-  background: var(--app-bg);
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1023px) { .result-container { padding: 1.25rem; } }
-@media (max-width: 767px)  { .result-container { padding: 1rem; } }
-@media (max-width: 479px)  { .result-container { padding: 0.75rem; } }
-
-/* ── Page header spacing override (global sets margin-bottom:2rem) ──
-.page-header { margin-bottom: 0.75rem; }
-@media (max-width: 767px) { .page-header { margin-bottom: 0.5rem; } }
-@media (max-width: 479px) { .page-header { margin-bottom: 0.375rem; } } */
 
 /* ── Stat icon colors — all use brand CSS variables from styles.css ── */
 /* ── Stat card hover — strong brand lift ────────────────────── */
@@ -50,8 +34,66 @@
   font-weight: 700 !important;
 }
 
-/* ── Table min-width for this page ─────────────────────────── */
-.table { min-width: 500px; }
+/* ── Table — NO overrides. global.css handles table design fully ── */
+
+/* ── Search bar row: title | search | badge ─────────────────── */
+/* Same pattern as view-question-paper / upload-answer-sheet     */
+.papers-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.papers-header-row h4 {
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.papers-header-row .search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.papers-header-row .badge-primary {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--gray-400);
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.25rem !important;
+  padding-right: 2.25rem !important;
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.clear-search:hover { color: var(--red); }
 
 /* ── Roll number ────────────────────────────────────────────── */
 .roll-number { color: var(--blue); font-size: 1rem; }

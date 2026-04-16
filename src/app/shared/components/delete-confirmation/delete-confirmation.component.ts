@@ -35,8 +35,9 @@ import { CommonModule } from '@angular/common';
           <button class="btn btn-secondary" (click)="onCancel()">
             <i class="fas fa-times"></i> Cancel
           </button>
-          <button class="btn btn-danger" (click)="onConfirm()">
-            <i class="fas fa-trash"></i> Delete
+          <button class="btn btn-danger" (click)="onConfirm()" [disabled]="loading">
+            <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-trash'"></i>
+            {{ loading ? 'Deleting...' : 'Delete' }}
           </button>
         </div>
       </div>
@@ -181,8 +182,8 @@ import { CommonModule } from '@angular/common';
     }
 
     .warning-message {
-      background: linear-gradient(135deg, #fefce8, #fef3c7);
-      border: 2px solid #f59e0b;
+      background: #fee8e0;
+      border: 2px solid #f85310;
       border-radius: 10px;
       padding: 12px;
       display: flex;
@@ -192,12 +193,12 @@ import { CommonModule } from '@angular/common';
     }
 
     .warning-message i {
-      color: #ffbb0a;
+      color: #f85310;
       font-size: 16px;
     }
 
     .warning-message span {
-      color: #92400e;
+      color: #d04008;
       font-weight: 600;
       font-size: 14px;
     }
@@ -308,6 +309,7 @@ export class DeleteConfirmationComponent {
   @Input() title: string = 'Confirm Delete';
   @Input() message: string = 'Are you sure you want to delete this item?';
   @Input() itemName?: string;
+  @Input() loading: boolean = false;
   
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();

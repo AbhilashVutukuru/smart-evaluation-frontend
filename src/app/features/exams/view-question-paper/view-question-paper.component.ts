@@ -80,8 +80,11 @@ export class ViewQuestionPaperComponent implements OnInit {
   isSaving            = false;
  
   // ─── "All Subjects" summary list ─────────────────────────────────────────
+  searchTerm = '';
+  filteredPapersList: any[] = [];
   allPapersList:      QuestionPaperSummaryDto[] = [];
   showAllPapersList = false;   // true only after "Show Papers" is clicked
+  hasSearched       = false;   // true permanently after first search — enables collapse
  
   // ─── View state ───────────────────────────────────────────────────────────
   questionPaper:            QuestionPaperViewDto | null = null;
@@ -194,6 +197,7 @@ export class ViewQuestionPaperComponent implements OnInit {
   showPapers(): void {
     if (!this.selectedClass) return;
     this.showAllPapersList = true;
+    this.hasSearched       = true;
     this.loadAllPapers();
   }
  
@@ -201,17 +205,23 @@ export class ViewQuestionPaperComponent implements OnInit {
  
   private loadAllPapers(): void {
     if (!this.selectedClass) return;
- 
+
     this.isLoadingAllPapers = true;
     this.allPapersList      = [];
- 
-    this.viewService.getAllPapersByClass(+this.selectedClass).subscribe({
+    this.filteredPapersList = [];
+
+    // subjectId = 0 means All Subjects → backend returns everything
+    // subjectId > 0 means specific subject → backend filters by SubjectId
+    const subjectId = this.isAllSubjects ? 0 : +this.selectedSubject;
+
+    this.viewService.getAllPapersByClass(+this.selectedClass, subjectId).subscribe({
       next: (papers) => {
         this.allPapersList      = papers;
+        this.filteredPapersList = [...this.allPapersList];
         this.isLoadingAllPapers = false;
- 
+
         if (!papers.length) {
-          this.toastService.showWarning('Warning', 'No question papers found for this class');
+          this.toastService.showWarning('Warning', 'No question papers found for the selected filters');
         }
       },
       error: (err) => {
@@ -606,6 +616,25 @@ export class ViewQuestionPaperComponent implements OnInit {
   }
  
   // ─── Filter collapse name getters ────────────────────────────────────────────
+  onSearchInput(): void {
+    const term = this.searchTerm.toLowerCase().trim();
+    if (!term) {
+      this.filteredPapersList = [...this.allPapersList];
+      return;
+    }
+    this.filteredPapersList = this.allPapersList.filter(p =>
+      p.subjectName?.toLowerCase().includes(term) ||
+      p.examTypeName?.toLowerCase().includes(term) ||
+      p.questionPaperName?.toLowerCase().includes(term)
+    );
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
+    this.filteredPapersList = [...this.allPapersList];
+  }
+
+
   getClassName():    string { return this.classes.find(c => String(c.id)  === String(this.selectedClass))?.className    ?? ''; }
   getSubjectName():  string { return this.subjects.find(s => String(s.id) === String(this.selectedSubject))?.subjectName  ?? ''; }
   getExamTypeName(): string { return this.examTypes.find(e => String(e.id) === String(this.selectedExamType))?.examTypeName ?? ''; }
@@ -623,15 +652,18 @@ export class ViewQuestionPaperComponent implements OnInit {
     this.isEditMode                = false;
     this.draft                     = null;
     this.allPapersList             = [];
+    this.filteredPapersList        = [];
     this.showAllPapersList         = false;
+    // Reset collapse state — chevron hides and filter expands when any dropdown changes
+    this.hasSearched               = false;
+    this.isFilterCollapsed         = false;
   }
- 
+
   private resetAll(): void {
     this.selectedSubject   = '';
     this.selectedExamType  = '';
     this.subjects          = [];
     this.examTypes         = [];
-    this.isFilterCollapsed = false;
-    this.clearPapers();
+    this.clearPapers();  // clearPapers now handles isFilterCollapsed + hasSearched reset
   }
 }
