@@ -96,6 +96,13 @@
 .btn-view { display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: #e0f4fe; color: #0882c4; text-decoration: none; transition: all 0.18s; font-size: 0.8rem; }
 .btn-view:hover { background: #0ea4f4; color: white; }
 
+/* ── Action Links (table Action column) ────────────────────── */
+.action-link { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; white-space: nowrap; transition: all 0.18s; }
+.action-link-blue  { background: #e0f4fe; color: #0882c4; }
+.action-link-blue:hover  { background: #0ea4f4; color: white; }
+.action-link-green { background: #eef7d6; color: #5f8e04; }
+.action-link-green:hover { background: #7fbb06; color: white; }
+
 /* ── Quick Actions ─────────────────────────────────────────── */
 .quick-actions { display: flex; flex-wrap: wrap; gap: 0.625rem; }
 .action-btn {
