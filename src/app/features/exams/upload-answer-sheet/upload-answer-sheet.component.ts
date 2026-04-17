@@ -925,7 +925,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     });
   }
 
-  // ─── Navigate to View Results ─────────────────────────────────────────────────
+  // ─── Navigate to View Results (all students) ────────────────────────────────
   viewResults(): void {
     this.router.navigate(['/results'], {
       queryParams: {
@@ -934,6 +934,20 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
         subjectId:       this.selectedSubject,
         examTypeId:      this.selectedExamType,
         questionPaperId: this.selectedQuestionPaperId,
+      },
+    });
+  }
+
+  // ─── Navigate to View Result for a specific evaluated student ────────────────
+  viewStudentResult(student: StudentUploadStatus): void {
+    this.router.navigate(['/results'], {
+      queryParams: {
+        classId:         this.selectedClass,
+        sectionId:       this.selectedSection,
+        subjectId:       this.selectedSubject,
+        examTypeId:      this.selectedExamType,
+        questionPaperId: this.selectedQuestionPaperId,
+        studentId:       student.studentId,
       },
     });
   }

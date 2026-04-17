@@ -115,8 +115,10 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
           error: (err) => this.errorHandler.handle('Failed to load question papers', err),
         });
 
-      // showStudents() — all IDs already set, fires immediately
-      this.showStudents();
+      // showStudents() — all IDs already set, fires immediately.
+      // If studentId param is present, auto-open that student's result after load.
+      const autoStudentId = p['studentId'] ? +p['studentId'] : null;
+      this.showStudents(autoStudentId);
 
     } else {
       // No query params — normal navigation, let base handle init
@@ -163,7 +165,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
 
   // ─── Get Students ─────────────────────────────────────────────────────────────
 
-  showStudents(): void {
+  showStudents(autoOpenStudentId: number | null = null): void {
     if (!this.validateSelection()) return;
 
     this.isLoading = true;
@@ -193,6 +195,14 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
           this.hasSearched           = true;
           this.isFilterCollapsed     = true;
           this.noExamPaperFound      = this.students.length === 0;
+
+          // Auto-open specific student result when navigated from upload page
+          if (autoOpenStudentId) {
+            const target = response.students.find(s => s.studentId === autoOpenStudentId);
+            if (target && target.evaluationStatus === 'Evaluated') {
+              this.viewStudentResults(target);
+            }
+          }
         },
         error: (error) => {
           this.isLoading = false;
