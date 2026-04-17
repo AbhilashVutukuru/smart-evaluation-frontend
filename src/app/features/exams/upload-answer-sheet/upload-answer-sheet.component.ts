@@ -877,6 +877,33 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     });
   }
 
+  // ─── Remove Answer Sheet ─────────────────────────────────────────────────────
+  removeAnswerSheet(student: StudentUploadStatus): void {
+    this.showConfirmDialog(
+      `Remove the uploaded answer sheet for ${student.studentName}? This will delete the file and all related data. The student can then be marked absent or re-uploaded.`,
+      () => {
+        student.isUploading = true;
+        this.uploadService.deleteAnswerSheet(student.studentId, this.selectedQuestionPaperId!).subscribe({
+          next: (response) => {
+            if (response.success) {
+              student.isUploaded      = false;
+              student.fileName        = undefined;
+              student.answerSheetType = null;
+              student.imageFileNames  = [];
+              student.imageBlobPaths  = '';
+              this.toastService.showSuccess('Removed', `Answer sheet removed for ${student.studentName}`);
+            }
+            student.isUploading = false;
+          },
+          error: (error) => {
+            student.isUploading = false;
+            this.errorHandler.handle('Failed to remove answer sheet', error);
+          },
+        });
+      }
+    );
+  }
+
   // ─── Toggle Absent ────────────────────────────────────────────────────────────
   toggleAbsent(student: StudentUploadStatus): void {
     student.isAbsent = !student.isAbsent;

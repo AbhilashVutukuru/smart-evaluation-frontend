@@ -142,15 +142,16 @@
                   title="Click to mark as attended">
                   <i class="fas fa-user-slash"></i> Absent
                 </span>
-                <!-- Not absent — show checkbox -->
+                <!-- Not absent — show checkbox (disabled once uploaded or while uploading) -->
                 <div *ngIf="!student.isAbsent" class="form-check">
                   <input type="checkbox" [id]="'absent-' + student.studentId"
                     [checked]="student.isAbsent" (change)="toggleAbsent(student)"
                     class="custom-checkbox"
-                    [disabled]="student.isUploading" />
+                    [disabled]="student.isUploaded || student.isUploading" />
                   <label [for]="'absent-' + student.studentId" class="checkbox-label"
-                    [style.opacity]="student.isUploading ? '0.5' : '1'"
-                    [style.cursor]="student.isUploading ? 'not-allowed' : 'pointer'">
+                    [style.opacity]="(student.isUploaded || student.isUploading) ? '0.5' : '1'"
+                    [style.cursor]="(student.isUploaded || student.isUploading) ? 'not-allowed' : 'pointer'"
+                    [title]="student.isUploaded ? 'Remove the answer sheet first to mark as absent' : ''">
                     Mark as Absent
                   </label>
                 </div>
@@ -186,7 +187,7 @@
                     <span class="pdf-name">{{ getAnswerSheetDisplay(student) }}</span>
                   </span>
 
-                  <!-- Images type: Update dropdown with PDF + Preview & Edit -->
+                  <!-- Images type: Update dropdown — PDF / Images (Preview & Edit) / Remove -->
                   <ng-container *ngIf="student.answerSheetType === 'Images' && !isSubmittedForEvaluation && !student.isUploading">
                     <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
                       <button type="button" class="btn-action btn-action-update"
@@ -195,17 +196,19 @@
                         <i class="fas fa-chevron-down menu-chevron"></i>
                       </button>
                       <div class="action-dropdown" *ngIf="openMenuId === student.studentId">
-                        <!-- Replace all with PDF -->
                         <input type="file" [id]="'file-update-img-' + student.studentId"
                           accept=".pdf" (change)="onFileSelected($event, student, true); closeMenu()"
                           style="display:none" />
                         <label [for]="'file-update-img-' + student.studentId" class="dropdown-item">
-                          <i class="fas fa-file-pdf text-danger"></i> Upload PDF
+                          <i class="fas fa-file-pdf text-danger"></i> PDF
                         </label>
-                        <!-- Preview existing images & replace individually -->
                         <button type="button" class="dropdown-item"
                           (click)="openImagePreview(student); closeMenu()">
-                          <i class="fas fa-eye text-success"></i> Preview &amp; Edit Images
+                          <i class="fas fa-images text-success"></i> Images
+                        </button>
+                        <button type="button" class="dropdown-item dropdown-item-danger"
+                          (click)="removeAnswerSheet(student); closeMenu()">
+                          <i class="fas fa-trash-alt text-danger"></i> Remove
                         </button>
                       </div>
                     </div>
@@ -229,6 +232,11 @@
                         <button type="button" class="dropdown-item"
                           (click)="openPagePicker(student, true); closeMenu()">
                           <i class="fas fa-images text-success"></i> Images
+                        </button>
+                        <!-- Remove answer sheet entirely -->
+                        <button type="button" class="dropdown-item dropdown-item-danger"
+                          (click)="removeAnswerSheet(student); closeMenu()">
+                          <i class="fas fa-trash-alt text-danger"></i> Remove
                         </button>
                       </div>
                     </div>
@@ -360,22 +368,26 @@
               <!-- Not uploaded -->
               <span *ngIf="!student.isUploaded" class="text-muted">—</span>
 
-              <!-- Uploaded + Pending → View Answer Sheet (disabled while uploading) -->
-              <a *ngIf="student.isUploaded && student.evaluationStatus !== 'Evaluated'"
+              <!-- Uploading in progress — hide action links, show ban badge -->
+              <span *ngIf="student.isUploaded && student.isUploading" class="action-uploading-badge">
+                <span class="link-text">Unavailable</span>
+              </span>
+
+              <!-- Uploaded + Pending → View Answer Sheet -->
+              <a *ngIf="student.isUploaded && !student.isUploading && student.evaluationStatus !== 'Evaluated'"
                 href="javascript:void(0)"
                 class="download-link"
-                [class.disabled]="isViewing || student.isUploading"
-                (click)="!isViewing && !student.isUploading && viewAnswerSheet(student)">
+                [class.disabled]="isViewing"
+                (click)="!isViewing && viewAnswerSheet(student)">
                 <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
 
-              <!-- Uploaded + Evaluated → View Result (disabled while uploading) -->
-              <a *ngIf="student.isUploaded && student.evaluationStatus === 'Evaluated'"
+              <!-- Uploaded + Evaluated → View Result -->
+              <a *ngIf="student.isUploaded && !student.isUploading && student.evaluationStatus === 'Evaluated'"
                 href="javascript:void(0)"
                 class="download-link"
-                [class.disabled]="student.isUploading"
-                (click)="!student.isUploading && viewStudentResult(student)">
+                (click)="viewStudentResult(student)">
                 <i class="fas fa-chart-bar"></i><span class="link-text"> View Result</span>
               </a>
             </td>

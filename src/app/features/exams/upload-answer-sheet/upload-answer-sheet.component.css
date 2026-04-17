@@ -1219,6 +1219,21 @@ label.btn-doc-img,
 .dropdown-item i { font-size: 0.875rem; flex-shrink: 0; }
 .dropdown-item .text-danger  { color: var(--red) !important; }
 .dropdown-item .text-success { color: var(--green) !important; }
+.dropdown-item-danger        { color: var(--red) !important; border-top: 1px solid var(--red-light) !important; }
+.dropdown-item-danger:hover  { background: var(--red-light) !important; color: var(--red-dark) !important; }
+
+/* ── Action column — uploading/updating in-progress badge ───────────── */
+.action-uploading-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  cursor: not-allowed;
+  white-space: nowrap;
+}
+.action-uploading-badge i { font-size: 0.875rem; }
 
 /* ─── Uploaded column layout (filename above Update button) ─── */
 .doc-uploaded-col {

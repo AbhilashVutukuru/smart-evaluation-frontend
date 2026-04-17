@@ -53,6 +53,13 @@ export class UploadAnswerSheetService {
   return this.http.put(`${this.apiUrl}/student-answer-sheet/replace-image`, fd);
 }
 
+  deleteAnswerSheet(studentId: number, questionPaperId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.apiUrl}/student-answer-sheet/delete`,
+      { params: { studentId, questionPaperId } },
+    );
+  }
+
   /** Downloads a single image blob and returns it as a base64 data URL.
    *  Pass cacheBust (e.g. Date.now()) to bypass browser cache after a replacement. */
   downloadImage(studentId: number, slotIndex: number, questionPaperId: number, cacheBust?: number): Observable<string> {
