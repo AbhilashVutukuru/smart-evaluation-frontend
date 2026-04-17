@@ -36,7 +36,7 @@
     <div class="papers-header-row">
       <h4><i class="fas fa-users"></i> Students</h4>
 
-      <div class="search-input-wrapper" *ngIf="students.length > 0">
+      <div class="search-input-wrapper er-search" *ngIf="students.length > 0">
         <i class="fas fa-search search-icon"></i>
         <input
           type="text"
@@ -49,10 +49,6 @@
           <i class="fas fa-times"></i>
         </button>
       </div>
-
-      <span class="badge badge-primary" *ngIf="students.length">
-        {{ statistics.totalStudents }} Students
-      </span>
     </div>
 
     <!--  Statistics Cards -->
@@ -118,15 +114,10 @@
               <strong class="roll-number">{{ student.rollNumber }}</strong>
             </td>
             <td>{{ student.studentName }}</td>
-            <td>{{ totalMarks || "-" }}</td>
+            <td>{{ totalMarks || "—" }}</td>
             <td>
-              {{
-                student.isAbsent
-                  ? "-"
-                  : !student.hasUploaded
-                    ? "-"
-                    : student.obtainedMarks
-              }}
+              <span *ngIf="student.isAbsent || !student.hasUploaded">—</span>
+              <span *ngIf="!student.isAbsent && student.hasUploaded">{{ student.obtainedMarks }}</span>
             </td>
             <td>
               <span *ngIf="student.isAbsent" class="badge badge-danger">
@@ -150,19 +141,17 @@
 
               <!-- Not Uploaded — show Submission Completed only if batch was submitted -->
               <span *ngIf="!student.isAbsent && !student.hasUploaded && answerSheetsSubmitted"
-                class="badge badge-submitted">
+                class="badge badge-primary">
                 <i class="fas fa-paper-plane"></i> Submission Completed
               </span>
 
               <!-- Not Uploaded — batch not yet submitted -->
-              <span *ngIf="!student.isAbsent && !student.hasUploaded && !answerSheetsSubmitted">
-                -
-              </span>
+              <span *ngIf="!student.isAbsent && !student.hasUploaded && !answerSheetsSubmitted">—</span>
             </td>
 
             <td>
               <!-- Absent -->
-              <span *ngIf="student.isAbsent" class="text-muted">-</span>
+              <span *ngIf="student.isAbsent" class=>—</span>
 
               <!-- Evaluated — link style matching upload answer sheet -->
               <a
@@ -175,7 +164,7 @@
               </a>
 
               <!-- Pending -->
-              <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'" class="text-muted">-</span>
+              <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'">—</span>
             </td>
           </tr>
         </tbody>
@@ -370,12 +359,12 @@
             <tbody>
               <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
                 <!-- Max Marks -->
-                <td class="text-center">
+                <td>
                   <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
                 </td>
 
                 <!-- System Marks -->
-                <td class="text-center">
+                <td>
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
                 </td>
 
@@ -496,12 +485,12 @@
                 </td>
 
                 <!-- Max Marks -->
-                <td class="text-center">
+                <td>
                   <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
                 </td>
 
                 <!-- System Marks -->
-                <td class="text-center">
+                <td>
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
                 </td>
 

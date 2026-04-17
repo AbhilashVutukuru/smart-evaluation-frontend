@@ -357,9 +357,9 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .question-badge {
-  background: #fee8e0;
-  color: #f85310;
-  border: 1.5px solid #f85310;
+  background: var(--yellow-light);
+  color: var(--yellow-dark);
+  border: 1.5px solid var(--yellow);
   padding: 0.625rem 1.25rem;
   border-radius: 50px;
   font-weight: 600;
@@ -367,6 +367,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
 }
 
 @media (max-width: 767px) {
@@ -843,15 +844,16 @@ label.disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
-  min-width: 120px;
+  width: 50rem;
+  flex: 0 0 auto;
+  margin: 0 auto;
 }
 
 .q-progress-inline .q-progress-bar-wrap {
   flex: 1;
-  height: 7px;
+  height: 17px;
   background: var(--gray-200);
-  border-radius: 4px;
+  border-radius: 8px;
   overflow: hidden;
 }
 

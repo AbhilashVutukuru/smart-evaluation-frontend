@@ -43,6 +43,7 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
+  width: 100%;
 }
 
 .papers-header-row h4 {
@@ -459,7 +460,7 @@
   text-decoration-thickness: 1.5px;
   text-underline-offset: 2px;
 }
-.table td a i                   { color: inherit; }
+/* .table td a i — removed; global.css handles link colours */
 
 /* ── Simple marks block ─────────────────────────────────────── */
 .simple-marks-block {
@@ -705,3 +706,7 @@
   white-space: pre-wrap;
   word-break: break-word;
 }
+/* ── Extended search (no badge on right) ── */
+.er-search { flex: 1; max-width: 100%; }
+
+/* .text-muted   { color: #212529 } */
