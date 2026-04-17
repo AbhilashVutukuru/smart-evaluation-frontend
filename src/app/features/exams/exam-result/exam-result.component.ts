@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -74,56 +75,133 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   override get canShowStudents(): boolean { return super.canShowStudents; }
 
   // ─── Auto-populate from query params (navigated from View Results button) ──────
+  // ─── Chip label overrides — set from query params, cleared after lazy dropdown load ──
+  chipClassName         = '';
+  chipSectionName       = '';
+  chipSubjectName       = '';
+  chipExamTypeName      = '';
+  chipQuestionPaperName = '';
+
+  // Tracks whether filter dropdowns have been lazy-loaded yet
+  private dropdownsLoaded = false;
+
   override ngOnInit(): void {
     const p = this.route.snapshot.queryParams;
     if (p['classId'] && p['sectionId'] && p['subjectId'] && p['examTypeId'] && p['questionPaperId']) {
 
-      // Set all selected values first
-      this.selectedClass           = p['classId'];
-      this.selectedSection         = p['sectionId'];
-      this.selectedSubject         = p['subjectId'];
-      this.selectedExamType        = p['examTypeId'];
-      this.selectedQuestionPaperId = +p['questionPaperId'];
-      // Force question paper dropdown visible with the pre-selected paper
+      // Set selected filter values
+      this.selectedClass             = p['classId'];
+      this.selectedSection           = p['sectionId'];
+      this.selectedSubject           = p['subjectId'];
+      this.selectedExamType          = p['examTypeId'];
+      this.selectedQuestionPaperId   = +p['questionPaperId'];
       this.showQuestionPaperDropdown = true;
 
-      // Load all dropdowns in parallel for display — without calling onChange
-      // (onChange methods reset selectedValues and cause async race conditions)
-      this.masterDataService.getClasses().subscribe({
-        next: (classes) => (this.classes = classes),
-        error: (err)    => this.errorHandler.handle('Failed to load classes', err),
-      });
-      this.masterDataService.getSectionsByClass(p['classId']).subscribe({
-        next: (sections) => (this.sections = sections),
-        error: (err)     => this.errorHandler.handle('Failed to load sections', err),
-      });
-      this.masterDataService.getSubjectsByClass(p['classId']).subscribe({
-        next: (subjects) => (this.subjects = subjects),
-        error: (err)     => this.errorHandler.handle('Failed to load subjects', err),
-      });
-      this.masterDataService.getExamTypesByClass(p['classId']).subscribe({
-        next: (examTypes) => (this.examTypes = examTypes),
-        error: (err)      => this.errorHandler.handle('Failed to load exam types', err),
-      });
-      this.createQuestionPaperService
-        .getQuestionPapers(+p['classId'], +p['subjectId'], +p['examTypeId'])
-        .subscribe({
-          next: (response) => {
-            this.questionPapers = response.data ?? [];
-            // Keep the pre-selected questionPaperId — do NOT let handleQuestionPapersResponse reset it
+      // Set chip labels from query params so chips show immediately.
+      // Dropdown arrays are NOT loaded yet — they load lazily on filter expand.
+      this.chipClassName         = p['className']         ?? '';
+      this.chipSectionName       = p['sectionName']       ?? '';
+      this.chipSubjectName       = p['subjectName']       ?? '';
+      this.chipExamTypeName      = p['examTypeName']      ?? '';
+      this.chipQuestionPaperName = p['questionPaperName'] ?? '';
+
+      const autoStudentId = p['studentId'] ? +p['studentId'] : null;
+
+      if (autoStudentId) {
+        // ── "View Result" — fire student list + first question in parallel ────
+        this.isLoading         = true;
+        this.isLoadingQuestion = true;
+
+        forkJoin({
+          list: this.examResultService.getStudentListWithStatistics(
+            +p['classId'], +p['sectionId'], +p['subjectId'], +p['examTypeId'], +p['questionPaperId']
+          ),
+          q1: this.examResultService.getQuestionDetails(
+            autoStudentId, +p['classId'], +p['subjectId'], +p['examTypeId'], 1, +p['questionPaperId']
+          ),
+        }).subscribe({
+          next: ({ list, q1 }) => {
+            this.students              = list.students;
+            this.filteredStudents      = [...list.students];
+            this.statistics            = list.statistics;
+            this.totalMarks            = list.totalMarks;
+            this.totalQuestions        = list.totalQuestions;
+            this.questionNumbers       = list.questionNumbers;
+            this.answerSheetsSubmitted = list.answerSheetsSubmitted ?? false;
+            this.hasSearched           = true;
+            this.isFilterCollapsed     = true;
+            this.isLoading             = false;
+
+            const target = list.students.find(s => s.studentId === autoStudentId);
+            if (target) {
+              this.selectedStudent   = target;
+              this.liveObtainedMarks = null;
+              this.currentResults    = {
+                studentId:        target.studentId,
+                studentName:      target.studentName,
+                totalMarks:       list.totalMarks,
+                questions:        [],
+                isAbsent:         target.isAbsent,
+                evaluationStatus: target.evaluationStatus,
+              };
+              this.currentQuestionIndex = 0;
+              this.showStudentsCard     = false;
+              this.showResultsCard      = true;
+              this.currentQuestion      = q1;
+              this.initializeRubrics();
+            }
+            this.isLoadingQuestion = false;
           },
-          error: (err) => this.errorHandler.handle('Failed to load question papers', err),
+          error: (err) => {
+            this.isLoading         = false;
+            this.isLoadingQuestion = false;
+            this.errorHandler.handle('Failed to load results', err);
+          },
         });
 
-      // showStudents() — all IDs already set, fires immediately.
-      // If studentId param is present, auto-open that student's result after load.
-      const autoStudentId = p['studentId'] ? +p['studentId'] : null;
-      this.showStudents(autoStudentId);
+      } else {
+        // ── "View Results" — show all students list ───────────────────────────
+        this.showStudents();
+      }
 
     } else {
       // No query params — normal navigation, let base handle init
       super.ngOnInit();
     }
+  }
+
+  /** Lazily loads filter dropdowns — called only when the user expands the filter. */
+  loadDropdownsLazy(): void {
+    if (this.dropdownsLoaded || !this.selectedClass) return;
+    this.dropdownsLoaded = true;
+    forkJoin({
+      classes:   this.masterDataService.getClasses(),
+      sections:  this.masterDataService.getSectionsByClass(this.selectedClass),
+      subjects:  this.masterDataService.getSubjectsByClass(this.selectedClass),
+      examTypes: this.masterDataService.getExamTypesByClass(this.selectedClass),
+    }).subscribe({
+      next: ({ classes, sections, subjects, examTypes }) => {
+        this.classes   = classes;
+        this.sections  = sections;
+        this.subjects  = subjects;
+        this.examTypes = examTypes;
+        // Arrays now populated — clear overrides so lookups use live data
+        this.chipClassName    = '';
+        this.chipSectionName  = '';
+        this.chipSubjectName  = '';
+        this.chipExamTypeName = '';
+      },
+      error: (err) => this.errorHandler.handle('Failed to load filter options', err),
+    });
+    this.createQuestionPaperService
+      .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
+      .subscribe({
+        next: (response) => {
+          this.questionPapers        = response.data ?? [];
+          this.chipQuestionPaperName = '';
+        },
+        error: (err) => this.errorHandler.handle('Failed to load question papers', err),
+      });
   }
 
   // ─── Abstract implementation ──────────────────────────────────────────────────

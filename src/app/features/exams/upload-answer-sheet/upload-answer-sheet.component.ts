@@ -956,11 +956,17 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   viewResults(): void {
     this.router.navigate(['/results'], {
       queryParams: {
-        classId:         this.selectedClass,
-        sectionId:       this.selectedSection,
-        subjectId:       this.selectedSubject,
-        examTypeId:      this.selectedExamType,
-        questionPaperId: this.selectedQuestionPaperId,
+        classId:           this.selectedClass,
+        sectionId:         this.selectedSection,
+        subjectId:         this.selectedSubject,
+        examTypeId:        this.selectedExamType,
+        questionPaperId:   this.selectedQuestionPaperId,
+        // Name strings for immediate chip display (no API calls needed)
+        className:         this.getSelectedName(this.classes,       this.selectedClass,    'className'),
+        sectionName:       this.getSelectedName(this.sections,      this.selectedSection,  'sectionName'),
+        subjectName:       this.getSelectedName(this.subjects,      this.selectedSubject,  'subjectName'),
+        examTypeName:      this.getSelectedName(this.examTypes,     this.selectedExamType, 'examTypeName'),
+        questionPaperName: this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? '',
       },
     });
   }
@@ -969,14 +975,25 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   viewStudentResult(student: StudentUploadStatus): void {
     this.router.navigate(['/results'], {
       queryParams: {
-        classId:         this.selectedClass,
-        sectionId:       this.selectedSection,
-        subjectId:       this.selectedSubject,
-        examTypeId:      this.selectedExamType,
-        questionPaperId: this.selectedQuestionPaperId,
-        studentId:       student.studentId,
+        classId:           this.selectedClass,
+        sectionId:         this.selectedSection,
+        subjectId:         this.selectedSubject,
+        examTypeId:        this.selectedExamType,
+        questionPaperId:   this.selectedQuestionPaperId,
+        studentId:         student.studentId,
+        // Name strings for immediate chip display (no API calls needed)
+        className:         this.getSelectedName(this.classes,       this.selectedClass,    'className'),
+        sectionName:       this.getSelectedName(this.sections,      this.selectedSection,  'sectionName'),
+        subjectName:       this.getSelectedName(this.subjects,      this.selectedSubject,  'subjectName'),
+        examTypeName:      this.getSelectedName(this.examTypes,     this.selectedExamType, 'examTypeName'),
+        questionPaperName: this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? '',
       },
     });
+  }
+
+  /** Helper — gets display name from a dropdown array by id field */
+  private getSelectedName(arr: any[], id: string, nameField: string): string {
+    return arr.find(i => String(i.id) === String(id))?.[nameField] ?? '';
   }
 
   // ─── Format submission timestamp for display ──────────────────────────────────
