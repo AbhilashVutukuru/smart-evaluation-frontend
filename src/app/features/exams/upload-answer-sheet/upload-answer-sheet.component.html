@@ -136,15 +136,21 @@
               <ng-container *ngIf="!isSubmittedForEvaluation">
                 <!-- Already marked absent — show badge -->
                 <span *ngIf="student.isAbsent" class="badge badge-danger"
-                  style="cursor:pointer" (click)="toggleAbsent(student)" title="Click to mark as attended">
+                  [style.cursor]="student.isUploading ? 'not-allowed' : 'pointer'"
+                  [style.opacity]="student.isUploading ? '0.5' : '1'"
+                  (click)="!student.isUploading && toggleAbsent(student)"
+                  title="Click to mark as attended">
                   <i class="fas fa-user-slash"></i> Absent
                 </span>
                 <!-- Not absent — show checkbox -->
                 <div *ngIf="!student.isAbsent" class="form-check">
                   <input type="checkbox" [id]="'absent-' + student.studentId"
                     [checked]="student.isAbsent" (change)="toggleAbsent(student)"
-                    class="custom-checkbox" />
-                  <label [for]="'absent-' + student.studentId" class="checkbox-label">
+                    class="custom-checkbox"
+                    [disabled]="student.isUploading" />
+                  <label [for]="'absent-' + student.studentId" class="checkbox-label"
+                    [style.opacity]="student.isUploading ? '0.5' : '1'"
+                    [style.cursor]="student.isUploading ? 'not-allowed' : 'pointer'">
                     Mark as Absent
                   </label>
                 </div>
@@ -354,20 +360,22 @@
               <!-- Not uploaded -->
               <span *ngIf="!student.isUploaded" class="text-muted">—</span>
 
-              <!-- Uploaded + Pending → View Answer Sheet -->
+              <!-- Uploaded + Pending → View Answer Sheet (disabled while uploading) -->
               <a *ngIf="student.isUploaded && student.evaluationStatus !== 'Evaluated'"
                 href="javascript:void(0)"
-                class="download-link" [class.disabled]="isViewing"
-                (click)="!isViewing && viewAnswerSheet(student)">
+                class="download-link"
+                [class.disabled]="isViewing || student.isUploading"
+                (click)="!isViewing && !student.isUploading && viewAnswerSheet(student)">
                 <span *ngIf="!isViewing"><i class="fas fa-eye"></i><span class="link-text"> View Answer Sheet</span></span>
                 <span *ngIf="isViewing"><i class="fas fa-spinner fa-spin"></i> Opening...</span>
               </a>
 
-              <!-- Uploaded + Evaluated → View Result -->
+              <!-- Uploaded + Evaluated → View Result (disabled while uploading) -->
               <a *ngIf="student.isUploaded && student.evaluationStatus === 'Evaluated'"
                 href="javascript:void(0)"
                 class="download-link"
-                (click)="viewStudentResult(student)">
+                [class.disabled]="student.isUploading"
+                (click)="!student.isUploading && viewStudentResult(student)">
                 <i class="fas fa-chart-bar"></i><span class="link-text"> View Result</span>
               </a>
             </td>
