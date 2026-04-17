@@ -149,34 +149,28 @@
             <th>Subject</th>
             <th>Exam Type</th>
             <th>Question Paper</th>
-            <th class="text-center">Total Marks</th>
-            <th class="text-center">Questions</th>
-            <th class="text-center">Exam Date</th>
-            <th class="text-center">Status</th>
-            <th class="text-center">Description</th>
-            <th class="text-center">Action</th>
+            <th>Total Marks</th>
+            <th>Questions</th>
+            <th>Exam Date</th>
+            <th>Status</th>
+            <th>Description</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let paper of filteredPapersList; let i = index"
             [class.active-row]="questionPaper?.questionPaperId === paper.questionPaperId">
             <td class="text-muted">{{ i + 1 }}</td>
-            <td><strong>{{ paper.subjectName }}</strong></td>
+            <td><strong class="roll-number">{{ paper.subjectName }}</strong></td>
             <td>{{ paper.examTypeName }}</td>
             <td>{{ paper.questionPaperName }}</td>
-            <td class="text-center">
-              <span class="badge badge-primary">{{ paper.totalMarks }}</span>
+            <td><span class="badge badge-primary">{{ paper.totalMarks }}</span></td>
+            <td>{{ paper.totalQuestions }}</td>
+            <td>
+              <span *ngIf="paper.examDate; else noDate">{{ paper.examDate | date:'dd MMM yyyy' }}</span>
+              <ng-template #noDate><span>—</span></ng-template>
             </td>
-            <td class="text-center">{{ paper.totalQuestions }}</td>
-            <td class="text-center">
-              <span *ngIf="paper.examDate; else noDate">
-                {{ paper.examDate | date:'dd MMM yyyy' }}
-              </span>
-              <ng-template #noDate>
-                <span class="text-muted">—</span>
-              </ng-template>
-            </td>
-            <td class="text-center">
+            <td>
               <span *ngIf="paper.isLocked" class="badge badge-locked-sm">
                 <i class="fas fa-lock"></i> Locked
               </span>
@@ -184,8 +178,7 @@
                 <i class="fas fa-unlock-alt"></i> Editable
               </span>
             </td>
-            <!-- Description: reason for lock, dash if editable -->
-            <td class="text-center">
+            <td>
               <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'" class="lock-reason date-passed">
                 <i class="fas fa-calendar-times"></i> Date Passed
               </span>
@@ -194,14 +187,15 @@
               </span>
               <span *ngIf="!paper.isLocked" class="text-muted">—</span>
             </td>
-            <td class="text-center">
-              <button class="btn btn-primary btn-sm"
+            <td>
+              <a class="download-link"
                 (click)="viewPaperFromList(paper.questionPaperId)"
-                [disabled]="isLoadingPaper">
+                href="javascript:void(0)"
+                [class.disabled]="isLoadingPaper">
                 <i [class]="isLoadingPaper && questionPaper?.questionPaperId === paper.questionPaperId
                   ? 'fas fa-spinner fa-spin' : 'fas fa-eye'"></i>
-                View Paper
-              </button>
+                <span class="link-text">View Paper</span>
+              </a>
             </td>
           </tr>
         </tbody>

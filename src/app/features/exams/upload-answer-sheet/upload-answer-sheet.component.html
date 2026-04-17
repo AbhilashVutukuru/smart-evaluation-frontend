@@ -160,7 +160,7 @@
 
             <!-- ANSWER SHEET TYPE -->
             <td>
-              <span *ngIf="student.isAbsent" class="text-muted">—</span>
+              <span *ngIf="student.isAbsent">—</span>
               <ng-container *ngIf="!student.isAbsent && student.isUploaded">
                 <span class="badge badge-type-pdf" *ngIf="student.answerSheetType === 'PDF'">
                   <i class="fas fa-file-pdf"></i> PDF
@@ -168,15 +168,15 @@
                 <span class="badge badge-type-img" *ngIf="student.answerSheetType === 'Images'">
                   <i class="fas fa-images"></i> Images
                 </span>
-                <span *ngIf="!student.answerSheetType" class="text-muted">—</span>
+                <span *ngIf="!student.answerSheetType">—</span>
               </ng-container>
-              <span *ngIf="!student.isAbsent && !student.isUploaded" class="text-muted">—</span>
+              <span *ngIf="!student.isAbsent && !student.isUploaded">—</span>
             </td>
 
             <!-- ANSWER SHEET(S) -->
             <td class="doc-cell">
               <!-- Absent -->
-              <span *ngIf="student.isAbsent" class="text-muted">—</span>
+              <span *ngIf="student.isAbsent">—</span>
 
               <!-- Uploaded -->
               <ng-container *ngIf="student.isUploaded && !student.isAbsent">
@@ -277,7 +277,7 @@
               </ng-container>
 
               <!-- Not uploaded + submitted -->
-              <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation" class="text-muted">—</span>
+              <span *ngIf="!student.isUploaded && !student.isAbsent && isSubmittedForEvaluation">—</span>
 
               <!-- IMAGE PREVIEW STRIP -->
               <div class="image-preview-strip"
@@ -349,7 +349,7 @@
 
             <!-- EVALUATION STATUS -->
             <td>
-              <span *ngIf="student.isAbsent" class="text-muted">—</span>
+              <span *ngIf="student.isAbsent">—</span>
               <ng-container *ngIf="!student.isAbsent">
                 <span *ngIf="student.isUploaded && student.evaluationStatus === 'Evaluated'"
                   class="badge badge-success">
@@ -359,14 +359,14 @@
                   class="badge badge-warning">
                   <i class="fas fa-clock"></i> Pending
                 </span>
-                <span *ngIf="!student.isUploaded" class="text-muted">—</span>
+                <span *ngIf="!student.isUploaded">—</span>
               </ng-container>
             </td>
 
             <!-- ACTION -->
             <td>
               <!-- Not uploaded -->
-              <span *ngIf="!student.isUploaded" class="text-muted">—</span>
+              <span *ngIf="!student.isUploaded">—</span>
 
               <!-- Uploading in progress — hide action links, show ban badge -->
               <span *ngIf="student.isUploaded && student.isUploading" class="action-uploading-badge">

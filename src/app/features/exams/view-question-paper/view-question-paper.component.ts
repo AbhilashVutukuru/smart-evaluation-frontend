@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastService } from '../../../core/services/toast.service';
@@ -44,7 +45,7 @@ interface PaperDraft {
 @Component({
   selector: 'app-view-question-paper',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './view-question-paper.component.html',
   styleUrls: ['./view-question-paper.component.css'],
 })
@@ -56,6 +57,7 @@ export class ViewQuestionPaperComponent implements OnInit {
   private errorHandler  = inject(ErrorHandlerService);
   private http          = inject(HttpClient);
   private apiUrl        = environment.apiUrl;
+  private route         = inject(ActivatedRoute);
 
   readonly ALL_SUBJECTS = 'ALL';
  
@@ -154,6 +156,12 @@ export class ViewQuestionPaperComponent implements OnInit {
       next: (classes) => (this.classes = classes),
       error: (err)    => this.errorHandler.handle('Failed to load classes', err),
     });
+
+    // Auto-open paper when navigated from dashboard via query param
+    const qpId = this.route.snapshot.queryParamMap.get('questionPaperId');
+    if (qpId) {
+      this.viewPaperFromList(+qpId);
+    }
   }
  
   // ─── Dropdown handlers ────────────────────────────────────────────────────

@@ -17,6 +17,10 @@ export interface ClassEvaluationBreakdown {
   evaluated:         number;
   pending:           number;
   absent:            number;
+  classId:           number;
+  sectionId:         number;
+  subjectId:         number;
+  examTypeId:        number;
 }
 
 export interface RecentActivity {

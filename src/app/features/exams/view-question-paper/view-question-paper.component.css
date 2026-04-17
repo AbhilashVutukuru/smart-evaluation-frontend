@@ -173,6 +173,9 @@
 .lock-reason.date-passed     { color: var(--yellow); }
 .lock-reason.sheet-submitted { color: var(--red); }
 
+/* download-link disabled state (loading) */
+.download-link.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
+
 /* ─── Results Page Header ───────────────────────────────────────────────────── */
 .results-page-header {
   display: flex;
