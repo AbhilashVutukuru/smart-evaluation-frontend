@@ -597,7 +597,7 @@ label.btn-doc-img,
   flex-shrink: 0;
   width: 52px;
   height: 100%;
-  min-height: 80px;
+  min-height: 140px;
   background: rgba(255,255,255,0.05);
   border: none;
   color: rgba(255,255,255,0.7);
@@ -782,9 +782,11 @@ label.btn-doc-img,
 /* Step 2 — slots grid */
 .page-slots-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  grid-auto-rows: 200px;
   gap: 0.75rem;
   margin-bottom: 1.5rem;
+  align-items: stretch;
 }
 
 .page-slot-wrap {
@@ -792,6 +794,7 @@ label.btn-doc-img,
   flex-direction: column;
   gap: 0.375rem;
   align-items: center;
+  height: 200px;
 }
 
 .page-slot-btn {
@@ -802,7 +805,7 @@ label.btn-doc-img,
   justify-content: center;
   gap: 0.25rem;
   width: 100%;
-  min-height: 80px;
+  min-height: 200px;
   border-radius: var(--border-radius);
   border: 2px dashed var(--gray-300);
   background: var(--gray-50);
@@ -923,7 +926,7 @@ label.btn-doc-img,
   .page-picker-box      { max-height: 95vh; }
   .page-picker-body     { padding: 1rem; }
   .page-slots-grid      { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-  .page-slot-btn        { min-height: 70px; }
+  .page-slot-btn        { min-height: 170px; }
   .page-picker-footer   { flex-direction: column; align-items: stretch; }
   .page-picker-actions  { justify-content: flex-end; }
   .page-count-input-row { flex-direction: column; align-items: stretch; }
@@ -951,7 +954,7 @@ label.btn-doc-img,
 .page-slot-btn {
   position: relative;
   width: 100%;
-  min-height: 90px;
+  min-height: 200px;
   border-radius: var(--border-radius);
   border: 2px dashed var(--gray-300);
   background: var(--gray-50);
@@ -970,7 +973,7 @@ label.btn-doc-img,
   justify-content: center;
   gap: 0.2rem;
   width: 100%;
-  min-height: 90px;
+  min-height: 200px;
   cursor: pointer;
   padding: 0.5rem;
 }
@@ -981,7 +984,7 @@ label.btn-doc-img,
 /* Thumbnail preview area (uploaded slot) */
 .slot-preview-area {
   width: 100%;
-  min-height: 90px;
+  min-height: 200px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -1084,7 +1087,7 @@ label.btn-doc-img,
   justify-content: center;
   gap: 0.2rem;
   width: 100%;
-  min-height: 90px;
+  min-height: 200px;
   padding: 0.5rem;
   cursor: pointer;
   border-radius: var(--border-radius);
@@ -1216,6 +1219,21 @@ label.btn-doc-img,
 .dropdown-item i { font-size: 0.875rem; flex-shrink: 0; }
 .dropdown-item .text-danger  { color: var(--red) !important; }
 .dropdown-item .text-success { color: var(--green) !important; }
+.dropdown-item-danger        { color: var(--red) !important; border-top: 1px solid var(--red-light) !important; }
+.dropdown-item-danger:hover  { background: var(--red-light) !important; color: var(--red-dark) !important; }
+
+/* ── Action column — uploading/updating in-progress badge ───────────── */
+.action-uploading-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-400);
+  cursor: not-allowed;
+  white-space: nowrap;
+}
+.action-uploading-badge i { font-size: 0.875rem; }
 
 /* ─── Uploaded column layout (filename above Update button) ─── */
 .doc-uploaded-col {
@@ -1248,7 +1266,7 @@ label.btn-doc-img,
   justify-content: center;
   gap: 0.2rem;
   width: 100%;
-  min-height: 90px;
+  min-height: 140px;
   cursor: pointer;
   padding: 0.5rem;
   border-radius: var(--border-radius);
@@ -1869,4 +1887,399 @@ label.btn-doc-img,
 .preview-thumb-placeholder {
   width: 100% !important;
   height: 100% !important;
+}
+
+/* ── Single-page picker: count input inline with label ───────── */
+.page-count-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.page-count-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.page-count-input {
+  width: 80px !important;
+  text-align: center;
+}
+
+/* ── Fix footer merging into content ─────────────────────────── */
+.page-picker-box {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.page-picker-body {
+  flex: 1 1 auto !important;
+  overflow-y: auto !important;
+  min-height: 0 !important;   /* critical — allows body to shrink */
+}
+
+.page-picker-footer {
+  flex-shrink: 0 !important;  /* never shrink — always visible */
+  background: var(--app-bg) !important;
+  border-top: 1px solid var(--gray-200) !important;
+  padding: 0.875rem 1.5rem !important;
+}
+
+/* ── Go button next to page count input ─────────────────────── */
+.page-go-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Disabled count input styling */
+.page-count-input:disabled {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CONFIRM DIALOG
+   ══════════════════════════════════════════════════════════════ */
+.confirm-dialog-box {
+  background: var(--app-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem 1.75rem 1.5rem;
+  width: min(90vw, 400px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: slideUp 0.22s ease;
+}
+
+.confirm-dialog-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--warning-light, #fff7e6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--yellow, #f59e0b);
+  flex-shrink: 0;
+}
+
+.confirm-dialog-message {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  text-align: center;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.confirm-ok-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid var(--red);
+  border-radius: var(--border-radius);
+  background: var(--red);
+  color: #fff;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.confirm-ok-btn:hover {
+  background: var(--red-dark, #c0392b);
+  border-color: var(--red-dark, #c0392b);
+  transform: translateY(-1px);
+}
+/* ══════════════════════════════════════════════════════════════
+   IMAGE PREVIEW MODAL — SLOT WITH ACTUAL IMAGE
+   ══════════════════════════════════════════════════════════════ */
+
+/* Slot inner container */
+.img-slot-inner {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+/* Loaded image fills the slot */
+.img-slot-loaded {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  background: var(--gray-100);
+}
+
+.img-slot-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+/* Hover overlay with zoom icon */
+.img-slot-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.img-slot-loaded:hover .img-slot-overlay { opacity: 1; }
+.img-slot-overlay i { color: #fff; font-size: 1.5rem; }
+
+/* Replaced badge inside slot */
+.img-slot-badge {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.img-slot-badge-replaced {
+  background: var(--success);
+  color: #fff;
+}
+
+/* Replace button at bottom of slot */
+.img-slot-replace-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border-top: 1.5px solid var(--blue);
+  background: transparent;
+  color: var(--blue);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.img-slot-replace-btn:hover          { background: var(--blue); color: #fff; }
+.img-slot-replace-btn-done           { border-color: var(--success); color: var(--success); }
+.img-slot-replace-btn-done:hover     { background: var(--success); color: #fff; }
+
+/* Camera button (mobile only) */
+.img-slot-cam-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: var(--blue-light, #e8f4fd);
+  color: var(--blue);
+  cursor: pointer;
+  font-size: 0.8rem;
+  position: absolute;
+  bottom: 2rem;
+  right: 4px;
+  border-radius: var(--radius-sm);
+}
+@media (max-width: 767px) { .img-slot-cam-btn { display: flex; } }
+
+/* Replaced slot border */
+.page-slot-btn.img-slot-replaced {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 0 2px var(--success-light) !important;
+}
+
+/* Slot takes full height to show image */
+.page-slot-btn.img-slot {
+  padding: 0 !important;
+  overflow: hidden;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Image preview slots — fixed equal size ─────────────────── */
+.page-slot-btn.img-slot {
+  min-height: 0 !important;
+  height: 220px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important;
+}
+
+.img-slot-inner {
+  flex: 1 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.img-slot-loaded {
+  height: 100% !important;
+  width: 100% !important;
+}
+
+.img-slot-thumb {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center top !important;
+}
+
+.img-slot-replace-btn,
+.slot-replace-label {
+  flex-shrink: 0 !important;
+  height: 28px !important;
+}
+
+/* ── Slot done — show actual image ───────────────────────────── */
+.slot-done-area.slot-img-area {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  cursor: pointer;
+  display: block;
+  padding: 0;
+}
+
+.slot-img-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.slot-img-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.slot-done-area.slot-img-area:hover .slot-img-overlay { opacity: 1; }
+.slot-img-overlay i { color: #fff; font-size: 1.4rem; }
+
+/* Slot must be flex column so image fills remaining space */
+.page-slot-btn.slot-done {
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  min-height: 160px !important;
+}
+
+/* ── Delete button above image in done slot ──────────────────── */
+.page-slot-btn.slot-done {
+  overflow: visible !important;  /* allow × button to render outside */
+}
+
+.page-slot-btn.slot-done .slot-img-area {
+  overflow: hidden;  /* only clip the image, not the × button */
+  border-radius: var(--border-radius);
+}
+
+.slot-delete-btn {
+  position: absolute !important;
+  top: -8px !important;
+  right: -8px !important;
+  z-index: 10 !important;
+}
+
+/* ── Page picker body min height — same size on both screens ─── */
+.page-picker-body {
+  min-height: 220px !important;
+}
+
+/* ── Page picker box min height — forces modal same size always ─ */
+.page-picker-box {
+  min-height: 600px !important;
+    width: 100% !important;        
+  max-width: 700px !important;   
+}
+/* Change Count button — brand blue */
+.page-count-input-row button.page-go-btn {
+  background: #0ea4f4 !important;
+  border-color: #0ea4f4 !important;
+  color: #fff !important;
+}
+.page-count-input-row button.page-go-btn:hover {
+  background: #0882c4 !important;
+  border-color: #0882c4 !important;
+}
+/* ── Divider line — same style as footer border ─────────────── */
+.page-count-divider {
+  width: calc(100% + 3rem);
+  margin-left: -1.5rem;
+  margin-right: -1.5rem;
+  margin-top: 0.875rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+/* ── Input same width as Reset button ───────────────────────── */
+.page-count-input-auto {
+  width: auto !important;
+  min-width: 60px !important;
+  max-width: 80px !important;
+  font-size: 1rem !important;
+}
+
+/* ── Filename label below slot ───────────────────────────────── */
+.slot-filename-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+.slot-filename-page {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--gray-600);
+}
+.slot-filename-name {
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  max-width: 90px;
+  cursor: default;
 }

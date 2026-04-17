@@ -19,7 +19,8 @@ export interface ResultRubric {
   marksAssignedByTeacher?: number;
 
   // Remarks
-  remarks?: string;
+  systemRemarks?:   string;   // set by AI evaluator — readonly
+  teacherRemarks?:  string;   // editable by teacher on override
 
   // UI-only editing state
   isEditing?: boolean;
