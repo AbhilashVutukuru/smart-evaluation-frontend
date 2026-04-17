@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { Component, inject, OnDestroy } from '@angular/core';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -23,7 +23,7 @@ import { RouterModule } from '@angular/router';
   templateUrl: './exam-result.component.html',
   styleUrls: ['./exam-result.component.css'],
 })
-export class ExamResultsComponent extends BaseExamFilterComponent {
+export class ExamResultsComponent extends BaseExamFilterComponent implements OnDestroy {
   private examResultService = inject(ExamResultService);
   private route             = inject(ActivatedRoute);
 
@@ -85,124 +85,136 @@ export class ExamResultsComponent extends BaseExamFilterComponent {
   // Tracks whether filter dropdowns have been lazy-loaded yet
   private dropdownsLoaded = false;
 
-  override ngOnInit(): void {
-    const p = this.route.snapshot.queryParams;
-    if (p['classId'] && p['sectionId'] && p['subjectId'] && p['examTypeId'] && p['questionPaperId']) {
+  private destroy$ = new Subject<void>();
 
-      // Set selected filter values
-      this.selectedClass             = p['classId'];
-      this.selectedSection           = p['sectionId'];
-      this.selectedSubject           = p['subjectId'];
-      this.selectedExamType          = p['examTypeId'];
-      this.selectedQuestionPaperId   = +p['questionPaperId'];
-      this.showQuestionPaperDropdown = true;
-
-      // Set chip labels from query params so chips show immediately.
-      // Dropdown arrays are NOT loaded yet — they load lazily on filter expand.
-      this.chipClassName         = p['className']         ?? '';
-      this.chipSectionName       = p['sectionName']       ?? '';
-      this.chipSubjectName       = p['subjectName']       ?? '';
-      this.chipExamTypeName      = p['examTypeName']      ?? '';
-      this.chipQuestionPaperName = p['questionPaperName'] ?? '';
-
-      const autoStudentId = p['studentId'] ? +p['studentId'] : null;
-
-      if (autoStudentId) {
-        // ── "View Result" — fire student list + first question in parallel ────
-        this.isLoading         = true;
-        this.isLoadingQuestion = true;
-
-        forkJoin({
-          list: this.examResultService.getStudentListWithStatistics(
-            +p['classId'], +p['sectionId'], +p['subjectId'], +p['examTypeId'], +p['questionPaperId']
-          ),
-          q1: this.examResultService.getQuestionDetails(
-            autoStudentId, +p['classId'], +p['subjectId'], +p['examTypeId'], 1, +p['questionPaperId']
-          ),
-        }).subscribe({
-          next: ({ list, q1 }) => {
-            this.students              = list.students;
-            this.filteredStudents      = [...list.students];
-            this.statistics            = list.statistics;
-            this.totalMarks            = list.totalMarks;
-            this.totalQuestions        = list.totalQuestions;
-            this.questionNumbers       = list.questionNumbers;
-            this.answerSheetsSubmitted = list.answerSheetsSubmitted ?? false;
-            this.hasSearched           = true;
-            this.isFilterCollapsed     = true;
-            this.isLoading             = false;
-
-            const target = list.students.find(s => s.studentId === autoStudentId);
-            if (target) {
-              this.selectedStudent   = target;
-              this.liveObtainedMarks = null;
-              this.currentResults    = {
-                studentId:        target.studentId,
-                studentName:      target.studentName,
-                totalMarks:       list.totalMarks,
-                questions:        [],
-                isAbsent:         target.isAbsent,
-                evaluationStatus: target.evaluationStatus,
-              };
-              this.currentQuestionIndex = 0;
-              this.showStudentsCard     = false;
-              this.showResultsCard      = true;
-              this.currentQuestion      = q1;
-              this.initializeRubrics();
-            }
-            this.isLoadingQuestion = false;
-          },
-          error: (err) => {
-            this.isLoading         = false;
-            this.isLoadingQuestion = false;
-            this.errorHandler.handle('Failed to load results', err);
-          },
-        });
-
-      } else {
-        // ── "View Results" — show all students list ───────────────────────────
-        this.showStudents();
-      }
-
-    } else {
-      // No query params — normal navigation, let base handle init
-      super.ngOnInit();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  /** Lazily loads filter dropdowns — called only when the user expands the filter. */
-  loadDropdownsLazy(): void {
-    if (this.dropdownsLoaded || !this.selectedClass) return;
-    this.dropdownsLoaded = true;
-    forkJoin({
-      classes:   this.masterDataService.getClasses(),
-      sections:  this.masterDataService.getSectionsByClass(this.selectedClass),
-      subjects:  this.masterDataService.getSubjectsByClass(this.selectedClass),
-      examTypes: this.masterDataService.getExamTypesByClass(this.selectedClass),
-    }).subscribe({
-      next: ({ classes, sections, subjects, examTypes }) => {
-        this.classes   = classes;
-        this.sections  = sections;
-        this.subjects  = subjects;
-        this.examTypes = examTypes;
-        // Arrays now populated — clear overrides so lookups use live data
-        this.chipClassName    = '';
-        this.chipSectionName  = '';
-        this.chipSubjectName  = '';
-        this.chipExamTypeName = '';
-      },
-      error: (err) => this.errorHandler.handle('Failed to load filter options', err),
-    });
-    this.createQuestionPaperService
-      .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
-      .subscribe({
-        next: (response) => {
-          this.questionPapers        = response.data ?? [];
-          this.chipQuestionPaperName = '';
-        },
-        error: (err) => this.errorHandler.handle('Failed to load question papers', err),
+  override ngOnInit(): void {
+    // Use queryParams observable so this fires on every navigation,
+    // even when Angular reuses the component instance.
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(p => {
+        if (p['classId'] && p['sectionId'] && p['subjectId'] && p['examTypeId'] && p['questionPaperId']) {
+
+          // ── Set filter selections FIRST — before any state reset ──────────────
+          // This ensures the filter dropdowns render with the correct values
+          // immediately when the filter is expanded.
+          this.selectedClass             = p['classId'];
+          this.selectedSection           = p['sectionId'];
+          this.selectedSubject           = p['subjectId'];
+          this.selectedExamType          = p['examTypeId'];
+          this.selectedQuestionPaperId   = +p['questionPaperId'];
+          this.showQuestionPaperDropdown = true;
+
+          // ── Reset student result state (not the filter selections) ────────────
+          this.students              = [];
+          this.filteredStudents      = [];
+          this.searchTerm            = '';
+          this.selectedStudent       = null;
+          this.currentResults        = null;
+          this.currentQuestion       = null;
+          this.showStudentsCard      = false;
+          this.showResultsCard       = false;
+          this.searchCompleted       = false;
+          this.hasSearched           = false;
+          this.answerSheetsSubmitted = false;
+          this.isFilterCollapsed     = true;
+          this.statistics = { totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0 };
+
+          // ── Load dropdown arrays immediately in parallel with student data ────
+          // This way the dropdowns are ready the moment user expands the filter.
+          forkJoin({
+            classes:   this.masterDataService.getClasses(),
+            sections:  this.masterDataService.getSectionsByClass(p['classId']),
+            subjects:  this.masterDataService.getSubjectsByClass(p['classId']),
+            examTypes: this.masterDataService.getExamTypesByClass(p['classId']),
+            papers:    this.createQuestionPaperService.getQuestionPapers(
+                         +p['classId'], +p['subjectId'], +p['examTypeId']
+                       ),
+          }).subscribe({
+            next: ({ classes, sections, subjects, examTypes, papers }) => {
+              this.classes        = classes;
+              this.sections       = sections;
+              this.subjects       = subjects;
+              this.examTypes      = examTypes;
+              this.questionPapers = papers.data ?? [];
+            },
+            error: (err) => this.errorHandler.handle('Failed to load filter options', err),
+          });
+
+          const autoStudentId = p['studentId'] ? +p['studentId'] : null;
+
+          if (autoStudentId) {
+            // ── "View Result" — fire student list + first question in parallel ──
+            this.isLoading         = true;
+            this.isLoadingQuestion = true;
+
+            forkJoin({
+              list: this.examResultService.getStudentListWithStatistics(
+                +p['classId'], +p['sectionId'], +p['subjectId'], +p['examTypeId'], +p['questionPaperId']
+              ),
+              q1: this.examResultService.getQuestionDetails(
+                autoStudentId, +p['classId'], +p['subjectId'], +p['examTypeId'], 1, +p['questionPaperId']
+              ),
+            }).subscribe({
+              next: ({ list, q1 }) => {
+                this.students              = list.students;
+                this.filteredStudents      = [...list.students];
+                this.statistics            = list.statistics;
+                this.totalMarks            = list.totalMarks;
+                this.totalQuestions        = list.totalQuestions;
+                this.questionNumbers       = list.questionNumbers;
+                this.answerSheetsSubmitted = list.answerSheetsSubmitted ?? false;
+                this.hasSearched           = true;
+                this.isFilterCollapsed     = true;
+                this.isLoading             = false;
+
+                const target = list.students.find(s => s.studentId === autoStudentId);
+                if (target) {
+                  this.selectedStudent   = target;
+                  this.liveObtainedMarks = null;
+                  this.currentResults    = {
+                    studentId:        target.studentId,
+                    studentName:      target.studentName,
+                    totalMarks:       list.totalMarks,
+                    questions:        [],
+                    isAbsent:         target.isAbsent,
+                    evaluationStatus: target.evaluationStatus,
+                  };
+                  this.currentQuestionIndex = 0;
+                  this.showStudentsCard     = false;
+                  this.showResultsCard      = true;
+                  this.currentQuestion      = q1;
+                  this.initializeRubrics();
+                }
+                this.isLoadingQuestion = false;
+              },
+              error: (err) => {
+                this.isLoading         = false;
+                this.isLoadingQuestion = false;
+                this.errorHandler.handle('Failed to load results', err);
+              },
+            });
+
+          } else {
+            // ── "View Results" — show all students list ───────────────────────
+            this.showStudents();
+          }
+
+        } else {
+          // No query params — normal navigation, let base handle init
+          super.ngOnInit();
+        }
       });
   }
+
+  /** Called when user expands the filter on direct navigation (no query params).
+   *  On query-param navigation, dropdowns are already loaded in ngOnInit. */
+  loadDropdownsLazy(): void { }
 
   // ─── Abstract implementation ──────────────────────────────────────────────────
   protected override clearStudents(): void {
