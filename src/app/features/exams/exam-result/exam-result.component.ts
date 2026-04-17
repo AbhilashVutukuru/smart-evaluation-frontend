@@ -366,7 +366,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
           // Only scroll when navigating (Next/Previous/QuickJump), not on first load
           if (scroll) {
             setTimeout(() => {
-              const el = document.getElementById('question-top');
+              const el = document.getElementById('quick-jump');
               if (el) {
                 const y = el.getBoundingClientRect().top + window.scrollY - 80;
                 window.scrollTo({ top: y, behavior: 'smooth' });
@@ -396,7 +396,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
       }
 
       rubric.originalMarksGiven = rubric.marksGiven;
-      rubric.originalRemarks    = rubric.remarks ?? '';
+      rubric.originalRemarks    = rubric.teacherRemarks ?? '';
     });
   }
 
@@ -422,18 +422,18 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
   enableRubricEdit(rubric: ResultRubric): void {
     rubric.isEditing         = true;
     rubric.originalMarksGiven = rubric.marksGiven;
-    rubric.originalRemarks   = rubric.remarks;
+    rubric.originalRemarks   = rubric.teacherRemarks;
   }
 
   cancelRubricEdit(rubric: ResultRubric): void {
     rubric.isEditing  = false;
     rubric.marksGiven = rubric.originalMarksGiven ?? 0;
-    rubric.remarks    = rubric.originalRemarks;
+    rubric.teacherRemarks    = rubric.originalRemarks;
   }
 
   isRubricValid(rubric: ResultRubric): boolean {
     if (rubric.marksGiven < 0 || rubric.marksGiven > rubric.maxMarks) return false;
-    if (!rubric.remarks?.trim()) return false;
+    if (!rubric.teacherRemarks?.trim()) return false;
 
     const marksStr = rubric.marksGiven.toString();
     if (marksStr.includes('.')) {
@@ -474,7 +474,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
         [{
           questionPaperRubricId: rubric.questionPaperRubricId ?? rubric.id!,
           teacherAssignedMarks:  rubric.marksGiven,
-          teacherRemarks:        rubric.remarks?.trim(),
+          teacherRemarks:        rubric.teacherRemarks?.trim(),
         }],
       )
       .subscribe({
@@ -482,7 +482,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
           rubric.isEditing          = false;
           rubric.teacherModified    = true;
           rubric.originalMarksGiven = rubric.marksGiven;
-          rubric.originalRemarks    = rubric.remarks;
+          rubric.originalRemarks    = rubric.teacherRemarks;
           rubric.isSaving           = false;
           this.isLoading            = false;
           this.liveObtainedMarks    = totalObtainedMarks;
@@ -499,7 +499,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
   isRubricChanged(rubric: ResultRubric): boolean {
     if (!rubric.isEditing) return false;
     const marksChanged   = Number(rubric.marksGiven) !== Number(rubric.originalMarksGiven);
-    const remarksChanged = (rubric.remarks ?? '').trim() !== (rubric.originalRemarks ?? '').trim();
+    const remarksChanged = (rubric.teacherRemarks ?? '').trim() !== (rubric.originalRemarks ?? '').trim();
     return marksChanged && remarksChanged;
   }
 

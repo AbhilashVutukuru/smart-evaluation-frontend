@@ -267,7 +267,7 @@
     </div> -->
 
     <!-- Question Navigation -->
-    <div class="question-selector" *ngIf="questionNumbers.length">
+    <div class="question-selector" id="quick-jump" *ngIf="questionNumbers.length">
       <label class="section-label">
         <i class="fas fa-list-ol"></i> Quick Jump:
       </label>
@@ -436,12 +436,12 @@
                   <div class="scrollable-remarks">
                     <input
                       type="text"
-                      [(ngModel)]="rubric.remarks"
+                      [(ngModel)]="rubric.teacherRemarks"
                       [disabled]="!rubric.isEditing"
                       class="form-control form-control-sm"
                       [class.is-invalid]="
                         rubric.isEditing &&
-                        (!rubric.remarks || rubric.remarks.trim() === '')
+                        (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                       "
                       placeholder="Add remarks"
                     />
@@ -449,7 +449,7 @@
                   <div
                     *ngIf="
                       rubric.isEditing &&
-                      (!rubric.remarks || rubric.remarks.trim() === '')
+                      (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                     "
                     class="error-text"
                   >
@@ -465,16 +465,17 @@
       <!-- rubricAdded = true → full rubric table -->
       <div class="question-section" *ngIf="currentQuestion.rubricAdded">
         <label class="section-label">
-          <i class="fas fa-list-check"></i> Rubric Criteria:
+          <i class="fas fa-list-check"></i> Validation Rules:
         </label>
 
         <div class="table-responsive">
           <table class="table table-bordered rubric-table">
             <thead>
               <tr>
-                <th>CRITERION</th>
+                <th>VALIDATION</th>
                 <th>MAX MARKS</th>
                 <th>SYSTEM MARKS</th>
+                <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
                   <i
@@ -482,7 +483,7 @@
                     title="By default system marks assigned to teacher marks you can override"
                   ></i>
                 </th>
-                <th>REMARKS</th>
+                <th>TEACHER REMARKS</th>
               </tr>
             </thead>
             <tbody>
@@ -502,6 +503,15 @@
                 <!-- System Marks -->
                 <td class="text-center">
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- System Remarks — readonly, set by AI -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <span class="system-remarks-text">
+                      {{ rubric.systemRemarks || '—' }}
+                    </span>
+                  </div>
                 </td>
 
                 <!-- Teacher Marks - compact with inline Edit -->
@@ -558,17 +568,17 @@
                   </div>
                 </td>
 
-                <!-- Remarks with scroll -->
+                <!-- Teacher Remarks — editable on override -->
                 <td class="remarks-cell">
                   <div class="scrollable-remarks">
                     <input
                       type="text"
-                      [(ngModel)]="rubric.remarks"
+                      [(ngModel)]="rubric.teacherRemarks"
                       [disabled]="!rubric.isEditing"
                       class="form-control form-control-sm"
                       [class.is-invalid]="
                         rubric.isEditing &&
-                        (!rubric.remarks || rubric.remarks.trim() === '')
+                        (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                       "
                       placeholder="Add remarks"
                     />
@@ -576,7 +586,7 @@
                   <div
                     *ngIf="
                       rubric.isEditing &&
-                      (!rubric.remarks || rubric.remarks.trim() === '')
+                      (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                     "
                     class="error-text"
                   >

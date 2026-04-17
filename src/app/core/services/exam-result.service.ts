@@ -14,7 +14,7 @@ import {
 export interface RubricUpdatePayload {
   questionPaperRubricId: number;
   marksGiven: number;
-  remarks: string;
+  teacherRemarks: string;
 }
 
 /** Request body for the update-question-rubrics endpoint */
@@ -105,7 +105,7 @@ export class ExamResultService {
       rubrics: rubrics.map((r) => ({
         questionPaperRubricId: r.questionPaperRubricId,
         marksGiven: r.teacherAssignedMarks,
-        remarks: r.teacherRemarks ?? '',
+        teacherRemarks: r.teacherRemarks ?? '',
       })),
     };
 

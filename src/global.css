@@ -702,11 +702,11 @@ input[type="checkbox"] {
 /* .header-info-icon { margin-left: 0.1rem; font-size: 0.87rem; cursor: help; color: var(--red) !important;} */
 
 .header-info-icon {
-  color: var(--red);
+  color: var(--yellow);
   font-size: 0.83rem;
   margin-left: 0.25rem;
   cursor: help;
   vertical-align: middle;
 }
 
-.header-info-icon:hover { color:var(--red-dark); }
+.header-info-icon:hover { color:var(--yellow-dark); }
