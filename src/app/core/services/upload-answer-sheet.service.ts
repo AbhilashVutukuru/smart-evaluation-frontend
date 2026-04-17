@@ -53,10 +53,12 @@ export class UploadAnswerSheetService {
   return this.http.put(`${this.apiUrl}/student-answer-sheet/replace-image`, fd);
 }
 
-  /** Downloads a single image blob and returns it as a base64 data URL */
-  downloadImage(studentId: number, slotIndex: number, questionPaperId: number): Observable<string> {
+  /** Downloads a single image blob and returns it as a base64 data URL.
+   *  Pass cacheBust (e.g. Date.now()) to bypass browser cache after a replacement. */
+  downloadImage(studentId: number, slotIndex: number, questionPaperId: number, cacheBust?: number): Observable<string> {
+    const bust = cacheBust ?? Date.now();
     const url = `${this.apiUrl}/student-answer-sheet/download-image/${studentId}`
-      + `?slotIndex=${slotIndex}&questionPaperId=${questionPaperId}`;
+      + `?slotIndex=${slotIndex}&questionPaperId=${questionPaperId}&t=${bust}`;
     return this.http.get(url, { responseType: 'blob' }).pipe(
       switchMap(blob => new Observable<string>(observer => {
         const reader = new FileReader();

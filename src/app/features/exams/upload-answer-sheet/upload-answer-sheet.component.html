@@ -180,7 +180,7 @@
                     <span class="pdf-name">{{ getAnswerSheetDisplay(student) }}</span>
                   </span>
 
-                  <!-- Images type: Update dropdown with PDF + Preview & Edit + Remove -->
+                  <!-- Images type: Update dropdown with PDF + Preview & Edit -->
                   <ng-container *ngIf="student.answerSheetType === 'Images' && !isSubmittedForEvaluation && !student.isUploading">
                     <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
                       <button type="button" class="btn-action btn-action-update"
@@ -200,11 +200,6 @@
                         <button type="button" class="dropdown-item"
                           (click)="openImagePreview(student); closeMenu()">
                           <i class="fas fa-eye text-success"></i> Preview &amp; Edit Images
-                        </button>
-                        <!-- Replace all with new images -->
-                        <button type="button" class="dropdown-item"
-                          (click)="openPagePicker(student, true); closeMenu()">
-                          <i class="fas fa-images text-success"></i> Replace All Images
                         </button>
                       </div>
                     </div>
@@ -385,97 +380,138 @@
 <!-- ── PAGE PICKER MODAL ── -->
 <div class="page-picker-overlay" *ngIf="modal" (click)="closeModal()">
   <div class="page-picker-box" (click)="$event.stopPropagation()">
+
+    <!-- Header -->
     <div class="page-picker-header">
       <span class="page-picker-title">
-        <i class="fas fa-images"></i> Upload Answer Sheet Images
+        <i class="fas fa-images"></i>
+        {{ modal.isUpdate ? 'Update Answer Sheet Images' : 'Upload Answer Sheet Images' }}
       </span>
       <button class="page-picker-close" (click)="closeModal()" title="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="page-picker-body" *ngIf="modal.pageCount === null">
-      <p class="page-picker-hint">
-        <i class="fas fa-info-circle"></i> How many pages does this answer sheet have?
-      </p>
+
+    <div class="page-picker-body">
+
+      <!-- Page count row — always visible, same line layout -->
       <div class="page-count-input-row">
-        <input type="number" class="form-control page-count-input"
-          [(ngModel)]="modal.inputCount" min="1" max="50" placeholder="e.g. 4" />
-        <button class="btn btn-primary" (click)="confirmPageCount()"
+        <span class="page-picker-hint" style="margin-bottom:0;">
+          <i class="fas fa-info-circle"></i> How many pages?
+        </span>
+        <input type="number" class="form-control page-count-input page-count-input-auto"
+          [(ngModel)]="modal.inputCount"
+          [disabled]="modal.pageCount !== null"
+          min="1" max="50" placeholder="0" />
+        <button class="btn btn-primary page-go-btn"
+          *ngIf="modal.pageCount === null"
+          (click)="confirmPageCount()"
           [disabled]="!modal.inputCount || modal.inputCount < 1">
-          <i class="fas fa-arrow-right"></i> Continue
+          <i class="fas fa-arrow-right"></i> Create
+        </button>
+        <button class="btn btn-secondary page-go-btn"
+          *ngIf="modal.pageCount !== null"
+          (click)="resetModalSlots()"
+          title="Clear images and re-enter page count">
+          Reset
         </button>
       </div>
-    </div>
-    <div class="page-picker-body" *ngIf="modal.pageCount !== null">
-      <div class="slot-progress-bar-wrap">
-        <div class="slot-progress-fill"
-          [style.width.%]="(modalFilledCount / modal.pageCount) * 100"
-          [class.all-done]="modalAllReady"></div>
-      </div>
-      <p class="page-picker-hint">
-        <i class="fas fa-hand-pointer"></i>
-        Upload all {{ modal.pageCount }} pages. All must be uploaded before submitting.
-        <span class="hint-legend">
-          <span class="legend-dot legend-empty"></span> Empty &nbsp;
-          <span class="legend-dot legend-done"></span> Uploaded &nbsp;
-          <span class="legend-dot legend-deleted"></span> Removed
-        </span>
-      </p>
-      <div class="page-slots-grid">
-        <div *ngFor="let slot of modal.slots" class="page-slot-wrap">
-          <input type="file" accept="image/*" capture="environment"
-            [id]="'slot-cam-' + slot.pageNumber" (change)="onSlotImageSelected($event, slot)" style="display:none" />
-          <input type="file" accept="image/*"
-            [id]="'slot-gal-' + slot.pageNumber" (change)="onSlotImageSelected($event, slot)" style="display:none" />
-          <div class="page-slot-btn"
-            [class.slot-done]="slot.dataUrl !== null"
-            [class.slot-deleted]="slot.deleted && slot.dataUrl === null">
-            <label *ngIf="slot.dataUrl === null" [for]="'slot-gal-' + slot.pageNumber" class="slot-upload-area"
-              [title]="slot.deleted ? 'Re-upload page ' + slot.pageNumber : 'Upload page ' + slot.pageNumber">
-              <span class="slot-number">{{ slot.pageNumber }}</span>
-              <span class="slot-status-icon">
-                <i *ngIf="!slot.deleted" class="fas fa-plus"></i>
-                <i *ngIf="slot.deleted" class="fas fa-exclamation"></i>
-              </span>
-              <span class="slot-label">{{ slot.deleted ? 'Removed' : 'Page ' + slot.pageNumber }}</span>
-              <div class="slot-capture-btns mobile-only" (click)="$event.stopPropagation()">
-                <label [for]="'slot-cam-' + slot.pageNumber" class="slot-capture-btn slot-cam-btn" title="Take photo">
-                  <i class="fas fa-camera"></i>
-                </label>
-                <label [for]="'slot-gal-' + slot.pageNumber" class="slot-capture-btn slot-gal-btn" title="Gallery">
-                  <i class="fas fa-images"></i>
-                </label>
+      <!-- Divider line below How many pages — same as footer line -->
+      <div class="page-count-divider"></div>
+
+      <!-- Slots — shown only after Create is clicked -->
+      <ng-container *ngIf="modal.pageCount !== null && modal.pageCount > 0">
+
+        <p class="page-picker-hint" style="margin-top:0.75rem">
+          <i class="fas fa-hand-pointer"></i>
+          Upload all {{ modal.pageCount }} pages. All must be filled before submitting.
+          <span class="hint-legend">
+            <span class="legend-dot legend-empty"></span> Empty &nbsp;
+            <span class="legend-dot legend-done"></span> Uploaded &nbsp;
+            <span class="legend-dot legend-deleted"></span> Removed
+          </span>
+        </p>
+
+        <div class="page-slots-grid">
+          <div *ngFor="let slot of modal.slots" class="page-slot-wrap">
+            <input type="file" accept="image/*" capture="environment"
+              [id]="'slot-cam-' + slot.pageNumber"
+              (change)="onSlotImageSelected($event, slot)" style="display:none" />
+            <input type="file" accept="image/*"
+              [id]="'slot-gal-' + slot.pageNumber"
+              (change)="onSlotImageSelected($event, slot)" style="display:none" />
+            <div class="page-slot-btn"
+              [class.slot-done]="slot.dataUrl !== null"
+              [class.slot-deleted]="slot.deleted && slot.dataUrl === null">
+              <label *ngIf="slot.dataUrl === null"
+                [for]="'slot-gal-' + slot.pageNumber" class="slot-upload-area"
+                [title]="slot.deleted ? 'Re-upload page ' + slot.pageNumber : 'Upload page ' + slot.pageNumber">
+                <span class="slot-number">{{ slot.pageNumber }}</span>
+                <span class="slot-status-icon">
+                  <i *ngIf="!slot.deleted" class="fas fa-plus"></i>
+                  <i *ngIf="slot.deleted" class="fas fa-exclamation"></i>
+                </span>
+                <span class="slot-label">{{ slot.deleted ? 'Removed' : 'Page ' + slot.pageNumber }}</span>
+                <div class="slot-capture-btns mobile-only" (click)="$event.stopPropagation()">
+                  <label [for]="'slot-cam-' + slot.pageNumber" class="slot-capture-btn slot-cam-btn" title="Take photo">
+                    <i class="fas fa-camera"></i>
+                  </label>
+                  <label [for]="'slot-gal-' + slot.pageNumber" class="slot-capture-btn slot-gal-btn" title="Gallery">
+                    <i class="fas fa-images"></i>
+                  </label>
+                </div>
+              </label>
+              <div *ngIf="slot.dataUrl !== null" class="slot-done-area slot-img-area"
+                (click)="openSlotPreview(slot)"
+                title="Click to preview page {{ slot.pageNumber }}">
+                <img [src]="slot.dataUrl" class="slot-img-thumb" [alt]="'Page ' + slot.pageNumber" />
+                <div class="slot-img-overlay">
+                  <i class="fas fa-search-plus"></i>
+                </div>
               </div>
-            </label>
-            <div *ngIf="slot.dataUrl !== null" class="slot-done-area" (click)="openSlotPreview(slot)"
-              title="Click to preview page {{ slot.pageNumber }}">
-              <span class="slot-number">{{ slot.pageNumber }}</span>
-              <span class="slot-status-icon"><i class="fas fa-check"></i></span>
-              <span class="slot-label"><i class="fas fa-eye"></i> Preview</span>
+              <button *ngIf="slot.dataUrl !== null" class="slot-delete-btn" type="button"
+                (click)="$event.stopPropagation(); deleteSlotImage(slot)"
+                title="Remove page {{ slot.pageNumber }}">
+                <i class="fas fa-times"></i>
+              </button>
             </div>
-            <button *ngIf="slot.dataUrl !== null" class="slot-delete-btn" type="button"
-              (click)="$event.stopPropagation(); deleteSlotImage(slot)"
-              title="Remove page {{ slot.pageNumber }}">
-              <i class="fas fa-times"></i>
-            </button>
+            <!-- Page number + image name below slot -->
+            <div class="slot-filename-label">
+              <span class="slot-filename-page">Page {{ slot.pageNumber }}</span>
+              <span class="slot-filename-name"
+                *ngIf="slot.imageFile"
+                [title]="slot.imageFile.name">{{ slot.imageFile.name }}</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div class="page-picker-footer">
-        <span class="page-picker-count" [class.count-ready]="modalAllReady" [class.count-warn]="!modalAllReady">
+
+      </ng-container>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="page-picker-footer">
+      <span class="page-picker-count"
+        [class.count-ready]="modalAllReady"
+        [class.count-warn]="modal.pageCount && !modalAllReady">
+        <ng-container *ngIf="modal.pageCount">
           <i [class]="modalAllReady ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
           {{ modalFilledCount }} of {{ modal.pageCount }} pages uploaded
           <span *ngIf="!modalAllReady" class="count-note">— upload all to continue</span>
-        </span>
-        <div class="page-picker-actions">
-          <button class="btn btn-secondary" (click)="closeModal()"><i class="fas fa-times"></i> Cancel</button>
-          <button class="btn btn-success" (click)="uploadModalImages()" [disabled]="!modalAllReady"
-            [title]="!modalAllReady ? 'Upload all ' + modal.pageCount + ' pages first' : 'Convert to PDF and upload'">
-            <i class="fas fa-file-pdf"></i> Upload
-          </button>
-        </div>
+        </ng-container>
+      </span>
+      <div class="page-picker-actions">
+        <button class="btn btn-secondary" (click)="closeModal()">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn btn-success" (click)="uploadModalImages()"
+          *ngIf="modal.pageCount !== null && modalAllReady">
+          <i class="fas fa-file-pdf"></i>
+          {{ modal.isUpdate ? 'Save Changes' : 'Upload' }}
+        </button>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -500,169 +536,137 @@
 
 <!-- ── IMAGE PREVIEW & EDIT MODAL ── -->
 <div class="page-picker-overlay" *ngIf="imagePreviewModal" (click)="closeImagePreview()">
-  <div class="page-picker-box image-preview-modal" (click)="$event.stopPropagation()"
-    style="max-width: 720px;">
+  <div class="page-picker-box" (click)="$event.stopPropagation()">
 
     <!-- Header -->
     <div class="page-picker-header">
-      <div class="page-picker-title">
-        <i class="fas fa-images text-success"></i>
+      <span class="page-picker-title">
+        <i class="fas fa-images"></i>
         Answer Sheet Images — {{ imagePreviewModal.studentName }}
-      </div>
+      </span>
       <button class="page-picker-close" (click)="closeImagePreview()" title="Close">
         <i class="fas fa-times"></i>
       </button>
     </div>
 
-    <!-- Image grid -->
     <div class="page-picker-body">
-      <p class="image-preview-hint">
-        <i class="fas fa-info-circle"></i>
-        Click an image to <strong>view full size</strong>. Click <strong>Replace</strong> to upload a new one.
+
+      <!-- How many pages — readonly + Reset -->
+      <div class="page-count-input-row">
+        <span class="page-picker-hint" style="margin-bottom:0">
+          <i class="fas fa-info-circle"></i> How many pages?
+        </span>
+        <input type="number" class="form-control page-count-input page-count-input-auto"
+          [ngModel]="imagePreviewModal.slots.length"
+          [disabled]="true" />
+        <button class="btn btn-secondary page-go-btn"
+          (click)="reuploadImages()"
+          title="Upload all images fresh">
+          Reset
+        </button>
+      </div>
+      <!-- Divider line — same as footer -->
+      <div class="page-count-divider"></div>
+
+      <p class="page-picker-hint" style="margin-top:0.75rem">
+        <i class="fas fa-hand-pointer"></i>
+        Click a slot to <strong>view full size</strong>.
+        Click <strong>Replace</strong> to upload a new image.
       </p>
 
-      <div class="image-preview-grid">
-        <div class="image-preview-slot" *ngFor="let slot of imagePreviewModal.slots">
+      <div class="page-slots-grid">
+        <div *ngFor="let slot of imagePreviewModal.slots" class="page-slot-wrap">
 
-          <!-- Thumbnail — clickable to open lightbox -->
-          <div class="preview-thumb-wrap" (click)="openPreviewLightbox(slot)"
-            [class.has-image]="slot.previewUrl || slot.newPreviewUrl"
-            title="Click to view full size">
-            <!-- Loading spinner -->
-            <div *ngIf="slot.isLoadingPreview" class="preview-thumb-placeholder">
-              <i class="fas fa-spinner fa-spin"></i>
-              <span class="preview-page-label">Loading...</span>
+          <input type="file"
+            [id]="'replace-img-' + slot.index"
+            accept="image/png,image/jpeg,image/jpg,image/webp"
+            (change)="onReplaceImageSelected($event, slot)"
+            style="display:none" />
+          <input type="file"
+            [id]="'replace-cam-' + slot.index"
+            accept="image/*" capture="environment"
+            (change)="onReplaceImageSelected($event, slot)"
+            style="display:none" />
+
+          <div class="page-slot-btn img-slot"
+            [class.slot-done]="slot.previewUrl || slot.newPreviewUrl"
+            [class.img-slot-replaced]="slot.isReplaced">
+
+            <!-- Loading -->
+            <div *ngIf="slot.isLoadingPreview" class="slot-upload-area img-slot-inner">
+              <span class="slot-number">{{ slot.index + 1 }}</span>
+              <span class="slot-status-icon"><i class="fas fa-spinner fa-spin"></i></span>
+              <span class="slot-label">Loading...</span>
             </div>
-            <!-- New replacement image -->
-            <img *ngIf="!slot.isLoadingPreview && slot.newPreviewUrl"
-              [src]="slot.newPreviewUrl"
-              class="preview-thumb"
-              [class.preview-thumb-new]="slot.isReplaced"
-              [class.preview-thumb-added]="slot.isNew"
-              [title]="slot.newFile?.name" />
-            <!-- Existing blob image -->
-            <img *ngIf="!slot.isLoadingPreview && !slot.newPreviewUrl && slot.previewUrl"
-              [src]="slot.previewUrl"
-              class="preview-thumb"
-              [title]="slot.fileName" />
-            <!-- Fallback placeholder -->
-            <div *ngIf="!slot.isLoadingPreview && !slot.newPreviewUrl && !slot.previewUrl"
-              class="preview-thumb-placeholder">
-              <i class="fas fa-image"></i>
-              <span class="preview-page-label">Image {{ slot.index + 1 }}</span>
+
+            <!-- Image loaded -->
+            <div *ngIf="!slot.isLoadingPreview && (slot.previewUrl || slot.newPreviewUrl)"
+              class="img-slot-inner img-slot-loaded"
+              (click)="openPreviewLightbox(slot)"
+              title="Click to view full size">
+              <img [src]="slot.newPreviewUrl || slot.previewUrl"
+                class="img-slot-thumb" [alt]="slot.fileName" />
+              <div class="img-slot-overlay">
+                <i class="fas fa-search-plus"></i>
+              </div>
+              <span class="img-slot-badge img-slot-badge-replaced" *ngIf="slot.isReplaced">
+                <i class="fas fa-check-circle"></i> Replaced
+              </span>
             </div>
-            <!-- View icon overlay -->
-            <div class="preview-view-overlay" *ngIf="slot.previewUrl || slot.newPreviewUrl">
-              <i class="fas fa-search-plus"></i>
+
+            <!-- No image fallback -->
+            <div *ngIf="!slot.isLoadingPreview && !slot.previewUrl && !slot.newPreviewUrl"
+              class="slot-upload-area img-slot-inner">
+              <span class="slot-number">{{ slot.index + 1 }}</span>
+              <span class="slot-status-icon"><i class="fas fa-image"></i></span>
+              <span class="slot-label">No image</span>
             </div>
-            <!-- Replaced badge -->
-            <span class="replaced-badge" *ngIf="slot.isReplaced">
-              <i class="fas fa-check-circle"></i> Replaced
-            </span>
-            <!-- New addition badge -->
-            <span class="replaced-badge badge-new-addition" *ngIf="slot.isNew">
-              <i class="fas fa-plus-circle"></i> Added
-            </span>
+
+            <!-- Replace button inside slot -->
+            <label [for]="'replace-img-' + slot.index"
+              class="img-slot-replace-btn"
+              [class.img-slot-replace-btn-done]="slot.isReplaced">
+              <i class="fas fa-sync-alt"></i>
+              {{ slot.isReplaced ? 'Change' : 'Replace' }}
+            </label>
+
+            <!-- Camera mobile only -->
+            <label [for]="'replace-cam-' + slot.index"
+              class="img-slot-cam-btn mobile-only"
+              title="Take photo">
+              <i class="fas fa-camera"></i>
+            </label>
+
           </div>
-
-          <!-- Filename -->
-          <div class="preview-filename" [title]="(slot.isReplaced || slot.isNew) ? slot.newFile!.name : slot.fileName">
-            <i class="fas fa-file-image text-muted"></i>
-            {{ (slot.isReplaced || slot.isNew) ? slot.newFile!.name : slot.fileName }}
+          <!-- Page number + image name below slot -->
+          <div class="slot-filename-label">
+            <span class="slot-filename-page">Page {{ slot.index + 1 }}</span>
+            <span class="slot-filename-name"
+              *ngIf="slot.newFile || slot.fileName"
+              [title]="slot.newFile ? slot.newFile.name : slot.fileName">{{ slot.newFile ? slot.newFile.name : slot.fileName }}</span>
           </div>
-
-          <!-- Buttons row -->
-          <div class="preview-slot-actions">
-            <ng-container *ngIf="!slot.isNew">
-              <!-- Replace via gallery -->
-              <input type="file"
-                [id]="'replace-img-' + slot.index"
-                accept="image/png,image/jpeg,image/jpg,image/webp"
-                (change)="onReplaceImageSelected($event, slot)"
-                style="display:none" />
-              <label [for]="'replace-img-' + slot.index"
-                class="btn-replace"
-                [class.btn-replace-changed]="slot.isReplaced">
-                <i class="fas fa-sync-alt"></i>
-                {{ slot.isReplaced ? 'Change Again' : 'Replace' }}
-              </label>
-              <!-- Camera capture (mobile only) -->
-              <input type="file"
-                [id]="'replace-cam-' + slot.index"
-                accept="image/*" capture="environment"
-                (change)="onReplaceImageSelected($event, slot)"
-                style="display:none" />
-              <label [for]="'replace-cam-' + slot.index"
-                class="btn-replace btn-replace-cam mobile-only"
-                title="Take photo">
-                <i class="fas fa-camera"></i>
-              </label>
-            </ng-container>
-
-            <!-- Remove button only for newly added images -->
-            <ng-container *ngIf="slot.isNew">
-              <button type="button" class="btn-replace btn-replace-remove btn-remove-new"
-                (click)="removeNewSlot(slot)">
-                <i class="fas fa-trash-alt"></i> Remove
-              </button>
-            </ng-container>
-          </div>
-
         </div>
       </div>
+
     </div>
 
     <!-- Footer -->
     <div class="page-picker-footer">
-      <div class="page-picker-count">
-        <ng-container *ngIf="hasReplacedImages">
-          <span *ngIf="replacedCount > 0" class="text-warning" style="margin-right:0.5rem">
-            <i class="fas fa-sync-alt"></i> {{ replacedCount }} replaced
-          </span>
-          <span *ngIf="newCount > 0" class="text-success">
-            <i class="fas fa-plus-circle"></i> {{ newCount }} added
-          </span>
-        </ng-container>
-      </div>
+      <span class="page-picker-count"
+        [class.count-ready]="hasReplacedImages"
+        [class.count-warn]="!hasReplacedImages">
+        <i [class]="hasReplacedImages ? 'fas fa-check-circle' : 'fas fa-info-circle'"></i>
+        {{ replacedCount }} of {{ imagePreviewModal.slots.length }} replaced
+        <span *ngIf="!hasReplacedImages" class="count-note">— replace to continue</span>
+      </span>
       <div class="page-picker-actions">
-
-        <!-- Cancel -->
-        <button type="button" class="btn-secondary img-modal-cancel"
-          (click)="closeImagePreview()"
+        <button class="btn btn-secondary" (click)="closeImagePreview()"
           [disabled]="imagePreviewModal.isSaving">
           <i class="fas fa-times"></i> Cancel
         </button>
-
-        <!-- Add More Images (gallery) -->
-        <input type="file"
-          id="add-more-images"
-          accept="image/png,image/jpeg,image/jpg,image/webp"
-          multiple
-          (change)="onAddMoreImages($event)"
-          style="display:none" />
-        <label for="add-more-images"
-          class="btn-secondary img-modal-add"
-          [class.disabled]="imagePreviewModal.isSaving">
-          <i class="fas fa-plus"></i> Add Images
-        </label>
-
-        <!-- Camera capture (mobile only) -->
-        <input type="file"
-          id="add-more-camera"
-          accept="image/*" capture="environment"
-          (change)="onAddMoreImages($event)"
-          style="display:none" />
-        <label for="add-more-camera"
-          class="btn-secondary img-modal-add mobile-only"
-          [class.disabled]="imagePreviewModal.isSaving"
-          title="Take photo">
-          <i class="fas fa-camera"></i>
-        </label>
-
-        <!-- Save Changes -->
-        <button type="button" class="btn-success img-modal-save"
-          [disabled]="imagePreviewModal.isSaving || !hasReplacedImages"
-          (click)="saveImageReplacements()">
+        <button class="btn btn-success" (click)="saveImageReplacements()"
+          *ngIf="hasReplacedImages"
+          [disabled]="imagePreviewModal.isSaving">
           <ng-container *ngIf="!imagePreviewModal.isSaving">
             <i class="fas fa-save"></i> Save Changes
           </ng-container>
@@ -670,7 +674,6 @@
             <i class="fas fa-spinner fa-spin"></i> Saving...
           </ng-container>
         </button>
-
       </div>
     </div>
 
@@ -707,8 +710,28 @@
     <div class="lightbox-footer">
       <span class="lightbox-hint">
         <i class="fas fa-info-circle"></i>
-        Click outside or press Esc to close &nbsp;·&nbsp; ← → to navigate
+        Click outside to close &nbsp;·&nbsp; ← → to navigate
       </span>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONFIRM DIALOG ── -->
+<div class="page-picker-overlay" *ngIf="confirmDialog" style="z-index:10000">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <p class="confirm-dialog-message">{{ confirmDialog.message }}</p>
+    <div class="confirm-dialog-actions">
+      <button type="button" class="btn-secondary img-modal-cancel"
+        (click)="confirmDialogCancel()">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="btn-danger confirm-ok-btn"
+        (click)="confirmDialogOk()">
+        <i class="fas fa-check"></i> Yes, Reset
+      </button>
     </div>
   </div>
 </div>

@@ -67,10 +67,32 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── Image preview & per-slot replace modal ───────────────────────────────────
   imagePreviewModal: ImagePreviewModal | null = null;
 
-  // ─── Image preview lightbox (fullscreen view within preview modal) ────────────
+  // ─── Image preview lightbox ───────────────────────────────────────────────────
   previewLightboxSrc:   string | null = null;
   previewLightboxIndex: number = 0;
   previewLightboxTotal: number = 0;
+
+  openPreviewLightbox(slot: ImagePreviewSlot): void {
+    if (!this.imagePreviewModal) return;
+    const src = slot.newPreviewUrl ?? slot.previewUrl;
+    if (!src) return;
+    this.previewLightboxSrc   = src;
+    this.previewLightboxIndex = slot.index;
+    this.previewLightboxTotal = this.imagePreviewModal.slots.length;
+  }
+
+  closePreviewLightbox(): void {
+    this.previewLightboxSrc = null;
+  }
+
+  navPreviewLightbox(dir: -1 | 1): void {
+    if (!this.imagePreviewModal) return;
+    const newIdx = this.previewLightboxIndex + dir;
+    if (newIdx < 0 || newIdx >= this.imagePreviewModal.slots.length) return;
+    const slot = this.imagePreviewModal.slots[newIdx];
+    this.previewLightboxSrc   = slot.newPreviewUrl ?? slot.previewUrl ?? null;
+    this.previewLightboxIndex = newIdx;
+  }
 
   // ─── Upload/Update dropdown menu ──────────────────────────────────────────────
   openMenuId: number | null = null;
@@ -174,6 +196,59 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     }));
   }
 
+  /** Instant slot generation as user types page count — no Continue button needed */
+  onPageCountInput(): void {
+    if (!this.modal) return;
+    const n = Math.max(1, Math.min(50, this.modal.inputCount || 0));
+    if (n < 1) {
+      this.modal.pageCount = null;
+      this.modal.slots     = [];
+      return;
+    }
+    this.modal.pageCount = n;
+    // Preserve existing slot data when count changes
+    const existing = this.modal.slots;
+    this.modal.slots = Array.from({ length: n }, (_, i) => ({
+      pageNumber: i + 1,
+      dataUrl:    existing[i]?.dataUrl    ?? null,
+      deleted:    existing[i]?.deleted    ?? false,
+      imageFile:  existing[i]?.imageFile  ?? null,
+    }));
+  }
+
+  // ─── Confirm Dialog ──────────────────────────────────────────────────────────
+  confirmDialog: { message: string; onConfirm: () => void } | null = null;
+
+  showConfirmDialog(message: string, onConfirm: () => void): void {
+    this.confirmDialog = { message, onConfirm };
+  }
+
+  confirmDialogOk(): void {
+    this.confirmDialog?.onConfirm();
+    this.confirmDialog = null;
+  }
+
+  confirmDialogCancel(): void {
+    this.confirmDialog = null;
+  }
+
+  /** Resets all slots and page count — re-enables count input, shows warning */
+  resetModalSlots(): void {
+    if (!this.modal) return;
+    const hasImages = this.modalFilledCount > 0;
+    const message = hasImages
+      ? `All ${this.modalFilledCount} uploaded image(s) will be deleted and you will need to re-enter the page count. Are you sure?`
+      : 'This will reset the page count. Are you sure?';
+    this.showConfirmDialog(message, () => {
+      this.modal!.slots      = [];
+      this.modal!.pageCount  = null;
+      this.modal!.inputCount = null;
+      if (hasImages) {
+        this.toastService.showWarning('Reset', 'All uploaded images cleared. Please re-enter the page count.');
+      }
+    });
+  }
+
   /** Triggered by hidden file input for each page slot */
   onSlotImageSelected(event: Event, slot: PageSlot): void {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -269,10 +344,13 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       isSaving:    false,
     };
 
-    // Load each image thumbnail from blob in parallel
+    // Load each image thumbnail from blob in parallel.
+    // The cacheBust timestamp forces the browser to bypass its HTTP cache,
+    // so re-opening the modal after a replacement always shows the new image.
+    const cacheBust = Date.now();
     slots.forEach((slot, i) => {
       this.uploadService.downloadImage(
-        student.studentId, i, this.selectedQuestionPaperId!
+        student.studentId, i, this.selectedQuestionPaperId!, cacheBust
       ).subscribe({
         next: (dataUrl) => {
           slot.previewUrl       = dataUrl;
@@ -291,38 +369,31 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.previewLightboxIndex = 0;
   }
 
-  // ─── Image preview lightbox ───────────────────────────────────────────────────
-  openPreviewLightbox(slot: ImagePreviewSlot): void {
+  /** Resets all replacements — restores original images without closing modal */
+  resetImagePreview(): void {
     if (!this.imagePreviewModal) return;
-    const src = slot.newPreviewUrl ?? slot.previewUrl;
-    if (!src) return;
-    this.previewLightboxSrc   = src;
-    this.previewLightboxIndex = slot.index;
-    this.previewLightboxTotal = this.imagePreviewModal.slots.length;
+    this.imagePreviewModal.slots.forEach(slot => {
+      slot.isReplaced    = false;
+      slot.newFile       = null;
+      slot.newPreviewUrl = null;
+    });
+    this.toastService.showWarning('Reset', 'All replacements cleared.');
   }
 
-  closePreviewLightbox(): void {
-    this.previewLightboxSrc = null;
-  }
-
-  navPreviewLightbox(dir: -1 | 1): void {
+  /** Re-upload all images fresh — confirms then opens page picker */
+  reuploadImages(): void {
     if (!this.imagePreviewModal) return;
-    const slots  = this.imagePreviewModal.slots;
-    const newIdx = this.previewLightboxIndex + dir;
-    if (newIdx < 0 || newIdx >= slots.length) return;
-    const slot = slots[newIdx];
-    this.previewLightboxSrc   = slot.newPreviewUrl ?? slot.previewUrl ?? null;
-    this.previewLightboxIndex = newIdx;
-  }
-
-  /** Removes an existing uploaded image (marks for deletion on save) */
-  removeExistingSlot(slot: ImagePreviewSlot): void {
-    if (!this.imagePreviewModal || slot.isNew) return;
-    const idx = this.imagePreviewModal.slots.indexOf(slot);
-    if (idx > -1) {
-      this.imagePreviewModal.slots.splice(idx, 1);
-      this.imagePreviewModal.slots.forEach((s, i) => s.index = i);
-    }
+    const studentId = this.imagePreviewModal.studentId;
+    this.showConfirmDialog(
+      'All existing images will be replaced with a fresh upload. You will need to re-upload all pages. Are you sure?',
+      () => {
+        const student = this.students.find(s => s.studentId === studentId);
+        if (!student) return;
+        this.closeImagePreview();
+        // Open page picker in update mode — fresh upload
+        this.openPagePicker(student, true);
+      }
+    );
   }
 
   /** Adds more images as new slots to the existing image preview modal */
@@ -402,13 +473,6 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     modal.isSaving = true;
     const student  = this.students.find(s => s.studentId === modal.studentId);
 
-    // Track removed slots — slots that were in original but are now missing
-    const originalCount = (this.students.find(s => s.studentId === modal.studentId)
-      ?.imageBlobPaths?.split('|').filter(p => p).length) ?? 0;
-    const removedBlobPaths = modal.slots
-      .filter(s => !s.isNew && s.blobPath && s.isReplaced === false && s.previewUrl === null)
-      .map(s => s.blobPath);
-
     try {
       // ── Step 1: Process each changed slot ────────────────────────────
       // New slots (blobPath empty) → use SlotIndex = -1 to signal append
@@ -438,12 +502,27 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
       }
 
       // ── Step 2: Collect all current image dataUrls ────────────────────
-      // Use previewUrl (already updated above for changed slots)
-      const allDataUrls: string[] = modal.slots
-        .map(s => s.previewUrl ?? '')
-        .filter(u => u.length > 0);
+      // Changed slots already have data: URLs in previewUrl (set above).
+      // Unchanged slots have an http:// blob URL — jsPDF cannot use those.
+      // Fetch unchanged slots as data: URLs now before building the PDF.
+      const cacheBust = Date.now();
+      const allDataUrls: string[] = await Promise.all(
+        modal.slots.map(async (s, i) => {
+          if (!s.previewUrl) return '';
+          // If it's already a data: URL (just replaced), use it directly
+          if (s.previewUrl.startsWith('data:')) return s.previewUrl;
+          // Otherwise fetch from API and convert to data: URL
+          try {
+            return await this.uploadService.downloadImage(
+              modal.studentId, i, this.selectedQuestionPaperId!, cacheBust
+            ).toPromise() as string;
+          } catch {
+            return '';
+          }
+        })
+      );
 
-      const validDataUrls = allDataUrls;
+      const validDataUrls = allDataUrls.filter(u => u.length > 0);
 
       // ── Step 3: Regenerate PDF and update BlobPath only ──────────────
       if (validDataUrls.length > 0 && student) {
@@ -561,7 +640,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
               this.students         = this.mapStudents(rawStudents);
               this.filteredStudents = [...this.students];
               this.absentStudentIds = this.students.filter(s => s.isAbsent).map(s => s.studentId);
-              this.toastService.showSuccess('Success', 'Students loaded successfully');
+              //this.toastService.showSuccess('Success', 'Students loaded successfully');
               // Unlock collapse toggle and auto-collapse the filter card
               this.hasSearched       = true;
               this.isFilterCollapsed = true;
