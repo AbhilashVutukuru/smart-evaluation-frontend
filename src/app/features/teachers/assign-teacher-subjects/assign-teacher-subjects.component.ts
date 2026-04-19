@@ -7,6 +7,7 @@ import { ConfirmationModalComponent } from '../../../shared/components/confirmat
 import { ClassDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 interface Assignment {
   classId:     number;
@@ -25,7 +26,7 @@ interface Assignment {
   styleUrls: ['./assign-teacher-subjects.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class AssignTeacherSubjectsComponent implements OnInit {
+export class AssignTeacherSubjectsComponent extends BaseComponent implements OnInit {
   private teacherSubjectService = inject(TeacherSubjectService);
   private teacherService        = inject(TeacherService);
   private masterDataService     = inject(MasterDataService);
@@ -70,7 +71,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   // ============================================
 
   loadTeachers(): void {
-    this.teacherService.getTeachers().subscribe({
+    this.teacherService.getTeachers().pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.teachers = response.data;
@@ -81,28 +82,28 @@ export class AssignTeacherSubjectsComponent implements OnInit {
   }
 
   loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
+    this.masterDataService.getClasses().pipe(this.cancelOnDestroy()).subscribe({
       next: (classes) => (this.classes = classes),
       error: (error)  => this.errorHandler.handle('Failed to load classes', error),
     });
   }
 
   loadSections(classId: number): void {
-    this.masterDataService.getSectionsByClass(classId).subscribe({
+    this.masterDataService.getSectionsByClass(classId).pipe(this.cancelOnDestroy()).subscribe({
       next: (sections) => (this.sections = sections),
       error: (error)   => this.errorHandler.handle('Failed to load sections', error),
     });
   }
 
   loadSubjects(classId: number): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
+    this.masterDataService.getSubjectsByClass(classId).pipe(this.cancelOnDestroy()).subscribe({
       next: (subjects) => (this.subjects = subjects),
       error: (error)   => this.errorHandler.handle('Failed to load subjects', error),
     });
   }
 
   loadExistingAssignments(): void {
-    this.teacherSubjectService.getTeacherAssignments(+this.selectedTeacherId).subscribe({
+    this.teacherSubjectService.getTeacherAssignments(+this.selectedTeacherId).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.existingAssignments = response.data;
@@ -202,7 +203,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
       })),
     };
 
-    this.teacherSubjectService.assignSubjectsToTeacher(payload).subscribe({
+    this.teacherSubjectService.assignSubjectsToTeacher(payload).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.success) {
@@ -232,7 +233,7 @@ export class AssignTeacherSubjectsComponent implements OnInit {
 
     this.removing = true;
 
-    this.teacherSubjectService.removeAssignment(this.assignmentToRemove.id).subscribe({
+    this.teacherSubjectService.removeAssignment(this.assignmentToRemove.id).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.removing = false;
         if (response.success) {

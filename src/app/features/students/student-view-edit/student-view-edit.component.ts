@@ -1,14 +1,15 @@
-import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StudentService } from '../../../core/services/student.service';
+import { StudentService }     from '../../../core/services/student.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
-import { ToastService } from '../../../core/services/toast.service';
+import { ToastService }       from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { RegistrationService } from '../../../core/services/registration.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-student-view-edit',
@@ -18,43 +19,35 @@ import { RegistrationService } from '../../../core/services/registration.service
   styleUrls: ['./student-view-edit.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class StudentViewEditComponent implements OnInit {
-  private fb                = inject(FormBuilder);
-  private route             = inject(ActivatedRoute);
-  private router            = inject(Router);
-  private studentService    = inject(StudentService);
-  private masterDataService = inject(MasterDataService);
-  private toastService      = inject(ToastService);
-  private errorHandler      = inject(ErrorHandlerService);
+export class StudentViewEditComponent extends BaseComponent implements OnInit {
+  private fb                  = inject(FormBuilder);
+  private route               = inject(ActivatedRoute);
+  private router              = inject(Router);
+  private studentService      = inject(StudentService);
+  private masterDataService   = inject(MasterDataService);
+  private toastService        = inject(ToastService);
+  private errorHandler        = inject(ErrorHandlerService);
   private registrationService = inject(RegistrationService);
 
-  // Form and Data
+
   studentForm!: FormGroup;
   studentId!:   number;
   mode: 'view' | 'edit' = 'view';
   loading = false;
 
-  // Today's date in YYYY-MM-DD — bound to [max] on date inputs
-  // so the calendar disables tomorrow and all future dates
   today: string = new Date().toISOString().split('T')[0];
 
-  // Dropdown data
   classes:  ClassDto[]   = [];
   sections: SectionDto[] = [];
 
-  // Modals
   showDeleteModal = false;
   showCancelModal = false;
 
-  // Validation tracking
   touchedFields: Set<string> = new Set();
 
-  // Flag to suppress valueChanges side-effects during initial data load
   private _initializing = false;
 
-  // ============================================
-  // Lifecycle
-  // ============================================
+  // ─── Lifecycle ────────────────────────────────────────────
 
   ngOnInit(): void {
     this.initForm();
@@ -68,17 +61,13 @@ export class StudentViewEditComponent implements OnInit {
     }
 
     this.mode = this.route.snapshot.data['mode'] || 'view';
-
-    if (this.mode === 'view') {
-      this.studentForm.disable();
-    }
+    if (this.mode === 'view') this.studentForm.disable();
 
     this.loadStudent();
   }
 
-  // ============================================
-  // Form Initialization
-  // ============================================
+
+  // ─── Form ─────────────────────────────────────────────────
 
   private initForm(): void {
     this.studentForm = this.fb.group({
@@ -95,38 +84,34 @@ export class StudentViewEditComponent implements OnInit {
       admissionDate: ['', Validators.required],
     });
 
-    this.studentForm.get('classId')?.valueChanges.subscribe((classId) => {
-      if (!this._initializing) {
-        this.sections = [];
-        this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
-        this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
-        if (classId) this.loadSections(+classId);
-      }
-    });
-
-    this.studentForm.get('sectionId')?.valueChanges.subscribe((sectionId) => {
-      const classId = this.studentForm.get('classId')?.value;
-      if (!this._initializing && this.mode === 'edit') {
-        if (sectionId && classId) {
-          this.loadNextRollNumber(+classId, +sectionId);
-        } else {
+    this.studentForm.get('classId')?.valueChanges
+      .pipe(this.cancelOnDestroy())
+      .subscribe((classId) => {
+        if (!this._initializing) {
+          this.sections = [];
+          this.studentForm.get('sectionId')?.setValue('', { emitEvent: false });
           this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+          if (classId) this.loadSections(+classId);
         }
-      }
-    });
+      });
+
+    this.studentForm.get('sectionId')?.valueChanges
+      .pipe(this.cancelOnDestroy())
+      .subscribe((sectionId) => {
+        const classId = this.studentForm.get('classId')?.value;
+        if (!this._initializing && this.mode === 'edit') {
+          if (sectionId && classId) this.loadNextRollNumber(+classId, +sectionId);
+          else this.studentForm.get('rollNumber')?.setValue('', { emitEvent: false });
+        }
+      });
   }
 
-  // ============================================
-  // Field Validation
-  // ============================================
+  // ─── Validation ───────────────────────────────────────────
 
   onFieldBlur(fieldName: string): void {
     this.touchedFields.add(fieldName);
     const control = this.studentForm.get(fieldName);
-    if (control) {
-      control.markAsTouched();
-      control.updateValueAndValidity();
-    }
+    if (control) { control.markAsTouched(); control.updateValueAndValidity(); }
   }
 
   shouldShowError(fieldName: string): boolean {
@@ -137,35 +122,21 @@ export class StudentViewEditComponent implements OnInit {
   getErrorMessage(fieldName: string): string {
     const control = this.studentForm.get(fieldName);
     if (!control || !control.errors) return '';
-
     if (control.errors['required']) return `${this.getFieldLabel(fieldName)} is required`;
     if (control.errors['email'])    return 'Please enter a valid email address';
-    if (control.errors['pattern'] && fieldName === 'phoneNumber')
-      return 'Phone number must be exactly 10 digits';
-
+    if (control.errors['pattern'] && fieldName === 'phoneNumber') return 'Phone number must be exactly 10 digits';
     return 'Invalid value';
   }
 
   private getFieldLabel(fieldName: string): string {
     const labels: Record<string, string> = {
-      firstName:     'First Name',
-      lastName:      'Last Name',
-      email:         'Email',
-      phoneNumber:   'Phone Number',
-      address:       'Address',
-      dateOfBirth:   'Date of Birth',
-      gender:        'Gender',
-      classId:       'Class',
-      sectionId:     'Section',
-      rollNumber:    'Roll Number',
-      admissionDate: 'Admission Date',
+      firstName: 'First Name', lastName: 'Last Name', email: 'Email',
+      phoneNumber: 'Phone Number', address: 'Address', dateOfBirth: 'Date of Birth',
+      gender: 'Gender', classId: 'Class', sectionId: 'Section',
+      rollNumber: 'Roll Number', admissionDate: 'Admission Date',
     };
     return labels[fieldName] || fieldName;
   }
-
-  // ============================================
-  // Input Handlers
-  // ============================================
 
   onPhoneNumberInput(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -173,140 +144,115 @@ export class StudentViewEditComponent implements OnInit {
     this.studentForm.get('phoneNumber')?.setValue(input.value, { emitEvent: false });
   }
 
-  // ============================================
-  // Load Data
-  // ============================================
+  // ─── Load Data ────────────────────────────────────────────
 
   private loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
-      next: (classes) => (this.classes = classes),
-      error: (error)  => this.errorHandler.handle('Failed to load classes', error),
-    });
+    this.masterDataService.getClasses()
+      .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next:  (classes) => (this.classes = classes),
+        error: (error)   => this.errorHandler.handle('Failed to load classes', error),
+      });
   }
 
   private loadSections(classId: number): void {
     if (!classId) return;
-    this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => (this.sections = sections),
-      error: (error)   => this.errorHandler.handle('Failed to load sections', error),
-    });
+    this.masterDataService.getSectionsByClass(classId)
+   .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next:  (sections) => (this.sections = sections),
+        error: (error)    => this.errorHandler.handle('Failed to load sections', error),
+      });
   }
 
-  /** Loads sections then patches sectionId — used on initial data load
-      so the dropdown option exists before the value is bound */
   private loadSectionsAndPatchSection(classId: number, sectionId: number | string): void {
     if (!classId) return;
-    this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => {
-        this.sections = sections;
-        if (!sectionId) return;
-
-        const ctrl = this.studentForm.get('sectionId');
-        if (!ctrl) return;
-
-        // Guard against triggering loadNextRollNumber during patch
-        this._initializing = true;
-        const wasDisabled = ctrl.disabled;
-        if (wasDisabled) ctrl.enable({ emitEvent: false });
-        ctrl.setValue(+sectionId, { emitEvent: false });
-        if (wasDisabled) ctrl.disable({ emitEvent: false });
-        this._initializing = false;
-      },
-      error: (error) => this.errorHandler.handle('Failed to load sections', error),
-    });
+    this.masterDataService.getSectionsByClass(classId)
+      .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (sections) => {
+          this.sections = sections;
+          if (!sectionId) return;
+          const ctrl = this.studentForm.get('sectionId');
+          if (!ctrl) return;
+          this._initializing = true;
+          const wasDisabled = ctrl.disabled;
+          if (wasDisabled) ctrl.enable({ emitEvent: false });
+          ctrl.setValue(+sectionId, { emitEvent: false });
+          if (wasDisabled) ctrl.disable({ emitEvent: false });
+          this._initializing = false;
+        },
+        error: (error) => this.errorHandler.handle('Failed to load sections', error),
+      });
   }
 
-  /** Fetches next available roll number for a class+section */
   private loadNextRollNumber(classId: number, sectionId: number): void {
     if (!classId || !sectionId) return;
-    this.registrationService.getNextRollNumber(classId, sectionId).subscribe({
-      next: (response: any) => {
-        const rollNumber = response?.data?.nextRollNumber;
-        if (rollNumber !== null && rollNumber !== undefined) {
-          this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
-        }
-      },
-      error: () => { /* silently ignore */ },
-    });
+    this.registrationService.getNextRollNumber(classId, sectionId)
+      .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (response: any) => {
+          const rollNumber = response?.data?.nextRollNumber;
+          if (rollNumber !== null && rollNumber !== undefined) {
+            this.studentForm.get('rollNumber')?.setValue(rollNumber, { emitEvent: false });
+          }
+        },
+        error: () => { /* silently ignore — roll number is auto-suggested, not critical */ },
+      });
   }
 
   private loadStudent(): void {
     this.loading = true;
-
-    this.studentService.getStudentById(this.studentId).subscribe({
-      next: (response) => {
-        this.loading = false;
-
-        if (response.success && response.data) {
-          const s = response.data;
-          this._initializing = true;
-          this.studentForm.patchValue({
-            firstName:     s.firstName,
-            lastName:      s.lastName,
-            email:         s.email,
-            phoneNumber:   s.phoneNumber,
-            address:       s.address,
-            dateOfBirth:   s.dateOfBirth?.split('T')[0],
-            gender:        s.gender,
-            classId:       s.classId,
-            sectionId:     s.sectionId,
-            rollNumber:    s.rollNumber,
-            admissionDate: s.admissionDate?.split('T')[0],
-          });
-          this._initializing = false;
-
-          if (s.classId) this.loadSectionsAndPatchSection(s.classId, s.sectionId);
-        } else {
-          this.toastService.showError('Error', 'Student not found');
-          this.goBack();
-        }
-      },
-      error: (error) => {
-        this.loading = false;
-        this.errorHandler.handle('Failed to load student details', error);
-        setTimeout(() => this.goBack(), 2000);
-      },
-    });
+    this.studentService.getStudentById(this.studentId)
+     .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          if (response.success && response.data) {
+            const s = response.data;
+            this._initializing = true;
+            this.studentForm.patchValue({
+              firstName: s.firstName, lastName: s.lastName, email: s.email,
+              phoneNumber: s.phoneNumber, address: s.address,
+              dateOfBirth: s.dateOfBirth?.split('T')[0], gender: s.gender,
+              classId: s.classId, sectionId: s.sectionId,
+              rollNumber: s.rollNumber, admissionDate: s.admissionDate?.split('T')[0],
+            });
+            this._initializing = false;
+            if (s.classId) this.loadSectionsAndPatchSection(s.classId, s.sectionId);
+          } else {
+            this.toastService.showError('Error', 'Student not found');
+            this.goBack();
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorHandler.handle('Failed to load student details', error);
+                  this.timer(() => this.goBack(), 2000);
+        },
+      });
   }
 
-  // ============================================
-  // Mode Management
-  // ============================================
+  // ─── Mode Management ──────────────────────────────────────
 
   enableEdit(): void {
     this.mode = 'edit';
-    // Set _initializing BEFORE enable() — enabling a disabled form fires
-    // valueChanges on all controls, which would clear sections[] and lose sectionId
     this._initializing = true;
     this.studentForm.enable();
     this._initializing = false;
-
-    // Now re-load sections and patch sectionId using saved API values
     const classId   = this.studentForm.get('classId')?.value;
     const sectionId = this.studentForm.get('sectionId')?.value;
-    if (classId) {
-      this.loadSectionsAndPatchSection(+classId, sectionId ?? '');
-    }
-
+    if (classId) this.loadSectionsAndPatchSection(+classId, sectionId ?? '');
     this.toastService.showInfo('Edit Mode', 'You can now edit student details');
   }
 
   cancelEdit(): void {
-    if (this.studentForm.dirty) {
-      this.showCancelModal = true;
-    } else {
-      this.performCancel();
-    }
+    if (this.studentForm.dirty) this.showCancelModal = true;
+    else this.performCancel();
   }
 
-  onCancelConfirmed(): void {
-    this.performCancel();
-    this.showCancelModal = false;
-  }
-
-  onCancelCancelled(): void {
-    this.showCancelModal = false;
-  }
+  onCancelConfirmed(): void { this.performCancel(); this.showCancelModal = false; }
+  onCancelCancelled(): void { this.showCancelModal = false; }
 
   private performCancel(): void {
     if (this.mode === 'edit') {
@@ -320,9 +266,7 @@ export class StudentViewEditComponent implements OnInit {
     }
   }
 
-  // ============================================
-  // Form Submission
-  // ============================================
+  // ─── Submit ───────────────────────────────────────────────
 
   onSubmit(): void {
     Object.keys(this.studentForm.controls).forEach((key) => {
@@ -336,37 +280,34 @@ export class StudentViewEditComponent implements OnInit {
     }
 
     this.loading = true;
-
     const payload = { id: this.studentId, ...this.studentForm.value };
 
-    this.studentService.updateStudent(payload).subscribe({
-      next: (response) => {
-        this.loading = false;
-
-        if (response.success) {
-          this.toastService.showSuccess('Success', 'Student updated successfully!');
-          this.mode = 'view';
-          this.studentForm.disable();
-          this.touchedFields.clear();
-          this.loadStudent();
-        } else {
-          this.toastService.showError('Error', response.message || 'Failed to update student');
-        }
-      },
-      error: (error) => {
-        this.loading = false;
-        this.errorHandler.handle('Failed to update student', error);
-      },
-    });
+    this.studentService.updateStudent(payload)
+    .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          if (response.success) {
+            this.toastService.showSuccess('Success', 'Student updated successfully!');
+            this.mode = 'view';
+            this.studentForm.disable();
+            this.touchedFields.clear();
+            this.loadStudent();
+          } else {
+            // FIX: never show raw response.message — use generic message
+            this.toastService.showError('Error', 'Failed to update student. Please try again.');
+          }
+        },
+        error: (error) => {
+          this.loading = false;
+          this.errorHandler.handle('Failed to update student', error);
+        },
+      });
   }
 
-  // ============================================
-  // Delete Operations
-  // ============================================
+  // ─── Delete ───────────────────────────────────────────────
 
-  deleteStudent(): void {
-    this.showDeleteModal = true;
-  }
+  deleteStudent(): void { this.showDeleteModal = true; }
 
   onDeleteConfirmed(): void {
     if (!this.studentId) {
@@ -375,43 +316,39 @@ export class StudentViewEditComponent implements OnInit {
       return;
     }
 
-    this.studentService.deleteStudent(this.studentId).subscribe({
-      next: (response) => {
-        this.showDeleteModal = false;
-
-        if (response.success) {
-          this.toastService.showSuccess('Success', 'Student deleted successfully!');
-          const qp = this.route.snapshot.queryParams;
-          setTimeout(() => this.router.navigate(['/students/list'], {
-            queryParams: qp['classId'] && qp['sectionId']
-              ? { classId: qp['classId'], sectionId: qp['sectionId'] }
-              : {}
-          }), 1500);
-        } else {
-          this.toastService.showError('Error', response.message || 'Failed to delete student');
-        }
-      },
-      error: (error) => {
-        this.showDeleteModal = false;
-        this.errorHandler.handle('Failed to delete student', error);
-      },
-    });
+    this.studentService.deleteStudent(this.studentId)
+      .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (response) => {
+          this.showDeleteModal = false;
+          if (response.success) {
+            this.toastService.showSuccess('Success', 'Student deleted successfully!');
+            const qp = this.route.snapshot.queryParams;
+            // FIX: stored timer
+            this.timer(() => this.router.navigate(['/students/list'], {
+              queryParams: qp['classId'] && qp['sectionId']
+                ? { classId: qp['classId'], sectionId: qp['sectionId'] } : {}
+            }), 1500);
+          } else {
+            this.toastService.showError('Error', 'Failed to delete student. Please try again.');
+          }
+        },
+        error: (error) => {
+          this.showDeleteModal = false;
+          this.errorHandler.handle('Failed to delete student', error);
+        },
+      });
   }
 
-  onDeleteCancelled(): void {
-    this.showDeleteModal = false;
-  }
+  onDeleteCancelled(): void { this.showDeleteModal = false; }
 
-  // ============================================
-  // Navigation & Helpers
-  // ============================================
+  // ─── Navigation ───────────────────────────────────────────
 
   goBack(): void {
     const qp = this.route.snapshot.queryParams;
     this.router.navigate(['/students/list'], {
       queryParams: qp['classId'] && qp['sectionId']
-        ? { classId: qp['classId'], sectionId: qp['sectionId'] }
-        : {}
+        ? { classId: qp['classId'], sectionId: qp['sectionId'] } : {}
     });
   }
 
@@ -426,15 +363,12 @@ export class StudentViewEditComponent implements OnInit {
     const rollNumber = this.studentForm.get('rollNumber')?.value || '';
     const classId    = this.studentForm.get('classId')?.value;
     const sectionId  = this.studentForm.get('sectionId')?.value;
-
-    const className   = this.classes.find(c => String(c.id) === String(classId))?.className || '';
+    const className   = this.classes.find(c  => String(c.id) === String(classId))?.className   || '';
     const sectionName = this.sections.find(s => String(s.id) === String(sectionId))?.sectionName || '';
-
     const parts = [fullName];
     if (className)   parts.push(`Class: ${className}`);
     if (sectionName) parts.push(`Section: ${sectionName}`);
     if (rollNumber)  parts.push(`Roll: ${rollNumber}`);
-
     return parts.join(' | ');
   }
 }

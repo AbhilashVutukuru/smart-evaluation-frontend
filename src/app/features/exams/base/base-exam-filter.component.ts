@@ -1,26 +1,30 @@
-// ============================================
-// BASE EXAM FILTER COMPONENT
-// Shared filter logic inherited by both
-// UploadAnswerSheetsComponent and ExamResultsComponent
-// ============================================
-
-import { inject, OnInit, Directive } from '@angular/core';
-import { ToastService } from '../../../core/services/toast.service';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { inject, OnInit, OnDestroy, Directive } from '@angular/core';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ToastService }          from '../../../core/services/toast.service';
+import { ErrorHandlerService }   from '../../../core/services/error-handler.service';
 import { ClassDto, ExamTypeDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
-import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet.service';
-import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
-import { QuestionPaperDto } from '../../../core/models/common.models';
+import { ViewAnswerSheetService }    from '../../../core/services/view-answer-sheet.service';
+import { UploadAnswerSheetService }  from '../../../core/services/upload-answer-sheet.service';
+import { QuestionPaperDto }          from '../../../core/models/common.models';
 import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
+import { Router } from '@angular/router';
 
 @Directive()
-export abstract class BaseExamFilterComponent implements OnInit {
+export abstract class BaseExamFilterComponent implements OnInit, OnDestroy {
   protected toastService               = inject(ToastService);
   protected errorHandler               = inject(ErrorHandlerService);
   protected masterDataService          = inject(MasterDataService);
   protected viewAnswerSheetService     = inject(ViewAnswerSheetService);
   protected uploadAnswerSheetService   = inject(UploadAnswerSheetService);
   protected createQuestionPaperService = inject(CreateQuestionPaperService);
+  // FIX: inject Router here so openAnswerSheet can be called from base
+  // without each subclass needing to inject it separately
+  protected router                     = inject(Router);
+
+  // FIX: shared destroy$ so all base subscriptions are cancelled when
+  // the subclass component is destroyed — prevents memory leaks
+  protected destroy$ = new Subject<void>();
 
   // Filter selections
   selectedClass    = '';
@@ -47,11 +51,20 @@ export abstract class BaseExamFilterComponent implements OnInit {
     this.loadClasses();
   }
 
+  // FIX: base ngOnDestroy — subclasses that override must call super.ngOnDestroy()
+  // or use their own destroy$ (which they should extend from this one)
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   private loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
-      next: (classes) => (this.classes = classes),
-      error: (error)  => this.errorHandler.handle('Failed to load classes', error),
-    });
+    this.masterDataService.getClasses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (classes) => (this.classes = classes),
+        error: (error)  => this.errorHandler.handle('Failed to load classes', error),
+      });
   }
 
   onClassChange(classId: string): void {
@@ -100,15 +113,16 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
     this.createQuestionPaperService
       .getQuestionPapers(+this.selectedClass, +this.selectedSubject, +this.selectedExamType)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           this.handleQuestionPapersResponse(response.data ?? []);
           this.isLoadingPapers = false;
         },
-        error: (error) => {
+        error: () => {
+          // FIX: generic message — no server error details shown to user
           this.isLoadingPapers  = false;
-          const msg = error?.error?.message || 'No exam paper found for selected combination';
-          this.toastService.showWarning('Warning', msg);
+          this.toastService.showWarning('Warning', 'No exam paper found for selected combination');
           this.noExamPaperFound = true;
           this.clearStudents();
         },
@@ -117,22 +131,19 @@ export abstract class BaseExamFilterComponent implements OnInit {
 
   private handleQuestionPapersResponse(papers: QuestionPaperDto[]): void {
     this.questionPapers = papers;
- 
+
     if (!papers.length) {
       this.toastService.showWarning('Warning', 'No exam paper found for selected combination');
       this.noExamPaperFound = true;
       return;
     }
- 
+
     this.noExamPaperFound = false;
- 
+
     if (papers.length === 1) {
-      // Always auto-select the single paper.
-      // Only show the dropdown when the paper has a distinct name the user needs to see.
       this.selectedQuestionPaperId   = papers[0].id;
       this.showQuestionPaperDropdown = !!papers[0].questionPaperName?.trim();
     } else {
-      // Multiple papers — always show dropdown
       this.selectedQuestionPaperId   = null;
       this.showQuestionPaperDropdown = true;
     }
@@ -154,37 +165,42 @@ export abstract class BaseExamFilterComponent implements OnInit {
   }
 
   private loadSections(classId: string): void {
-    this.masterDataService.getSectionsByClass(classId).subscribe({
-      next: (sections) => (this.sections = sections),
-      error: (error)   => this.errorHandler.handle('Failed to load sections', error),
-    });
+    this.masterDataService.getSectionsByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (sections) => (this.sections = sections),
+        error: (error)   => this.errorHandler.handle('Failed to load sections', error),
+      });
   }
 
   private loadSubjects(classId: string): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => (this.subjects = subjects),
-      error: (error)   => this.errorHandler.handle('Failed to load subjects', error),
-    });
+    this.masterDataService.getSubjectsByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (subjects) => (this.subjects = subjects),
+        error: (error)   => this.errorHandler.handle('Failed to load subjects', error),
+      });
   }
 
   private loadExamTypes(classId: string): void {
     this.isLoadingExamTypes = true;
-    this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => {
-        this.examTypes          = examTypes;
-        this.isLoadingExamTypes = false;
-      },
-      error: (error) => {
-        this.isLoadingExamTypes = false;
-        this.errorHandler.handle('Failed to load exam types', error);
-      },
-    });
+    this.masterDataService.getExamTypesByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (examTypes) => {
+          this.examTypes          = examTypes;
+          this.isLoadingExamTypes = false;
+        },
+        error: (error) => {
+          this.isLoadingExamTypes = false;
+          this.errorHandler.handle('Failed to load exam types', error);
+        },
+      });
   }
 
   public get canShowStudents(): boolean {
     if (this.noExamPaperFound) return false;
     if (this.isLoadingPapers)  return false;
-
     return (
       !!this.selectedClass   &&
       !!this.selectedSection &&
@@ -195,7 +211,8 @@ export abstract class BaseExamFilterComponent implements OnInit {
   }
 
   protected validateSelection(): boolean {
-    if (!this.selectedClass || !this.selectedSection || !this.selectedSubject || !this.selectedExamType) {
+    if (!this.selectedClass || !this.selectedSection ||
+        !this.selectedSubject || !this.selectedExamType) {
       this.toastService.showWarning('Warning', 'Please select all required fields');
       return false;
     }
@@ -206,37 +223,18 @@ export abstract class BaseExamFilterComponent implements OnInit {
     return true;
   }
 
-  // protected openAnswerSheet(studentId: number): void {
-  //   try {
-  //     const url = this.viewAnswerSheetService.getAnswerSheetUrl(
-  //       studentId,
-  //       +this.selectedClass,
-  //       +this.selectedSubject,
-  //       +this.selectedExamType,
-  //     );
-  //     const newWindow = window.open(url, '_blank');
-  //     if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-  //       this.toastService.showWarning('Popup Blocked', 'Please allow popups for this site to view answer sheets');
-  //       return;
-  //     }
-  //     newWindow.onerror = () => this.toastService.showError('Error', 'Failed to load answer sheet');
-  //   } catch {
-  //     this.toastService.showError('Error', 'Failed to open answer sheet');
-  //   }
-  // }
-
-protected openAnswerSheet(studentId: number, fileName?: string): void {
-  const params = new URLSearchParams({
-    studentId:       studentId.toString(),
-    classId:         this.selectedClass,
-    subjectId:       this.selectedSubject,
-    examTypeId:      this.selectedExamType,
-    questionPaperId: this.selectedQuestionPaperId?.toString() ?? '',
-    fileName:        fileName || 'answer-sheet.pdf',
-    _t:              Date.now().toString(),  // cache-bust
-  });
-  window.open(`/view-pdf?${params.toString()}`, '_blank');
-}
+  protected openAnswerSheet(studentId: number, fileName?: string): void {
+    const params = new URLSearchParams({
+      studentId:       studentId.toString(),
+      classId:         this.selectedClass,
+      subjectId:       this.selectedSubject,
+      examTypeId:      this.selectedExamType,
+      questionPaperId: this.selectedQuestionPaperId?.toString() ?? '',
+      fileName:        fileName || 'answer-sheet.pdf',
+      _t:              Date.now().toString(),
+    });
+    window.open(`/view-pdf?${params.toString()}`, '_blank');
+  }
 
   protected abstract clearStudents(): void;
 }

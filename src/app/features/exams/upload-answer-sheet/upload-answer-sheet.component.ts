@@ -2,7 +2,7 @@ import { Component, inject, HostListener } from '@angular/core';
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
 
 import {
@@ -40,7 +40,6 @@ export interface PagePickerModal {
 })
 export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   private uploadService = inject(UploadAnswerSheetService);
-  private router        = inject(Router);
 
   // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];

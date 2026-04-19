@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { NonTeachingStaffService } from '../../../core/services/non-teaching-staff.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 
 @Component({
@@ -15,12 +16,11 @@ import { NonTeachingStaffService } from '../../../core/services/non-teaching-sta
   templateUrl: './non-teaching-registration.component.html',
   styleUrls: ['./non-teaching-registration.component.css'],
 })
-export class NonTeachingRegistrationComponent implements OnInit {
+export class NonTeachingRegistrationComponent extends BaseComponent implements OnInit {
   private fb           = inject(FormBuilder);
   private staffService = inject(NonTeachingStaffService);
   private toast        = inject(ToastService);
   private errorHandler = inject(ErrorHandlerService);
-  private router       = inject(Router);
 
   staffForm!: FormGroup;
   loading = false;
@@ -76,7 +76,7 @@ export class NonTeachingRegistrationComponent implements OnInit {
     if (this.staffForm.invalid) return;
 
     this.loading = true;
-    this.staffService.register(this.staffForm.value).subscribe({
+    this.staffService.register(this.staffForm.value).pipe(this.cancelOnDestroy()).subscribe({
       next: () => {
         this.loading = false;
         this.toast.showSuccess('Success', 'Staff registered successfully');

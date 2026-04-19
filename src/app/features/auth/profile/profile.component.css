@@ -95,11 +95,7 @@
   gap: 0.875rem 1rem;
 }
 
-.info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
+.info-item  { display: flex; flex-direction: column; gap: 0.2rem; }
 
 .info-label {
   font-size: var(--font-size-xs);
@@ -137,7 +133,7 @@
 
 .required { color: var(--red); }
 
-/* ── Password Input ────────────────────────────────────────── */
+/* ── Password Input Wrapper ────────────────────────────────── */
 .pwd-input-wrap {
   display: flex;
   align-items: stretch;
@@ -150,11 +146,11 @@
 
 .pwd-input-wrap:focus-within {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(14,164,244,0.12);
+  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.12);
 }
 
 .pwd-input-wrap.invalid { border-color: var(--red); }
-.pwd-input-wrap.invalid:focus-within { box-shadow: 0 0 0 3px rgba(248,83,16,0.1); }
+.pwd-input-wrap.invalid:focus-within { box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.1); }
 
 .pwd-input-wrap .form-control {
   border: none !important;
@@ -165,6 +161,8 @@
   padding: 0.5rem 0.875rem;
 }
 
+/* FIX: eye-btn was already a <button> — ensure browser defaults are fully reset
+   so it looks identical regardless of browser and is keyboard-accessible */
 .eye-btn {
   background: none;
   border: none;
@@ -176,8 +174,23 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  /* Reset <button> defaults that vary across browsers */
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1;
+  appearance: none;
+  -webkit-appearance: none;
 }
+
 .eye-btn:hover { color: var(--blue); }
+
+/* FIX: keyboard focus ring — removed tabindex="-1" so keyboard users
+   can access the eye toggle. Now needs a visible focus style. */
+.eye-btn:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+  color: var(--blue);
+}
 
 /* ── Error ─────────────────────────────────────────────────── */
 .error-msg {
@@ -216,23 +229,26 @@
   font-family: inherit;
   align-self: flex-end;
 }
-.btn-logout:hover { background: var(--red); color: white; }
+
+.btn-logout:hover         { background: var(--red); color: white; }
+.btn-logout:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 .logout-wrap { display: flex; justify-content: flex-end; }
 
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 767px) {
   .profile-wrapper { grid-template-columns: 1fr; }
-  .profile-card { padding: 1.25rem; }
+  .profile-card    { padding: 1.25rem; }
 }
 
 @media (max-width: 479px) {
-  .profile-card { padding: 1rem; }
-  .info-grid { grid-template-columns: 1fr; }
-  .profile-header { flex-direction: column; text-align: center; }
-  .profile-meta { align-items: center; }
+  .profile-card    { padding: 1rem; }
+  .info-grid       { grid-template-columns: 1fr; }
+  .profile-header  { flex-direction: column; text-align: center; }
+  .profile-meta    { align-items: center; }
 }
 
+/* ── Strength bar ──────────────────────────────────────────── */
 .strength-bar-wrap {
   display: flex;
   align-items: center;
@@ -254,8 +270,8 @@
   transition: width 0.3s ease, background 0.3s ease;
 }
 
-.fill-weak   { width: 33%; background: var(--red); }
-.fill-medium { width: 66%; background: var(--yellow); }
+.fill-weak   { width: 33%;  background: var(--red); }
+.fill-medium { width: 66%;  background: var(--yellow); }
 .fill-strong { width: 100%; background: var(--green); }
 
 .strength-label {
@@ -264,6 +280,7 @@
   min-width: 3rem;
   text-align: right;
 }
+
 .label-weak   { color: var(--red); }
 .label-medium { color: var(--yellow-dark); }
 .label-strong { color: var(--green); }
@@ -287,15 +304,6 @@
   transition: color 0.2s;
 }
 
-.pwd-requirements li i {
-  font-size: 0.7rem;
-  transition: color 0.2s;
-}
-
-.pwd-requirements li.met {
-  color: var(--green);
-}
-
-.pwd-requirements li.met i {
-  color: var(--green);
-}
+.pwd-requirements li i   { font-size: 0.7rem; transition: color 0.2s; }
+.pwd-requirements li.met { color: var(--green); }
+.pwd-requirements li.met i { color: var(--green); }

@@ -6,6 +6,7 @@ import { NonTeachingStaffService } from '../../../core/services/non-teaching-sta
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-non-teaching-list',
@@ -14,7 +15,7 @@ import { DeleteConfirmationComponent } from '../../../shared/components/delete-c
   templateUrl: './non-teaching-list.component.html',
   styleUrls: ['./non-teaching-list.component.css'],
 })
-export class NonTeachingListComponent implements OnInit {
+export class NonTeachingListComponent extends BaseComponent implements OnInit {
   private staffService  = inject(NonTeachingStaffService);
   private toast         = inject(ToastService);
   private errorHandler  = inject(ErrorHandlerService);
@@ -79,7 +80,7 @@ export class NonTeachingListComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.staffToDelete) return;
     this.deleting = true;
-    this.staffService.delete(this.staffToDelete.id).subscribe({
+    this.staffService.delete(this.staffToDelete.id).pipe(this.cancelOnDestroy()).subscribe({
       next: () => {
         this.deleting        = false;
         this.showDeleteModal  = false;
