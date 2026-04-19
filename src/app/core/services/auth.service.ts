@@ -159,7 +159,11 @@ export class AuthService {
         tap((response) => {
           if (response.success && response.data) {
             this.logger.info('Token refreshed');
-            this.currentUserSubject.next(response.data);
+            // FIX: merge refresh data with existing user — the refresh endpoint
+            // only returns token fields, not role/name/schoolName etc.
+            // Replacing the whole object loses the role → roleGuard fails → /unauthorized
+            const existing = this.currentUserSubject.value;
+            this.currentUserSubject.next({ ...existing, ...response.data });
             this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
           }
         }),

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -7,9 +7,8 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-login',
@@ -18,13 +17,11 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent extends BaseComponent implements OnInit {
   private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
   private router      = inject(Router);
   private route       = inject(ActivatedRoute);
-
-  private destroy$ = new Subject<void>();
 
   loginForm: FormGroup;
   loading          = false;
@@ -34,6 +31,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   loggedInUserName = '';
 
   constructor() {
+    super();
     this.loginForm = this.fb.group({
       email     : ['', [Validators.required, Validators.email]],
       password  : ['', Validators.required],
@@ -42,8 +40,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    if (localStorage.getItem('rememberMePreference') === 'true') {
+    // Restore remember me checkbox
+    const remembered = localStorage.getItem('rememberMePreference') === 'true';
+    if (remembered) {
       this.loginForm.patchValue({ rememberMe: true });
+    }
+
+    // Restore saved email if remember me was checked last time
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (remembered && savedEmail) {
+      this.loginForm.patchValue({ email: savedEmail });
     }
 
     if (this.authService.isAuthenticated()) {
@@ -53,11 +59,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.authService.getUserDisplayName() ??
         'another account';
     }
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   get f() { return this.loginForm.controls; }
@@ -76,11 +77,19 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.error   = '';
 
-    localStorage.setItem('rememberMePreference', this.loginForm.value.rememberMe.toString());
+    const rememberMe = this.loginForm.value.rememberMe;
+    localStorage.setItem('rememberMePreference', rememberMe.toString());
+
+    // Save email when remember me is checked, clear it when unchecked
+    if (rememberMe) {
+      localStorage.setItem('rememberedEmail', this.loginForm.value.email);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+    }
 
     this.authService
       .login(this.loginForm.value)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(this.cancelOnDestroy())
       .subscribe({
         next: (response) => {
           this.loading = false;
@@ -93,10 +102,6 @@ export class LoginComponent implements OnInit, OnDestroy {
               return;
             }
 
-            // Redirect priority:
-            // 1. postLoginRedirect (sessionStorage) — resume work after idle logout
-            // 2. returnUrl (query param)            — auth guard redirect
-            // 3. role-based default                 — fresh login
             const savedUrl  = sessionStorage.getItem('postLoginRedirect');
             const returnUrl = savedUrl || this.route.snapshot.queryParams['returnUrl'];
             sessionStorage.removeItem('postLoginRedirect');
@@ -109,7 +114,6 @@ export class LoginComponent implements OnInit, OnDestroy {
               this.router.navigate(['/dashboard']);
             }
           } else {
-            // FIX: never expose server message — always generic
             this.error = 'Login failed. Please try again.';
           }
         },
@@ -125,7 +129,6 @@ export class LoginComponent implements OnInit, OnDestroy {
           } else if (error.status === 0) {
             this.error = 'Network error. Please check your connection.';
           } else {
-            // FIX: never expose error.error?.message — always generic
             this.error = 'An error occurred. Please try again.';
           }
         },
