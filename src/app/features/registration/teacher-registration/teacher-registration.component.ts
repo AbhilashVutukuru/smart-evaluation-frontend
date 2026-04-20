@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { RegistrationService } from '../../../core/services/registration.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 interface RowError {
   rowNumber:   number;
@@ -26,7 +27,7 @@ interface UploadResults {
   styleUrls: ['./teacher-registration.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TeacherRegistrationComponent implements OnInit {
+export class TeacherRegistrationComponent extends BaseComponent implements OnInit {
   private fb                  = inject(FormBuilder);
   private registrationService = inject(RegistrationService);
   private toastService        = inject(ToastService);
@@ -157,7 +158,7 @@ export class TeacherRegistrationComponent implements OnInit {
 
     this.loading = true;
 
-    this.registrationService.registerTeacher(this.teacherForm.value).subscribe({
+    this.registrationService.registerTeacher(this.teacherForm.value).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.loading = false;
         if (response.success) {
@@ -261,7 +262,7 @@ export class TeacherRegistrationComponent implements OnInit {
     this.uploadProgress = true;
     this.uploadResults  = null;
 
-    this.registrationService.bulkUploadTeachers(this.selectedFile).subscribe({
+    this.registrationService.bulkUploadTeachers(this.selectedFile).pipe(this.cancelOnDestroy()).subscribe({
       next: (raw) => {
         this.uploadProgress = false;
 
@@ -326,7 +327,7 @@ export class TeacherRegistrationComponent implements OnInit {
   downloadTemplate(): void {
     this.isDownloading = true;
 
-    this.registrationService.downloadTemplate('teacher').subscribe({
+    this.registrationService.downloadTemplate('teacher').pipe(this.cancelOnDestroy()).subscribe({
       next: (blob: Blob) => {
         const url  = window.URL.createObjectURL(blob);
         const link = document.createElement('a');

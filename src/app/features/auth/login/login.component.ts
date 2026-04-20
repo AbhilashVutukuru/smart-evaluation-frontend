@@ -8,6 +8,7 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-login',
@@ -16,51 +17,54 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit {
-  private fb = inject(FormBuilder);
+export class LoginComponent extends BaseComponent implements OnInit {
+  private fb          = inject(FormBuilder);
   private authService = inject(AuthService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
+  private router      = inject(Router);
+  private route       = inject(ActivatedRoute);
 
   loginForm: FormGroup;
-  loading = false;
-  error = '';
-  showPassword = false;
-  alreadyLoggedIn = false;
+  loading          = false;
+  error            = '';
+  showPassword     = false;
+  alreadyLoggedIn  = false;
   loggedInUserName = '';
 
   constructor() {
+    super();
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
+      email     : ['', [Validators.required, Validators.email]],
+      password  : ['', Validators.required],
       rememberMe: [false],
     });
   }
 
   ngOnInit(): void {
-    // Restore remember me preference
-    if (localStorage.getItem('rememberMePreference') === 'true') {
+    // Restore remember me checkbox
+    const remembered = localStorage.getItem('rememberMePreference') === 'true';
+    if (remembered) {
       this.loginForm.patchValue({ rememberMe: true });
     }
 
-    // Already logged in → show warning instead of silent redirect
+    // Restore saved email if remember me was checked last time
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (remembered && savedEmail) {
+      this.loginForm.patchValue({ email: savedEmail });
+    }
+
     if (this.authService.isAuthenticated()) {
-      this.alreadyLoggedIn = true;
-      this.loggedInUserName = this.authService.getUserEmail() ?? this.authService.getUserDisplayName() ?? 'another account';
+      this.alreadyLoggedIn  = true;
+      this.loggedInUserName =
+        this.authService.getUserEmail() ??
+        this.authService.getUserDisplayName() ??
+        'another account';
     }
   }
 
-  get f() {
-    return this.loginForm.controls;
-  }
+  get f() { return this.loginForm.controls; }
 
-  togglePassword(): void {
-    this.showPassword = !this.showPassword;
-  }
-
-  clearError(): void {
-    if (this.error) this.error = '';
-  }
+  togglePassword(): void { this.showPassword = !this.showPassword; }
+  clearError(): void     { if (this.error) this.error = ''; }
 
   goToDashboard(): void {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
@@ -71,52 +75,63 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.invalid) return;
 
     this.loading = true;
-    this.error = '';
+    this.error   = '';
 
-    localStorage.setItem(
-      'rememberMePreference',
-      this.loginForm.value.rememberMe.toString(),
-    );
+    const rememberMe = this.loginForm.value.rememberMe;
+    localStorage.setItem('rememberMePreference', rememberMe.toString());
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
-        this.loading = false;
+    // Save email when remember me is checked, clear it when unchecked
+    if (rememberMe) {
+      localStorage.setItem('rememberedEmail', this.loginForm.value.email);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+    }
 
-        if (response.success && response.data) {
-          this.authService.updateCurrentUser(response.data);
+    this.authService
+      .login(this.loginForm.value)
+      .pipe(this.cancelOnDestroy())
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
 
-          if (response.data.requirePasswordChange) {
-            this.router.navigate(['/auth/change-password']);
-          } else {
-            const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+          if (response.success && response.data) {
+            this.authService.updateCurrentUser(response.data);
+
+            if (response.data.requirePasswordChange) {
+              this.router.navigate(['/auth/change-password']);
+              return;
+            }
+
+            const savedUrl  = sessionStorage.getItem('postLoginRedirect');
+            const returnUrl = savedUrl || this.route.snapshot.queryParams['returnUrl'];
+            sessionStorage.removeItem('postLoginRedirect');
 
             if (returnUrl) {
               this.router.navigate([returnUrl]);
             } else if (response.data.role === 'NonTeachingStaff') {
-              this.router.navigate(['/create/exam']); //  NonTeachingStaff → skip dashboard
+              this.router.navigate(['/create/exam']);
             } else {
-              this.router.navigate(['/dashboard']);   // Everyone else → dashboard
+              this.router.navigate(['/dashboard']);
             }
+          } else {
+            this.error = 'Login failed. Please try again.';
           }
-        } else {
-          this.error = response.message || 'Login failed';
-        }
-      },
-      error: (error) => {
-        this.loading = false;
-        if (error.status === 401) {
-          this.error = 'Invalid email or password. Please try again.';
-        } else if (error.status === 403) {
-          sessionStorage.setItem('unauthorizedReason', 'student');
-          this.router.navigate(['/unauthorized']);
-        } else if (error.status === 429) {
-          this.error = 'Too many login attempts. Please try again later.';
-        } else if (error.status === 0) {
-          this.error = 'Network error. Please check your connection.';
-        } else {
-          this.error = error.error?.message || 'An error occurred. Please try again.';
-        }
-      },
-    });
+        },
+        error: (error) => {
+          this.loading = false;
+          if (error.status === 401) {
+            this.error = 'Invalid email or password. Please try again.';
+          } else if (error.status === 403) {
+            sessionStorage.setItem('unauthorizedReason', 'student');
+            this.router.navigate(['/unauthorized']);
+          } else if (error.status === 429) {
+            this.error = 'Too many login attempts. Please try again later.';
+          } else if (error.status === 0) {
+            this.error = 'Network error. Please check your connection.';
+          } else {
+            this.error = 'An error occurred. Please try again.';
+          }
+        },
+      });
   }
 }

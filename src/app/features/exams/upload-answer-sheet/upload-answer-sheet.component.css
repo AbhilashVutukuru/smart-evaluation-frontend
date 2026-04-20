@@ -1439,8 +1439,8 @@ label.btn-doc-img,
 }
 
 /* Overwrite */
-.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--red) !important;}
-/* .header-info-icon:hover { color:var(--red-dark); } */
+.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--yellow) !important;}
+/* .header-info-icon:hover { color:var(--yellow-dark); } */
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW & EDIT MODAL
    ══════════════════════════════════════════════════════════════ */

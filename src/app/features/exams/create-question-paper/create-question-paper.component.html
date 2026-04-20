@@ -303,7 +303,7 @@
     <div class="row q-marks-row">
       <div class="col-md-4 mb-3">
         <label class="form-label"
-          ><strong>Maximum Marks</strong> <span class="required">*</span></label
+          ><strong>Maximum Marks</strong> <span class="required"> *</span></label
         >
         <input
           type="number"
@@ -332,7 +332,7 @@
         <div class="col-md-4 mb-3">
           <label class="form-label">
             <strong>No. of Validation Rules</strong>
-            <span class="required">*</span>
+            <span class="required"> *</span>
             <i class="fas fa-info-circle header-info-icon"
                title="Please choose how many checks (rules) should be used to evaluate this answer.&#10;For example, content accuracy, keywords, or steps.">
             </i>
@@ -367,7 +367,10 @@
     <div class="mb-3" *ngIf="shouldShowValidationRules">
       <label class="form-label"
         ><i class="fas fa-chart-bar"></i> Validation Rules
-        <span class="required">*</span></label
+        <span class="required">*</span>
+        <i class="fas fa-info-circle header-info-icon"
+           title="Please make sure that the sum of validation rules marks are equal to 'Maximum Marks'">
+        </i></label
       >
 
 
@@ -422,31 +425,22 @@
       </div>
     </div>
 
-    <!-- Validation Errors -->
-    <div
-      *ngIf="shouldShowValidationRules && !validateMarksMatch() && calculateValidationMarksTotal() > 0"
-      class="q-error-banner"
-    >
-      <i class="fas fa-exclamation-triangle"></i>
-      Validation marks do not match maximum marks
-    </div>
-
     <!-- Navigation Buttons -->
     <div class="q-nav">
       <button
         class="btn btn-prev"
-        *ngIf="currentQuestionIndex > 0"
+        [disabled]="currentQuestionIndex === 0"
         (click)="goToPreviousQuestion()"
       >
         <i class="fas fa-arrow-left"></i> Previous
       </button>
-      <span *ngIf="currentQuestionIndex === 0"></span>
 
       <div class="d-flex gap-2 ms-auto">
         <button
           class="btn btn-primary"
           *ngIf="!isLastQuestion"
           (click)="goToNextQuestion()"
+          [disabled]="currentQuestionSet.maxMarks !== 1 && shouldShowValidationRules && !validateMarksMatch()"
         >
           Save &amp; Next <i class="fas fa-arrow-right"></i>
         </button>

@@ -1,12 +1,14 @@
 <div class="page-container">
 
   <!-- Loading -->
-  <div *ngIf="isLoadingProfile" class="loading-state">
-    <div class="spinner"></div>
-    <p>Loading profile...</p>
-  </div>
+  @if (isLoadingProfile) {
+    <div class="loading-state" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading profile...</p>
+    </div>
+  }
 
-  <ng-container *ngIf="!isLoadingProfile">
+  @if (!isLoadingProfile) {
     <div class="profile-wrapper">
 
       <!-- ═══════════════════════════════════════════════════ -->
@@ -16,21 +18,25 @@
 
         <!-- Avatar + Name -->
         <div class="profile-header">
-          <div class="profile-avatar">{{ getInitials() }}</div>
+          <div class="profile-avatar" role="img" [attr.aria-label]="getFullName() + ' avatar'">
+            {{ getInitials() }}
+          </div>
           <div class="profile-meta">
+            <!-- FIX: h2 — sits inside a page that already has an h1 in the shell/sidebar -->
             <h2 class="profile-name">{{ getFullName() }}</h2>
             <span class="profile-role-badge">
-              <i class="fas fa-shield-alt"></i> {{ getFriendlyRole() }}
+              <i class="fas fa-shield-alt" aria-hidden="true"></i>
+              {{ getFriendlyRole() }}
             </span>
           </div>
         </div>
 
-        <div class="profile-divider"></div>
+        <div class="profile-divider" role="separator"></div>
 
         <!-- Info rows -->
         <div class="info-section">
           <div class="section-label">
-            <i class="fas fa-id-card"></i> Personal Details
+            <i class="fas fa-id-card" aria-hidden="true"></i> Personal Details
           </div>
 
           <div class="info-grid">
@@ -45,35 +51,42 @@
             <div class="info-item">
               <span class="info-label">Email</span>
               <span class="info-value">
-                <i class="fas fa-envelope info-icon"></i> {{ profile?.email }}
+                <i class="fas fa-envelope info-icon" aria-hidden="true"></i>
+                {{ profile?.email }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">Phone</span>
               <span class="info-value">
-                <i class="fas fa-phone info-icon"></i>
+                <i class="fas fa-phone info-icon" aria-hidden="true"></i>
                 {{ profile?.phoneNumber || '—' }}
               </span>
             </div>
             <div class="info-item">
               <span class="info-label">School</span>
               <span class="info-value">
-                <i class="fas fa-school info-icon"></i> {{ profile?.schoolName }}
+                <i class="fas fa-school info-icon" aria-hidden="true"></i>
+                {{ profile?.schoolName }}
               </span>
             </div>
           </div>
         </div>
 
-        <div class="profile-divider"></div>
+        <div class="profile-divider" role="separator"></div>
 
         <!-- Action Buttons -->
         <div class="profile-actions">
-          <button class="btn btn-primary btn-full" (click)="showPasswordForm = !showPasswordForm">
-            <i class="fas fa-lock"></i>
+          <button
+            type="button"
+            class="btn btn-primary btn-full"
+            (click)="showPasswordForm = !showPasswordForm"
+            [attr.aria-expanded]="showPasswordForm"
+            aria-controls="changePasswordCard">
+            <i class="fas fa-lock" aria-hidden="true"></i>
             {{ showPasswordForm ? 'Cancel' : 'Change Password' }}
           </button>
-          <button class="btn btn-logout btn-full" (click)="onLogout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
+          <button type="button" class="btn btn-logout btn-full" (click)="onLogout()">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i> Logout
           </button>
         </div>
 
@@ -82,123 +95,167 @@
       <!-- ═══════════════════════════════════════════════════ -->
       <!-- CARD 2 — Change Password (shown on toggle)          -->
       <!-- ═══════════════════════════════════════════════════ -->
-      <div class="profile-card" *ngIf="showPasswordForm">
+      @if (showPasswordForm) {
+        <div class="profile-card" id="changePasswordCard" role="region" aria-label="Change password">
 
-        <div class="section-label" style="margin-bottom:1.25rem">
-          <i class="fas fa-lock"></i> Change Password
-        </div>
-
-        <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" autocomplete="off">
-
-          <!-- Current Password -->
-          <div class="form-group">
-            <label class="form-label">Current Password <span class="required">*</span></label>
-            <div class="pwd-input-wrap" [class.invalid]="showError('oldPassword')">
-              <input
-                [type]="showCurrent ? 'text' : 'password'"
-                class="form-control"
-                formControlName="oldPassword"
-                (blur)="onBlur('oldPassword')"
-                placeholder="Enter current password"
-                autocomplete="current-password"
-              />
-              <button type="button" class="eye-btn" (click)="showCurrent = !showCurrent" tabindex="-1">
-                <i [class]="showCurrent ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
-            </div>
-            <div class="error-msg" *ngIf="showError('oldPassword')">
-              <i class="fas fa-exclamation-circle"></i> {{ getError('oldPassword') }}
-            </div>
+          <div class="section-label" style="margin-bottom:1.25rem">
+            <i class="fas fa-lock" aria-hidden="true"></i> Change Password
           </div>
 
-          <!-- New Password -->
-          <div class="form-group">
-            <label class="form-label">New Password <span class="required">*</span></label>
-            <div class="pwd-input-wrap" [class.invalid]="showError('newPassword')">
-              <input
-                [type]="showNew ? 'text' : 'password'"
-                class="form-control"
-                formControlName="newPassword"
-                (blur)="onBlur('newPassword')"
-                placeholder="Min 8 chars, uppercase, number, symbol"
-                autocomplete="new-password"
-              />
-              <button type="button" class="eye-btn" (click)="showNew = !showNew" tabindex="-1">
-                <i [class]="showNew ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
-            </div>
+          <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" novalidate>
 
-            <!-- Strength Bar -->
-            <div class="strength-bar-wrap" *ngIf="strength !== 'none'">
-              <div class="strength-bar">
-                <div class="strength-fill" [class]="'fill-' + strength"></div>
+            <!-- Current Password -->
+            <div class="form-group">
+              <label class="form-label" for="currentPwd">
+                Current Password <span class="required" aria-hidden="true">*</span>
+              </label>
+              <div class="pwd-input-wrap" [class.invalid]="showError('oldPassword')">
+                <input
+                  [type]="showCurrent ? 'text' : 'password'"
+                  class="form-control"
+                  id="currentPwd"
+                  formControlName="oldPassword"
+                  (blur)="onBlur('oldPassword')"
+                  placeholder="Enter current password"
+                  autocomplete="current-password"
+                />
+                <button
+                  type="button"
+                  class="eye-btn"
+                  (click)="showCurrent = !showCurrent"
+                  [attr.aria-label]="showCurrent ? 'Hide current password' : 'Show current password'">
+                  <i [class]="showCurrent ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+                </button>
               </div>
-              <span class="strength-label" [class]="'label-' + strength">{{ strengthLabel }}</span>
+              @if (showError('oldPassword')) {
+                <div class="error-msg" role="alert">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  {{ getError('oldPassword') }}
+                </div>
+              }
             </div>
 
-            <!-- Requirements checklist -->
-            <ul class="pwd-requirements">
-              <li [class.met]="requirements.length">
-                <i [class]="requirements.length ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
-                Minimum 8 characters
-              </li>
-              <li [class.met]="requirements.upper">
-                <i [class]="requirements.upper ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
-                Uppercase letter (A–Z)
-              </li>
-              <li [class.met]="requirements.lower">
-                <i [class]="requirements.lower ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
-                Lowercase letter (a–z)
-              </li>
-              <li [class.met]="requirements.number">
-                <i [class]="requirements.number ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
-                Number (0–9)
-              </li>
-              <li [class.met]="requirements.symbol">
-                <i [class]="requirements.symbol ? 'fas fa-check-circle' : 'fas fa-circle'"></i>
-                Symbol (e.g. !&#64;#%^)
-              </li>
-            </ul>
+            <!-- New Password -->
+            <div class="form-group">
+              <label class="form-label" for="newPwd">
+                New Password <span class="required" aria-hidden="true">*</span>
+              </label>
+              <div class="pwd-input-wrap" [class.invalid]="showError('newPassword')">
+                <input
+                  [type]="showNew ? 'text' : 'password'"
+                  class="form-control"
+                  id="newPwd"
+                  formControlName="newPassword"
+                  (blur)="onBlur('newPassword')"
+                  placeholder="Min 8 chars, uppercase, number, symbol"
+                  autocomplete="new-password"
+                  aria-describedby="pwdStrength pwdReqs"
+                />
+                <button
+                  type="button"
+                  class="eye-btn"
+                  (click)="showNew = !showNew"
+                  [attr.aria-label]="showNew ? 'Hide new password' : 'Show new password'">
+                  <i [class]="showNew ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+                </button>
+              </div>
 
-            <div class="error-msg" *ngIf="showError('newPassword')">
-              <i class="fas fa-exclamation-circle"></i> {{ getError('newPassword') }}
+              <!-- Strength bar -->
+              @if (strength !== 'none') {
+                <div class="strength-bar-wrap" id="pwdStrength" aria-live="polite"
+                     [attr.aria-label]="'Password strength: ' + strengthLabel">
+                  <div class="strength-bar">
+                    <div class="strength-fill" [class]="'fill-' + strength"></div>
+                  </div>
+                  <span class="strength-label" [class]="'label-' + strength">{{ strengthLabel }}</span>
+                </div>
+              }
+
+              <!-- Requirements checklist -->
+              <ul class="pwd-requirements" id="pwdReqs" aria-label="Password requirements">
+                <li [class.met]="requirements.length">
+                  <i [class]="requirements.length ? 'fas fa-check-circle' : 'fas fa-circle'" aria-hidden="true"></i>
+                  Minimum 8 characters
+                </li>
+                <li [class.met]="requirements.upper">
+                  <i [class]="requirements.upper ? 'fas fa-check-circle' : 'fas fa-circle'" aria-hidden="true"></i>
+                  Uppercase letter (A–Z)
+                </li>
+                <li [class.met]="requirements.lower">
+                  <i [class]="requirements.lower ? 'fas fa-check-circle' : 'fas fa-circle'" aria-hidden="true"></i>
+                  Lowercase letter (a–z)
+                </li>
+                <li [class.met]="requirements.number">
+                  <i [class]="requirements.number ? 'fas fa-check-circle' : 'fas fa-circle'" aria-hidden="true"></i>
+                  Number (0–9)
+                </li>
+                <li [class.met]="requirements.symbol">
+                  <i [class]="requirements.symbol ? 'fas fa-check-circle' : 'fas fa-circle'" aria-hidden="true"></i>
+                  Symbol (e.g. !&#64;#%^)
+                </li>
+              </ul>
+
+              @if (showError('newPassword')) {
+                <div class="error-msg" role="alert">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  {{ getError('newPassword') }}
+                </div>
+              }
             </div>
-          </div>
 
-          <!-- Confirm Password -->
-          <div class="form-group">
-            <label class="form-label">Confirm New Password <span class="required">*</span></label>
-            <div class="pwd-input-wrap" [class.invalid]="showError('confirmPassword') || confirmMismatch">
-              <input
-                [type]="showConfirm ? 'text' : 'password'"
-                class="form-control"
-                formControlName="confirmPassword"
-                (blur)="onBlur('confirmPassword')"
-                placeholder="Re-enter new password"
-                autocomplete="new-password"
-              />
-              <button type="button" class="eye-btn" (click)="showConfirm = !showConfirm" tabindex="-1">
-                <i [class]="showConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-              </button>
+            <!-- Confirm Password -->
+            <div class="form-group">
+              <label class="form-label" for="confirmPwd">
+                Confirm New Password <span class="required" aria-hidden="true">*</span>
+              </label>
+              <div class="pwd-input-wrap"
+                   [class.invalid]="showError('confirmPassword') || confirmMismatch">
+                <input
+                  [type]="showConfirm ? 'text' : 'password'"
+                  class="form-control"
+                  id="confirmPwd"
+                  formControlName="confirmPassword"
+                  (blur)="onBlur('confirmPassword')"
+                  placeholder="Re-enter new password"
+                  autocomplete="new-password"
+                />
+                <button
+                  type="button"
+                  class="eye-btn"
+                  (click)="showConfirm = !showConfirm"
+                  [attr.aria-label]="showConfirm ? 'Hide confirm password' : 'Show confirm password'">
+                  <i [class]="showConfirm ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+                </button>
+              </div>
+              @if (showError('confirmPassword')) {
+                <div class="error-msg" role="alert">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  {{ getError('confirmPassword') }}
+                </div>
+              }
+              @if (confirmMismatch) {
+                <div class="error-msg" role="alert">
+                  <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                  Passwords do not match
+                </div>
+              }
             </div>
-            <div class="error-msg" *ngIf="showError('confirmPassword')">
-              <i class="fas fa-exclamation-circle"></i> {{ getError('confirmPassword') }}
-            </div>
-            <div class="error-msg" *ngIf="confirmMismatch">
-              <i class="fas fa-exclamation-circle"></i> Passwords do not match
-            </div>
-          </div>
 
-          <button type="submit" class="btn btn-success btn-full" [disabled]="isChangingPassword">
-            <i [class]="isChangingPassword ? 'fas fa-spinner fa-spin' : 'fas fa-key'"></i>
-            {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
-          </button>
+            <button
+              type="submit"
+              class="btn btn-success btn-full"
+              [disabled]="isChangingPassword"
+              [attr.aria-busy]="isChangingPassword">
+              <i [class]="isChangingPassword ? 'fas fa-spinner fa-spin' : 'fas fa-key'" aria-hidden="true"></i>
+              {{ isChangingPassword ? 'Updating...' : 'Update Password' }}
+            </button>
 
-        </form>
+          </form>
 
-      </div>
+        </div>
+      }
 
     </div>
-  </ng-container>
+  }
 
 </div>

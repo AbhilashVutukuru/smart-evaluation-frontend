@@ -261,8 +261,8 @@
         <span class="info-value">{{ questionPaper.questionPaperName }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"><i class="fas fa-graduation-cap"></i> Academic Year</span>
-        <span class="info-value">{{ questionPaper.academicYear }}</span>
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions</span>
+        <span class="info-value">{{ questionPaper.totalQuestions }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks</span>
@@ -318,26 +318,33 @@
       </div>
     </div> -->
 
-    <!-- Question Jump Buttons -->
-    <div class="question-selector">
-      <label class="section-label"><i class="fas fa-list-ol"></i> Quick Jump:</label>
-      <div class="question-buttons">
-        <button *ngFor="let q of questionPaper.questions; let i = index"
-          class="question-number-btn"
-          [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i)">
-          Q{{ q.questionNumber }}
-        </button>
+    <!-- Go to Question Dropdown — outside *ngIf so it is never destroyed on navigation -->
+    <div class="question-goto-row" *ngIf="questionPaper && !isEditMode">
+      <div class="question-header-with-marks" id="question-top">
+        <h5 *ngIf="currentQuestion">
+          <i class="fas fa-question-circle"></i>
+          Question # {{ currentQuestion.questionNumber }} ({{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }})
+        </h5>
+        <div class="question-goto-inline">
+          <label class="goto-label">Go to question #</label>
+          <div class="select-wrapper question-goto-select">
+            <select #gotoSelect class="form-control"
+              (change)="loadQuestion(+gotoSelect.value); gotoSelect.selectedIndex = 0">
+              <option value="" disabled selected>
+                Question # {{ currentQuestion?.questionNumber }} ({{ currentQuestion?.maxMarks === 1 ? '1 Mark' : currentQuestion?.maxMarks + ' Marks' }})
+              </option>
+              <option *ngFor="let q of questionPaper.questions; let i = index" [value]="i">
+                Question # {{ q.questionNumber }} ({{ q.maxMarks === 1 ? '1 Mark' : q.maxMarks + ' Marks' }})
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ── VIEW MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="!isEditMode && currentQuestion">
-
-      <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-question-circle"></i> Question {{ currentQuestion.questionNumber }}</h5>
-        <span class="marks-badge">{{ currentQuestion.maxMarks }} Marks</span>
-      </div>
 
       <div class="question-section">
         <div class="section-header">
@@ -352,49 +359,52 @@
           <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
           <button class="btn-expand" (click)="openFullscreen('officialAnswer')"><i class="fas fa-expand"></i></button>
         </div>
-        <div class="scrollable-text official-answer">{{ currentQuestion.officialAnswer }}</div>
+        <div class="scrollable-text official-answer">{{ flatText(currentQuestion.officialAnswer) }}</div>
       </div>
 
       <div class="question-section">
-        <label class="section-label">
-          <i class="fas fa-list-check"></i>
-          {{ currentQuestion.rubricAdded ? 'Rubric Criteria:' : 'Marks:' }}
-        </label>
-        <div class="table-responsive">
-          <table class="table table-bordered rubric-table" *ngIf="currentQuestion.rubricAdded; else simpleMarksView">
-            <thead>
-              <tr>
-                <th>CRITERION</th>
-                <th>ORDER</th>
-                <th>MAX MARKS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rubric of currentQuestion.rubrics">
-                <td class="criterion-cell">
-                  <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
-                </td>
-                <td class="text-center">{{ rubric.criterionOrder }}</td>
-                <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
-              </tr>
-              <tr class="totals-row">
-                <td colspan="2" class="text-right"><strong>Total Rubric Marks:</strong></td>
-                <td class="text-center">
-                  <span class="marks-badge-sm"
-                    [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
-                    {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <ng-template #simpleMarksView>
-            <div class="simple-marks-display">
-              <span class="marks-label">Max Marks:</span>
-              <span class="marks-badge">{{ currentQuestion.maxMarks }}</span>
-            </div>
-          </ng-template>
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-list-check"></i>
+            Validation Rules:
+          </label>
         </div>
+        <ng-container *ngIf="currentQuestion.rubricAdded; else noValidationRules">
+          <div class="table-responsive">
+            <table class="table table-bordered rubric-table">
+              <thead>
+                <tr>
+                  <th>CRITERION</th>
+                  <th>ORDER</th>
+                  <th>MAX MARKS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rubric of currentQuestion.rubrics">
+                  <td class="criterion-cell">
+                    <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
+                  </td>
+                  <td class="text-center">{{ rubric.criterionOrder }}</td>
+                  <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
+                </tr>
+                <tr class="totals-row">
+                  <td colspan="2" class="text-right"><strong>Total Marks:</strong></td>
+                  <td class="text-center">
+                    <span class="marks-badge-sm"
+                      [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
+                      {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <ng-template #noValidationRules>
+          <div class="simple-marks-display">
+            <span class="marks-label">None</span>
+          </div>
+        </ng-template>
       </div>
 
       <div class="navigation-buttons">
@@ -413,7 +423,7 @@
     <div *ngIf="isEditMode && !isLocked && currentDraftQuestion">
 
       <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-edit"></i> Question {{ currentDraftQuestion.questionNumber }}</h5>
+        <h5><i class="fas fa-edit"></i> Question # {{ currentDraftQuestion.questionNumber }}</h5>
         <div class="marks-edit-group">
           <label class="marks-edit-label">Max Marks:</label>
           <input type="number" class="form-control form-control-sm marks-edit-input"
@@ -423,7 +433,10 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
+        <div class="section-header">
+          <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
+          <button class="btn-expand" (click)="openFullscreen('editQuestionText')"><i class="fas fa-expand"></i></button>
+        </div>
         <textarea class="form-control edit-textarea"
           [(ngModel)]="currentDraftQuestion.questionText"
           (ngModelChange)="questionsEdited = true"
@@ -435,7 +448,10 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
+        <div class="section-header">
+          <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
+          <button class="btn-expand" (click)="openFullscreen('editOfficialAnswer')"><i class="fas fa-expand"></i></button>
+        </div>
         <textarea class="form-control edit-textarea official-answer-edit"
           [(ngModel)]="currentDraftQuestion.officialAnswer"
           (ngModelChange)="questionsEdited = true"
@@ -445,7 +461,7 @@
       <!-- Rubric edit table — always shown; rubricAdded flips true when rubric added -->
       <div class="question-section">
         <div class="rubric-edit-header">
-          <label class="section-label"><i class="fas fa-list-check"></i> Rubric Criteria:</label>
+          <label class="section-label"><i class="fas fa-list-check"></i> Validation Rules:</label>
           <span class="rubric-total-badge"
             [class.marks-mismatch]="getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks">
             Total: {{ getDraftTotalRubricMarks() }} / {{ currentDraftQuestion.maxMarks }}
@@ -510,14 +526,7 @@
           </button>
         </div>
 
-        <div class="error-text"
-          *ngIf="currentDraftQuestion.rubricAdded && getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks">
-          <i class="fas fa-exclamation-circle"></i>
-          Rubric total must equal max marks for this question.
-        </div>
       </div>
-
-
 
       <div class="navigation-buttons">
         <button class="btn btn-secondary btn-lg"
@@ -525,9 +534,16 @@
           [disabled]="currentQuestionIndex === 0">
           <i class="fas fa-arrow-left"></i> Previous
         </button>
+        <button class="btn btn-cancel-question"
+          *ngIf="isCurrentQuestionChanged()"
+          (click)="confirmResetQuestion()"
+          title="Discard changes to this question only">
+          <i class="fas fa-undo"></i> Reset Question
+        </button>
         <button class="btn btn-secondary btn-lg"
           (click)="loadQuestion(currentQuestionIndex + 1)"
-          [disabled]="currentQuestionIndex === questionPaper!.totalQuestions - 1">
+          [disabled]="currentQuestionIndex === questionPaper!.totalQuestions - 1 ||
+            (currentDraftQuestion.rubricAdded && getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks)">
           Next <i class="fas fa-arrow-right"></i>
         </button>
       </div>
@@ -537,8 +553,8 @@
 
 </div><!-- /result-container -->
 
-<!-- Fullscreen Modal -->
-<div class="fullscreen-modal" *ngIf="fullscreenContent" (click)="closeFullscreen()">
+<!-- Fullscreen Modal — view mode (read-only) -->
+<div class="fullscreen-modal" *ngIf="fullscreenContent && fullscreenType !== 'editQuestionText' && fullscreenType !== 'editOfficialAnswer'" (click)="closeFullscreen()">
   <div class="fullscreen-content" (click)="$event.stopPropagation()">
     <div class="fullscreen-header">
       <h4>{{ getFullscreenTitle() }}</h4>
@@ -547,5 +563,56 @@
       </button>
     </div>
     <div class="fullscreen-body">{{ getFullscreenContent() }}</div>
+  </div>
+</div>
+
+<!-- Fullscreen Modal — edit mode (editable textarea) -->
+<div class="fullscreen-modal" *ngIf="fullscreenContent && (fullscreenType === 'editQuestionText' || fullscreenType === 'editOfficialAnswer')" (click)="closeFullscreen()">
+  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+    <div class="fullscreen-header">
+      <h4>
+        <i class="fas fa-edit"></i>
+        {{ fullscreenType === 'editQuestionText' ? 'Question Text' : 'Official Answer' }}
+      </h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="fullscreen-body fullscreen-edit-body">
+      <textarea class="form-control edit-textarea fullscreen-textarea"
+        *ngIf="fullscreenType === 'editQuestionText' && currentDraftQuestion"
+        [(ngModel)]="currentDraftQuestion.questionText"
+        (ngModelChange)="questionsEdited = true"
+        placeholder="Enter question text..."></textarea>
+      <textarea class="form-control edit-textarea official-answer-edit fullscreen-textarea"
+        *ngIf="fullscreenType === 'editOfficialAnswer' && currentDraftQuestion"
+        [(ngModel)]="currentDraftQuestion.officialAnswer"
+        (ngModelChange)="questionsEdited = true"
+        placeholder="Enter official answer..."></textarea>
+    </div>
+    <div class="fullscreen-footer">
+      <button class="btn btn-primary" (click)="closeFullscreen()">
+        <i class="fas fa-check"></i> Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Question Confirm Dialog -->
+<div class="fullscreen-modal" *ngIf="resetConfirmVisible" (click)="resetConfirmVisible = false">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon">
+      <i class="fas fa-undo"></i>
+    </div>
+    <p class="confirm-dialog-title">Reset Question {{ currentDraftQuestion?.questionNumber }}?</p>
+    <p class="confirm-dialog-sub">All changes to this question will be discarded and restored to their original values.</p>
+    <div class="confirm-dialog-actions">
+      <button class="btn btn-secondary" (click)="resetConfirmVisible = false">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="btn btn-warning" (click)="resetConfirmVisible = false; cancelQuestionEdit()">
+        <i class="fas fa-undo"></i> Yes, Reset
+      </button>
+    </div>
   </div>
 </div>

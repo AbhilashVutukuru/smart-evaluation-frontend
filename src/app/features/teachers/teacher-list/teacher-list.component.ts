@@ -1,11 +1,12 @@
-import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TeacherService } from '../../../core/services/teacher.service';
 import { Router } from '@angular/router';
+import { TeacherService } from '../../../core/services/teacher.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BaseComponent } from '../../../core/base/base.component'; // ← 1. import base
 
 @Component({
   selector: 'app-teacher-list',
@@ -15,68 +16,53 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   styleUrls: ['./teacher-list.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TeacherListComponent implements OnInit {
+
+export class TeacherListComponent extends BaseComponent implements OnInit {
   private teacherService = inject(TeacherService);
   private router         = inject(Router);
   private toastService   = inject(ToastService);
   private errorHandler   = inject(ErrorHandlerService);
 
-  // Data
   teachers:         any[] = [];
   filteredTeachers: any[] = [];
-
-  // State
   loading    = false;
   searchTerm = '';
 
-  // Delete modal
   showDeleteModal  = false;
   teacherToDelete: any = null;
-
-  // ============================================
-  // Lifecycle
-  // ============================================
 
   ngOnInit(): void {
     this.loadTeachers();
   }
 
-  // ============================================
-  // Load Data
-  // ============================================
-
   loadTeachers(): void {
     this.loading = true;
 
-    this.teacherService.getTeachers().subscribe({
-      next: (response) => {
-        this.loading = false;
-
-        if (response.success && response.data) {
-          this.teachers         = response.data;
-          this.filteredTeachers = response.data;
-
-          if (this.teachers.length === 0) {
-            this.toastService.showInfo('No Teachers', 'No teachers found in the system');
+    this.teacherService.getTeachers()
+      .pipe(this.cancelOnDestroy())  
+      .subscribe({
+        next: (response) => {
+          this.loading = false;
+          if (response.success && response.data) {
+            this.teachers         = response.data;
+            this.filteredTeachers = response.data;
+            if (this.teachers.length === 0) {
+              this.toastService.showInfo('No Teachers', 'No teachers found in the system');
+            }
+          } else {
+            this.teachers         = [];
+            this.filteredTeachers = [];
+            this.toastService.showInfo('No Data', 'No teachers found');
           }
-        } else {
+        },
+        error: (error) => {
+          this.loading          = false;
           this.teachers         = [];
           this.filteredTeachers = [];
-          this.toastService.showInfo('No Data', response.message || 'No teachers found');
-        }
-      },
-      error: (error) => {
-        this.loading          = false;
-        this.teachers         = [];
-        this.filteredTeachers = [];
-        this.errorHandler.handle('Failed to load teachers', error);
-      },
-    });
+          this.errorHandler.handle('Failed to load teachers', error);
+        },
+      });
   }
-
-  // ============================================
-  // Search
-  // ============================================
 
   onSearchInput(): void {
     if (this.searchTerm.trim()) {
@@ -96,13 +82,7 @@ export class TeacherListComponent implements OnInit {
     this.filteredTeachers = this.teachers;
   }
 
-  // ============================================
-  // Navigation
-  // ============================================
-
-  addTeacher(): void {
-    this.router.navigate(['/registration/teacher']);
-  }
+  addTeacher(): void { this.router.navigate(['/registration/teacher']); }
 
   viewDetails(id: number): void {
     if (!id) { this.toastService.showWarning('Invalid Action', 'Teacher ID is missing'); return; }
@@ -113,10 +93,6 @@ export class TeacherListComponent implements OnInit {
     if (!id) { this.toastService.showWarning('Invalid Action', 'Teacher ID is missing'); return; }
     this.router.navigate(['/teachers/edit', id]);
   }
-
-  // ============================================
-  // Delete Operations
-  // ============================================
 
   deleteTeacher(teacher: any): void {
     if (!teacher?.id) {
@@ -130,34 +106,31 @@ export class TeacherListComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.teacherToDelete) return;
 
-    this.teacherService.deleteTeacher(this.teacherToDelete.id).subscribe({
-      next: (response) => {
-        this.showDeleteModal = false;
-        this.teacherToDelete = null;
-
-        if (response.success) {
-          this.toastService.showSuccess('Success', 'Teacher deleted successfully');
-          this.loadTeachers();
-        } else {
-          this.toastService.showError('Error', response.message || 'Failed to delete teacher');
-        }
-      },
-      error: (error) => {
-        this.showDeleteModal = false;
-        this.teacherToDelete = null;
-        this.errorHandler.handle('Failed to delete teacher', error);
-      },
-    });
+    this.teacherService.deleteTeacher(this.teacherToDelete.id)
+      .pipe(this.cancelOnDestroy())  
+      .subscribe({
+        next: (response) => {
+          this.showDeleteModal = false;
+          this.teacherToDelete = null;
+          if (response.success) {
+            this.toastService.showSuccess('Success', 'Teacher deleted successfully');
+            this.loadTeachers();
+          } else {
+            this.toastService.showError('Error', 'Failed to delete teacher. Please try again.');
+          }
+        },
+        error: (error) => {
+          this.showDeleteModal = false;
+          this.teacherToDelete = null;
+          this.errorHandler.handle('Failed to delete teacher', error);
+        },
+      });
   }
 
   onDeleteCancelled(): void {
-    this.showDeleteModal  = false;
-    this.teacherToDelete  = null;
+    this.showDeleteModal = false;
+    this.teacherToDelete = null;
   }
-
-  // ============================================
-  // Helpers
-  // ============================================
 
   getTeacherFullName(teacher: any): string {
     if (!teacher) return '';

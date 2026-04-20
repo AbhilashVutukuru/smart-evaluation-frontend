@@ -7,6 +7,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-non-teaching-view-edit',
@@ -15,7 +16,7 @@ import { CancelConfirmationComponent } from '../../../shared/components/cancel-c
   templateUrl: './non-teaching-view-edit.component.html',
   styleUrls: ['./non-teaching-view-edit.component.css'],
 })
-export class NonTeachingViewEditComponent implements OnInit {
+export class NonTeachingViewEditComponent extends BaseComponent implements OnInit {
   private fb           = inject(FormBuilder);
   private route        = inject(ActivatedRoute);
   private router       = inject(Router);
@@ -70,7 +71,7 @@ export class NonTeachingViewEditComponent implements OnInit {
 
   private loadStaff(): void {
     this.loading = true;
-    this.staffService.getById(this.staffId).subscribe({
+    this.staffService.getById(this.staffId).pipe(this.cancelOnDestroy()).subscribe({
       next: (data) => {
         this.loading = false;
         const values = {
@@ -134,7 +135,7 @@ export class NonTeachingViewEditComponent implements OnInit {
     if (this.staffForm.invalid) return;
 
     this.loading = true;
-    this.staffService.update(this.staffId, this.staffForm.getRawValue()).subscribe({
+    this.staffService.update(this.staffId, this.staffForm.getRawValue()).pipe(this.cancelOnDestroy()).subscribe({
       next: () => {
         this.loading = false;
         this.toast.showSuccess('Success', 'Staff updated successfully');
@@ -156,7 +157,7 @@ export class NonTeachingViewEditComponent implements OnInit {
 
   onDeleteConfirmed(): void {
     this.deleting = true;
-    this.staffService.delete(this.staffId).subscribe({
+    this.staffService.delete(this.staffId).pipe(this.cancelOnDestroy()).subscribe({
       next: () => {
         this.deleting        = false;
         this.showDeleteModal = false;

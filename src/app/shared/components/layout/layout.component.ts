@@ -208,7 +208,7 @@ export class LayoutComponent implements OnInit {
   constructor(private router: Router,private authService: AuthService ) {}
 
 ngOnInit(): void {
-  // ✅ Redirect NonTeachingStaff away from dashboard
+  // Redirect NonTeachingStaff away from dashboard
   const role = this.authService.getUserRole();
   const currentUrl = this.router.url.split('?')[0];
   if (role === 'NonTeachingStaff' && currentUrl === '/dashboard') {
@@ -218,7 +218,7 @@ ngOnInit(): void {
 
   this.router.events.pipe(
     filter(e => e instanceof NavigationEnd),
-    map((e: any) => e.urlAfterRedirects.split('?')[0])
+    map((e: any) => e.urlAfterRedirects.split('?')[0]),
   ).subscribe(url => {
     const r = this.resolveRoute(url);
     this.pageTitle = r.title;

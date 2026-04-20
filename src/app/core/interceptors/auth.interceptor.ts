@@ -1,5 +1,3 @@
-// auth.interceptor.ts - FINAL VERSION
-
 import { Injectable } from '@angular/core';
 import {
   HttpInterceptor,
@@ -17,9 +15,11 @@ import { LoggerService } from '../services/logger.service';
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   private isRefreshing = false;
-  private refreshTokenSubject: BehaviorSubject<any> = new BehaviorSubject<any>(
-    null,
-  );
+
+  // null  = refresh in progress  → other requests queue and wait
+  // true  = refresh succeeded    → queued requests retry
+  // false = refresh failed       → queued requests receive an error
+  private refreshTokenSubject = new BehaviorSubject<boolean | null>(null);
 
   constructor(
     private authService: AuthService,
@@ -28,16 +28,20 @@ export class AuthInterceptor implements HttpInterceptor {
   ) {}
 
   intercept(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
-    const clonedRequest = request.clone({
-      withCredentials: true,
-    });
+  ): Observable<HttpEvent<unknown>> {
+    const clonedRequest = request.clone({ withCredentials: true });
 
     return next.handle(clonedRequest).pipe(
       catchError((error: HttpErrorResponse) => {
-        if (error.status === 401 && !this.isAuthEndpoint(request.url)) {
+
+        // Auth endpoints handle their own errors — never intercept them
+        if (this.isAuthEndpoint(request.url)) {
+          return throwError(() => error);
+        }
+
+        if (error.status === 401) {
           return this.handle401Error(clonedRequest, next);
         }
 
@@ -50,24 +54,14 @@ export class AuthInterceptor implements HttpInterceptor {
     );
   }
 
-  private isAuthEndpoint(url: string): boolean {
-    const authEndpoints = [
-      '/auth/login',
-      '/auth/register',
-      '/auth/forgot-password',
-      '/auth/reset-password',
-      '/auth/refresh-token',
-      '/auth/me',
-      '/auth/logout' 
-    ];
-
-    return authEndpoints.some((endpoint) => url.includes(endpoint));
-  }
-
+  // ─────────────────────────────────────────────────────────
+  // Handle 401 — refresh token then retry
+  // ─────────────────────────────────────────────────────────
   private handle401Error(
-    request: HttpRequest<any>,
+    request: HttpRequest<unknown>,
     next: HttpHandler,
-  ): Observable<HttpEvent<any>> {
+  ): Observable<HttpEvent<unknown>> {
+
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);
@@ -78,19 +72,20 @@ export class AuthInterceptor implements HttpInterceptor {
         switchMap((response) => {
           this.isRefreshing = false;
 
-          if (response && response.success) {
+          if (response?.success) {
+            this.logger.info('Token refreshed, retrying original request');
             this.refreshTokenSubject.next(true);
-            this.logger.info('Token refreshed, retrying request');
-            return next.handle(request.clone({ withCredentials: true }));
-          } else {
-            this.logger.warn('Token refresh failed');
-            this.authService.logoutLocal();
-            return throwError(() => new Error('Token refresh failed'));
+            return next.handle(request);
           }
+
+          this.logger.warn('Token refresh returned failure response');
+          this.refreshTokenSubject.next(false);
+          this.authService.logoutLocal();
+          return throwError(() => new Error('Token refresh failed'));
         }),
         catchError((error) => {
           this.isRefreshing = false;
-          this.logger.error('Token refresh error', error);
+          this.refreshTokenSubject.next(false);
           this.authService.logoutLocal();
           return throwError(() => error);
         }),
@@ -98,9 +93,30 @@ export class AuthInterceptor implements HttpInterceptor {
     }
 
     return this.refreshTokenSubject.pipe(
-      filter((token) => token !== null),
+      filter((result) => result !== null),
       take(1),
-      switchMap(() => next.handle(request.clone({ withCredentials: true }))),
+      switchMap((succeeded) => {
+        if (succeeded) {
+          return next.handle(request);
+        }
+        return throwError(() => new Error('Session expired. Please log in again.'));
+      }),
     );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // Auth endpoints manage their own errors — never intercept them
+  // ─────────────────────────────────────────────────────────
+  private isAuthEndpoint(url: string): boolean {
+    const authEndpoints = [
+      '/auth/login',
+      '/auth/register',
+      '/auth/forgot-password',
+      '/auth/reset-password',
+      '/auth/refresh-token',
+      '/auth/me',
+      '/auth/logout',
+    ];
+    return authEndpoints.some((endpoint) => url.includes(endpoint));
   }
 }

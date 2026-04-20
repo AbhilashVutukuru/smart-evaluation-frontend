@@ -1,32 +1,28 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/auth.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class StudentService {
-  private readonly apiUrl = environment.apiUrl;
+  private http   = inject(HttpClient); // FIX: inject() pattern instead of constructor
+  private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}  
-  
   getStudents(classId?: string, sectionId?: string): Observable<ApiResponse> {
-    let url = `${this.apiUrl}/student`;
-    const params = [];
-    if (classId) params.push(`classId=${classId}`);
-    if (sectionId) params.push(`sectionId=${sectionId}`);
-    if (params.length) url += `?${params.join('&')}`;
-    
-    return this.http.get<ApiResponse>(url);
+    // FIX: HttpParams instead of manual string concatenation —
+    // handles encoding and avoids empty param bugs (e.g. ?classId=&sectionId=)
+    let params = new HttpParams();
+    if (classId)   params = params.set('classId',   classId);
+    if (sectionId) params = params.set('sectionId', sectionId);
+    return this.http.get<ApiResponse>(`${this.apiUrl}/student`, { params });
   }
 
   getStudentById(id: number): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`${this.apiUrl}/student/${id}`);
   }
 
-   updateStudent(data: any): Observable<ApiResponse> {
+  updateStudent(data: any): Observable<ApiResponse> {
     return this.http.put<ApiResponse>(`${this.apiUrl}/student/${data.id}`, data);
   }
 

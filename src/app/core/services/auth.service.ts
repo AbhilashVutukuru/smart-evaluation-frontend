@@ -33,7 +33,7 @@ export class AuthService {
   private refreshTokenTimeout?: any;
 
   // ── Idle Logout ───────────────────────────────────────────
-  //private readonly IDLE_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute (testing)
+  // private readonly IDLE_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute (testing)
   private readonly IDLE_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes production
   private idleTimeout?: any;
   private stopIdle$ = new Subject<void>();
@@ -43,15 +43,22 @@ export class AuthService {
     private router: Router,
     private logger: LoggerService,
     private ngZone: NgZone,
-  ) { }
+  ) {}
 
   // ============================================================
   // Idle Logout Timer
   // ============================================================
   private startIdleTimer(): void {
-    this.stopIdleTimer();
+    this.stopIdleTimer(); // also recreates stopIdle$
 
     this.ngZone.runOutsideAngular(() => {
+      // Single shared resetTimer — initial countdown and activity both use the
+      // same handle so they can never race each other.
+      const resetTimer = () => {
+        clearTimeout(this.idleTimeout);
+        this.idleTimeout = setTimeout(() => this.onIdle(), this.IDLE_TIMEOUT_MS);
+      };
+
       const activity$ = merge(
         fromEvent(window, 'mousemove'),
         fromEvent(window, 'keydown'),
@@ -64,14 +71,8 @@ export class AuthService {
         takeUntil(this.stopIdle$),
       );
 
-      // Reset timer on activity
-      activity$.subscribe(() => {
-        clearTimeout(this.idleTimeout);
-        this.idleTimeout = setTimeout(() => this.onIdle(), this.IDLE_TIMEOUT_MS);
-      });
-
-      // Start initial timer
-      this.idleTimeout = setTimeout(() => this.onIdle(), this.IDLE_TIMEOUT_MS);
+      activity$.subscribe(() => resetTimer());
+      resetTimer(); // kick off the initial countdown
     });
   }
 
@@ -79,17 +80,19 @@ export class AuthService {
     this.ngZone.run(() => {
       this.logger.info('Session expired due to inactivity');
       this.stopIdleTimer();
-      this.logout();
+      this.logout(this.router.url); // pass current URL so user can resume after re-login
     });
   }
 
   private stopIdleTimer(): void {
     clearTimeout(this.idleTimeout);
     this.stopIdle$.next();
+    this.stopIdle$.complete();            // close the exhausted subject
+    this.stopIdle$ = new Subject<void>(); // fresh subject for the next session
   }
 
   // ============================================================
-  // Initialize - Called by APP_INITIALIZER
+  // Initialize — called by APP_INITIALIZER
   // ============================================================
   async initialize(): Promise<void> {
     try {
@@ -105,27 +108,26 @@ export class AuthService {
           requirePasswordChange: false,
           accessToken: '',
           refreshToken: '',
-          ...response.data
+          ...response.data,
         });
-        // Pass expiry so the timer fires at the right time, not always 50 min from now
         this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
         this.startIdleTimer();
       }
-    } catch (error: any) {
+    } catch {
       this.logger.info('No active session');
       this.currentUserSubject.next(null);
     }
   }
 
   // ============================================================
-  // ✅ Login
+  // Login
   // ============================================================
   login(credentials: LoginRequest): Observable<ApiResponse<LoginResponse>> {
     return this.http
       .post<ApiResponse<LoginResponse>>(
         `${this.apiUrl}/auth/login`,
         credentials,
-        { withCredentials: true }
+        { withCredentials: true },
       )
       .pipe(
         tap((response) => {
@@ -139,25 +141,29 @@ export class AuthService {
         catchError((error) => {
           this.logger.error('Login failed', error);
           return throwError(() => error);
-        })
+        }),
       );
   }
 
   // ============================================================
-  //  Refresh Token
+  // Refresh Token
   // ============================================================
   refreshToken(): Observable<ApiResponse<LoginResponse>> {
     return this.http
       .post<ApiResponse<LoginResponse>>(
         `${this.apiUrl}/auth/refresh-token`,
         {},
-        { withCredentials: true }
+        { withCredentials: true },
       )
       .pipe(
         tap((response) => {
           if (response.success && response.data) {
             this.logger.info('Token refreshed');
-            this.currentUserSubject.next(response.data);
+            // FIX: merge refresh data with existing user — the refresh endpoint
+            // only returns token fields, not role/name/schoolName etc.
+            // Replacing the whole object loses the role → roleGuard fails → /unauthorized
+            const existing = this.currentUserSubject.value;
+            this.currentUserSubject.next({ ...existing, ...response.data });
             this.startRefreshTokenTimer(response.data.accessTokenExpiresAt);
           }
         }),
@@ -170,59 +176,58 @@ export class AuthService {
   }
 
   // ============================================================
-  //  Auto-Refresh Timer
+  // Auto-Refresh Timer
   // ============================================================
-  private startRefreshTokenTimer(expiresAt?: string | Date) {
+  private startRefreshTokenTimer(expiresAt?: string | Date): void {
     this.stopRefreshTokenTimer();
 
-    // Calculate ms until 1 minute before the token actually expires.
-    // Falls back to 55 minutes if no expiry is provided (should not happen).
+    // Refresh 60 s before expiry. Falls back to 55 min if no expiry provided.
     let msUntilRefresh = 55 * 60 * 1000;
 
     if (expiresAt) {
       const expiryMs = new Date(expiresAt).getTime();
-      const nowMs = Date.now();
-      // Refresh 60 seconds before expiry; clamp to at least 5 seconds
-      msUntilRefresh = Math.max(expiryMs - nowMs - 60_000, 5_000);
+      msUntilRefresh = Math.max(expiryMs - Date.now() - 60_000, 5_000);
     }
 
     this.logger.info(`Token refresh scheduled in ${Math.round(msUntilRefresh / 1000)}s`);
 
     this.refreshTokenTimeout = setTimeout(() => {
       this.logger.info('Auto-refreshing token...');
-      this.refreshToken().subscribe({ error: () => { } }); // logoutLocal called in catchError
+      this.refreshToken().subscribe({ error: () => {} }); // logoutLocal called in catchError
     }, msUntilRefresh);
   }
 
-  private stopRefreshTokenTimer() {
-    if (this.refreshTokenTimeout) {
-      clearTimeout(this.refreshTokenTimeout);
-    }
+  private stopRefreshTokenTimer(): void {
+    if (this.refreshTokenTimeout) clearTimeout(this.refreshTokenTimeout);
   }
 
   // ============================================================
-  //  Logout
+  // Logout
   // ============================================================
-  logout(): void {
+  logout(returnUrl?: string): void {
     this.logger.info('Logging out...');
     this.stopRefreshTokenTimer();
     this.stopIdleTimer();
+
+    // Clear state BEFORE the HTTP call — LoginComponent must never see a
+    // stale user if Angular renders it while the logout request is in flight.
+    this.currentUserSubject.next(null);
+
+    // Persist the current URL so the user can resume their work after re-login
+    if (returnUrl && returnUrl !== '/auth/login') {
+      sessionStorage.setItem('postLoginRedirect', returnUrl);
+    }
+
     this.http
       .post(`${this.apiUrl}/auth/logout`, {}, { withCredentials: true })
       .subscribe({
-        complete: () => {
-          this.currentUserSubject.next(null);
-          this.router.navigate(['/auth/login']);
-        },
-        error: () => {
-          this.currentUserSubject.next(null);
-          this.router.navigate(['/auth/login']);
-        },
+        complete: () => this.router.navigate(['/auth/login']),
+        error:    () => this.router.navigate(['/auth/login']),
       });
   }
 
-  // Clear local auth state and navigate to login — no API call.
-  // Used by the interceptor on refresh failure to avoid double logout.
+  // Clear local state only — no API call.
+  // Used by the interceptor on refresh failure to avoid a double logout.
   logoutLocal(): void {
     this.logger.info('Clearing local session...');
     this.stopRefreshTokenTimer();
@@ -235,100 +240,49 @@ export class AuthService {
   // Password Management
   // ============================================================
   forgotPassword(request: ForgotPasswordRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(
-      `${this.apiUrl}/auth/forgot-password`,
-      request,
-    );
+    return this.http.post<ApiResponse>(`${this.apiUrl}/auth/forgot-password`, request);
   }
 
   resetPassword(request: ResetPasswordRequest): Observable<ApiResponse> {
-    return this.http.post<ApiResponse>(
-      `${this.apiUrl}/auth/reset-password`,
-      request,
-    );
+    return this.http.post<ApiResponse>(`${this.apiUrl}/auth/reset-password`, request);
   }
 
   changePassword(data: any): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(
-      `${this.apiUrl}/auth/change-password`,
-      data,
-      { withCredentials: true },
-    );
+      `${this.apiUrl}/auth/change-password`, data, { withCredentials: true });
   }
 
   // ============================================================
   // Get Current User
   // ============================================================
   getCurrentUser(): Observable<ApiResponse<any>> {
-    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, {
-      withCredentials: true,
-    });
+    return this.http.get<ApiResponse<any>>(`${this.apiUrl}/auth/me`, { withCredentials: true });
   }
 
   // ============================================================
   // Helper Methods
   // ============================================================
-  isAuthenticated(): boolean {
-    return !!this.currentUserValue;
-  }
+  isAuthenticated(): boolean           { return !!this.currentUserValue; }
+  get currentUserValue()               { return this.currentUserSubject.value; }
+  updateCurrentUser(user: LoginResponse) { this.currentUserSubject.next(user); }
+  getUserRole(): string | null         { return this.currentUserValue?.role || null; }
+  isSuperAdmin(): boolean              { return this.getUserRole() === 'SuperAdmin'; }
+  isAdmin(): boolean                   { const r = this.getUserRole(); return r === 'Admin' || r === 'SuperAdmin'; }
+  isTeacher(): boolean                 { return this.getUserRole() === 'Teacher'; }
+  isStaff(): boolean                   { return this.getUserRole() === 'NonTeachingStaff'; }
+  isStudent(): boolean                 { return this.getUserRole() === 'Student'; }
+  hasRole(role: string): boolean       { return this.getUserRole() === role; }
 
-  get currentUserValue(): LoginResponse | null {
-    return this.currentUserSubject.value;
-  }
-
-  updateCurrentUser(user: LoginResponse): void {
-    this.currentUserSubject.next(user);
-  }
-
-  getUserRole(): string | null {
-    return this.currentUserValue?.role || null;
-  }
-
-  //  SuperAdmin check
-  isSuperAdmin(): boolean {
-    return this.getUserRole() === 'SuperAdmin';
-  }
-
-  //  Admin OR SuperAdmin
-  isAdmin(): boolean {
-    const role = this.getUserRole();
-    return role === 'Admin' || role === 'SuperAdmin';
-  }
-
-  isTeacher(): boolean {
-    return this.getUserRole() === 'Teacher';
-  }
-
-  isStaff(): boolean {
-  return this.getUserRole() === 'NonTeachingStaff';
-}
-
-  isStudent(): boolean {
-    return this.getUserRole() === 'Student';
-  }
-
-  hasRole(role: string): boolean {
-    return this.getUserRole() === role;
-  }
-
-  //  SuperAdmin bypasses all role checks
   hasAnyRole(roles: string[]): boolean {
     const userRole = this.getUserRole();
-    if (userRole === 'SuperAdmin') return true;
+    if (userRole === 'SuperAdmin') return true; // SuperAdmin bypasses all role checks
     return userRole ? roles.includes(userRole) : false;
   }
 
-  getUserId(): string | null {
-    return this.currentUserValue?.userId?.toString() || null;
-  }
-
-  getSchoolId(): string | null {
-    return this.currentUserValue?.schoolId?.toString() || null;
-  }
-
-  getUserEmail(): string | null {
-    return this.currentUserValue?.email || null;
-  }
+  getUserId(): string | null          { return this.currentUserValue?.userId?.toString() || null; }
+  getSchoolId(): string | null        { return this.currentUserValue?.schoolId?.toString() || null; }
+  getUserEmail(): string | null       { return this.currentUserValue?.email || null; }
+  getSchoolName(): string | null      { return this.currentUserValue?.schoolName || null; }
 
   getUserName(): string | null {
     const email = this.getUserEmail();
@@ -336,11 +290,6 @@ export class AuthService {
   }
 
   getUserDisplayName(): string | null {
-    // Return full email for display — clearer than derived name
     return this.getUserEmail();
-  }
-
-  getSchoolName(): string | null {
-    return this.currentUserValue?.schoolName || null;
   }
 }

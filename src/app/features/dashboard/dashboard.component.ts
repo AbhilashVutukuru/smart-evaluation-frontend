@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardSummary } from '../../core/models/dashboard-summary';
+import { BaseComponent } from '../../core/base/base.component';
 
 
 
@@ -13,7 +14,7 @@ import { DashboardSummary } from '../../core/models/dashboard-summary';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent extends BaseComponent implements OnInit {
   private dashboardService = inject(DashboardService);
 
   summary: DashboardSummary | null = null;
@@ -21,7 +22,7 @@ export class DashboardComponent implements OnInit {
   error: string | null = null;
 
   ngOnInit(): void {
-    this.dashboardService.getSummary().subscribe({
+    this.dashboardService.getSummary().pipe(this.cancelOnDestroy()).subscribe({
       next: (data) => { this.summary = data; this.isLoading = false; },
       error: ()     => { this.error = 'Failed to load dashboard data.'; this.isLoading = false; },
     });

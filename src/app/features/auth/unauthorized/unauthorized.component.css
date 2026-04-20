@@ -358,3 +358,18 @@
    │ < 480px      │ Full-width card, 18px pad, stacked btns  │
    └──────────────┴──────────────────────────────────────────┘
    ============================================================ */
+/* ============================================================
+   ACCESSIBILITY — keyboard focus styles
+   Browsers remove default outlines on click; restore them for
+   keyboard-only users (Tab navigation).
+   ============================================================ */
+.btn:focus-visible {
+  outline: 3px solid #0ea4f4;
+  outline-offset: 3px;
+}
+
+.help-link:focus-visible {
+  outline: 2px solid #0ea4f4;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

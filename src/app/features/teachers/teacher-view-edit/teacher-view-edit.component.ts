@@ -7,6 +7,7 @@ import { DeleteConfirmationComponent } from '../../../shared/components/delete-c
 import { CancelConfirmationComponent } from '../../../shared/components/cancel-confirmation/cancel-confirmation.component';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-teacher-view-edit',
@@ -16,7 +17,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   styleUrls: ['./teacher-view-edit.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TeacherViewEditComponent implements OnInit {
+export class TeacherViewEditComponent extends BaseComponent implements OnInit {
   private fb             = inject(FormBuilder);
   private route          = inject(ActivatedRoute);
   private router         = inject(Router);
@@ -155,7 +156,7 @@ export class TeacherViewEditComponent implements OnInit {
   private loadTeacher(): void {
     this.loading = true;
 
-    this.teacherService.getTeacherById(this.teacherId).subscribe({
+    this.teacherService.getTeacherById(this.teacherId).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.loading = false;
 
@@ -246,7 +247,7 @@ export class TeacherViewEditComponent implements OnInit {
 
     const payload = { id: this.teacherId, ...this.teacherForm.value };
 
-    this.teacherService.updateTeacher(payload).subscribe({
+    this.teacherService.updateTeacher(payload).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.loading = false;
 
@@ -282,7 +283,7 @@ export class TeacherViewEditComponent implements OnInit {
       return;
     }
 
-    this.teacherService.deleteTeacher(this.teacherId).subscribe({
+    this.teacherService.deleteTeacher(this.teacherId).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.showDeleteModal = false;
 

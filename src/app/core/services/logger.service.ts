@@ -1,45 +1,47 @@
-import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { Injectable, isDevMode } from '@angular/core';
 
-@Injectable({
-  providedIn: 'root',
-})
+/**
+ * LoggerService
+ *
+ * FIX: replaced environment.production with Angular's built-in isDevMode().
+ * isDevMode() is set at compile time by the Angular build toolchain —
+ * no manual environment import needed, works correctly in all build modes.
+ *
+ * In production: only error() sends to monitoring — nothing appears in console.
+ * In development: all levels appear in console with visual prefixes.
+ */
+@Injectable({ providedIn: 'root' })
 export class LoggerService {
-  log(message: string, ...args: any[]): void {
-    if (!environment.production) {
-      console.log(message, ...args);
-    }
+
+  log(message: string, ...args: unknown[]): void {
+    if (isDevMode()) console.log(message, ...args);
   }
 
-  info(message: string, ...args: any[]): void {
-    if (!environment.production) {
-      console.info(`ℹ️ ${message}`, ...args);
-    }
+  info(message: string, ...args: unknown[]): void {
+    if (isDevMode()) console.info(`ℹ️ ${message}`, ...args);
   }
 
-  warn(message: string, ...args: any[]): void {
-    if (!environment.production) {
-      console.warn(`⚠️ ${message}`, ...args);
-    }
+  warn(message: string, ...args: unknown[]): void {
+    if (isDevMode()) console.warn(`⚠️ ${message}`, ...args);
   }
 
-  error(message: string, ...args: any[]): void {
-    if (!environment.production) {
+  error(message: string, ...args: unknown[]): void {
+    if (isDevMode()) {
       console.error(`❌ ${message}`, ...args);
-    }
-    // ✅ In production, send errors to monitoring service
-    // this.sendToMonitoring(message, args);
-  }
-
-  debug(message: string, ...args: any[]): void {
-    if (!environment.production) {
-      console.debug(`🔍 ${message}`, ...args);
+    } else {
+      // FIX: in production send to a real monitoring service
+      // Uncomment and configure one of these:
+      // Sentry.captureException(new Error(message));
+      // appInsights.trackException({ exception: new Error(message) });
+      this.sendToMonitoring(message, args);
     }
   }
 
-  // ✅ Optional: Send critical errors to monitoring even in production
-  private sendToMonitoring(message: string, args: any[]): void {
-    // Send to Sentry, Application Insights, etc.
-    // Example: Sentry.captureException(new Error(message));
+  debug(message: string, ...args: unknown[]): void {
+    if (isDevMode()) console.debug(`🔍 ${message}`, ...args);
+  }
+
+  private sendToMonitoring(_message: string, _args: unknown[]): void {
+    // TODO: wire up Sentry / Azure App Insights / Datadog here
   }
 }

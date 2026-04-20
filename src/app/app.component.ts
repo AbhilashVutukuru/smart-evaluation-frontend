@@ -4,12 +4,11 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,ToastContainerComponent],
- template: `
+  standalone: true,
+  imports: [RouterOutlet, ToastContainerComponent],
+  template: `
     <router-outlet></router-outlet>
     <app-toast-container></app-toast-container>
-  `
-  
+  `,
 })
-export class AppComponent {
-}
+export class AppComponent {}

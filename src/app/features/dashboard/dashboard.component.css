@@ -58,12 +58,12 @@
 
 .bd-card-foot { padding: 0.5rem 0.875rem; border-top: 1px solid var(--gray-200); background: var(--gray-50); }
 
-/* ── Action Links (table Action column) ────────────────────── */
-.action-link { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-decoration: none; white-space: nowrap; transition: all 0.18s; }
-.action-link-blue  { background: var(--blue-light); color: var(--blue-dark); }
-.action-link-blue:hover  { background: var(--blue); color: white; }
-.action-link-green { background: var(--green-light); color: var(--green-dark); }
-.action-link-green:hover { background: var(--green); color: white; }
+/* ── Action column: View Results link — green underline ────── */
+.download-link.link-green             { color: var(--green); }
+.download-link.link-green:hover       { color: var(--green); }
+.download-link.link-green:hover .link-text {
+  text-decoration-color: var(--green);
+}
 
 /* ── Status Badges (dashboard-specific) ────────────────────── */
 .badge-completed { background: var(--green-light); color: var(--green-dark); }

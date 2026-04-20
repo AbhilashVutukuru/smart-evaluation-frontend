@@ -1,126 +1,139 @@
 <div class="login-container">
   <div class="login-card">
-    <!-- Already Logged In Banner -->
-    <div *ngIf="alreadyLoggedIn" class="already-logged-in">
-      <div class="logged-in-icon">
-        <i class="fas fa-user-check"></i>
-      </div>
-      <h3>Already Signed In</h3>
-      <p>You are currently logged in as <strong>{{ loggedInUserName }}</strong></p>
-      <div class="logged-in-actions">
-        <button class="btn-go-dashboard" (click)="goToDashboard()">
-          <i class="fas fa-th-large"></i> Go to Dashboard
-        </button>
-        <p class="switch-hint">
-          <i class="fas fa-info-circle"></i> To switch accounts, please <strong>Logout</strong> from the sidebar first.
-        </p>
-      </div>
-    </div>
 
-    <!-- Normal login form -->
-    <div *ngIf="!alreadyLoggedIn">
-    <div class="logo-section">
-      <div class="logo-icon">
-        <i class="fas fa-graduation-cap"></i>
-      </div>
-      <h2>Welcome Back!</h2>
-      <p>Sign in to continue to School Portal</p>
-    </div>
-
-    <!-- Error Alert -->
-    <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-      <i class="fas fa-exclamation-circle me-2"></i>
-      {{ error }}
-      <button type="button" class="btn-close" (click)="error = ''" aria-label="Close"></button>
-    </div>
-
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-      
-      <!-- Email Field -->
-      <div class="mb-3">
-        <label for="email" class="form-label">Email Address</label>
-        <div class="input-group">
-          <span class="input-group-text">
-            <i class="fas fa-envelope"></i>
-          </span>
-          <input 
-            type="email" 
-            class="form-control" 
-            id="email" 
-            formControlName="email"
-            placeholder="teacher@school.edu"
-            (input)="clearError()"
-            [class.is-invalid]="f['email'].invalid && f['email'].touched"
-            autocomplete="email"
-          >
+    <!-- ── Already logged in ─────────────────────────────────── -->
+    @if (alreadyLoggedIn) {
+      <div class="already-logged-in">
+        <div class="logged-in-icon" role="img" aria-label="Already signed in">
+          <i class="fas fa-user-check" aria-hidden="true"></i>
         </div>
-        <div *ngIf="f['email'].invalid && f['email'].touched" class="text-danger small mt-1">
-          <div *ngIf="f['email'].errors?.['required']">Email is required</div>
-          <div *ngIf="f['email'].errors?.['email']">Please enter a valid email</div>
+        <!-- FIX: h1 — this is the page's primary heading -->
+        <h1 class="already-logged-in-title">Already Signed In</h1>
+        <p>You are currently logged in as <strong>{{ loggedInUserName }}</strong></p>
+        <div class="logged-in-actions">
+          <button type="button" class="btn-go-dashboard" (click)="goToDashboard()">
+            <i class="fas fa-th-large" aria-hidden="true"></i>
+            Go to Dashboard
+          </button>
+          <p class="switch-hint">
+            <i class="fas fa-info-circle" aria-hidden="true"></i>
+            To switch accounts, please <strong>Logout</strong> from the sidebar first.
+          </p>
         </div>
       </div>
+    }
 
-      <!-- Password Field -->
-      <div class="mb-3">
-        <label for="password" class="form-label">Password</label>
-        <div class="input-group">
-          <span class="input-group-text">
-            <i class="fas fa-lock"></i>
-          </span>
-          <input 
-            [type]="showPassword ? 'text' : 'password'"
-            class="form-control" 
-            id="password"
-            formControlName="password"
-            placeholder="Enter your password"
-            (input)="clearError()"
-            [class.is-invalid]="f['password'].invalid && f['password'].touched"
-            autocomplete="current-password"
-          >
-          <span class="input-group-text toggle-password" (click)="togglePassword()" role="button" tabindex="0">
-            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-          </span>
+    <!-- ── Normal login form ──────────────────────────────────── -->
+    @if (!alreadyLoggedIn) {
+      <div class="logo-section">
+        <div class="logo-icon" role="img" aria-label="School portal">
+          <i class="fas fa-graduation-cap" aria-hidden="true"></i>
         </div>
-        <div *ngIf="f['password'].invalid && f['password'].touched" class="text-danger small mt-1">
-          Password is required
-        </div>
+        <!-- FIX: h1 — one per page -->
+        <h1>Welcome Back!</h1>
+        <p>Sign in to continue to School Portal</p>
       </div>
 
-      <!-- Remember Me & Forgot Password -->
-      <div class="row mb-3">
-        <div class="col-6">
-          <div class="form-check">
-            <input 
-              class="form-check-input" 
-              type="checkbox" 
-              id="rememberMe"
-              formControlName="rememberMe"
+      <!-- Error alert -->
+      @if (error) {
+        <div class="alert alert-danger" role="alert" aria-live="polite">
+          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+          {{ error }}
+          <button type="button" class="btn-close" (click)="error = ''" aria-label="Dismiss error"></button>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Email -->
+        <div class="mb-3">
+          <label for="email" class="form-label">Email Address</label>
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true">
+              <i class="fas fa-envelope"></i>
+            </span>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              formControlName="email"
+              placeholder="teacher@school.edu"
+              (input)="clearError()"
+              [class.is-invalid]="f['email'].invalid && f['email'].touched"
+              autocomplete="email"
             >
-            <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
-              Remember me
-            </label>
+          </div>
+          @if (f['email'].invalid && f['email'].touched) {
+            <div class="text-danger small mt-1" role="alert">
+              @if (f['email'].errors?.['required']) { Email is required }
+              @if (f['email'].errors?.['email']) { Please enter a valid email }
+            </div>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              class="form-control"
+              id="password"
+              formControlName="password"
+              placeholder="Enter your password"
+              (input)="clearError()"
+              [class.is-invalid]="f['password'].invalid && f['password'].touched"
+              autocomplete="current-password"
+            >
+            <!-- FIX: <button type="button"> — keyboard accessible, prevents form submit -->
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+            </button>
+          </div>
+          @if (f['password'].invalid && f['password'].touched) {
+            <div class="text-danger small mt-1" role="alert">Password is required</div>
+          }
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="row mb-3">
+          <div class="col-6">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="rememberMe"
+                formControlName="rememberMe"
+              >
+              <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
+                Remember me
+              </label>
+            </div>
+          </div>
+          <div class="col-6 text-end">
+            <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
           </div>
         </div>
-        <div class="col-6 text-end">
-          <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
-        </div>
-      </div>
 
-      <!-- Submit Button -->
-      <button type="submit" class="btn btn-submit" [disabled]="loading || loginForm.invalid">
-        <i [class]="loading ? 'fas fa-spinner fa-spin me-2' : 'fas fa-sign-in-alt me-2'"></i>
-        {{ loading ? 'Signing in...' : 'Sign In' }}
-      </button>
-    </form>
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn btn-submit"
+          [disabled]="loading || loginForm.invalid"
+          [attr.aria-busy]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sign-in-alt'" aria-hidden="true"></i>
+          {{ loading ? 'Signing in...' : 'Sign In' }}
+        </button>
 
-    <!-- Optional: Registration Link (commented out) -->
-    <!-- <div class="divider">
-      <span>or</span>
-    </div>
+      </form>
+    }
 
-    <div class="text-center mt-3">
-      <p class="mb-0">Don't have an account? <a routerLink="/auth/register" class="register-link">Register here</a></p>
-    </div> -->
   </div>
-    </div><!-- end *ngIf="!alreadyLoggedIn" -->
 </div>
