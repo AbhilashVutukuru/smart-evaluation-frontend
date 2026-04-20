@@ -216,10 +216,10 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   }
 
   // ─── Confirm Dialog ──────────────────────────────────────────────────────────
-  confirmDialog: { message: string; onConfirm: () => void } | null = null;
+  confirmDialog: { lines: string[]; onConfirm: () => void; okLabel?: string } | null = null;
 
-  showConfirmDialog(message: string, onConfirm: () => void): void {
-    this.confirmDialog = { message, onConfirm };
+  showConfirmDialog(message: string, onConfirm: () => void, okLabel = 'Yes, Reset'): void {
+    this.confirmDialog = { lines: message.split('\n'), onConfirm, okLabel };
   }
 
   confirmDialogOk(): void {
@@ -236,8 +236,8 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     if (!this.modal) return;
     const hasImages = this.modalFilledCount > 0;
     const message = hasImages
-      ? `All ${this.modalFilledCount} uploaded image(s) will be deleted and you will need to re-enter the page count. Are you sure?`
-      : 'This will reset the page count. Are you sure?';
+      ? `This will reset the page count to zero, and all your changes will be discarded. Are you sure to continue?`
+      : `This will reset the page count to zero, and all your changes will be discarded. Are you sure to continue?`;
     this.showConfirmDialog(message, () => {
       this.modal!.slots      = [];
       this.modal!.pageCount  = null;
@@ -879,7 +879,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   // ─── Remove Answer Sheet ─────────────────────────────────────────────────────
   removeAnswerSheet(student: StudentUploadStatus): void {
     this.showConfirmDialog(
-      `Remove the uploaded answer sheet for ${student.studentName}? This will delete the file and all related data. The student can then be marked absent or re-uploaded.`,
+      `Are you sure you want to remove the uploaded answer sheet for ${student.studentName}?\nThis will delete the answer sheet and all related data.\nThe student can then either be marked as absent or have the answer sheet re-uploaded.`,
       () => {
         student.isUploading = true;
         this.uploadService.deleteAnswerSheet(student.studentId, this.selectedQuestionPaperId!).subscribe({
@@ -899,11 +899,10 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
             this.errorHandler.handle('Failed to remove answer sheet', error);
           },
         });
-      }
+      },
+      'Yes, Remove'
     );
   }
-
-  // ─── Toggle Absent ────────────────────────────────────────────────────────────
   toggleAbsent(student: StudentUploadStatus): void {
     student.isAbsent = !student.isAbsent;
     if (student.isAbsent) {

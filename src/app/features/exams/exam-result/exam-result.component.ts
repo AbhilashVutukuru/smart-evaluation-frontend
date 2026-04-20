@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -49,6 +49,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
   currentResults:      ExamResult | null    = null;
   currentQuestion:     ResultQuestion | null = null;
   currentQuestionIndex = 0;
+  @ViewChild('gotoSelect') gotoSelectRef?: ElementRef<HTMLSelectElement>;
 
   // ─── UI state ─────────────────────────────────────────────────────────────
   isLoading         = false;
@@ -331,7 +332,10 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
           this.isLoadingQuestion    = false;
           if (scroll) {
             setTimeout(() => {
-              const el = document.getElementById('quick-jump');
+              if (this.gotoSelectRef?.nativeElement) {
+                this.gotoSelectRef.nativeElement.selectedIndex = 0;
+              }
+              const el = document.getElementById('question-top');
               if (el) {
                 const y = el.getBoundingClientRect().top + window.scrollY - 80;
                 window.scrollTo({ top: y, behavior: 'smooth' });

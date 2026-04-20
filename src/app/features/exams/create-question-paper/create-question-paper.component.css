@@ -358,7 +358,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .question-badge {
   background: var(--yellow-light);
-  color: var(--yellow-dark);
+  color: var(--yellow);
   border: 1.5px solid var(--yellow);
   padding: 0.625rem 1.25rem;
   border-radius: 50px;
@@ -374,11 +374,11 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 @media (max-width: 767px) {
   .question-header { margin-bottom: 1.25rem; padding-bottom: 0.875rem; }
-  .question-badge  { font-size: 0.8125rem; padding: 0.5rem 1rem; }
+  .question-badge  { font-size: 0.8125rem; padding: 0.4375rem 0.75rem; }
 }
 
 @media (max-width: 479px) {
-  .question-badge  { font-size: 0.75rem; padding: 0.4375rem 0.875rem; }
+  .question-badge  { font-size: 0.75rem; padding: 0.375rem 0.625rem; }
 }
 
 /* ============================================================
@@ -849,14 +849,15 @@ label.disabled {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  width: 50rem;
-  flex: 0 0 auto;
+  flex: 1;
+  min-width: 0;
+  max-width: 50rem;
   margin: 0 auto;
 }
 
 .q-progress-inline .q-progress-bar-wrap {
   flex: 1;
-  height: 17px;
+  height: 22px;
   background: var(--gray-200);
   border-radius: 8px;
   overflow: hidden;

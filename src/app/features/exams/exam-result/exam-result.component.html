@@ -255,39 +255,38 @@
       </div>
     </div> -->
 
-    <!-- Question Navigation -->
-    <div class="question-selector" id="quick-jump" *ngIf="questionNumbers.length">
-      <label class="section-label">
-        <i class="fas fa-list-ol"></i> Quick Jump:
-      </label>
-
-      <div class="question-buttons">
-        <button
-          *ngFor="let q of questionNumbers; let i = index"
-          class="question-number-btn"
-          [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i, true)"
-          [disabled]="isAnyRubricEditing()"
-        >
-          Q{{ q }}
-        </button>
+    <!-- Go to Question Dropdown — outside currentQuestion ngIf so it persists across API loads -->
+    <div class="question-goto-row" *ngIf="questionNumbers.length">
+      <div class="question-header-with-marks" id="question-top">
+        <h5 *ngIf="currentQuestion && !isLoadingQuestion">
+          <i class="fas fa-question"></i>
+          Question # {{ currentQuestion.questionNumber }}
+          ({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)
+        </h5>
+        <h5 *ngIf="isLoadingQuestion">
+          <i class="fas fa-spinner fa-spin"></i> Loading...
+        </h5>
+        <div class="question-goto-inline">
+          <label class="goto-label">Go to question #</label>
+          <div class="select-wrapper question-goto-select">
+            <select #gotoSelect class="form-control"
+              [disabled]="isAnyRubricEditing()"
+              (change)="loadQuestion(+gotoSelect.value, true); gotoSelect.selectedIndex = 0">
+              <option value="" disabled selected>
+                Question # {{ currentQuestion?.questionNumber }}
+              </option>
+              <option *ngFor="let q of questionNumbers; let i = index" [value]="i">
+                Question # {{ q }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Current Question -->
     <div *ngIf="currentQuestion && !isLoadingQuestion">
-      <!-- Question Header with Marks -->
-      <div class="question-header-with-marks" id="question-top">
-        <h5>
-          <i class="fas fa-question"></i> Question
-          {{ currentQuestion.questionNumber }}
-        </h5>
-        <div class="marks-badge-group">
-          <span class="marks-badge">{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span>
-          <span class="marks-label-text">Obtained / Total Marks</span>
-        </div>
-      </div>
-
       <!-- Question Text -->
       <div class="question-section">
         <div class="section-header">
@@ -346,6 +345,7 @@
               <tr>
                 <th>MAX MARKS</th>
                 <th>SYSTEM MARKS</th>
+                <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
                   <i
@@ -366,6 +366,15 @@
                 <!-- System Marks -->
                 <td>
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- System Remarks -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <span class="system-remarks-text">
+                      {{ rubric.systemRemarks || '—' }}
+                    </span>
+                  </div>
                 </td>
 
                 <!-- Teacher Marks - compact with inline Edit -->

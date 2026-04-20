@@ -282,24 +282,11 @@
 .exam-date-error             { display: flex; align-items: center; gap: 0.3rem; color: var(--red); font-size: 0.75rem; margin-top: 0.3rem; }
 .input-date-error            { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(248,83,16,0.15) !important; }
 
-/* ─── Question Selector (Quick Jump) ───────────────────────────────────────── */
-.question-selector  { margin-bottom: 0.75rem; }
-.question-buttons   { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-
-.question-number-btn {
-  padding: 0.5rem 0.875rem;
-  background: var(--app-bg);
-  border: 2px solid var(--gray-200);
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.question-number-btn:hover    { border-color: var(--blue); border-width: 3px; background: var(--blue-light); color: var(--blue); font-weight: 700; }
-.question-number-btn.active   { background: var(--blue); border-color: var(--blue); color: white; }
-.question-number-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* ─── Question Go To Dropdown (inline right of question header) ─────────────── */
+.question-goto-row  { margin-bottom: 0; }
+.question-goto-inline { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+.goto-label           { font-size: 0.75rem; font-weight: 600; color: var(--gray-500); white-space: nowrap; margin: 0; }
+.question-goto-select { width: auto; min-width: 200px; }
 
 /* ─── Question Header ───────────────────────────────────────────────────────── */
 .question-header-with-marks {
@@ -311,6 +298,8 @@
   border-radius: 0.5rem;
   margin-bottom: 0.75rem;
   border-left: 4px solid var(--blue);
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .question-header-with-marks h5 { margin: 0; font-size: 1.125rem; display: flex; align-items: center; gap: 0.5rem; }

@@ -327,7 +327,7 @@
                     <span class="preview-page-num">{{ i + 1 }}</span>
                     <button class="preview-thumb-delete"
                       (click)="deletePreviewImage(student.studentId, i)"
-                      [disabled]="student.isUploading" title="Remove page {{ i + 1 }}">
+                      [disabled]="student.isUploading" title="Remove image {{ i + 1 }}">
                       <i class="fas fa-times"></i>
                     </button>
                   </div>
@@ -503,7 +503,7 @@
               </div>
               <button *ngIf="slot.dataUrl !== null" class="slot-delete-btn" type="button"
                 (click)="$event.stopPropagation(); deleteSlotImage(slot)"
-                title="Remove page {{ slot.pageNumber }}">
+                title="Remove image {{ slot.pageNumber }}">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -754,7 +754,7 @@
     <div class="confirm-dialog-icon">
       <i class="fas fa-exclamation-triangle"></i>
     </div>
-    <p class="confirm-dialog-message">{{ confirmDialog.message }}</p>
+    <p *ngFor="let line of confirmDialog.lines" class="confirm-dialog-message">{{ line }}</p>
     <div class="confirm-dialog-actions">
       <button type="button" class="btn-secondary img-modal-cancel"
         (click)="confirmDialogCancel()">
@@ -762,7 +762,7 @@
       </button>
       <button type="button" class="btn-danger confirm-ok-btn"
         (click)="confirmDialogOk()">
-        <i class="fas fa-check"></i> Yes, Reset
+        <i class="fas fa-check"></i> {{ confirmDialog.okLabel || 'Yes, Reset' }}
       </button>
     </div>
   </div>

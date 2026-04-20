@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -96,6 +96,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   questionPaper:            QuestionPaperViewDto | null = null;
   currentQuestion:          QuestionPaperDetailDto | null = null;
   currentQuestionIndex      = 0;
+  @ViewChild('gotoSelect') gotoSelectRef?: ElementRef<HTMLSelectElement>;
   showQuestionPaperDropdown = false;
   noExamPaperFound          = false;
   showDetailPage            = false;
@@ -322,12 +323,16 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
     this.currentQuestion      = this.questionPaper.questions[index];
 
     setTimeout(() => {
+      // Reset select back to placeholder (index 0) so every pick triggers (change)
+      if (this.gotoSelectRef?.nativeElement) {
+        this.gotoSelectRef.nativeElement.selectedIndex = 0;
+      }
       const el = document.getElementById('question-top');
       if (el) {
         const y = el.getBoundingClientRect().top + window.scrollY - 80;
         window.scrollTo({ top: y, behavior: 'smooth' });
       }
-    }, 50);
+    }, 0);
   }
 
   nextQuestion():     void { if (this.questionPaper && this.currentQuestionIndex < this.questionPaper.totalQuestions - 1) this.loadQuestion(this.currentQuestionIndex + 1); }

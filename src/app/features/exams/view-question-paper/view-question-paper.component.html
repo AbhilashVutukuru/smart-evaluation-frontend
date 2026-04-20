@@ -261,8 +261,8 @@
         <span class="info-value">{{ questionPaper.questionPaperName }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"><i class="fas fa-graduation-cap"></i> Academic Year</span>
-        <span class="info-value">{{ questionPaper.academicYear }}</span>
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions</span>
+        <span class="info-value">{{ questionPaper.totalQuestions }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks</span>
@@ -318,26 +318,33 @@
       </div>
     </div> -->
 
-    <!-- Question Jump Buttons -->
-    <div class="question-selector">
-      <label class="section-label"><i class="fas fa-list-ol"></i> Quick Jump:</label>
-      <div class="question-buttons">
-        <button *ngFor="let q of questionPaper.questions; let i = index"
-          class="question-number-btn"
-          [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i)">
-          Q{{ q.questionNumber }}
-        </button>
+    <!-- Go to Question Dropdown — outside *ngIf so it is never destroyed on navigation -->
+    <div class="question-goto-row" *ngIf="questionPaper && !isEditMode">
+      <div class="question-header-with-marks" id="question-top">
+        <h5 *ngIf="currentQuestion">
+          <i class="fas fa-question-circle"></i>
+          Question # {{ currentQuestion.questionNumber }} ({{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }})
+        </h5>
+        <div class="question-goto-inline">
+          <label class="goto-label">Go to question #</label>
+          <div class="select-wrapper question-goto-select">
+            <select #gotoSelect class="form-control"
+              (change)="loadQuestion(+gotoSelect.value); gotoSelect.selectedIndex = 0">
+              <option value="" disabled selected>
+                Question # {{ currentQuestion?.questionNumber }} ({{ currentQuestion?.maxMarks === 1 ? '1 Mark' : currentQuestion?.maxMarks + ' Marks' }})
+              </option>
+              <option *ngFor="let q of questionPaper.questions; let i = index" [value]="i">
+                Question # {{ q.questionNumber }} ({{ q.maxMarks === 1 ? '1 Mark' : q.maxMarks + ' Marks' }})
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ── VIEW MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="!isEditMode && currentQuestion">
-
-      <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-question-circle"></i> Question {{ currentQuestion.questionNumber }}</h5>
-        <span class="marks-badge">{{ currentQuestion.maxMarks }} Marks</span>
-      </div>
 
       <div class="question-section">
         <div class="section-header">
@@ -356,45 +363,48 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label">
-          <i class="fas fa-list-check"></i>
-          {{ currentQuestion.rubricAdded ? 'Rubric Criteria:' : 'Marks:' }}
-        </label>
-        <div class="table-responsive">
-          <table class="table table-bordered rubric-table" *ngIf="currentQuestion.rubricAdded; else simpleMarksView">
-            <thead>
-              <tr>
-                <th>CRITERION</th>
-                <th>ORDER</th>
-                <th>MAX MARKS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rubric of currentQuestion.rubrics">
-                <td class="criterion-cell">
-                  <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
-                </td>
-                <td class="text-center">{{ rubric.criterionOrder }}</td>
-                <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
-              </tr>
-              <tr class="totals-row">
-                <td colspan="2" class="text-right"><strong>Total Rubric Marks:</strong></td>
-                <td class="text-center">
-                  <span class="marks-badge-sm"
-                    [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
-                    {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <ng-template #simpleMarksView>
-            <div class="simple-marks-display">
-              <span class="marks-label">Max Marks:</span>
-              <span class="marks-badge">{{ currentQuestion.maxMarks }}</span>
-            </div>
-          </ng-template>
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-list-check"></i>
+            Validation Rules:
+          </label>
         </div>
+        <ng-container *ngIf="currentQuestion.rubricAdded; else noValidationRules">
+          <div class="table-responsive">
+            <table class="table table-bordered rubric-table">
+              <thead>
+                <tr>
+                  <th>CRITERION</th>
+                  <th>ORDER</th>
+                  <th>MAX MARKS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rubric of currentQuestion.rubrics">
+                  <td class="criterion-cell">
+                    <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
+                  </td>
+                  <td class="text-center">{{ rubric.criterionOrder }}</td>
+                  <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
+                </tr>
+                <tr class="totals-row">
+                  <td colspan="2" class="text-right"><strong>Total Marks:</strong></td>
+                  <td class="text-center">
+                    <span class="marks-badge-sm"
+                      [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
+                      {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <ng-template #noValidationRules>
+          <div class="simple-marks-display">
+            <span class="marks-label">None</span>
+          </div>
+        </ng-template>
       </div>
 
       <div class="navigation-buttons">
@@ -413,7 +423,7 @@
     <div *ngIf="isEditMode && !isLocked && currentDraftQuestion">
 
       <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-edit"></i> Question {{ currentDraftQuestion.questionNumber }}</h5>
+        <h5><i class="fas fa-edit"></i> Question # {{ currentDraftQuestion.questionNumber }}</h5>
         <div class="marks-edit-group">
           <label class="marks-edit-label">Max Marks:</label>
           <input type="number" class="form-control form-control-sm marks-edit-input"
@@ -445,7 +455,7 @@
       <!-- Rubric edit table — always shown; rubricAdded flips true when rubric added -->
       <div class="question-section">
         <div class="rubric-edit-header">
-          <label class="section-label"><i class="fas fa-list-check"></i> Rubric Criteria:</label>
+          <label class="section-label"><i class="fas fa-list-check"></i> Validation Rules:</label>
           <span class="rubric-total-badge"
             [class.marks-mismatch]="getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks">
             Total: {{ getDraftTotalRubricMarks() }} / {{ currentDraftQuestion.maxMarks }}

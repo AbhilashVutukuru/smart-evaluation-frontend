@@ -295,6 +295,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
       this.resetTouchState();
+      // Restore rulesGenerated if this question already has rubric points saved
+      const q = this.currentQuestionSet;
+      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
     }
   }
 
@@ -324,6 +329,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (this.currentQuestionIndex < this.questionSets.length - 1) {
       this.currentQuestionIndex++;
       this.resetTouchState();
+      // Restore rulesGenerated if this question already has rubric points saved
+      const q = this.currentQuestionSet;
+      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
       const msg = this.currentQuestionSet.maxMarks === 1
         ? 'Question saved (1 mark - no rubric needed)'
         : 'Question saved! Moving to next question.';
@@ -367,6 +377,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   private submitToBackend(): void {
     this.isSubmitting   = true;
     this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
+
+    // Trim question and answer text before saving
+    this.questionSets.forEach(q => {
+      q.questionText = q.questionText?.trim() ?? q.questionText;
+      q.answerText   = q.answerText?.trim()   ?? q.answerText;
+    });
 
     const apiRequest = this.createQuestionPaperService.prepareApiRequest(this.examFormData);
 
