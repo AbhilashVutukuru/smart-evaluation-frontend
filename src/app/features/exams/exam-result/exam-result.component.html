@@ -210,6 +210,10 @@
         <span class="info-value">{{ selectedStudent.studentName }}</span>
       </div>
       <div class="info-item">
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions:</span>
+        <span class="info-value">{{ totalQuestions }}</span>
+      </div>
+      <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks:</span>
         <span class="info-value">{{ displayObtainedMarks }} / {{ totalMarks }}</span>
       </div>
@@ -607,6 +611,7 @@
       <div class="navigation-buttons">
         <button
           class="btn btn-secondary btn-lg btn-prev"
+          (click)="previousQuestion()"
           [disabled]="
             currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
           "

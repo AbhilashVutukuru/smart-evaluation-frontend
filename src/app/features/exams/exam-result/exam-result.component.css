@@ -147,7 +147,7 @@
 /* ── Student info grid ──────────────────────────────────────── */
 .student-info-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 1rem;
   padding: 1rem;
   background: var(--gray-50);
@@ -699,5 +699,3 @@
 }
 /* ── Extended search (no badge on right) ── */
 .er-search { flex: 1; max-width: 100%; }
-
-/* .text-muted   { color: #212529 } */
