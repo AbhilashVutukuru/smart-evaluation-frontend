@@ -298,11 +298,10 @@
 .scrollable-text::-webkit-scrollbar       { width: 5px; }
 .scrollable-text::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
 
-/* Official answer — soft green, capped to 2 lines with scroll (matches VQP) */
+/* Official answer — soft green, same height as student answer */
 .official-answer {
   background: #f0fdf4 !important;
   border-color: #bbf7d0 !important;
-  max-height: calc(1.6em * 2 + 1.75rem) !important;
   overflow-y: auto !important;
   white-space: normal !important;
   word-break: break-word;
