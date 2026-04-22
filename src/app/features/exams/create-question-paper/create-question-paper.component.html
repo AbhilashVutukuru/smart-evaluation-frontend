@@ -346,24 +346,28 @@
             <strong>No. of Validation Rules</strong>
             <span class="required"> *</span>
             <i class="fas fa-info-circle header-info-icon"
-               title="Please choose how many checks (rules) should be used to evaluate this answer.&#10;For example, content accuracy, keywords, or steps.&#10;If Maximum Marks are more than 1, you should have at least 1 validation rule.">
+               title="Please choose how many checks (rules) should be used to evaluate this answer.&#10;For example, content accuracy, keywords, or steps.&#10;Maximum 20 rules allowed.&#10;If Maximum Marks are more than 1, you should have at least 1 validation rule.">
             </i>
           </label>
           <input
             type="number"
             [(ngModel)]="currentQuestionSet.validationRulesCount"
-            (input)="onValidationCountChange()"
-            min="0"
-            max="10"
-            placeholder="0"
+            (input)="onValidationCountChange($event)"
+            min="1"
+            max="20"
+            placeholder="e.g., 3"
             class="form-control"
-            [disabled]="questionsFrozen"
+            [disabled]="questionsFrozen || !currentQuestionSet.maxMarks || currentQuestionSet.maxMarks < 1"
           />
         </div>
 
         <div class="col-md-3 mb-3">
           <label class="form-label">&nbsp;</label>
-          <div [class.disabled-wrap]="!canSetRules || questionsFrozen">
+          <div [class.disabled-wrap]="!canSetRules || questionsFrozen"
+               [title]="!currentQuestionSet.maxMarks ? 'Enter Maximum Marks first'
+                        : !currentQuestionSet.validationRulesCount ? 'Enter No. of Validation Rules (1–20)'
+                        : !canSetRules ? 'Validation rules count must be between 1 and 20'
+                        : ''">
             <button
               class="btn btn-primary w-100"
               (click)="generateValidationRules()"

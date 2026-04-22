@@ -617,9 +617,17 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   generateValidationRules(): void {
     if (!this.currentQuestionSet) { this.toastService.showError('Error', 'No question selected'); return; }
 
+    const maxMarks = this.currentQuestionSet.maxMarks;
+    if (!maxMarks || maxMarks < 1) {
+      this.toastService.showWarning('Warning', 'Please enter Maximum Marks before setting validation rules'); return;
+    }
+
     const rulesCount = this.currentQuestionSet.validationRulesCount;
     if (!rulesCount || rulesCount < 1) {
       this.toastService.showWarning('Warning', 'Please enter validation rules count first'); return;
+    }
+    if (rulesCount > 20) {
+      this.toastService.showWarning('Warning', 'Maximum 20 validation rules allowed'); return;
     }
 
     const current = this.currentQuestionSet.rubricPoints;
@@ -674,15 +682,19 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   // ─── Touch helpers ────────────────────────────────────────────────────────
   onQuestionTextBlur():   void { this.questionTextTouched = true; }
   onAnswerTextBlur():     void { this.answerTextTouched   = true; }
-  onQuestionTextChange(): void { if (this.questionTextTouched && this.currentQuestionSet?.questionText?.trim()) this.questionTextTouched = false; }
-  onAnswerTextChange():   void { if (this.answerTextTouched   && this.currentQuestionSet?.answerText?.trim())   this.answerTextTouched   = false; }
+  onQuestionTextChange(): void { if (this.questionTextTouched && this.currentQuestionSet.questionText?.trim()) this.questionTextTouched = false; }
+  onAnswerTextChange():   void { if (this.answerTextTouched   && this.currentQuestionSet.answerText?.trim())   this.answerTextTouched   = false; }
 
-  get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet?.questionText?.trim()); }
-  get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet?.answerText?.trim());   }
+  get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet.questionText?.trim()); }
+  get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet.answerText?.trim());   }
 
   get canSetRules(): boolean {
-    const count = this.currentQuestionSet?.validationRulesCount;
-    return count !== null && count !== undefined && count >= 1 && count <= 10;
+    if (!this.currentQuestionSet) return false;
+    const count    = this.currentQuestionSet.validationRulesCount;
+    const maxMarks = this.currentQuestionSet.maxMarks;
+    const hasValidCount    = count    !== null && count    !== undefined && count    >= 1 && count    <= 20;
+    const hasValidMaxMarks = maxMarks !== null && maxMarks !== undefined && maxMarks >= 1;
+    return hasValidCount && hasValidMaxMarks;
   }
 
   private resetTouchState(): void {
@@ -691,11 +703,20 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.rulesGenerated      = false;
   }
 
-  onValidationCountChange(): void {
-    const count = this.currentQuestionSet?.validationRulesCount;
-    if (!count || count < 1) {
+  onValidationCountChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (isNaN(value) || value < 1) {
+      this.currentQuestionSet.validationRulesCount = 0;
       this.currentQuestionSet.rubricPoints = [];
       this.rulesGenerated = false;
+      input.value = '';
+      return;
     }
+    if (value > 20) {
+      value = 20;
+      input.value = '20';
+    }
+    this.currentQuestionSet.validationRulesCount = value;
   }
 }
