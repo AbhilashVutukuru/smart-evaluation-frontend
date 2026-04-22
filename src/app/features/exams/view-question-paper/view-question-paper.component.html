@@ -195,13 +195,13 @@
               </span>
             </td>
             <td>
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'" class="lock-reason date-passed">
-                <i class="fas fa-calendar-times"></i> Exam Date Passed
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'">
+                Exam Date Passed
               </span>
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'" class="lock-reason sheet-submitted">
-                <i class="fas fa-file-upload"></i> Answer Sheet Submitted
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'">
+                Answer Sheet Submitted
               </span>
-              <span *ngIf="!paper.isLocked" class="text-muted">—</span>
+              <span *ngIf="!paper.isLocked">—</span>
             </td>
             <td>
               <a class="download-link"
