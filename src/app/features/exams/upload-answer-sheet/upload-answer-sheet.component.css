@@ -1438,9 +1438,7 @@ label.btn-doc-img,
   display: inline-block !important;
 }
 
-/* Overwrite */
-.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--yellow) !important;}
-/* .header-info-icon:hover { color:var(--yellow-dark); } */
+/* .header-info-icon — global.css */
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW & EDIT MODAL
    ══════════════════════════════════════════════════════════════ */

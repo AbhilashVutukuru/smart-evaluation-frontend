@@ -385,7 +385,7 @@
 .scrollable-remarks input { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
 
 .error-text       { font-size: 0.75rem; color: var(--red); margin-top: 0.25rem; }
-/* .header-info-icon { margin-left: 0.5rem; font-size: 0.875rem; cursor: help; color: var(--red) !important; } */
+/* .header-info-icon — global.css */
 
 /* ── Inline edit buttons ────────────────────────────────────── */
 .btn-edit-inline,
