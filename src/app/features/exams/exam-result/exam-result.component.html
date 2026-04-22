@@ -74,7 +74,7 @@
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.evaluatedCount }}</h3>
-          <p>Evaluated</p>
+          <p>Evaluation Completed</p>
         </div>
       </div>
       <!-- Not Evaluated -->
@@ -82,7 +82,7 @@
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.notEvaluatedCount }}</h3>
-          <p>Not Evaluated</p>
+          <p>Evaluation Pending</p>
         </div>
       </div>
     </div>
@@ -128,7 +128,7 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated' && student.hasUploaded"
                 class="badge badge-success"
               >
-                Evaluated
+                Evaluation Completed
               </span>
 
               <!-- Not Evaluated -->
@@ -136,7 +136,7 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending' && student.hasUploaded"
                 class="badge badge-warning"
               >
-                Not Evaluated
+                Evaluation Pending
               </span>
 
               <!-- Not Uploaded — show Submission Completed only if batch was submitted -->
@@ -210,6 +210,10 @@
         <span class="info-value">{{ selectedStudent.studentName }}</span>
       </div>
       <div class="info-item">
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions:</span>
+        <span class="info-value">{{ totalQuestions }}</span>
+      </div>
+      <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks:</span>
         <span class="info-value">{{ displayObtainedMarks }} / {{ totalMarks }}</span>
       </div>
@@ -255,13 +259,12 @@
       </div>
     </div> -->
 
-    <!-- Go to Question Dropdown — outside currentQuestion ngIf so it persists across API loads -->
     <div class="question-goto-row" *ngIf="questionNumbers.length">
       <div class="question-header-with-marks" id="question-top">
         <h5 *ngIf="currentQuestion && !isLoadingQuestion">
           <i class="fas fa-question"></i>
           Question # {{ currentQuestion.questionNumber }}
-          ({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)
+          <span class="question-marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
         </h5>
         <h5 *ngIf="isLoadingQuestion">
           <i class="fas fa-spinner fa-spin"></i> Loading...
@@ -274,10 +277,13 @@
               (change)="loadQuestion(+gotoSelect.value, true); gotoSelect.selectedIndex = 0">
               <option value="" disabled selected>
                 Question # {{ currentQuestion?.questionNumber }}
+                {{ currentQuestion ? '(' + currentQuestion.maxMarks + (currentQuestion.maxMarks === 1 ? ' Mark)' : ' Marks)') : '' }}
               </option>
-              <option *ngFor="let q of questionNumbers; let i = index" [value]="i">
-                Question # {{ q }}
-              </option>
+              <ng-container *ngFor="let q of questionNumbers; let i = index">
+                <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                  Question # {{ q }}{{ questionMaxMarks[i] ? ' (' + questionMaxMarks[i] + (questionMaxMarks[i] === 1 ? ' Mark)' : ' Marks)') : '' }}
+                </option>
+              </ng-container>
             </select>
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
@@ -348,12 +354,14 @@
                 <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
-                  <i
-                    class="fas fa-info-circle header-info-icon"
-                    title="By default system marks assigned to teacher marks but you can override"
-                  ></i>
+                  <span class="header-info-icon" tabindex="0">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="header-info-tooltip">
+                      By default system marks are assigned to teacher marks, but you can override.
+                    </span>
+                  </span>
                 </th>
-                <th>REMARKS</th>
+                <th>TEACHER REMARKS</th>
               </tr>
             </thead>
             <tbody>
@@ -476,10 +484,12 @@
                 <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
-                  <i
-                    class="fas fa-info-circle header-info-icon"
-                    title="By default system marks assigned to teacher marks you can override"
-                  ></i>
+                  <span class="header-info-icon" tabindex="0">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="header-info-tooltip">
+                      By default system marks are assigned to teacher marks, but you can override.
+                    </span>
+                  </span>
                 </th>
                 <th>TEACHER REMARKS</th>
               </tr>
@@ -600,7 +610,7 @@
       <!-- Navigation Buttons -->
       <div class="navigation-buttons">
         <button
-          class="btn btn-secondary btn-lg"
+          class="btn btn-secondary btn-lg btn-prev"
           (click)="previousQuestion()"
           [disabled]="
             currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()

@@ -152,7 +152,23 @@
             <th>Total Marks</th>
             <th>Questions</th>
             <th>Exam Date</th>
-            <th>Status</th>
+            <th>
+              Status
+              <span class="header-info-icon status-info" tabindex="0" aria-label="Status info">
+                <i class="fas fa-info-circle"></i>
+                <span class="header-info-tooltip">
+                  <strong class="tip-locked">Locked</strong>
+                  <ul>
+                    <li>Answer sheets already submitted</li>
+                    <li>Exam date has passed</li>
+                  </ul>
+                  <strong class="tip-editable">Editable</strong>
+                  <ul>
+                    <li>No submissions yet and exam date is upcoming</li>
+                  </ul>
+                </span>
+              </span>
+            </th>
             <th>Description</th>
             <th>Action</th>
           </tr>
@@ -179,13 +195,13 @@
               </span>
             </td>
             <td>
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'" class="lock-reason date-passed">
-                <i class="fas fa-calendar-times"></i> Date Passed
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'">
+                Exam Date Passed
               </span>
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'" class="lock-reason sheet-submitted">
-                <i class="fas fa-file-upload"></i> Answer Sheet Submitted
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'">
+                Answer Sheet Submitted
               </span>
-              <span *ngIf="!paper.isLocked" class="text-muted">—</span>
+              <span *ngIf="!paper.isLocked">—</span>
             </td>
             <td>
               <a class="download-link"
@@ -323,7 +339,8 @@
       <div class="question-header-with-marks" id="question-top">
         <h5 *ngIf="currentQuestion">
           <i class="fas fa-question-circle"></i>
-          Question # {{ currentQuestion.questionNumber }} ({{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }})
+          Question # {{ currentQuestion.questionNumber }}
+          <span class="marks-badge">{{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }}</span>
         </h5>
         <div class="question-goto-inline">
           <label class="goto-label">Go to question #</label>
@@ -333,9 +350,11 @@
               <option value="" disabled selected>
                 Question # {{ currentQuestion?.questionNumber }} ({{ currentQuestion?.maxMarks === 1 ? '1 Mark' : currentQuestion?.maxMarks + ' Marks' }})
               </option>
-              <option *ngFor="let q of questionPaper.questions; let i = index" [value]="i">
-                Question # {{ q.questionNumber }} ({{ q.maxMarks === 1 ? '1 Mark' : q.maxMarks + ' Marks' }})
-              </option>
+              <ng-container *ngFor="let q of questionPaper.questions; let i = index">
+                <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                  Question # {{ q.questionNumber }} ({{ q.maxMarks === 1 ? '1 Mark' : q.maxMarks + ' Marks' }})
+                </option>
+              </ng-container>
             </select>
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
@@ -562,7 +581,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="fullscreen-body">{{ getFullscreenContent() }}</div>
+    <div class="fullscreen-body" [class.fullscreen-body--official]="fullscreenType === 'officialAnswer'">{{ getFullscreenContent() }}</div>
   </div>
 </div>
 
@@ -578,7 +597,7 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="fullscreen-body fullscreen-edit-body">
+    <div class="fullscreen-body fullscreen-edit-body" [class.fullscreen-body--official]="fullscreenType === 'editOfficialAnswer'">
       <textarea class="form-control edit-textarea fullscreen-textarea"
         *ngIf="fullscreenType === 'editQuestionText' && currentDraftQuestion"
         [(ngModel)]="currentDraftQuestion.questionText"

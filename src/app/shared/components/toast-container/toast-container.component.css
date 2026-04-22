@@ -54,6 +54,7 @@
   font-size: 14px;
   color: #666;
   word-wrap: break-word;
+  white-space: pre-line;
 }
 
 .toast-close {

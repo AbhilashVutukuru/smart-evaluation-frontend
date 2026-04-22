@@ -43,7 +43,7 @@
 .card h4 {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--gray-900);
   margin-bottom: 1.25rem;
   display: flex;
   align-items: center;
@@ -55,7 +55,7 @@
 .card h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--gray-900);
   margin-bottom: 1rem;
 }
 
@@ -79,8 +79,8 @@
 
 
 /* .info-box — global.css */
-.warning-box { background: #fff8e0; border: 1px solid #ffbb0a; color: #d69900; }
-.error-box   { background: #fee8e0; border: 1px solid #f85310; color: #d04008; }
+.warning-box { background: var(--yellow-light); border: 1px solid var(--yellow); color: var(--yellow-dark); }
+.error-box   { background: var(--red-light); border: 1px solid var(--red); color: var(--red-dark); }
 
 .info-box i,
 .warning-box i,
@@ -94,19 +94,19 @@
 
 /* ── Alert inline (matches input height) ── */
 .alert-info-inline {
-  background: #e0f4fe;
-  border: 1px solid #0882c4;
+  background: var(--blue-light);
+  border: 1px solid var(--blue-dark);
   border-radius: 8px;
   padding: 0.625rem 1rem;
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #0882c4;
+  color: var(--blue-dark);
   font-size: 0.875rem;
   min-height: 42px;
 }
 
-.alert-info-inline i    { font-size: 1.125rem; color: #0882c4; flex-shrink: 0; }
+.alert-info-inline i    { font-size: 1.125rem; color: var(--blue-dark); flex-shrink: 0; }
 .alert-info-inline span { line-height: 1.4; flex: 1; }
 
 @media (max-width: 767px) {
@@ -164,16 +164,16 @@
 /* .btn:disabled — global.css */
 
 /* .btn-primary — global.css */
-.btn-primary:hover:not(:disabled) { background: #0882c4; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
+.btn-primary:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14, 164, 244,0.45); }
 
 /* .btn-secondary — global.css */
-.btn-secondary:hover:not(:disabled) { background: #374151; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
+.btn-secondary:hover:not(:disabled) { background: var(--gray-700); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
 
 /* .btn-success — global.css */
-.btn-success:hover:not(:disabled) { background: #5f8e04; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
+.btn-success:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
 
 /* .btn-danger — global.css */
-.btn-danger:hover:not(:disabled)  { background: #d04008; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
+.btn-danger:hover:not(:disabled)  { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
 
 /* .btn-sm — global.css */
 
@@ -233,7 +233,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   right: 2.25rem;
   background: none;
   border: none;
-  color: #f85310;
+  color: var(--red);
   font-size: 0.875rem;
   line-height: 1;
   cursor: pointer;
@@ -246,10 +246,10 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   z-index: 2;
 }
 
-.btn-clear-date:hover { background: #fee8e0; }
+.btn-clear-date:hover { background: var(--red-light); }
 
 .input-date-error {
-  border-color: #f85310 !important;
+  border-color: var(--red) !important;
   box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.15) !important;
 }
 
@@ -257,7 +257,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  color: #f85310;
+  color: var(--red);
   font-size: 0.75rem;
   margin-top: 0.3rem;
 }
@@ -286,8 +286,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .exam-card {
-  background: white;
-  border: 2px solid #e5e7eb;
+  background: var(--app-bg);
+  border: 2px solid var(--gray-200);
   border-radius: 12px;
   padding: 1.25rem;
   cursor: pointer;
@@ -295,21 +295,22 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: relative;
 }
 
-.exam-card:hover { border-color: var(--blue) !important;
-  border-color: #0ea4f4;
+.exam-card:hover {
+  border-color: var(--blue) !important;
+  border-color: var(--blue);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(14, 164, 244, 0.15);
 }
 
 .exam-card.selected {
-  border-color: #0ea4f4;
-  background: #e0f4fe;
+  border-color: var(--blue);
+  background: var(--blue-light);
 }
 
 .exam-card h5 {
   font-size: 1rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--gray-900);
   margin: 0 0 0.75rem;
 }
 
@@ -318,7 +319,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   flex-wrap: wrap;
   gap: 0.625rem;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--gray-500);
   margin: 0.5rem 0;
 }
 
@@ -332,7 +333,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  color: #7fbb06;
+  color: var(--green);
   font-size: 1.5rem;
 }
 
@@ -346,54 +347,80 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    QUESTION HEADER
    ============================================================ */
 .question-header {
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 2px solid #e5e7eb;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+  border-bottom: 2px solid var(--gray-200);
 }
 
+/* ── Badge ── */
 .question-badge {
-  background: var(--yellow-light);
-  color: var(--yellow);
-  border: 1.5px solid var(--yellow);
-  padding: 0.625rem 1.25rem;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  height: 32px;
+  padding: 0 1.25rem;
   border-radius: 50px;
-  font-weight: 600;
+  font-weight: 650;
   font-size: 0.875rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  white-space: nowrap;      
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
 .question-badge i { position: relative; top: 2px; }
 
-@media (max-width: 767px) {
-  .question-header { margin-bottom: 1.25rem; padding-bottom: 0.875rem; }
-  .question-badge  { font-size: 0.8125rem; padding: 0.4375rem 0.75rem; }
+/* ── Clear button ── */
+.question-header .btn-danger.btn-sm {
+  height: 32px;
+  padding: 0 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
-@media (max-width: 479px) {
-  .question-badge  { font-size: 0.75rem; padding: 0.375rem 0.625rem; }
+/* ── Tablet ── */
+@media (max-width: 767px) {
+  .question-header { margin-bottom: 1.25rem; padding-bottom: 0.875rem; }
+  .question-badge,
+  .question-header .btn-danger.btn-sm { height: 28px; font-size: 0.8125rem; padding: 0 0.75rem; }
+}
+
+/* ── Mobile — stack progress below badge+Clear ── */
+@media (max-width: 575px) {
+  .question-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    position: static;           /* disable relative so absolute child resets */
+  }
+  .question-badge,
+  .question-header .btn-danger.btn-sm { height: 26px; font-size: 0.75rem; padding: 0 0.625rem; }
 }
 
 /* ============================================================
    MARKS SUMMARY
    ============================================================ */
 .marks-summary {
-  background: #f9fafb;
-  border: 2px solid #e5e7eb;
+  background: var(--gray-50);
+  border: 2px solid var(--gray-200);
   border-radius: 12px;
   padding: 1rem;
   margin-bottom: 1rem;
 }
 
-.marks-summary.valid   { background: #eef7d6; border-color: #7fbb06; }
-.marks-summary.invalid { background: #fee8e0; border-color: #f85310; }
+.marks-summary.valid   { background: var(--green-light); border-color: var(--green); }
+.marks-summary.invalid { background: var(--red-light); border-color: var(--red); }
 
 .marks-row {
   display: flex;
@@ -414,7 +441,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   font-size: 1rem;
   font-weight: 700;
   line-height: 1;
-  color: #1f2937;
+  color: var(--gray-900);
   display: inline-flex;
   align-items: center;
 }
@@ -460,17 +487,17 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
   align-items: start;
-  background: #f9fafb;
+  background: var(--gray-50);
   padding: 1rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--gray-200);
 }
 
 .rule-number {
   width: 2rem;
   height: 2rem;
-  background: #0ea4f4;
-  color: white;
+  background: var(--blue);
+  color: #fff;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -547,7 +574,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .progress-bar-wrapper {
   width: 100%;
   height: 12px;
-  background: #e5e7eb;
+  background: var(--gray-200);
   border-radius: 50px;
   overflow: hidden;
   margin-bottom: 0.75rem;
@@ -555,12 +582,12 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #0ea4f4, #0ea4f4);
+  background: linear-gradient(90deg, var(--blue), var(--blue));
   border-radius: 50px;
   transition: width 0.3s ease;
 }
 
-.bg-success { background: #7fbb06 !important; }
+.bg-success { background: var(--green) !important; }
 
 /* .progress-text — global.css */
 
@@ -576,8 +603,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .upload-progress {
   margin-top: 1.5rem;
   padding: 1rem;
-  background: #eef7d6;
-  border: 1px solid #7fbb06;
+  background: var(--green-light);
+  border: 1px solid var(--green);
   border-radius: 8px;
 }
 
@@ -585,7 +612,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    PRINT
    ============================================================ */
 @media print {
-  .exam-container { padding: 0; background: white; }
+  .exam-container { padding: 0; background: var(--app-bg); }
   .btn, .navigation-buttons { display: none; }
 }
 
@@ -599,16 +626,19 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    │              │ rule marks full-width below description  │
    └──────────────┴──────────────────────────────────────────┘
    ============================================================ */
+
 /* ─── Inline field validation error ─────────────────────────────────────────── */
 .field-error {
-  color: #f85310;   /* brand red */
-  font-size: 0.8125rem;
-  margin-top: 0.375rem;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.25rem;
+  color: var(--red) !important;
+  font-size: 0.8rem;
   font-weight: 500;
+  margin-top: 0.25rem;
 }
+
+.field-error i { font-size: 0.75rem; }
 
 /* ─── Push nav buttons to right ──────────────────────────────────────────────── */
 .ms-auto { margin-left: auto; }
@@ -623,22 +653,9 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 }
 
 .q-field .form-control.is-invalid {
-  border-color: #f85310 !important;
+  border-color: var(--red) !important;
   box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.1) !important;
 }
-
-/* ─── Field error — red, small, inline ──────────────────────────────────────── */
-.field-error {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: #f85310 !important;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-top: 0.25rem;
-}
-
-.field-error i { font-size: 0.75rem; }
 
 /* ─── Marks row — compact, no bottom spacing ─────────────────────────────────── */
 .q-marks-row {
@@ -657,12 +674,12 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #dc2626;
+  color: var(--red-dark);
   font-size: 0.875rem;
   font-weight: 600;
   padding: 0.625rem 0.875rem;
-  background: #fef2f2;
-  border: 1px solid #dc2626;
+  background: var(--red-light);
+  border: 1px solid var(--red-dark);
   border-radius: 6px;
   margin-bottom: 1rem;
 }
@@ -674,12 +691,12 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-top: 1rem;
   padding-top: 1rem;
   padding-bottom: 0.5rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--gray-100);
 }
 
 .q-progress-bar-wrap {
   height: 10px;
-  background: #e5e7eb;
+  background: var(--gray-200);
   border-radius: 7px;
   overflow: hidden;
   margin-bottom: 0.375rem;
@@ -687,14 +704,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .q-progress-fill {
   height: 100%;
-  background: #0ea4f4;
+  background: var(--blue);
   border-radius: 7px;
   transition: width 0.3s ease;
 }
 
 .q-progress-text {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--gray-500);
   font-weight: 500;
 }
 
@@ -702,14 +719,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .q-nav {
   display: flex;
   align-items: center;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--gray-200);
   padding-top: 0.625rem;
   margin-top: 0;
 }
 
 /* Chevron icon — brand blue color + smooth rotate */
 .exam-chevron {
-  color: var(--blue, #0ea4f4) !important;
+  color: var(--blue, var(--blue)) !important;
   font-size: 0.875rem !important;
   transition: transform 0.3s ease, color 0.2s;
   margin-left: 0.25rem;
@@ -737,7 +754,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .filter-card-body {
   overflow: hidden;
   transition: max-height 0.25s ease, opacity 0.2s ease;
-  max-height: 400px;
+  max-height: 600px;
   opacity: 1;
   margin-top: 1.25rem;
 }
@@ -776,15 +793,24 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 /* ─── Previous button — distinct color ──────────────────────────────────────── */
 .btn-prev {
-  background: #0ea4f4;
-  color: white;
-  border: 1.5px solid #0ea4f4;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  outline: none;
 }
 
 .btn-prev:hover:not(:disabled) {
-  background: #0882c4;
-  border-color: #0882c4;
-  color: white;
+  background: var(--blue-dark);
+  color: #fff;
+}
+
+.btn-prev:active:not(:disabled),
+.btn-prev:focus:not(:disabled) {
+  background: var(--blue-dark);
+  color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 /* ─── Disabled state — blocked cursor ───────────────────────────────────────── */
@@ -807,7 +833,7 @@ label.disabled {
 
 .disabled-wrap .btn:disabled {
   pointer-events: none;
-    cursor: not-allowed !important;
+  cursor: not-allowed !important;
 }
 
 .btn:disabled,
@@ -817,8 +843,8 @@ label.disabled {
 }
 
 .form-label .fa-question {
-  background: #0ea4f4;
-  color: white;
+  background: var(--blue);
+  color: #fff;
   border-radius: 50%;
   width: 0.93rem;
   height: 0.93rem;
@@ -826,55 +852,68 @@ label.disabled {
   align-items: center;
   justify-content: center;
   font-size: 0.5rem;
-  /* vertical-align: middle;  */
-   top: -1.6px;  
-   position: relative;
+  top: -1.6px;
+  position: relative;
 }
 
 .form-label .fa-check-circle {
-  color: #7fbb06;
+  color: var(--green);
   font-size: 0.93rem;
 }
 
-/* ─── Inline progress bar (next to question badge) ─────────── */
-.question-header {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
+/* ─── Inline progress bar ────────────────────────────────────────────────────── */
 .q-progress-inline {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-43%);
+  width: 50%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex: 1;
-  min-width: 0;
-  max-width: 50rem;
-  margin: 0 auto;
+  pointer-events: none;
 }
 
 .q-progress-inline .q-progress-bar-wrap {
   flex: 1;
-  height: 22px;
+  height: 20px;
   background: var(--gray-200);
-  border-radius: 8px;
+  border-radius: 50px;
   overflow: hidden;
 }
 
 .q-progress-inline .q-progress-fill {
   height: 100%;
   background: var(--blue);
-  border-radius: 4px;
+  border-radius: 50px;
   transition: width 0.3s ease;
 }
 
 .q-progress-inline .q-progress-text {
-  font-size: var(--font-size-xs);
+  font-size: 0.75rem;
   color: var(--gray-500);
   font-weight: 600;
   white-space: nowrap;
+  min-width: 2.25rem;
+  text-align: right;
+  align-self: center;
+}
+
+@media (max-width: 767px) {
+  .q-progress-inline .q-progress-bar-wrap { height: 12px; }
+}
+
+/* ── Mobile — full width second row ── */
+@media (max-width: 575px) {
+  .q-progress-inline {
+    position: static;           
+    transform: none;
+    width: 100%;               
+    order: 3;                 
+    pointer-events: auto;
+    margin-top: 0;
+     align-items: center;
+  }
+  .q-progress-inline .q-progress-bar-wrap { height: 10px; }
 }
 
 /* ─── Remove background from 1-mark info box ───────────────── */
@@ -892,3 +931,251 @@ label.disabled {
 
 /* ─── Q&A card section header ───────────────────────────────── */
 .card-mt { margin-top: 0.5rem; }
+
+/* ─── Set Questions button group (Set + Reset side by side) ─── */
+.set-questions-group {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+ 
+.set-questions-group .flex-1 {
+  flex: 1;
+}
+ 
+.btn-reset-sq {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+  border-radius: 8px;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.btn-reset-sq:hover {
+  background: var(--red);
+  color: var(--app-bg);
+  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
+  transform: translateY(-1px);
+}
+ 
+/* ─── Add / Delete Question row ─────────────────────────────── */
+.q-add-delete-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0 0.75rem;
+  border-top: 1px solid var(--gray-100);
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+ 
+.q-count-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+ 
+.q-count-label i { color: var(--blue); }
+ 
+.btn-add-q {
+  background: var(--app-bg);
+  color: var(--green);
+  border: 1.5px solid var(--green);
+  border-radius: 6px;
+  font-weight: 600;
+}
+ 
+.btn-add-q:hover:not(:disabled) {
+  background: var(--green);
+  color: var(--app-bg);
+  box-shadow: 0 4px 12px rgba(127, 187, 6, 0.35);
+  transform: translateY(-1px);
+}
+ 
+.btn-delete-q {
+  background: var(--app-bg);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+  border-radius: 6px;
+  font-weight: 600;
+}
+ 
+.btn-delete-q:hover:not(:disabled) {
+  background: var(--red);
+  color: var(--app-bg);
+  box-shadow: 0 4px 12px rgba(248, 83, 16, 0.35);
+  transform: translateY(-1px);
+}
+ 
+/* ─── Frozen Q&A state — header changed after lock ──────────── */
+.q-frozen-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background: var(--yellow-light);
+  border: 1px solid var(--yellow);
+  color: var(--yellow-dark);
+  border-radius: 8px;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0.75rem 0 0;
+}
+
+.q-frozen-banner i {
+  color: var(--yellow);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.frozen-section {
+  opacity: 0.45;
+  pointer-events: none;
+  user-select: none;
+}
+
+
+/* ─── No. of Questions +/- buttons below input ──────────────── */
+.noq-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-top: 0.375rem;
+}
+
+.noq-count-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  margin-left: 0.25rem;
+}
+
+/* Hide spinner arrows on number inputs */
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* Add/Delete icon-only buttons — square, compact */
+.btn-add-q,
+.btn-delete-q {
+  width: 28px;
+  height: 28px;
+  padding: 0 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 6px;
+}
+/* ─── Confirm Dialog ─────────────────────────────────────────── */
+.cqp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 1.5rem;
+  animation: fadeIn 0.18s ease;
+}
+
+.cqp-confirm-box {
+  background: var(--app-bg, var(--app-bg));
+  border-radius: var(--border-radius-lg, 14px);
+  padding: 2rem 1.75rem 1.5rem;
+  width: min(90vw, 400px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: slideUp 0.22s ease;
+}
+
+.cqp-confirm-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--yellow-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--yellow);
+  flex-shrink: 0;
+}
+
+.cqp-confirm-message {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+  text-align: center;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.cqp-confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.25rem;
+}
+
+.cqp-confirm-ok-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid var(--red);
+  border-radius: var(--border-radius, 8px);
+  background: var(--red);
+  color: var(--app-bg);
+  cursor: pointer;
+  transition: var(--transition, all 0.2s);
+  box-shadow: 0 4px 12px rgba(248, 83, 16, 0.35);
+}
+.cqp-confirm-ok-btn:hover {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+  box-shadow: 0 6px 18px rgba(248, 83, 16, 0.5);
+  transform: translateY(-1px);
+}
+
+.cqp-cancel-btn {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.cqp-cancel-btn:hover {
+  background: var(--red);
+  color: var(--app-bg);
+  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
+  transform: translateY(-1px);
+}
