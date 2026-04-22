@@ -298,8 +298,19 @@
 .scrollable-text::-webkit-scrollbar       { width: 5px; }
 .scrollable-text::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
 
-/* Official answer — soft green (matches VQP #f0fdf4) */
-.official-answer { background: #f0fdf4; border-color: #bbf7d0; }
+/* Official answer — soft green, capped to 2 lines with scroll (matches VQP) */
+.official-answer {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  max-height: calc(1.6em * 2 + 1.75rem);
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+  width: 100%;
+}
+
+.official-answer::-webkit-scrollbar       { width: 5px; }
+.official-answer::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
 
 /* Student answer — soft blue */
 .student-answer  { background: var(--blue-light); border-color: #b3e0fa; }
@@ -652,8 +663,8 @@
   .split-panel-label { font-size: 0.75rem; }
 }
 /* ── Navigation Prev/Next — brand blue ──────────────────────── */
-.navigation-buttons .btn-secondary:not(:disabled),
-.navigation-buttons .btn-lg:not(:disabled) {
+.navigation-buttons .btn-secondary,
+.navigation-buttons .btn-lg {
   background: var(--blue) !important;
   color: white !important;
   border: none !important;
@@ -666,8 +677,8 @@
   box-shadow: 0 4px 14px rgba(14, 164, 244, 0.4);
 }
 
-.navigation-buttons .btn-secondary:disabled:not(.btn-prev),
-.navigation-buttons .btn-lg:disabled:not(.btn-prev) {
+.navigation-buttons .btn-secondary:disabled,
+.navigation-buttons .btn-lg:disabled {
   background: var(--gray-300) !important;
   color: var(--gray-500) !important;
   cursor: not-allowed;
@@ -675,7 +686,7 @@
   box-shadow: none;
 }
 
-/* .btn.btn-prev:disabled — global.css */
+/* .btn-prev:disabled — global.css */
 
 /* ── System Remarks — readonly AI text in rubric table ──────────── */
 .system-remarks-text {
@@ -688,3 +699,4 @@
 /* ── Extended search (no badge on right) ── */
 .er-search { flex: 1; max-width: 100%; }
 
+/* .text-muted   { color: #212529 } */

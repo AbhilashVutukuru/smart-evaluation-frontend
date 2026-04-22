@@ -1438,7 +1438,9 @@ label.btn-doc-img,
   display: inline-block !important;
 }
 
-/* .header-info-icon — global.css */
+/* Overwrite */
+.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--yellow) !important;}
+/* .header-info-icon:hover { color:var(--yellow-dark); } */
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW & EDIT MODAL
    ══════════════════════════════════════════════════════════════ */
@@ -2281,3 +2283,16 @@ label.btn-doc-img,
   max-width: 90px;
   cursor: default;
 }
+/* ─── Official Answer — capped to 2 lines with scroll (matches VQP) ─────── */
+.official-answer {
+  background: var(--green-light);
+  border-color: var(--green-light);
+  max-height: calc(1.6em * 2 + 1.75rem);
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+  width: 100%;
+}
+
+.official-answer::-webkit-scrollbar       { width: 5px; }
+.official-answer::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
