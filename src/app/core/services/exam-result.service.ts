@@ -60,6 +60,7 @@ export class ExamResultService {
       totalMarks            : 0,
       totalQuestions        : 0,
       questionNumbers       : [],
+      questionMaxMarks      : [],
       answerSheetsSubmitted : false,
     };
   }

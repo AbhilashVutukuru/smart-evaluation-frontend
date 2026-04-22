@@ -582,6 +582,17 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   .navigation-buttons .btn { width: 100%; }
 }
 
+/* Previous button stays blue when disabled — used across all navigation-buttons */
+.btn.btn-prev:disabled,
+.btn.btn-prev[disabled] {
+  background: var(--blue) !important;
+  color: white !important;
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* ─── Progress ──────────────────────────────────────────────────────────────── */
 .progress-section { margin-bottom: 1.5rem; }
 

@@ -255,13 +255,12 @@
       </div>
     </div> -->
 
-    <!-- Go to Question Dropdown — outside currentQuestion ngIf so it persists across API loads -->
     <div class="question-goto-row" *ngIf="questionNumbers.length">
       <div class="question-header-with-marks" id="question-top">
         <h5 *ngIf="currentQuestion && !isLoadingQuestion">
           <i class="fas fa-question"></i>
           Question # {{ currentQuestion.questionNumber }}
-          ({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)
+          <span class="question-marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
         </h5>
         <h5 *ngIf="isLoadingQuestion">
           <i class="fas fa-spinner fa-spin"></i> Loading...
@@ -274,10 +273,13 @@
               (change)="loadQuestion(+gotoSelect.value, true); gotoSelect.selectedIndex = 0">
               <option value="" disabled selected>
                 Question # {{ currentQuestion?.questionNumber }}
+                {{ currentQuestion ? '(' + currentQuestion.maxMarks + (currentQuestion.maxMarks === 1 ? ' Mark)' : ' Marks)') : '' }}
               </option>
-              <option *ngFor="let q of questionNumbers; let i = index" [value]="i">
-                Question # {{ q }}
-              </option>
+              <ng-container *ngFor="let q of questionNumbers; let i = index">
+                <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                  Question # {{ q }}{{ questionMaxMarks[i] ? ' (' + questionMaxMarks[i] + (questionMaxMarks[i] === 1 ? ' Mark)' : ' Marks)') : '' }}
+                </option>
+              </ng-container>
             </select>
             <i class="fas fa-chevron-down select-icon"></i>
           </div>
@@ -355,7 +357,7 @@
                     </span>
                   </span>
                 </th>
-                <th>REMARKS</th>
+                <th>TEACHER REMARKS</th>
               </tr>
             </thead>
             <tbody>
@@ -604,8 +606,7 @@
       <!-- Navigation Buttons -->
       <div class="navigation-buttons">
         <button
-          class="btn btn-secondary btn-lg"
-          (click)="previousQuestion()"
+          class="btn btn-secondary btn-lg btn-prev"
           [disabled]="
             currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
           "

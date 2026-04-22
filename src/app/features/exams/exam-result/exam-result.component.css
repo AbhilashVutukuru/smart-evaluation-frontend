@@ -212,6 +212,7 @@
 
 .marks-badge     { background: var(--blue); color: white; padding: 0.375rem 1rem; border-radius: 1.25rem; font-size: 0.9375rem; font-weight: 700; white-space: nowrap; }
 .marks-badge-sm  { background: var(--blue-light); color: var(--blue); padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700; }
+.question-marks-badge { background: var(--blue); color: #fff; padding: 0.2rem 0.75rem; border-radius: 1.25rem; font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
 
 /* ── Question Go To Dropdown ────────────────────────────────── */
 .question-goto-row  { margin-bottom: 0; }
@@ -651,8 +652,8 @@
   .split-panel-label { font-size: 0.75rem; }
 }
 /* ── Navigation Prev/Next — brand blue ──────────────────────── */
-.navigation-buttons .btn-secondary,
-.navigation-buttons .btn-lg {
+.navigation-buttons .btn-secondary:not(:disabled),
+.navigation-buttons .btn-lg:not(:disabled) {
   background: var(--blue) !important;
   color: white !important;
   border: none !important;
@@ -665,14 +666,16 @@
   box-shadow: 0 4px 14px rgba(14, 164, 244, 0.4);
 }
 
-.navigation-buttons .btn-secondary:disabled,
-.navigation-buttons .btn-lg:disabled {
+.navigation-buttons .btn-secondary:disabled:not(.btn-prev),
+.navigation-buttons .btn-lg:disabled:not(.btn-prev) {
   background: var(--gray-300) !important;
   color: var(--gray-500) !important;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
+
+/* .btn.btn-prev:disabled — global.css */
 
 /* ── System Remarks — readonly AI text in rubric table ──────────── */
 .system-remarks-text {
@@ -685,4 +688,3 @@
 /* ── Extended search (no badge on right) ── */
 .er-search { flex: 1; max-width: 100%; }
 
-/* .text-muted   { color: #212529 } */

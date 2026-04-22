@@ -95,5 +95,6 @@ export interface StudentListResponse {
   totalMarks: number;
   totalQuestions: number;
   questionNumbers: number[];
-  answerSheetsSubmitted: boolean;  // ← added
+  answerSheetsSubmitted: boolean;  
+  questionMaxMarks: number[];
 }

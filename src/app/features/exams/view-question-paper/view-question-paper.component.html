@@ -427,7 +427,7 @@
       </div>
 
       <div class="navigation-buttons">
-        <button class="btn btn-secondary btn-lg" (click)="previousQuestion()"
+        <button class="btn btn-secondary btn-lg btn-prev" (click)="previousQuestion()"
           [disabled]="currentQuestionIndex === 0">
           <i class="fas fa-arrow-left"></i> Previous
         </button>
@@ -548,7 +548,7 @@
       </div>
 
       <div class="navigation-buttons">
-        <button class="btn btn-secondary btn-lg"
+        <button class="btn btn-secondary btn-lg btn-prev"
           (click)="loadQuestion(currentQuestionIndex - 1)"
           [disabled]="currentQuestionIndex === 0">
           <i class="fas fa-arrow-left"></i> Previous

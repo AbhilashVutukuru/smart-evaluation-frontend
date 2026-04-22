@@ -34,6 +34,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
   totalMarks     = 0;
   totalQuestions = 0;
   questionNumbers: number[] = [];
+  questionMaxMarks: number[] = [];
   statistics: EvaluationStatistics = {
     totalStudents: 0, absentCount: 0, evaluatedCount: 0, notEvaluatedCount: 0,
   };
@@ -150,7 +151,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
                 this.totalMarks            = list.totalMarks;
                 this.totalQuestions        = list.totalQuestions;
                 this.questionNumbers       = list.questionNumbers;
-                this.answerSheetsSubmitted = list.answerSheetsSubmitted ?? false;
+                this.questionMaxMarks      = list.questionMaxMarks ?? [];
                 this.hasSearched           = true;
                 this.isFilterCollapsed     = true;
                 this.isLoading             = false;
@@ -250,7 +251,7 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
           this.totalMarks            = response.totalMarks;
           this.totalQuestions        = response.totalQuestions;
           this.questionNumbers       = response.questionNumbers;
-          this.answerSheetsSubmitted = response.answerSheetsSubmitted ?? false;
+          this.questionMaxMarks      = response.questionMaxMarks ?? [];
           this.showStudentsCard      = true;
           this.showResultsCard       = false;
           this.searchCompleted       = true;

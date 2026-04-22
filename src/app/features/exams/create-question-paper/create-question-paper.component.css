@@ -795,13 +795,22 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 .btn-prev {
   background: var(--blue);
   color: #fff;
-  border: 1.5px solid var(--blue);
+  border: none;
+  outline: none;
 }
 
 .btn-prev:hover:not(:disabled) {
   background: var(--blue-dark);
-  border-color: var(--blue-dark);
   color: #fff;
+}
+
+.btn-prev:active:not(:disabled),
+.btn-prev:focus:not(:disabled) {
+  background: var(--blue-dark);
+  color: #fff;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 /* ─── Disabled state — blocked cursor ───────────────────────────────────────── */
@@ -1170,4 +1179,3 @@ label.disabled {
   box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
   transform: translateY(-1px);
 }
-
