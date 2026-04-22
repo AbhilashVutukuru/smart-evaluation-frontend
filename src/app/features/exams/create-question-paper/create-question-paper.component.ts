@@ -384,20 +384,28 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   private hardResetQuestions(): void {
-    this.questionsGenerated   = false;
-    this.questionsLocked      = false;
-    this.questionsFrozen      = false;
-    this.questionSets         = [];
-    this.examFormData.questionSets = [];
-    this.currentQuestionIndex = 0;
-    this.examInfoCollapsed    = false;
-    this.showExamInfoChevron  = false;
-    this.rulesGenerated       = false;
-    this.questionPaperNameExists = false;
-    // NOTE: intentionally keep classId, subjectId, examTypeId,
-    // questionPaperName, numberOfQuestions, totalMarks — user only resets Q&A
+    this.questionsGenerated              = false;
+    this.questionsLocked                 = false;
+    this.questionsFrozen                 = false;
+    this.questionSets                    = [];
+    this.examFormData.questionSets       = [];
+    this.examFormData.classId            = '';
+    this.examFormData.subjectId          = '';
+    this.examFormData.examTypeId         = '';
+    this.examFormData.totalMarks         = null;
+    this.examFormData.numberOfQuestions  = null;
+    this.examFormData.questionPaperName  = null;
+    this.examFormData.examDate           = null;
+    this.allSubjects                     = [];
+    this.allExamTypes                    = [];
+    this.currentQuestionIndex            = 0;
+    this.examInfoCollapsed               = false;
+    this.showExamInfoChevron             = false;
+    this.rulesGenerated                  = false;
+    this.questionPaperNameExists         = false;
+    this.stateService.clear();
     this.resetTouchState();
-    this.toastService.showInfo('Reset', 'Questions have been reset. You can click Set Questions again.');
+    this.toastService.showInfo('Reset', 'All details have been cleared.');
   }
 
   private resetForm(): void {
@@ -682,11 +690,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   // ─── Touch helpers ────────────────────────────────────────────────────────
   onQuestionTextBlur():   void { this.questionTextTouched = true; }
   onAnswerTextBlur():     void { this.answerTextTouched   = true; }
-  onQuestionTextChange(): void { if (this.questionTextTouched && this.currentQuestionSet.questionText?.trim()) this.questionTextTouched = false; }
-  onAnswerTextChange():   void { if (this.answerTextTouched   && this.currentQuestionSet.answerText?.trim())   this.answerTextTouched   = false; }
+  onQuestionTextChange(): void { if (this.questionTextTouched && this.currentQuestionSet?.questionText?.trim()) this.questionTextTouched = false; }
+  onAnswerTextChange():   void { if (this.answerTextTouched   && this.currentQuestionSet?.answerText?.trim())   this.answerTextTouched   = false; }
 
-  get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet.questionText?.trim()); }
-  get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet.answerText?.trim());   }
+  get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet?.questionText?.trim()); }
+  get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet?.answerText?.trim());   }
 
   get canSetRules(): boolean {
     if (!this.currentQuestionSet) return false;
