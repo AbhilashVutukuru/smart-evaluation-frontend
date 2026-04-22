@@ -696,6 +696,17 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet?.questionText?.trim()); }
   get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet?.answerText?.trim());   }
 
+  onMaxMarksInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (isNaN(value)) return;
+    const max = this.examFormData.totalMarks ?? 200;
+    if (value < 1)   value = 1;
+    if (value > max) value = max;
+    this.currentQuestionSet.maxMarks = value;
+    input.value = String(value);
+  }
+
   get canSetRules(): boolean {
     if (!this.currentQuestionSet) return false;
     const count    = this.currentQuestionSet.validationRulesCount;

@@ -325,12 +325,21 @@
         <input
           type="number"
           [(ngModel)]="currentQuestionSet.maxMarks"
+          (input)="onMaxMarksInput($event)"
           min="1"
-          max="200"
+          [max]="examFormData.totalMarks ?? 200"
           placeholder="e.g., 10"
           class="form-control"
           [disabled]="questionsFrozen"
+          [class.is-invalid]="currentQuestionSet.maxMarks && examFormData.totalMarks && currentQuestionSet.maxMarks > examFormData.totalMarks"
         />
+        <span
+          *ngIf="currentQuestionSet.maxMarks && examFormData.totalMarks && currentQuestionSet.maxMarks > examFormData.totalMarks"
+          class="field-error"
+        >
+          <i class="fas fa-exclamation-circle"></i>
+          Cannot exceed total marks ({{ examFormData.totalMarks }})
+        </span>
       </div>
 
       <!--  Info message on same line for 1-mark questions -->
