@@ -21,6 +21,12 @@ interface UploadProgress {
   text:    string;
 }
 
+interface ConfirmDialogState {
+  lines:    string[];
+  okLabel:  string;
+  onOk:     () => void;
+}
+
 @Component({
   selector: 'app-exam-upload',
   standalone: true,
@@ -35,9 +41,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   private masterDataService           = inject(MasterDataService);
   private stateService                = inject(CreateQuestionPaperStateService);
 
-  // FIX: destroy$ cancels all subscriptions on destroy
   private destroy$ = new Subject<void>();
-  // FIX: store progress timer so it can be cancelled on destroy
   private progressTimer?: ReturnType<typeof setTimeout>;
 
   // ─── Mode state ───────────────────────────────────────────────────────────
@@ -45,6 +49,19 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   currentQuestionIndex  = 0;
   examInfoCollapsed     = false;
   showExamInfoChevron   = false;
+
+  /**
+   * questionsLocked: Set Questions has been clicked & API confirmed no duplicate.
+   * While locked, Set Questions button is disabled; Reset button appears.
+   * numberOfQuestions input is also disabled.
+   */
+  questionsLocked = false;
+
+  /**
+   * questionsFrozen: Header field changed after lock. Q&A inputs are disabled;
+   * user must click Set Questions again to re-validate.
+   */
+  questionsFrozen = false;
 
   // ─── Loading states ───────────────────────────────────────────────────────
   isLoading    = false;
@@ -65,6 +82,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
   // ─── Upload progress ──────────────────────────────────────────────────────
   uploadProgress: UploadProgress = { visible: false, width: '0%', text: '' };
+
+  // ─── Confirm dialog ───────────────────────────────────────────────────────
+  confirmDialog: ConfirmDialogState | null = null;
+
+  // ─── Duplicate name flag ──────────────────────────────────────────────────
+  questionPaperNameExists = false;
 
   // ─── Form data ────────────────────────────────────────────────────────────
   examFormData: ExamFormData = {
@@ -101,7 +124,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // FIX: cancel progress timer if component destroyed before it fires
     clearTimeout(this.progressTimer);
     this.saveState();
     this.destroy$.next();
@@ -118,6 +140,8 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       showExamInfoChevron:  this.showExamInfoChevron,
       allSubjects:          this.allSubjects,
       allExamTypes:         this.allExamTypes,
+      questionsLocked:      this.questionsLocked,
+      questionsFrozen:      this.questionsFrozen,
     });
   }
 
@@ -132,6 +156,8 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.showExamInfoChevron  = saved.showExamInfoChevron;
     this.allSubjects          = saved.allSubjects;
     this.allExamTypes         = saved.allExamTypes;
+    this.questionsLocked      = saved.questionsLocked  ?? (saved.questionsGenerated ? true : false);
+    this.questionsFrozen      = saved.questionsFrozen  ?? false;
     this.examFormData.questionSets = this.questionSets;
   }
 
@@ -150,7 +176,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
   onClassSelected(classId: string): void {
     this.resetDependentDropdowns();
-    this.resetQuestions();
+    this.onHeaderFieldChanged();
     if (!classId) return;
     this.loadSubjectsAndExamTypes(classId);
   }
@@ -178,9 +204,40 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       });
   }
 
-  onSubjectChange():           void { this.resetQuestions(); }
-  onExamTypeChange():          void { this.resetQuestions(); }
-  onQuestionPaperNameChange(): void { this.resetQuestions(); }
+  onSubjectChange():  void { this.onHeaderFieldChanged(); }
+  onExamTypeChange(): void { this.onHeaderFieldChanged(); }
+
+  /**
+   * Change #8: Question Paper Name input handler.
+   * Strips digits from the base text portion (before the last hyphen-number suffix).
+   * Allows patterns like "UnitTest-6" — only the suffix number is preserved.
+   */
+  onQuestionPaperNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let raw = input.value;
+
+    // Split on last hyphen followed by digits at end of string
+    const suffixMatch = raw.match(/^(.*?)(-\d+)$/);
+    if (suffixMatch) {
+      // Has a numeric suffix like "-6": strip digits from base, keep suffix
+      const base   = suffixMatch[1].replace(/\d/g, '');
+      const suffix = suffixMatch[2];
+      raw = base + suffix;
+    } else {
+      // No numeric suffix: strip all digits from the whole value
+      raw = raw.replace(/\d/g, '');
+    }
+
+    this.examFormData.questionPaperName = raw;
+    input.value = raw;
+    this.questionPaperNameExists = false;
+    this.onHeaderFieldChanged();
+  }
+
+  onQuestionPaperNameChange(): void {
+    this.questionPaperNameExists = false;
+    this.onHeaderFieldChanged();
+  }
 
   onTotalMarksChange(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -191,7 +248,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       this.examFormData.totalMarks = value;
       input.value = String(value);
     }
-    this.resetQuestions();
   }
 
   onNumberOfQuestionsChange(event: Event): void {
@@ -203,7 +259,20 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       this.examFormData.numberOfQuestions = value;
       input.value = String(value);
     }
-    this.resetQuestions();
+    // numberOfQuestions is disabled when locked, so this only fires pre-lock
+  }
+
+  /**
+   * Called when Class / Subject / ExamType / QuestionPaperName changes.
+   * If questions are already locked: unlock Set Questions (so user re-validates),
+   * and freeze the Q&A section (inputs disabled, notice shown).
+   * The questionSets data is NOT cleared — just frozen.
+   */
+  private onHeaderFieldChanged(): void {
+    if (this.questionsLocked) {
+      this.questionsLocked = false;
+      this.questionsFrozen = true;
+    }
   }
 
   // ─── Generate Questions ───────────────────────────────────────────────────
@@ -225,12 +294,24 @@ export class CreateExamComponent implements OnInit, OnDestroy {
         next: (exists) => {
           this.isLoading = false;
           if (exists) {
+            this.questionPaperNameExists = true;
             this.toastService.showError(
-              'Already Exists',
-              'A question paper with this name already exists for the selected class, subject and exam type.',
+              'Duplicate Question Paper Name',
+              'A question paper with the same name already exists for this class, subject, and exam type.\nPlease choose a different name.',
             );
             return;
           }
+          this.questionPaperNameExists = false;
+
+          // If re-clicking after a freeze: just unlock and unfreeze without regenerating
+          if (this.questionsFrozen && this.questionSets.length > 0) {
+            this.questionsLocked  = true;
+            this.questionsFrozen  = false;
+            this.questionsGenerated = true;
+            this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
+            return;
+          }
+
           try {
             this.questionSets = this.createQuestionPaperService.generateQuestionSets(
               this.examFormData.numberOfQuestions!,
@@ -239,10 +320,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
             this.questionSets.forEach(q => {
               q.validationRulesCount = 0;
               q.rubricPoints = [];
-              if (!q.maxMarks || q.maxMarks < 2) q.maxMarks = 2;
+              q.maxMarks = null;
             });
             this.examFormData.questionSets = this.questionSets;
             this.questionsGenerated        = true;
+            this.questionsLocked           = true;
+            this.questionsFrozen           = false;
             this.currentQuestionIndex      = 0;
             this.examInfoCollapsed         = true;
             this.showExamInfoChevron       = true;
@@ -277,6 +360,118 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     return true;
   }
 
+  // ─── Reset ────────────────────────────────────────────────────────────────
+
+  onResetClick(): void {
+    this.confirmDialog = {
+      lines: [
+        'Are you sure you want to reset?',
+        'All entered question and answer data will be lost.',
+      ],
+      okLabel: 'Yes, Reset',
+      onOk: () => this.hardResetQuestions(),
+    };
+  }
+
+  confirmDialogOk(): void {
+    const cb = this.confirmDialog?.onOk;
+    this.confirmDialog = null;
+    cb?.();
+  }
+
+  confirmDialogCancel(): void {
+    this.confirmDialog = null;
+  }
+
+  private hardResetQuestions(): void {
+    this.questionsGenerated   = false;
+    this.questionsLocked      = false;
+    this.questionsFrozen      = false;
+    this.questionSets         = [];
+    this.examFormData.questionSets = [];
+    this.currentQuestionIndex = 0;
+    this.examInfoCollapsed    = false;
+    this.showExamInfoChevron  = false;
+    this.rulesGenerated       = false;
+    this.questionPaperNameExists = false;
+    // NOTE: intentionally keep classId, subjectId, examTypeId,
+    // questionPaperName, numberOfQuestions, totalMarks — user only resets Q&A
+    this.resetTouchState();
+    this.toastService.showInfo('Reset', 'Questions have been reset. You can click Set Questions again.');
+  }
+
+  private resetForm(): void {
+    this.stateService.clear();
+    this.examFormData = {
+      academicYear:      this.createQuestionPaperService.getCurrentAcademicYear(),
+      classId:           '',
+      subjectId:         '',
+      examTypeId:        '',
+      totalMarks:        null,
+      numberOfQuestions: null,
+      questionPaperName: null,
+      examDate:          null,
+      questionSets:      [],
+    };
+    this.questionSets         = [];
+    this.questionsGenerated   = false;
+    this.questionsLocked      = false;
+    this.questionsFrozen      = false;
+    this.currentQuestionIndex = 0;
+    this.examInfoCollapsed    = false;
+    this.showExamInfoChevron  = false;
+    this.rulesGenerated       = false;
+    this.allSubjects          = [];
+    this.allExamTypes         = [];
+  }
+
+  // ─── Add / Delete Question ────────────────────────────────────────────────
+
+  /**
+   * Change #6: Add a new blank question at the end.
+   */
+  addQuestion(): void {
+    const defaultMarks = this.examFormData.totalMarks
+      ? Math.max(2, Math.floor(this.examFormData.totalMarks / (this.questionSets.length + 1)))
+      : 2;
+    const newQ: QuestionSet = {
+      questionNumber:      this.questionSets.length + 1,
+      questionText:        '',
+      answerText:          '',
+      maxMarks:            null,
+      validationRulesCount: 0,
+      rubricPoints:        [],
+    };
+    this.questionSets.push(newQ);
+    this.examFormData.questionSets = this.questionSets;
+    this.examFormData.numberOfQuestions = this.questionSets.length;
+    this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
+  }
+
+  /**
+   * Change #6: Delete the last question (or current if it's last).
+   */
+  deleteLastQuestion(): void {
+    if (this.questionSets.length <= 1) return;
+    this.confirmDialog = {
+      lines: [
+        'Delete the last question?',
+        'Any data entered for it will be lost.',
+      ],
+      okLabel: 'Yes, Delete',
+      onOk: () => {
+        this.questionSets.pop();
+        this.examFormData.questionSets = this.questionSets;
+        this.examFormData.numberOfQuestions = this.questionSets.length;
+        if (this.currentQuestionIndex >= this.questionSets.length) {
+          this.currentQuestionIndex = this.questionSets.length - 1;
+        }
+        this.resetTouchState();
+        this.toastService.showInfo('Question Deleted', 'Last question removed.');
+      },
+    };
+  }
+
   // ─── Question Navigation ──────────────────────────────────────────────────
 
   get currentQuestionSet(): QuestionSet { return this.questionSets[this.currentQuestionIndex]; }
@@ -291,11 +486,24 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     );
   }
 
+  /**
+   * Change #9: Save & Next is only shown when question + answer are filled
+   * (and for multi-mark: validation rules are set and marks match).
+   */
+  isCurrentQuestionReady(): boolean {
+    if (!this.currentQuestionSet) return false;
+    const q = this.currentQuestionSet;
+    if (!q.questionText?.trim() || !q.answerText?.trim()) return false;
+    if (q.maxMarks === 1) return true;
+    // For multi-mark: validation rules must be generated and marks must match
+    if (!this.rulesGenerated || (q.rubricPoints?.length ?? 0) === 0) return false;
+    return this.createQuestionPaperService.validateMarksMatch(q);
+  }
+
   goToPreviousQuestion(): void {
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
       this.resetTouchState();
-      // Restore rulesGenerated if this question already has rubric points saved
       const q = this.currentQuestionSet;
       if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
         this.rulesGenerated = true;
@@ -329,7 +537,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (this.currentQuestionIndex < this.questionSets.length - 1) {
       this.currentQuestionIndex++;
       this.resetTouchState();
-      // Restore rulesGenerated if this question already has rubric points saved
       const q = this.currentQuestionSet;
       if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
         this.rulesGenerated = true;
@@ -378,7 +585,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.isSubmitting   = true;
     this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
 
-    // Trim question and answer text before saving
     this.questionSets.forEach(q => {
       q.questionText = q.questionText?.trim() ?? q.questionText;
       q.answerText   = q.answerText?.trim()   ?? q.answerText;
@@ -391,7 +597,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
-          // FIX: store timer so it can be cancelled if component destroyed before it fires
           this.progressTimer = setTimeout(() => {
             this.uploadProgress.visible = false;
             this.isSubmitting           = false;
@@ -465,45 +670,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   trackByIndex(index: number): number { return index; }
-
-  // ─── Reset ────────────────────────────────────────────────────────────────
-
-  private resetQuestions(): void {
-    if (this.questionsGenerated) {
-      this.questionsGenerated        = false;
-      this.questionSets              = [];
-      this.examFormData.questionSets = [];
-      this.currentQuestionIndex      = 0;
-      this.examInfoCollapsed         = false;
-      this.showExamInfoChevron       = false;
-      this.rulesGenerated            = false;
-      this.resetTouchState();
-      this.toastService.showInfo('Info', 'Question form reset due to field change');
-    }
-  }
-
-  private resetForm(): void {
-    this.stateService.clear();
-    this.examFormData = {
-      academicYear:      this.createQuestionPaperService.getCurrentAcademicYear(),
-      classId:           '',
-      subjectId:         '',
-      examTypeId:        '',
-      totalMarks:        null,
-      numberOfQuestions: null,
-      questionPaperName: null,
-      examDate:          null,
-      questionSets:      [],
-    };
-    this.questionSets         = [];
-    this.questionsGenerated   = false;
-    this.currentQuestionIndex = 0;
-    this.examInfoCollapsed    = false;
-    this.showExamInfoChevron  = false;
-    this.rulesGenerated       = false;
-    this.allSubjects          = [];
-    this.allExamTypes         = [];
-  }
 
   // ─── Touch helpers ────────────────────────────────────────────────────────
   onQuestionTextBlur():   void { this.questionTextTouched = true; }

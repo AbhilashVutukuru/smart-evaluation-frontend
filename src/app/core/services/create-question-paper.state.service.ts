@@ -3,14 +3,16 @@ import { ExamFormData, QuestionSet } from '../models/exam';
 import { ExamTypeDto, SubjectDto } from './master-data.service';
 
 export interface CreateQuestionPaperState {
-  examFormData: ExamFormData;
-  questionSets: QuestionSet[];
-  questionsGenerated: boolean;
+  examFormData:         ExamFormData;
+  questionSets:         QuestionSet[];
+  questionsGenerated:   boolean;
   currentQuestionIndex: number;
-  examInfoCollapsed: boolean;
-  showExamInfoChevron: boolean;
-  allSubjects: SubjectDto[];
-  allExamTypes: ExamTypeDto[];
+  examInfoCollapsed:    boolean;
+  showExamInfoChevron:  boolean;
+  allSubjects:          SubjectDto[];
+  allExamTypes:         ExamTypeDto[];
+  questionsLocked:      boolean;
+  questionsFrozen:      boolean;
 }
 
 @Injectable({ providedIn: 'root' })
