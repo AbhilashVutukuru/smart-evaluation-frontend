@@ -1170,3 +1170,84 @@ label.disabled {
   box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
   transform: translateY(-1px);
 }
+
+/* ─── Header Info Icon & Tooltip ────────────────────────────────────────────── */
+.header-info-icon {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.3rem;
+  position: relative;
+  cursor: pointer;
+  color: var(--yellow);
+  font-size: 0.85rem;
+  vertical-align: middle;
+}
+
+.header-info-icon i {
+  opacity: 1;
+  transition: opacity 0.15s;
+}
+
+.header-info-icon:hover i,
+.header-info-icon:focus i {
+  opacity: 0.8;
+}
+
+.header-info-tooltip {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  color: var(--gray-900);
+  border: 1px solid var(--gray-200);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  white-space: normal;
+  width: 240px;
+  z-index: 9999;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  line-height: 1.55;
+  pointer-events: none;
+}
+
+.header-info-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: var(--gray-200);
+}
+
+.header-info-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: #ffffff;
+}
+
+.header-info-icon:hover .header-info-tooltip,
+.header-info-icon:focus .header-info-tooltip {
+  display: block;
+}
+
+.tip-line {
+  display: block;
+  padding: 0.1rem 0;
+}
+
+.tip-line + .tip-line {
+  border-top: 1px solid var(--gray-100);
+  margin-top: 0.25rem;
+  padding-top: 0.25rem;
+}

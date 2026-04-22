@@ -74,7 +74,7 @@
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.evaluatedCount }}</h3>
-          <p>Evaluated</p>
+          <p>Evaluation Completed</p>
         </div>
       </div>
       <!-- Not Evaluated -->
@@ -82,7 +82,7 @@
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.notEvaluatedCount }}</h3>
-          <p>Not Evaluated</p>
+          <p>Evaluation Pending</p>
         </div>
       </div>
     </div>
@@ -128,7 +128,7 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated' && student.hasUploaded"
                 class="badge badge-success"
               >
-                Evaluated
+                Evaluation Completed
               </span>
 
               <!-- Not Evaluated -->
@@ -136,7 +136,7 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending' && student.hasUploaded"
                 class="badge badge-warning"
               >
-                Not Evaluated
+                Evaluation Pending
               </span>
 
               <!-- Not Uploaded — show Submission Completed only if batch was submitted -->

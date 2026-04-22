@@ -111,9 +111,13 @@
       <div class="col-md-3 mb-3">
         <label class="form-label">
           Question Paper Name <span class="required">*</span>
-          <i class="fas fa-info-circle header-info-icon"
-             title="Please use this field to uniquely identify an exam within the same exam type.&#10;(e.g., Unit Test-1, Unit Test-2).">
-          </i>
+          <span class="header-info-icon" tabindex="0">
+            <i class="fas fa-info-circle"></i>
+            <span class="header-info-tooltip">
+              Please use this field to uniquely identify an exam within the same exam type.
+              (e.g., Unit Test-1, Unit Test-2).
+            </span>
+          </span>
         </label>
         <input
           type="text"
@@ -345,9 +349,14 @@
           <label class="form-label">
             <strong>No. of Validation Rules</strong>
             <span class="required"> *</span>
-            <i class="fas fa-info-circle header-info-icon"
-               title="Please choose how many checks (rules) should be used to evaluate this answer.&#10;For example, content accuracy, keywords, or steps.&#10;Maximum 20 rules allowed.&#10;If Maximum Marks are more than 1, you should have at least 1 validation rule.">
-            </i>
+            <span class="header-info-icon" tabindex="0">
+              <i class="fas fa-info-circle"></i>
+              <span class="header-info-tooltip">
+                <span class="tip-line">Please choose how many checks (rules) should be used to evaluate this answer. For example, content accuracy, keywords, or steps.</span>
+                <span class="tip-line">Maximum 20 rules allowed.</span>
+                <span class="tip-line">If Maximum Marks are more than 1, you should have at least 1 validation rule.</span>
+              </span>
+            </span>
           </label>
           <input
             type="number"
@@ -385,9 +394,12 @@
       <label class="form-label">
         <i class="fas fa-chart-bar"></i> Validation Rules
         <span class="required">*</span>
-        <i class="fas fa-info-circle header-info-icon"
-           title="Please make sure that the sum of validation rules marks are equal to 'Maximum Marks'">
-        </i>
+        <span class="header-info-icon" tabindex="0">
+          <i class="fas fa-info-circle"></i>
+          <span class="header-info-tooltip">
+            Please make sure that the sum of validation rules marks are equal to 'Maximum Marks'.
+          </span>
+        </span>
       </label>
 
       <!-- Rules List -->
