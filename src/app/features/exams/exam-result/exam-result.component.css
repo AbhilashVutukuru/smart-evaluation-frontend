@@ -300,11 +300,11 @@
 
 /* Official answer — soft green, capped to 2 lines with scroll (matches VQP) */
 .official-answer {
-  background: #f0fdf4;
-  border-color: #bbf7d0;
-  max-height: calc(1.6em * 2 + 1.75rem);
-  overflow-y: auto;
-  white-space: normal;
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+  max-height: calc(1.6em * 2 + 1.75rem) !important;
+  overflow-y: auto !important;
+  white-space: normal !important;
   word-break: break-word;
   width: 100%;
 }
@@ -638,6 +638,8 @@
   border: 1px solid var(--green-light);
   border-radius: var(--border-radius);
   padding: 1rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .split-panel--student .split-panel-text {
@@ -663,8 +665,8 @@
   .split-panel-label { font-size: 0.75rem; }
 }
 /* ── Navigation Prev/Next — brand blue ──────────────────────── */
-.navigation-buttons .btn-secondary,
-.navigation-buttons .btn-lg {
+.navigation-buttons .btn-secondary:not(:disabled),
+.navigation-buttons .btn-lg:not(:disabled) {
   background: var(--blue) !important;
   color: white !important;
   border: none !important;
@@ -677,8 +679,8 @@
   box-shadow: 0 4px 14px rgba(14, 164, 244, 0.4);
 }
 
-.navigation-buttons .btn-secondary:disabled,
-.navigation-buttons .btn-lg:disabled {
+.navigation-buttons .btn-secondary:disabled:not(.btn-prev),
+.navigation-buttons .btn-lg:disabled:not(.btn-prev) {
   background: var(--gray-300) !important;
   color: var(--gray-500) !important;
   cursor: not-allowed;
@@ -686,7 +688,7 @@
   box-shadow: none;
 }
 
-/* .btn-prev:disabled — global.css */
+/* .btn.btn-prev:disabled — global.css */
 
 /* ── System Remarks — readonly AI text in rubric table ──────────── */
 .system-remarks-text {

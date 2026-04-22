@@ -418,6 +418,9 @@
 .edit-textarea        { resize: vertical; font-family: inherit; }
 .official-answer-edit { background: var(--green-light); }
 
+/* Official answer fullscreen — green background matches inline style */
+.fullscreen-body--official { background: var(--green-light) !important; }
+
 /* ─── Table ─────────────────────────────────────────────────────────────────── */
 /* .table, .table-responsive — global.css */
 .rubric-table thead { background: var(--gray-50); }
@@ -488,7 +491,7 @@
   .navigation-buttons .btn { width: 100%; justify-content: center; }
 }
 
-.navigation-buttons .btn-secondary:not(:disabled) { background: var(--blue); color: white; }
+.navigation-buttons .btn-secondary { background: var(--blue); color: white; }
 .navigation-buttons .btn-secondary:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
 
 /* ─── Error / Empty / Spinner ───────────────────────────────────────────────── */
