@@ -539,6 +539,11 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  // ─── saveAllChanges is now handled by Create Question Paper component ────────
+  // Edit Paper button navigates to /create/exam?mode=edit which uses
+  // CreateQuestionPaperService.updateExam() for the PUT call.
+  // This inline edit flow is kept commented for reference only.
+  /*
   saveAllChanges(): void {
     if (!this.draft || !this.questionPaper) return;
 
@@ -627,6 +632,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
         },
       });
   }
+  */
 
   // ─── Fullscreen ───────────────────────────────────────────────────────────
 
