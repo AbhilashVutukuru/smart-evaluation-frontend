@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ToastService }         from '../../../core/services/toast.service';
@@ -40,9 +41,21 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   private createQuestionPaperService  = inject(CreateQuestionPaperService);
   private masterDataService           = inject(MasterDataService);
   private stateService                = inject(CreateQuestionPaperStateService);
+  private route                       = inject(ActivatedRoute);
+  private router                      = inject(Router);
 
   private destroy$ = new Subject<void>();
   private progressTimer?: ReturnType<typeof setTimeout>;
+  private isUnloading = false;
+
+  // ─── Edit mode (navigated from View Question Paper) ───────────────────────
+  isEditMode      = false;
+  editingPaperId  = 0;
+
+  // Display name fallbacks when dropdown arrays aren't loaded yet
+  displayClassName    = '';
+  displaySubjectName  = '';
+  displayExamTypeName = '';
 
   // ─── Mode state ───────────────────────────────────────────────────────────
   questionsGenerated    = false;
@@ -119,15 +132,55 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   // ─── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    this.isEditMode     = this.route.snapshot.queryParamMap.get('mode') === 'edit';
+    this.editingPaperId = +(this.route.snapshot.queryParamMap.get('paperId') ?? 0);
+
+    // Refresh detection: edit mode requires saved state.
+    // If there's no saved state, this is a page refresh — drop edit mode and start fresh.
+    if (this.isEditMode && !this.stateService.restore()) {
+      this.isEditMode     = false;
+      this.editingPaperId = 0;
+      // Replace URL so it looks like a normal create page
+      window.history.replaceState({}, '', '/create/exam');
+      this.loadClasses();
+      return;
+    }
+
     this.loadClasses();
     this.restoreState();
+    window.addEventListener('beforeunload', this.onBeforeUnload);
   }
+
+  private onBeforeUnload = (): void => {
+    this.isUnloading = true;
+    this.stateService.clear();
+    // Strip query params so refresh loads as normal Create, not Edit
+    if (this.isEditMode) {
+      window.history.replaceState({}, '', '/create/exam');
+    }
+  };
 
   ngOnDestroy(): void {
     clearTimeout(this.progressTimer);
-    this.saveState();
+    if (!this.isUnloading) this.saveState();
     this.destroy$.next();
     this.destroy$.complete();
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
+  }
+
+  onCancelEdit(): void {
+    this.isUnloading = true;
+    this.stateService.clear();
+    const paperId  = this.editingPaperId || +(this.route.snapshot.queryParamMap.get('paperId') ?? 0);
+    const fromList = this.route.snapshot.queryParamMap.get('fromList') === '1';
+    const classId  = this.examFormData.classId;
+    if (fromList && classId) {
+      this.router.navigate(['/view/exam'], { queryParams: { autoClassId: classId } });
+    } else {
+      this.router.navigate(['/view/exam'],
+        paperId ? { queryParams: { questionPaperId: paperId } } : {}
+      );
+    }
   }
 
   private saveState(): void {
@@ -142,12 +195,19 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       allExamTypes:         this.allExamTypes,
       questionsLocked:      this.questionsLocked,
       questionsFrozen:      this.questionsFrozen,
+      displayClassName:     this.displayClassName    || this.getClassName(),
+      displaySubjectName:   this.displaySubjectName  || this.getSubjectName(),
+      displayExamTypeName:  this.displayExamTypeName || this.getExamTypeName(),
+      editingPaperId:       this.editingPaperId,
     });
   }
 
   private restoreState(): void {
     const saved = this.stateService.restore();
     if (!saved) return;
+    this.editingPaperId = saved.editingPaperId
+      || +(this.route.snapshot.queryParamMap.get('paperId') ?? 0)
+      || this.editingPaperId;
     this.examFormData         = saved.examFormData;
     this.questionSets         = saved.questionSets;
     this.questionsGenerated   = saved.questionsGenerated;
@@ -158,7 +218,30 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.allExamTypes         = saved.allExamTypes;
     this.questionsLocked      = saved.questionsLocked  ?? (saved.questionsGenerated ? true : false);
     this.questionsFrozen      = saved.questionsFrozen  ?? false;
+    this.displayClassName     = saved.displayClassName    ?? '';
+    this.displaySubjectName   = saved.displaySubjectName  ?? '';
+    this.displayExamTypeName  = saved.displayExamTypeName ?? '';
     this.examFormData.questionSets = this.questionSets;
+
+    // Auto-collapse header when editing an existing paper
+    if (this.isEditMode && this.questionsGenerated) {
+      this.examInfoCollapsed   = true;
+      this.showExamInfoChevron = true;
+    }
+
+    // In edit mode, rubricPoints already exist — mark rules as generated so they show immediately
+    if (this.questionsGenerated) {
+      const current = this.questionSets[this.currentQuestionIndex];
+      if (current && current.maxMarks !== 1 && (current.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
+    }
+
+    // If navigated from View — always reload and match IDs by name in edit mode
+    if (this.examFormData.classId) {
+      const needsMatch = this.isEditMode || !this.allSubjects.length || !this.allExamTypes.length;
+      this.loadSubjectsAndExamTypes(this.examFormData.classId, needsMatch);
+    }
   }
 
   // ─── Load Initial Data ────────────────────────────────────────────────────
@@ -178,7 +261,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.resetDependentDropdowns();
     this.onHeaderFieldChanged();
     if (!classId) return;
-    this.loadSubjectsAndExamTypes(classId);
+    this.loadSubjectsAndExamTypes(classId, false);
   }
 
   private resetDependentDropdowns(): void {
@@ -188,19 +271,35 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.allExamTypes            = [];
   }
 
-  private loadSubjectsAndExamTypes(classId: string): void {
+  private loadSubjectsAndExamTypes(classId: string, matchNames = false): void {
     this.masterDataService.getSubjectsByClass(classId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next:  (subjects) => (this.allSubjects = subjects),
-        error: (error)    => this.errorHandler.handle('Failed to load subjects', error),
+        next: (subjects) => {
+          this.allSubjects = subjects;
+          if (matchNames && this.displaySubjectName) {
+            const match = subjects.find(s =>
+              s.subjectName.toLowerCase() === this.displaySubjectName.toLowerCase()
+            );
+            if (match) this.examFormData.subjectId = String(match.id);
+          }
+        },
+        error: (error) => this.errorHandler.handle('Failed to load subjects', error),
       });
 
     this.masterDataService.getExamTypesByClass(classId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next:  (examTypes) => (this.allExamTypes = examTypes),
-        error: (error)     => this.errorHandler.handle('Failed to load exam types', error),
+        next: (examTypes) => {
+          this.allExamTypes = examTypes;
+          if (matchNames && this.displayExamTypeName) {
+            const match = examTypes.find(e =>
+              e.examTypeName.toLowerCase() === this.displayExamTypeName.toLowerCase()
+            );
+            if (match) this.examFormData.examTypeId = String(match.id);
+          }
+        },
+        error: (error) => this.errorHandler.handle('Failed to load exam types', error),
       });
   }
 
@@ -214,22 +313,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
    */
   onQuestionPaperNameInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    let raw = input.value;
 
-    // Split on last hyphen followed by digits at end of string
-    const suffixMatch = raw.match(/^(.*?)(-\d+)$/);
-    if (suffixMatch) {
-      // Has a numeric suffix like "-6": strip digits from base, keep suffix
-      const base   = suffixMatch[1].replace(/\d/g, '');
-      const suffix = suffixMatch[2];
-      raw = base + suffix;
-    } else {
-      // No numeric suffix: strip all digits from the whole value
-      raw = raw.replace(/\d/g, '');
-    }
+    // Allow only letters, digits, and hyphens — strip everything else
+    const cleaned = input.value.replace(/[^a-zA-Z0-9-]/g, '');
 
-    this.examFormData.questionPaperName = raw;
-    input.value = raw;
+    this.examFormData.questionPaperName = cleaned;
+    input.value = cleaned;
     this.questionPaperNameExists = false;
     this.onHeaderFieldChanged();
   }
@@ -559,7 +648,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   private autoFillOneMarkQuestion(): void {
     this.currentQuestionSet.validationRulesCount = 1;
     this.currentQuestionSet.rubricPoints = [
-      { description: 'Default criterion for 1-mark question', marks: 1, isAutoGenerated: true },
+      { description: 'Default criterion', marks: 1, isAutoGenerated: true },
     ];
     this.rulesGenerated = true;
   }
@@ -586,7 +675,46 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       this.toastService.showError('Validation Error', formValidation.errors[0]); return;
     }
 
-    this.submitToBackend();
+    if (this.isEditMode) {
+      this.saveChangesToBackend();
+    } else {
+      this.submitToBackend();
+    }
+  }
+
+  private saveChangesToBackend(): void {
+    if (!this.editingPaperId) {
+      this.toastService.showError('Error', 'No paper ID found for editing'); return;
+    }
+
+    this.isSubmitting   = true;
+    this.uploadProgress = { visible: true, width: '50%', text: 'Saving changes...' };
+
+    this.questionSets.forEach(q => {
+      q.questionText = q.questionText?.trim() ?? q.questionText;
+      q.answerText   = q.answerText?.trim()   ?? q.answerText;
+    });
+
+    this.createQuestionPaperService.updateExam(this.editingPaperId, this.examFormData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.uploadProgress = { visible: true, width: '100%', text: 'Changes saved!' };
+          this.progressTimer = setTimeout(() => {
+            this.uploadProgress.visible = false;
+            this.isSubmitting           = false;
+            this.toastService.showSuccess('Success', 'Question paper updated successfully');
+            this.stateService.clear();
+            this.isUnloading = true;
+            this.router.navigate(['/view/exam'], { queryParams: { questionPaperId: this.editingPaperId } });
+          }, 500);
+        },
+        error: (error) => {
+          this.uploadProgress.visible = false;
+          this.isSubmitting           = false;
+          this.errorHandler.handle('Failed to save changes', error);
+        },
+      });
   }
 
   private submitToBackend(): void {
@@ -672,9 +800,9 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   // ─── Name getters ─────────────────────────────────────────────────────────
-  getClassName():    string { return this.allClasses.find(c  => String(c.id)  === String(this.examFormData.classId))?.className    ?? ''; }
-  getSubjectName():  string { return this.allSubjects.find(s => String(s.id)  === String(this.examFormData.subjectId))?.subjectName  ?? ''; }
-  getExamTypeName(): string { return this.allExamTypes.find(e => String(e.id) === String(this.examFormData.examTypeId))?.examTypeName ?? ''; }
+  getClassName():    string { return this.allClasses.find(c  => String(c.id)  === String(this.examFormData.classId))?.className    || this.displayClassName    || ''; }
+  getSubjectName():  string { return this.allSubjects.find(s => String(s.id)  === String(this.examFormData.subjectId))?.subjectName  || this.displaySubjectName  || ''; }
+  getExamTypeName(): string { return this.allExamTypes.find(e => String(e.id) === String(this.examFormData.examTypeId))?.examTypeName || this.displayExamTypeName || ''; }
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';

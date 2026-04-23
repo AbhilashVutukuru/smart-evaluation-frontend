@@ -60,6 +60,24 @@ export class UploadAnswerSheetService {
     );
   }
 
+  // ── Admin: delete ALL answer sheets for a question paper (all 4 tables + blobs)
+  deleteAllAnswerSheets(questionPaperId: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.apiUrl}/student-answer-sheet/delete-all`,
+      { params: { questionPaperId } },
+    );
+  }
+
+  // ── Admin: delete all answer sheets for a specific class+section (current filter)
+  deleteBySectionAndPaper(
+    classId: number, sectionId: number, questionPaperId: number,
+  ): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(
+      `${this.apiUrl}/student-answer-sheet/delete-by-section`,
+      { params: { classId, sectionId, questionPaperId } },
+    );
+  }
+
   /** Downloads a single image blob and returns it as a base64 data URL.
    *  Pass cacheBust (e.g. Date.now()) to bypass browser cache after a replacement. */
   downloadImage(studentId: number, slotIndex: number, questionPaperId: number, cacheBust?: number): Observable<string> {

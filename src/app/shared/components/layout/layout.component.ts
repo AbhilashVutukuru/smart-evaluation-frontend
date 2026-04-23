@@ -5,6 +5,7 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 import { UserMenuComponent } from '../user-menu/user-memu.component';
 import { filter, map } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
+import { PageContextService } from '../../../core/services/page-context.service';
 
 @Component({
   selector: 'app-layout',
@@ -30,6 +31,9 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="topbar-page-title">
             <i class="fas {{ pageIcon }}"></i>
             {{ pageTitle }}
+            <span *ngIf="pageContext.topbarSubtitle()" class="topbar-subtitle">
+              ( {{ pageContext.topbarSubtitle() }} )
+            </span>
           </div>
           <span class="topbar-title">School Portal</span>
           <div class="topbar-right">
@@ -95,6 +99,14 @@ import { AuthService } from '../../../core/services/auth.service';
     .topbar-page-title i {
       color: #0ea4f4;
       font-size: 1.6rem;
+    }
+
+    .topbar-subtitle {
+      font-size: 1rem;
+      font-weight: 500;
+      color:  #5f8e04;
+      margin-left: 0.5rem;
+      white-space: nowrap;
     }
 
     .topbar-right {
@@ -192,20 +204,28 @@ export class LayoutComponent implements OnInit {
   ];
 
   private resolveRoute(url: string): { title: string; icon: string } {
-    // Exact match first
-    if (this.routeTitles[url]) {
-      return { title: this.routeTitles[url], icon: this.routeIcons[url] ?? 'fa-circle' };
+    const [path, query] = url.split('?');
+    const params        = new URLSearchParams(query ?? '');
+    const isEditMode    = params.get('mode') === 'edit';
+
+    // Edit mode override — must come BEFORE exact/prefix match
+    if (isEditMode && path.startsWith('/create/exam')) {
+      return { title: 'Edit Question Paper', icon: 'fa-edit' };
+    }
+    // Exact match
+    if (this.routeTitles[path]) {
+      return { title: this.routeTitles[path], icon: this.routeIcons[path] ?? 'fa-circle' };
     }
     // Prefix match for dynamic routes
-    const match = this.routePrefixes.find(r => url.startsWith(r.prefix));
+    const match = this.routePrefixes.find(r => path.startsWith(r.prefix));
     if (match) return { title: match.title, icon: match.icon };
     // Fallback
-    return { title: this.titleFromUrl(url), icon: 'fa-layer-group' };
+    return { title: this.titleFromUrl(path), icon: 'fa-layer-group' };
   }
 
   @ViewChild('sidebar') sidebar!: SidebarComponent;
 
-  constructor(private router: Router,private authService: AuthService ) {}
+  constructor(private router: Router, private authService: AuthService, public pageContext: PageContextService) {}
 
 ngOnInit(): void {
   // Redirect NonTeachingStaff away from dashboard
@@ -218,15 +238,16 @@ ngOnInit(): void {
 
   this.router.events.pipe(
     filter(e => e instanceof NavigationEnd),
-    map((e: any) => e.urlAfterRedirects.split('?')[0]),
+    map((e: any) => e.urlAfterRedirects),
   ).subscribe(url => {
     const r = this.resolveRoute(url);
     this.pageTitle = r.title;
     this.pageIcon  = r.icon;
+    this.pageContext.clearSubtitle();   // clear on every navigation
   });
 
-  const url = this.router.url.split('?')[0];
-  const r = this.resolveRoute(url);
+  const url = this.router.url;               // full URL including ?mode=edit
+  const r   = this.resolveRoute(url);
   this.pageTitle = r.title;
   this.pageIcon  = r.icon;
 }

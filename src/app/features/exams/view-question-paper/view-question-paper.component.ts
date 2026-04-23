@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -17,11 +17,11 @@ import {
   QuestionPaperDetailDto,
   QuestionPaperSummaryDto,
   QuestionPaperViewDto,
+  UpdateQuestionPaperPayload,
   ViewQuestionPaperService,
 } from '../../../core/services/view-question-paper.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
+import { CreateQuestionPaperStateService } from '../../../core/services/create-question-paper.state.service';
 
 // ─── Edit-mode draft types ────────────────────────────────────────────────────
 
@@ -60,10 +60,10 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   private viewService          = inject(ViewQuestionPaperService);
   private masterData           = inject(MasterDataService);
   private questionPaperService = inject(CreateQuestionPaperService);
+  private stateService         = inject(CreateQuestionPaperStateService);
   private toastService         = inject(ToastService);
   private errorHandler         = inject(ErrorHandlerService);
-  private http                 = inject(HttpClient);
-  private apiUrl               = environment.apiUrl;
+  private router               = inject(Router);
   private route                = inject(ActivatedRoute);
 
   // FIX: destroy$ cancels all subscriptions on destroy
@@ -106,6 +106,9 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   isEditMode        = false;
   questionsEdited   = false;
   draft:            PaperDraft | null = null;
+  directLoadClassName  = '';
+  private _cancelFromPaperId = 0;
+  private _cancelClassName   = '';
 
   get currentDraftQuestion(): QuestionDraft | null {
     return this.draft?.questions[this.currentQuestionIndex] ?? null;
@@ -113,7 +116,8 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
 
   fullscreenType:    string | null = null;
   fullscreenContent: string | null = null;
-  resetConfirmVisible = false;
+  resetConfirmVisible  = false;
+  deleteConfirmVisible = false;
 
   get isAllSubjects(): boolean { return !this.selectedSubject || this.selectedSubject === this.ALL_SUBJECTS; }
   get isLocked():      boolean { return this.questionPaper?.isLocked ?? false; }
@@ -138,14 +142,33 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   // ─── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    const autoClassId = this.route.snapshot.queryParamMap.get('autoClassId');
+    const qpId        = this.route.snapshot.queryParamMap.get('questionPaperId');
+
     this.masterData.getClasses()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (classes) => (this.classes = classes),
-        error: (err)    => this.errorHandler.handle('Failed to load classes', err),
+        next: (classes) => {
+          this.classes = classes;
+          if (autoClassId) {
+            this.selectedClass     = autoClassId;
+            this.showAllPapersList = true;
+            this.hasSearched       = true;
+            this.isFilterCollapsed = true;
+            this.loadAllPapers();
+          }
+        },
+        error: (err) => this.errorHandler.handle('Failed to load classes', err),
       });
 
-    const qpId = this.route.snapshot.queryParamMap.get('questionPaperId');
+    if (autoClassId) {
+      this.selectedClass     = autoClassId;
+      this.showAllPapersList = true;
+      this.hasSearched       = true;
+      this.isFilterCollapsed = true;
+      this.loadAllPapers();
+    }
+
     if (qpId) this.viewPaperFromList(+qpId);
   }
 
@@ -244,6 +267,10 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
           this.isLoadingPaper       = false;
           this.showDetailPage       = true;
           if (paper.isLocked) { this.isEditMode = false; this.draft = null; }
+          // Store className so backToList can match classId once classes are loaded
+          if (!this.selectedClass) {
+            this.directLoadClassName = paper.className;
+          }
         },
         error: (err) => {
           this.isLoadingPaper = false;
@@ -381,40 +408,115 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   enterEditMode(): void {
     if (!this.questionPaper) return;
     if (this.isLocked) {
-      const reason = this.questionPaper.answerSheetsSubmitted
+      const reason = this.questionPaper.answerSheetsUploaded
         ? 'Answer sheets have been submitted — this question paper can no longer be edited.'
         : 'The exam date has passed — this question paper can no longer be edited.';
       this.toastService.showWarning('Locked', reason);
       return;
     }
-    const questions = this.questionPaper.questions.map(q => ({
-        questionNumber: q.questionNumber,
-        questionText:   q.questionText,
-        officialAnswer: q.officialAnswer,
-        maxMarks:       q.maxMarks,
-        rubricAdded:    q.rubricAdded,
-        rubrics: q.rubrics.map(r => ({
-          criterionOrder:  r.criterionOrder,
-          rubricText:      r.rubricText,
-          maxMarks:        r.maxMarks,
-          isAutoGenerated: r.isAutoGenerated,
-        })),
-      }));
-    this.draft = {
-      questionPaperName: this.questionPaper.questionPaperName,
-      totalMarks:        this.questionPaper.totalMarks,
-      examDate: this.questionPaper.examDate ? this.questionPaper.examDate.slice(0, 10) : null,
-      questions,
-      originalQuestions: questions.map(q => ({
-        ...q,
-        rubrics: q.rubrics.map(r => ({ ...r })),
+
+    const qp = this.questionPaper;
+
+    // Build questionSets from the paper's questions
+    const questionSets = qp.questions.map(q => ({
+      questionNumber:      q.questionNumber,
+      questionText:        q.questionText,
+      answerText:          q.officialAnswer,
+      maxMarks:            q.maxMarks,
+      validationRulesCount: q.rubrics.length,
+      rubricPoints: q.rubrics.map(r => ({
+        description:    r.rubricText,
+        marks:          r.maxMarks,
+        isAutoGenerated: r.isAutoGenerated,
       })),
+    }));
+
+    // Resolve IDs from loaded dropdowns
+    const classId    = this.selectedClass    || '';
+    const subjectId  = this.selectedSubject  || '';
+    const examTypeId = this.selectedExamType || '';
+
+    const examFormData = {
+      academicYear:      '',
+      classId,
+      subjectId,
+      examTypeId,
+      totalMarks:        qp.totalMarks,
+      numberOfQuestions: qp.totalQuestions,
+      questionPaperName: qp.questionPaperName,
+      examDate:          qp.examDate ? qp.examDate.slice(0, 10) : null,
+      questionSets,
     };
-    this.isEditMode      = true;
-    this.questionsEdited = false;
+
+    this.stateService.save({
+      examFormData,
+      questionSets,
+      questionsGenerated:   true,
+      currentQuestionIndex: 0,
+      examInfoCollapsed:    false,
+      showExamInfoChevron:  false,
+      allSubjects:          this.subjects,
+      allExamTypes:         this.examTypes,
+      questionsLocked:      true,
+      questionsFrozen:      false,
+      displayClassName:     qp.className,
+      displaySubjectName:   qp.subjectName,
+      displayExamTypeName:  qp.examTypeName,
+    });
+
+    this.router.navigate(['/create/exam'], { queryParams: { mode: 'edit', paperId: qp.questionPaperId, fromList: this.showAllPapersList ? '1' : '0' } });
   }
 
   cancelEdit(): void { this.isEditMode = false; this.draft = null; }
+
+  // ─── Delete paper ─────────────────────────────────────────────────────────
+
+  deleteQuestionPaper(): void {
+    if (!this.questionPaper) return;
+    if (this.isLocked) {
+      this.toastService.showWarning('Locked', 'This question paper is locked and cannot be deleted.');
+      return;
+    }
+    this.deleteConfirmVisible = true;
+  }
+
+  confirmDeletePaper(): void {
+    if (!this.questionPaper) return;
+    const paperId = this.questionPaper.questionPaperId;
+    this.deleteConfirmVisible = false;
+
+    this.viewService.deleteQuestionPaper(paperId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('Deleted', 'Question paper deleted successfully');
+          // Remove from the summary list if it was loaded
+          this.allPapersList      = this.allPapersList.filter(p => p.questionPaperId !== paperId);
+          this.filteredPapersList = this.filteredPapersList.filter(p => p.questionPaperId !== paperId);
+          // If we came directly via queryParam with no list loaded, go back to list view with class pre-selected
+          if (!this.showAllPapersList && this.selectedClass) {
+            this.showAllPapersList = true;
+            this.hasSearched       = true;
+            this.loadAllPapersAfterDelete();
+          } else {
+            this.backToList();
+          }
+        },
+        error: (err) => {
+          this.errorHandler.handle('Failed to delete question paper', err);
+        },
+      });
+  }
+
+  private loadAllPapersAfterDelete(): void {
+    this.showDetailPage    = false;
+    this.questionPaper     = null;
+    this.currentQuestion   = null;
+    this.isEditMode        = false;
+    this.draft             = null;
+    this.isFilterCollapsed = false;
+    this.loadAllPapers();
+  }
 
   isCurrentQuestionChanged(): boolean {
     if (!this.draft) return false;
@@ -455,7 +557,19 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
     this.isFilterCollapsed = false;
     this.questionPaper     = null;
     this.currentQuestion   = null;
-    if (this.showAllPapersList) this.loadAllPapers();
+    if (this.showAllPapersList) {
+      this.loadAllPapers();
+    } else if (this.directLoadClassName) {
+      // Came from direct load via queryParam — match classId by name then show list
+      const matchedClass = this.classes.find(c => c.className === this.directLoadClassName);
+      if (matchedClass) {
+        this.selectedClass     = String(matchedClass.id);
+        this.showAllPapersList = true;
+        this.hasSearched       = true;
+        this.loadAllPapers();
+      }
+      this.directLoadClassName = '';
+    }
   }
 
   validateDraftQuestion(q: QuestionDraft): string | null {
@@ -475,6 +589,11 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
     return null;
   }
 
+  // ─── saveAllChanges is now handled by Create Question Paper component ────────
+  // Edit Paper button navigates to /create/exam?mode=edit which uses
+  // CreateQuestionPaperService.updateExam() for the PUT call.
+  // This inline edit flow is kept commented for reference only.
+  /*
   saveAllChanges(): void {
     if (!this.draft || !this.questionPaper) return;
 
@@ -497,7 +616,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
 
-    const payload = {
+    const payload: UpdateQuestionPaperPayload = {
       totalMarks:        this.draft.totalMarks,
       questionPaperName: this.draft.questionPaperName,
       questionsEdited:   this.questionsEdited,
@@ -519,12 +638,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
         : [],
     };
 
-    // FIX: takeUntil — cancel if component destroyed while save is in flight
-    this.http
-      .put<{ success: boolean; message: string }>(
-        `${this.apiUrl}/question-paper/${this.questionPaper.questionPaperId}`,
-        payload,
-      )
+    this.viewService.updateQuestionPaper(this.questionPaper.questionPaperId, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -568,6 +682,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
         },
       });
   }
+  */
 
   // ─── Fullscreen ───────────────────────────────────────────────────────────
 

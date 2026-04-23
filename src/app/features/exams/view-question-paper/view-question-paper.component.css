@@ -109,23 +109,43 @@
 
 .btn-back:hover { border-color: var(--blue); color: var(--blue); border-width: 2px; }
 
-/* Edit Paper Button */
+/* Edit Paper Button — brand green */
 .btn-edit-paper {
-  background: var(--red);
-  color: white;
+  background: var(--green);
+  color: white !important;
   border: none;
   padding: 0.625rem 1.25rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-.btn-edit-paper:hover:not(:disabled) { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
+.btn-edit-paper:hover:not(:disabled)  { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
+.btn-edit-paper:active:not(:disabled) { background: var(--green-dark) !important; color: white !important; transform: translateY(0); }
+
+/* Delete Paper Button — brand red */
+.btn-delete-paper {
+  background: var(--red);
+  color: white !important;
+  border: none;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-delete-paper:hover:not(:disabled)  { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
+.btn-delete-paper:active:not(:disabled) { background: var(--red-dark) !important; color: white !important; transform: translateY(0); }
 
 /* Cancel Edit Button */
 .btn-cancel-edit {
@@ -757,102 +777,172 @@
   flex-shrink: 0;
 }
 
-/* ─── Reset confirm dialog ───────────────────────────────────────────────────── */
+/* ─── Reset confirm dialog — see .confirm-dialog-box section below ───────────── */
+
+/* ─── Confirm Dialogs — matches upload-answer-sheet style ────────────────────── */
+
+/* Overlay — same dark backdrop as fullscreen-modal but centred flex */
+.confirm-overlay {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: blur(2px);
+}
+
+/* Dialog box */
 .confirm-dialog-box {
   background: var(--app-bg);
-  border-radius: 1rem;
-  padding: 2rem;
-  width: 90%;
-  max-width: 420px;
-  text-align: center;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem 1.75rem 1.5rem;
+  width: min(90vw, 400px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1rem;
+  animation: confirmSlideUp 0.22s ease;
 }
 
+@keyframes confirmSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Icon circle — yellow warning (default) */
 .confirm-dialog-icon {
   width: 3.5rem;
   height: 3.5rem;
+  background: var(--yellow-light);
+  border: 2px solid var(--yellow);
   border-radius: 50%;
-  background: var(--yellow-light, #fff8e0);
-  border: 2px solid var(--yellow, #ffbb0a);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
-  color: var(--yellow, #ffbb0a);
-  margin-bottom: 0.25rem;
+  color: var(--yellow);
+  flex-shrink: 0;
 }
 
+/* Icon circle — red danger variant */
+.confirm-dialog-icon--danger {
+  background: var(--red-light);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Title */
 .confirm-dialog-title {
-  font-size: 1.125rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--gray-900);
+  text-align: center;
   margin: 0;
 }
 
+/* Sub text */
 .confirm-dialog-sub {
   font-size: 0.875rem;
   color: var(--gray-500);
+  text-align: center;
+  line-height: 1.55;
   margin: 0;
-  line-height: 1.5;
 }
 
+/* Actions row */
 .confirm-dialog-actions {
   display: flex;
   gap: 0.75rem;
-  margin-top: 0.5rem;
+  width: 100%;
   justify-content: center;
+  margin-top: 0.25rem;
   flex-wrap: wrap;
 }
 
-/* Cancel — red-light bg + red border/text, fills solid on hover */
-.confirm-dialog-actions .btn-secondary {
-  background: var(--red-light);
+/* Cancel button — red-light bg, red border/text, fills red on hover */
+.img-modal-cancel {
+  background: var(--red-light) !important;
   color: var(--red) !important;
-  border: 2px solid var(--red);
-  padding: 0.45rem 1.25rem;
-  border-radius: var(--border-radius);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
+  border: 2px solid var(--red) !important;
+  border-radius: var(--border-radius) !important;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
 }
-
-.confirm-dialog-actions .btn-secondary:hover:not(:disabled),
-.confirm-dialog-actions .btn-secondary:active:not(:disabled) {
+.img-modal-cancel:hover:not(:disabled) {
   background: var(--red) !important;
   color: #fff !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.45);
 }
 
-/* Yes, Reset — solid brand gold, white text, darkens on hover */
-.btn-warning {
-  background: var(--yellow);
-  color: #fff !important;
-  border: 2px solid var(--yellow);
-  padding: 0.45rem 1.25rem;
-  border-radius: var(--border-radius);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--transition);
+/* OK button — solid red (delete) */
+.confirm-ok-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: 2px solid var(--red);
+  border-radius: var(--border-radius);
+  background: var(--red);
+  color: #fff !important;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.confirm-ok-btn:hover:not(:disabled) {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.4);
 }
 
-.btn-warning:hover:not(:disabled),
-.btn-warning:active:not(:disabled) {
-  background: var(--yellow-dark) !important;
-  border-color: var(--yellow-dark) !important;
+/* OK button — yellow variant (reset) */
+.confirm-ok-btn--yellow {
+  background: var(--yellow);
+  border-color: var(--yellow);
   color: #fff !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(255, 187, 10, 0.5);
 }
+.confirm-ok-btn--yellow:hover:not(:disabled) {
+  background: var(--yellow-dark);
+  border-color: var(--yellow-dark);
+  box-shadow: 0 4px 14px rgba(255, 187, 10, 0.45);
+}
+
+/* Paper meta chips inside delete confirm dialog */
+.confirm-paper-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  justify-content: center;
+  width: 100%;
+}
+
+.confirm-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  border: 1px solid var(--gray-200);
+  border-radius: 1rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.confirm-meta-chip i { color: var(--blue); font-size: 0.65rem; }
+
+/* Paper name chip — slightly highlighted */
+.confirm-meta-chip--paper {
+  background: var(--red-light);
+  color: var(--red-dark);
+  border-color: var(--red);
+}
+
+.confirm-meta-chip--paper i { color: var(--red); }

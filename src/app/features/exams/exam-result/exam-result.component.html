@@ -607,30 +607,31 @@
         </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="navigation-buttons">
-        <button
-          class="btn btn-secondary btn-lg btn-prev"
-          (click)="previousQuestion()"
-          [disabled]="
-            currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
-          "
-        >
-          <i class="fas fa-arrow-left"></i> Previous
-        </button>
+    </div>
 
-        <button
-          class="btn btn-secondary btn-lg"
-          (click)="nextQuestion()"
-          [disabled]="
-            currentQuestionIndex === totalQuestions - 1 ||
-            isLoading ||
-            isAnyRubricEditing()
-          "
-        >
-          Next <i class="fas fa-arrow-right"></i>
-        </button>
-      </div>
+    <!-- Navigation Buttons — outside card to remove card padding gap -->
+    <div class="navigation-buttons">
+      <button
+        class="btn btn-primary"
+        (click)="previousQuestion()"
+        [disabled]="
+          currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
+        "
+      >
+        <i class="fas fa-arrow-left"></i> Previous
+      </button>
+
+      <button
+        class="btn btn-primary"
+        (click)="nextQuestion()"
+        [disabled]="
+          currentQuestionIndex === totalQuestions - 1 ||
+          isLoading ||
+          isAnyRubricEditing()
+        "
+      >
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
     </div>
 
     <!-- Loading Question -->

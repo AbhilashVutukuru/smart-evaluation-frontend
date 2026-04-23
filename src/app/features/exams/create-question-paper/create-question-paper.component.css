@@ -1179,3 +1179,39 @@ label.disabled {
   box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
   transform: translateY(-1px);
 }
+/* ─── Editing chip in header ─────────────────────────────────── */
+/* ─── Back to List row — edit mode only ─────────────────────────────────────── */
+.cqp-back-row {
+  margin-bottom: 0.75rem;
+}
+
+.btn-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+
+.btn-back-pill i       { font-size: 0.75rem; transition: transform 0.15s; }
+.btn-back-pill:hover   { color: var(--blue-dark); }
+.btn-back-pill:hover i { transform: translateX(-3px); }
+/* ─── Input format hint ──────────────────────────────────────────────────────── */
+.input-format-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--gray-400);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.input-format-hint i { font-size: 0.65rem; }

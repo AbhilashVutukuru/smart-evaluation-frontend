@@ -1,9 +1,11 @@
-import { Component, inject, HostListener } from '@angular/core';
+import { Component, inject, HostListener, OnDestroy } from '@angular/core';
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
+import { PageContextService } from '../../../core/services/page-context.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 import {
   StudentUploadStatus,
@@ -13,6 +15,8 @@ import {
 } from '../../../core/models/upload-answer-sheet.models';
 import { ExamFilterComponent } from '../exam-filter/exam-filter.component';
 import { BaseExamFilterComponent } from '../base/base-exam-filter.component';
+// ── Admin delete panel — separate feature, do not mix with upload logic ──────
+import { AdminDeletePanelComponent } from '../admin-delete-panel/admin-delete-panel.component';
 
 // ─── Page slot state ──────────────────────────────────────────────────────────
 export interface PageSlot {
@@ -34,12 +38,18 @@ export interface PagePickerModal {
 @Component({
   selector: 'app-upload-student-marks',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ExamFilterComponent],
+  imports: [CommonModule, FormsModule, RouterModule, ExamFilterComponent, AdminDeletePanelComponent],
   templateUrl: './upload-answer-sheet.component.html',
   styleUrls: ['./upload-answer-sheet.component.css'],
 })
-export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
+export class UploadAnswerSheetsComponent extends BaseExamFilterComponent implements OnDestroy {
   private uploadService = inject(UploadAnswerSheetService);
+  private pageContext   = inject(PageContextService);
+  private authService   = inject(AuthService);
+
+  // ── Admin panel: logged-in user email — read from AuthService.getUserEmail()
+  // Passed as @Input to AdminDeletePanelComponent which gates visibility on it.
+  readonly userEmail: string = this.authService.getUserEmail() ?? '';
 
   // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];
@@ -145,6 +155,10 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   get uploadedCount(): number { return this.students.filter(s => s.isUploaded).length; }
   get pendingCount():  number { return this.students.filter(s => !s.isUploaded && !s.isAbsent).length; }
   get canEvaluate():  boolean { return this.students.length > 0 && this.students.every(s => s.isUploaded || s.isAbsent); }
+
+  get selectedPaperName(): string {
+    return this.questionPapers.find(q => q.id === this.selectedQuestionPaperId)?.questionPaperName ?? '';
+  }
 
   /** True when the image preview modal has at least one replaced or new slot */
   get hasReplacedImages(): boolean {
@@ -634,6 +648,12 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
             if (response.data.submittedAt) {
               this.submittedAt = this.parseUtcDate(response.data.submittedAt);
             }
+            // Update topbar subtitle
+            if (this.isSubmittedForEvaluation && this.submittedAt) {
+              this.pageContext.setSubtitle(`Submitted for evaluation on ${this.getSubmittedAtDisplay()}`);
+            } else {
+              this.pageContext.clearSubtitle();
+            }
             const rawStudents = response.data.students ?? [];
             if (rawStudents.length > 0) {
               this.students         = this.mapStudents(rawStudents);
@@ -939,6 +959,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
           this.isSubmittedForEvaluation = true;
           // Use server UTC timestamp from EvaluationQueue INSERT — not browser time
           this.submittedAt = this.parseUtcDate(response.data?.submittedAt) ?? new Date();
+          this.pageContext.setSubtitle(`Submitted for evaluation on ${this.getSubmittedAtDisplay()}`);
           this.toastService.showSuccess('Success', response.message ?? 'Evaluation started successfully');
           this.isSubmittingAll = false;
         }
@@ -990,7 +1011,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
   }
 
   /** Helper — gets display name from a dropdown array by id field */
-  private getSelectedName(arr: any[], id: string, nameField: string): string {
+  getSelectedName(arr: any[], id: string, nameField: string): string {
     return arr.find(i => String(i.id) === String(id))?.[nameField] ?? '';
   }
 
@@ -1094,5 +1115,17 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.lightboxIndex     = 0;
     this.lightboxPage      = 0;
     document.body.style.overflow = '';
+  }
+
+  // ── Admin delete panel callback ───────────────────────────────────────────────
+  // Receives the updated student list after AdminDeletePanelComponent deletes.
+  // Kept here (not in admin panel) so the table re-renders correctly.
+  onAdminStudentsChanged(updated: StudentUploadStatus[]): void {
+    this.students         = updated;
+    this.filteredStudents = [...updated];
+  }
+
+  override ngOnDestroy(): void {
+    this.pageContext.clearSubtitle();
   }
 }
