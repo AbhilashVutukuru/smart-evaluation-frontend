@@ -245,7 +245,10 @@
           Locked — exam date passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
         </span>
         <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
-          <i class="fas fa-edit"></i> Edit Paper
+          <i class="fas fa-edit"></i> Edit Question Paper
+        </button>
+        <button *ngIf="!isEditMode" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
+          <i class="fas fa-trash-alt"></i> Delete
         </button>
         <!-- Save All Changes / Cancel Edit buttons commented out —
              editing is now handled by Create Question Paper component
@@ -621,7 +624,7 @@
 </div>
 
 <!-- Reset Question Confirm Dialog -->
-<div class="fullscreen-modal" *ngIf="resetConfirmVisible" (click)="resetConfirmVisible = false">
+<div class="fullscreen-modal confirm-overlay" *ngIf="resetConfirmVisible" (click)="resetConfirmVisible = false">
   <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
     <div class="confirm-dialog-icon">
       <i class="fas fa-undo"></i>
@@ -629,11 +632,49 @@
     <p class="confirm-dialog-title">Reset Question {{ currentDraftQuestion?.questionNumber }}?</p>
     <p class="confirm-dialog-sub">All changes to this question will be discarded and restored to their original values.</p>
     <div class="confirm-dialog-actions">
-      <button class="btn btn-secondary" (click)="resetConfirmVisible = false">
+      <button type="button" class="btn-secondary img-modal-cancel" (click)="resetConfirmVisible = false">
         <i class="fas fa-times"></i> Cancel
       </button>
-      <button class="btn btn-warning" (click)="resetConfirmVisible = false; cancelQuestionEdit()">
+      <button type="button" class="confirm-ok-btn confirm-ok-btn--yellow" (click)="resetConfirmVisible = false; cancelQuestionEdit()">
         <i class="fas fa-undo"></i> Yes, Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Question Paper Confirm Dialog -->
+<div class="fullscreen-modal confirm-overlay" *ngIf="deleteConfirmVisible" (click)="deleteConfirmVisible = false">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon confirm-dialog-icon--danger">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+    <p class="confirm-dialog-title">Delete Question Paper?</p>
+
+    <!-- Paper detail chips -->
+    <div class="confirm-paper-meta">
+      <span class="confirm-meta-chip">
+        <i class="fas fa-layer-group"></i> {{ questionPaper?.className }}
+      </span>
+      <span class="confirm-meta-chip">
+        <i class="fas fa-book-open"></i> {{ questionPaper?.subjectName }}
+      </span>
+      <span class="confirm-meta-chip">
+        <i class="fas fa-tag"></i> {{ questionPaper?.examTypeName }}
+      </span>
+      <span class="confirm-meta-chip confirm-meta-chip--paper">
+        <i class="fas fa-file-alt"></i> {{ questionPaper?.questionPaperName }}
+      </span>
+    </div>
+
+    <p class="confirm-dialog-sub">
+      This question paper will be <strong>permanently deleted</strong> and cannot be recovered.
+    </p>
+    <div class="confirm-dialog-actions">
+      <button type="button" class="btn-secondary img-modal-cancel" (click)="deleteConfirmVisible = false">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="confirm-ok-btn" (click)="confirmDeletePaper()">
+        <i class="fas fa-trash-alt"></i> Yes, Delete
       </button>
     </div>
   </div>

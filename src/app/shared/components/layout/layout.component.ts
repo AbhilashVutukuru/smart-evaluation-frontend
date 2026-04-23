@@ -192,15 +192,25 @@ export class LayoutComponent implements OnInit {
   ];
 
   private resolveRoute(url: string): { title: string; icon: string } {
-    // Exact match first
-    if (this.routeTitles[url]) {
-      return { title: this.routeTitles[url], icon: this.routeIcons[url] ?? 'fa-circle' };
+    // Split path from query string
+    const [path, query] = url.split('?');
+    const params = new URLSearchParams(query ?? '');
+    const isEditMode = params.get('mode') === 'edit';
+
+    // Edit mode override — must come BEFORE exact/prefix match
+    if (isEditMode && path.startsWith('/create/exam')) {
+      return { title: 'Edit Question Paper', icon: 'fa-edit' };
+    }
+
+    // Exact match (path only)
+    if (this.routeTitles[path]) {
+      return { title: this.routeTitles[path], icon: this.routeIcons[path] ?? 'fa-circle' };
     }
     // Prefix match for dynamic routes
-    const match = this.routePrefixes.find(r => url.startsWith(r.prefix));
+    const match = this.routePrefixes.find(r => path.startsWith(r.prefix));
     if (match) return { title: match.title, icon: match.icon };
     // Fallback
-    return { title: this.titleFromUrl(url), icon: 'fa-layer-group' };
+    return { title: this.titleFromUrl(path), icon: 'fa-layer-group' };
   }
 
   @ViewChild('sidebar') sidebar!: SidebarComponent;
@@ -218,14 +228,14 @@ ngOnInit(): void {
 
   this.router.events.pipe(
     filter(e => e instanceof NavigationEnd),
-    map((e: any) => e.urlAfterRedirects.split('?')[0]),
+    map((e: any) => e.urlAfterRedirects),   // keep full URL including ?mode=edit
   ).subscribe(url => {
     const r = this.resolveRoute(url);
     this.pageTitle = r.title;
     this.pageIcon  = r.icon;
   });
 
-  const url = this.router.url.split('?')[0];
+  const url = this.router.url;               // keep full URL including ?mode=edit
   const r = this.resolveRoute(url);
   this.pageTitle = r.title;
   this.pageIcon  = r.icon;

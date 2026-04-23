@@ -108,4 +108,10 @@ export class ViewQuestionPaperService {
         lockReason:            d.lockReason            ?? d.LockReason            ?? null,
       } as QuestionPaperSummaryDto))));
   }
+
+  deleteQuestionPaper(questionPaperId: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.apiUrl}/question-paper/${questionPaperId}`,
+    );
+  }
 }

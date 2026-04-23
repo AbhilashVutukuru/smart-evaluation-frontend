@@ -1180,13 +1180,26 @@ label.disabled {
   transform: translateY(-1px);
 }
 /* ─── Editing chip in header ─────────────────────────────────── */
-.editing-chip {
+/* ─── Back to List row — edit mode only ─────────────────────────────────────── */
+.cqp-back-row {
+  margin-bottom: 0.75rem;
+}
+
+.btn-back-pill {
   display: inline-flex;
   align-items: center;
-  color: var(--red);
-  font-size: 0.78rem;
-  font-weight: 700;
-  vertical-align: middle;
-  margin-left: 0.5rem;
-  letter-spacing: 0.01em;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
 }
+
+.btn-back-pill i       { font-size: 0.75rem; transition: transform 0.15s; }
+.btn-back-pill:hover   { color: var(--blue-dark); }
+.btn-back-pill:hover i { transform: translateX(-3px); }

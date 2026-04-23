@@ -1,6 +1,13 @@
 <!-- Create Exam Component - Complete HTML with Fixed Alignment -->
 <div class="page-container">
 
+  <!-- Back to List — only shown in edit mode -->
+  <div *ngIf="isEditMode" class="cqp-back-row">
+    <button class="btn-back-pill" (click)="onCancelEdit()" type="button">
+      <i class="fas fa-chevron-left"></i> Back to List
+    </button>
+  </div>
+
   <!-- EXAM FORM -->
   <div class="card">
     <div class="filter-card-header"
@@ -10,9 +17,6 @@
       <h4>
         <i class="fas fa-clipboard-list"></i>
         {{ isEditMode ? 'Edit Details' : 'Exam Details' }}
-        <span *ngIf="isEditMode" class="editing-chip">
-          Editing
-        </span>
         <i *ngIf="questionsGenerated"
            class="fas collapse-indicator"
            [class.fa-chevron-down]="examInfoCollapsed"
@@ -44,16 +48,6 @@
       <span class="filter-chip" [hidden]="!examFormData.examDate">
         <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate }}
       </span>
-      <button
-        *ngIf="isEditMode && examInfoCollapsed"
-        class="btn btn-reset-sq ms-2 btn-sm"
-        style="font-size:0.75rem; padding:0.2rem 0.6rem;"
-        (click)="onCancelEdit()"
-        type="button"
-        title="Cancel editing and go back"
-      >
-        <i class="fas fa-times"></i> Cancel
-      </button>
     </div>
 
     <div class="filter-card-body" [class.collapsed]="examInfoCollapsed">
@@ -245,15 +239,6 @@
             title="Reset all questions"
           >
             <i class="fas fa-undo"></i> Reset
-          </button>
-          <button
-            *ngIf="isEditMode && !examInfoCollapsed"
-            class="btn btn-reset-sq"
-            (click)="onCancelEdit()"
-            type="button"
-            title="Cancel editing"
-          >
-            <i class="fas fa-times"></i> Cancel
           </button>
         </div>
       </div>

@@ -116,7 +116,8 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
 
   fullscreenType:    string | null = null;
   fullscreenContent: string | null = null;
-  resetConfirmVisible = false;
+  resetConfirmVisible  = false;
+  deleteConfirmVisible = false;
 
   get isAllSubjects(): boolean { return !this.selectedSubject || this.selectedSubject === this.ALL_SUBJECTS; }
   get isLocked():      boolean { return this.questionPaper?.isLocked ?? false; }
@@ -467,6 +468,55 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   }
 
   cancelEdit(): void { this.isEditMode = false; this.draft = null; }
+
+  // ─── Delete paper ─────────────────────────────────────────────────────────
+
+  deleteQuestionPaper(): void {
+    if (!this.questionPaper) return;
+    if (this.isLocked) {
+      this.toastService.showWarning('Locked', 'This question paper is locked and cannot be deleted.');
+      return;
+    }
+    this.deleteConfirmVisible = true;
+  }
+
+  confirmDeletePaper(): void {
+    if (!this.questionPaper) return;
+    const paperId = this.questionPaper.questionPaperId;
+    this.deleteConfirmVisible = false;
+
+    this.viewService.deleteQuestionPaper(paperId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.toastService.showSuccess('Deleted', 'Question paper deleted successfully');
+          // Remove from the summary list if it was loaded
+          this.allPapersList      = this.allPapersList.filter(p => p.questionPaperId !== paperId);
+          this.filteredPapersList = this.filteredPapersList.filter(p => p.questionPaperId !== paperId);
+          // If we came directly via queryParam with no list loaded, go back to list view with class pre-selected
+          if (!this.showAllPapersList && this.selectedClass) {
+            this.showAllPapersList = true;
+            this.hasSearched       = true;
+            this.loadAllPapersAfterDelete();
+          } else {
+            this.backToList();
+          }
+        },
+        error: (err) => {
+          this.errorHandler.handle('Failed to delete question paper', err);
+        },
+      });
+  }
+
+  private loadAllPapersAfterDelete(): void {
+    this.showDetailPage    = false;
+    this.questionPaper     = null;
+    this.currentQuestion   = null;
+    this.isEditMode        = false;
+    this.draft             = null;
+    this.isFilterCollapsed = false;
+    this.loadAllPapers();
+  }
 
   isCurrentQuestionChanged(): boolean {
     if (!this.draft) return false;
