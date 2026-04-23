@@ -121,8 +121,8 @@
           <span class="header-info-icon" tabindex="0">
             <i class="fas fa-info-circle"></i>
             <span class="header-info-tooltip">
-              Please use this field to uniquely identify an exam within the same exam type.
-              (e.g., Unit Test-1, Unit Test-2).
+              <span class="tip-line">Alphanumeric and hyphens only (A–Z, 0–9, -).</span>
+              <span class="tip-line">Use this to uniquely identify an exam within the same exam type (e.g., MidTerm-1, UnitTest-2).</span>
             </span>
           </span>
         </label>
@@ -132,7 +132,7 @@
           (input)="onQuestionPaperNameInput($event)"
           (change)="onQuestionPaperNameChange()"
           maxlength="200"
-          placeholder="e.g., Mid Term-1, Unit Test-2"
+          placeholder="e.g., MidTerm-1, UnitTest-2"
           class="form-control"
           [class.is-invalid]="questionPaperNameExists"
         />

@@ -313,22 +313,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
    */
   onQuestionPaperNameInput(event: Event): void {
     const input = event.target as HTMLInputElement;
-    let raw = input.value;
 
-    // Split on last hyphen followed by digits at end of string
-    const suffixMatch = raw.match(/^(.*?)(-\d+)$/);
-    if (suffixMatch) {
-      // Has a numeric suffix like "-6": strip digits from base, keep suffix
-      const base   = suffixMatch[1].replace(/\d/g, '');
-      const suffix = suffixMatch[2];
-      raw = base + suffix;
-    } else {
-      // No numeric suffix: strip all digits from the whole value
-      raw = raw.replace(/\d/g, '');
-    }
+    // Allow only letters, digits, and hyphens — strip everything else
+    const cleaned = input.value.replace(/[^a-zA-Z0-9-]/g, '');
 
-    this.examFormData.questionPaperName = raw;
-    input.value = raw;
+    this.examFormData.questionPaperName = cleaned;
+    input.value = cleaned;
     this.questionPaperNameExists = false;
     this.onHeaderFieldChanged();
   }

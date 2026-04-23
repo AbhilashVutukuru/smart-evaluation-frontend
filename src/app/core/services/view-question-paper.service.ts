@@ -32,7 +32,8 @@ export interface QuestionPaperViewDto {
   academicYear:          string;
   totalMarks:            number;
   totalQuestions:        number;
-  answerSheetsSubmitted: boolean;
+  //answerSheetsSubmitted: boolean;
+  answerSheetsUploaded: boolean;
   examDate:              string | null;  // ISO date string from backend, null if not set
   isLocked:              boolean;        // computed by backend
   questions:             QuestionPaperDetailDto[];
@@ -75,6 +76,7 @@ export class ViewQuestionPaperService {
       .pipe(map((res) => {
         const d = res.data;
         d.answerSheetsSubmitted = d.answerSheetsSubmitted ?? d.AnswerSheetsSubmitted ?? false;
+        d.answerSheetsUploaded  = d.answerSheetsUploaded  ?? d.AnswerSheetsUploaded  ?? false;
         d.examDate              = d.examDate              ?? d.ExamDate              ?? null;
         d.isLocked              = d.isLocked              ?? d.IsLocked              ?? false;
         return d as QuestionPaperViewDto;

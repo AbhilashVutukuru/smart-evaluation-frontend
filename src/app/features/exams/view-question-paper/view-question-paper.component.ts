@@ -408,7 +408,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   enterEditMode(): void {
     if (!this.questionPaper) return;
     if (this.isLocked) {
-      const reason = this.questionPaper.answerSheetsSubmitted
+      const reason = this.questionPaper.answerSheetsUploaded
         ? 'Answer sheets have been submitted — this question paper can no longer be edited.'
         : 'The exam date has passed — this question paper can no longer be edited.';
       this.toastService.showWarning('Locked', reason);
