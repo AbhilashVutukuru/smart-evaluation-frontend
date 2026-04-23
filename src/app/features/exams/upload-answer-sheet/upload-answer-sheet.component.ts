@@ -1,9 +1,10 @@
-import { Component, inject, HostListener } from '@angular/core';
+import { Component, inject, HostListener, OnDestroy } from '@angular/core';
 import jsPDF from 'jspdf';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { UploadAnswerSheetService } from '../../../core/services/upload-answer-sheet.service';
+import { PageContextService } from '../../../core/services/page-context.service';
 
 import {
   StudentUploadStatus,
@@ -38,8 +39,9 @@ export interface PagePickerModal {
   templateUrl: './upload-answer-sheet.component.html',
   styleUrls: ['./upload-answer-sheet.component.css'],
 })
-export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
-  private uploadService = inject(UploadAnswerSheetService);
+export class UploadAnswerSheetsComponent extends BaseExamFilterComponent implements OnDestroy {
+  private uploadService    = inject(UploadAnswerSheetService);
+  private pageContext      = inject(PageContextService);
 
   // ─── Student data ─────────────────────────────────────────────────────────────
   students: StudentUploadStatus[] = [];
@@ -634,6 +636,12 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
             if (response.data.submittedAt) {
               this.submittedAt = this.parseUtcDate(response.data.submittedAt);
             }
+            // Update topbar subtitle
+            if (this.isSubmittedForEvaluation && this.submittedAt) {
+              this.pageContext.setSubtitle(`Submitted for evaluation on ${this.getSubmittedAtDisplay()}`);
+            } else {
+              this.pageContext.clearSubtitle();
+            }
             const rawStudents = response.data.students ?? [];
             if (rawStudents.length > 0) {
               this.students         = this.mapStudents(rawStudents);
@@ -939,6 +947,7 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
           this.isSubmittedForEvaluation = true;
           // Use server UTC timestamp from EvaluationQueue INSERT — not browser time
           this.submittedAt = this.parseUtcDate(response.data?.submittedAt) ?? new Date();
+          this.pageContext.setSubtitle(`Submitted for evaluation on ${this.getSubmittedAtDisplay()}`);
           this.toastService.showSuccess('Success', response.message ?? 'Evaluation started successfully');
           this.isSubmittingAll = false;
         }
@@ -1094,5 +1103,9 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent {
     this.lightboxIndex     = 0;
     this.lightboxPage      = 0;
     document.body.style.overflow = '';
+  }
+
+  override ngOnDestroy(): void {
+    this.pageContext.clearSubtitle();
   }
 }

@@ -1,5 +1,6 @@
 <!-- Upload Answer Sheets Component -->
 <div class="page-container">
+
 <app-exam-filter
     [classes]="classes"
     [sections]="sections"
@@ -33,13 +34,9 @@
     <!-- Header row: title + submitted notice | search | View Results button -->
     <div class="papers-header-row">
 
-      <!-- Left: title + submitted timestamp -->
+      <!-- Left: title -->
       <div class="header-title-group">
         <h4><i class="fas fa-users"></i> Students</h4>
-        <span class="submitted-notice" *ngIf="isSubmittedForEvaluation && submittedAt">
-          <i class="fas fa-check-circle"></i>
-          Submitted for evaluation on {{ getSubmittedAtDisplay() }}
-        </span>
       </div>
 
       <!-- Centre: search -->
