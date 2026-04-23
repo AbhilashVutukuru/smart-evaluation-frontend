@@ -13,6 +13,10 @@ export interface CreateQuestionPaperState {
   allExamTypes:         ExamTypeDto[];
   questionsLocked:      boolean;
   questionsFrozen:      boolean;
+  displayClassName?:    string;
+  displaySubjectName?:  string;
+  displayExamTypeName?: string;
+  editingPaperId?:      number;
 }
 
 @Injectable({ providedIn: 'root' })
