@@ -17,10 +17,9 @@ import {
   QuestionPaperDetailDto,
   QuestionPaperSummaryDto,
   QuestionPaperViewDto,
+  UpdateQuestionPaperPayload,
   ViewQuestionPaperService,
 } from '../../../core/services/view-question-paper.service';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../environments/environment';
 import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
 import { CreateQuestionPaperStateService } from '../../../core/services/create-question-paper.state.service';
 
@@ -64,9 +63,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
   private stateService         = inject(CreateQuestionPaperStateService);
   private toastService         = inject(ToastService);
   private errorHandler         = inject(ErrorHandlerService);
-  private http                 = inject(HttpClient);
   private router               = inject(Router);
-  private apiUrl               = environment.apiUrl;
   private route                = inject(ActivatedRoute);
 
   // FIX: destroy$ cancels all subscriptions on destroy
@@ -564,7 +561,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
 
-    const payload = {
+    const payload: UpdateQuestionPaperPayload = {
       totalMarks:        this.draft.totalMarks,
       questionPaperName: this.draft.questionPaperName,
       questionsEdited:   this.questionsEdited,
@@ -586,12 +583,7 @@ export class ViewQuestionPaperComponent implements OnInit, OnDestroy {
         : [],
     };
 
-    // FIX: takeUntil — cancel if component destroyed while save is in flight
-    this.http
-      .put<{ success: boolean; message: string }>(
-        `${this.apiUrl}/question-paper/${this.questionPaper.questionPaperId}`,
-        payload,
-      )
+    this.viewService.updateQuestionPaper(this.questionPaper.questionPaperId, payload)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {

@@ -52,6 +52,14 @@ export interface QuestionPaperSummaryDto {
   lockReason:            string | null;  // 'Date Passed' | 'Answer Sheet Submitted' | null
 }
 
+export interface UpdateQuestionPaperPayload {
+  totalMarks:        number;
+  questionPaperName: string;
+  questionsEdited:   boolean;
+  examDate:          string | null;
+  questions:         any[];
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -71,6 +79,16 @@ export class ViewQuestionPaperService {
         d.isLocked              = d.isLocked              ?? d.IsLocked              ?? false;
         return d as QuestionPaperViewDto;
       }));
+  }
+
+  updateQuestionPaper(
+    questionPaperId: number,
+    payload: UpdateQuestionPaperPayload,
+  ): Observable<{ success: boolean; message: string }> {
+    return this.http.put<{ success: boolean; message: string }>(
+      `${this.apiUrl}/question-paper/${questionPaperId}`,
+      payload,
+    );
   }
 
   // Returns all question papers for a class (all subjects, all exam types)
