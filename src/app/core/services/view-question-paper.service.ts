@@ -99,7 +99,7 @@ export class ViewQuestionPaperService {
     if (subjectId > 0) params = params.set('subjectId', subjectId);
     return this.http
       .get<{ success: boolean; data: any[] }>(
-        `${this.apiUrl}/question-paper/by-class/${classId}`,
+        `${this.apiUrl}/question-paper/class/${classId}`,
         { params }
       )
       .pipe(map((res) => (res.data ?? []).map((d: any) => ({

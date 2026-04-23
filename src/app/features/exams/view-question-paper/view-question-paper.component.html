@@ -159,7 +159,7 @@
                 <span class="header-info-tooltip">
                   <strong class="tip-locked">Locked</strong>
                   <ul>
-                    <li>Answer sheets already submitted</li>
+                    <li>Answer sheets already uploaded</li>
                     <li>Exam date has passed</li>
                   </ul>
                   <strong class="tip-editable">Editable</strong>
@@ -242,13 +242,13 @@
         </span>
         <span *ngIf="isLocked && !questionPaper.answerSheetsUploaded" class="badge badge-locked">
           <i class="fas fa-calendar-times"></i>
-          Locked — exam date passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
-        </span>
-        <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
-          <i class="fas fa-edit"></i> Edit Question Paper
-        </button>
-        <button *ngIf="!isEditMode" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
+          Locked — Exam Date Passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
+        </span>      
+        <button *ngIf="!isEditMode && !isLocked" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
           <i class="fas fa-trash-alt"></i> Delete
+        </button>
+          <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
+          <i class="fas fa-edit"></i> Edit Question Paper
         </button>
         <!-- Save All Changes / Cancel Edit buttons commented out —
              editing is now handled by Create Question Paper component
