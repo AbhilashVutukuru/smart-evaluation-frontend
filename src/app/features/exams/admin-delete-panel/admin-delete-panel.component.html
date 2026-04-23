@@ -1,0 +1,107 @@
+<!--
+  AdminDeletePanelComponent
+  ─────────────────────────
+  Visible only for venkatlearning2025@gmail.com.
+  DO NOT add upload/evaluation logic here.
+-->
+
+<ng-container *ngIf="isSuperAdmin">
+
+  <div class="adp-wrapper">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="adp-header">
+      <span class="adp-title">
+        <i class="fas fa-shield-alt"></i> Admin Delete Panel
+      </span>
+      <span class="adp-subtitle">
+        StudentAnswerSheet · StudentAnswer · StudentRubric · EvaluationQueue + blobs
+      </span>
+    </div>
+
+    <!-- ── Body ──────────────────────────────────────────────────────────── -->
+    <div class="adp-body">
+
+      <!-- ── 1. Delete Section ─────────────────────────────────────────── -->
+      <div class="adp-action-card adp-action-warning">
+        <div class="adp-action-icon">
+          <i class="fas fa-layer-group"></i>
+        </div>
+        <div class="adp-action-content">
+          <p class="adp-action-label">Delete Section</p>
+          <p class="adp-action-desc">
+            Deletes all answer sheets for the <strong>current filter</strong>:
+          </p>
+          <!-- Current filter chips -->
+          <div class="adp-filter-chips" *ngIf="filterLabel">
+            <span class="adp-chip" *ngIf="className">
+              <i class="fas fa-graduation-cap"></i> {{ className }}
+            </span>
+            <span class="adp-chip" *ngIf="sectionName">
+              <i class="fas fa-users"></i> {{ sectionName }}
+            </span>
+            <span class="adp-chip" *ngIf="paperName">
+              <i class="fas fa-file-alt"></i> {{ paperName }}
+            </span>
+          </div>
+          <p class="adp-uploaded-count">
+            <i class="fas fa-info-circle"></i>
+            {{ uploadedCount }} uploaded sheet(s) in this section
+          </p>
+          <button class="adp-btn adp-btn-warning"
+            (click)="deleteSection()"
+            [disabled]="isDeletingSection || isDeletingAll || !classId || !sectionId || !questionPaperId">
+            <i [class]="isDeletingSection ? 'fas fa-spinner fa-spin' : 'fas fa-layer-group'"></i>
+            {{ isDeletingSection ? 'Deleting...' : 'Delete Section (' + uploadedCount + ')' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Divider ────────────────────────────────────────────────────── -->
+      <div class="adp-divider"></div>
+
+      <!-- ── 2. Delete ALL ─────────────────────────────────────────────── -->
+      <div class="adp-action-card adp-action-danger">
+        <div class="adp-action-icon">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <div class="adp-action-content">
+          <p class="adp-action-label">Delete ALL Sections</p>
+          <p class="adp-action-desc">
+            Permanently removes answer sheets for
+            <strong>every section</strong> of
+            <strong>{{ paperName || 'this question paper' }}</strong>.
+            Not limited to the current filter.
+          </p>
+          <button class="adp-btn adp-btn-danger"
+            (click)="deleteAll()"
+            [disabled]="isDeletingAll || isDeletingSection || !questionPaperId">
+            <i [class]="isDeletingAll ? 'fas fa-spinner fa-spin' : 'fas fa-trash-alt'"></i>
+            {{ isDeletingAll ? 'Deleting...' : 'Delete ALL Sections' }}
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /adp-body -->
+
+  </div><!-- /adp-wrapper -->
+
+</ng-container>
+
+<!-- ── Confirm dialog ────────────────────────────────────────────────────────── -->
+<div class="adp-confirm-overlay" *ngIf="confirmDialog" (click)="confirmCancel()">
+  <div class="adp-confirm-box" (click)="$event.stopPropagation()">
+    <div class="adp-confirm-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <p *ngFor="let line of confirmDialog.lines" class="adp-confirm-msg">{{ line }}</p>
+    <div class="adp-confirm-actions">
+      <button class="adp-btn adp-btn-secondary" (click)="confirmCancel()">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="adp-btn adp-btn-danger" (click)="confirmOk()">
+        <i class="fas fa-check"></i> {{ confirmDialog.okLabel }}
+      </button>
+    </div>
+  </div>
+</div>

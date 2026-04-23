@@ -406,6 +406,24 @@
         {{ isSubmittingAll ? 'Submitting...' : 'Submit All For Evaluation' }}
       </button>
     </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         ADMIN DELETE PANEL — venkatlearning2025@gmail.com only.
+         Separate component. Do NOT mix with upload logic above.
+         ═══════════════════════════════════════════════════════════ -->
+    <app-admin-delete-panel
+      [students]="students"
+      [questionPaperId]="selectedQuestionPaperId"
+      [classId]="selectedClass   ? +selectedClass   : null"
+      [sectionId]="selectedSection ? +selectedSection : null"
+      [className]="getSelectedName(classes,    selectedClass,   'className')"
+      [sectionName]="getSelectedName(sections, selectedSection, 'sectionName')"
+      [paperName]="selectedPaperName"
+      [userEmail]="userEmail"
+      (studentsChanged)="onAdminStudentsChanged($event)">
+    </app-admin-delete-panel>
+    <!-- ══════════════════════════════════════════════════════════ -->
+
   </div>
 
 
