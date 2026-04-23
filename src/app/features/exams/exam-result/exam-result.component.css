@@ -664,6 +664,12 @@
   .split-panel-label { font-size: 0.75rem; }
 }
 /* ── Navigation Prev/Next — brand blue ──────────────────────── */
+.navigation-buttons {
+  margin-top: 0.5rem !important;
+  padding-top: 0.75rem !important;
+}
+
+
 .navigation-buttons .btn-secondary:not(:disabled),
 .navigation-buttons .btn-lg:not(:disabled) {
   background: var(--blue) !important;
@@ -699,3 +705,8 @@
 }
 /* ── Extended search (no badge on right) ── */
 .er-search { flex: 1; max-width: 100%; }
+
+/* Reduce gap between last table and nav buttons */
+.question-section:last-of-type {
+  margin-bottom: 0 !important;
+}
