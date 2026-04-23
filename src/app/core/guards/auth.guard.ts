@@ -20,10 +20,11 @@ export const authGuard: CanActivateFn = (route, state) => {
     map(user => {
       if (user) return true;
 
-      // FIX: return UrlTree instead of router.navigate() + return false.
+      // Return UrlTree instead of router.navigate() + return false.
       // UrlTree is the Angular-recommended way — it lets the router manage
       // the navigation itself, preventing double-navigation race conditions.
-      // FIX: sanitize returnUrl — reject absolute URLs and protocol-relative
+      //
+      // Sanitize returnUrl — reject absolute URLs and protocol-relative
       // URLs to prevent open redirect attacks (attacker links to
       // /auth/login?returnUrl=https://evil.com and user gets redirected there).
       const raw       = state.url;
@@ -41,6 +42,12 @@ export const authGuard: CanActivateFn = (route, state) => {
 // Protects routes that require specific roles.
 // Usage in routes:
 //   canActivate: [authGuard, roleGuard(['Admin', 'SuperAdmin'])]
+//
+// IMPORTANT: This guard reads role synchronously from currentUserSubject.
+// It is safe ONLY because APP_INITIALIZER awaits authService.initialize()
+// before the router activates any route. If APP_INITIALIZER ever becomes
+// non-awaited, currentUserSubject will be null at guard evaluation time
+// and every authenticated user will be redirected to /unauthorized silently.
 // ─────────────────────────────────────────────────────────────
 export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
   return () => {
@@ -69,6 +76,7 @@ export const roleGuard = (allowedRoles: string[]): CanActivateFn => {
  *   - Data URLs:               data:text/html,...
  *   - Javascript URLs:         javascript:alert(1)
  *   - Anything not starting with /
+ *   - Auth routes as returnUrl: /auth/login, /auth/forgot-password etc.
  */
 function isSafeReturnUrl(url: string): boolean {
   if (!url) return false;
