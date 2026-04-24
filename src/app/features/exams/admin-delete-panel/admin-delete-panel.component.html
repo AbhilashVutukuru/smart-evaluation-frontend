@@ -5,7 +5,7 @@
   DO NOT add upload/evaluation logic here.
 -->
 
-<ng-container *ngIf="isSuperAdmin">
+<ng-container *ngIf="isSuperAdmin || isIndowest">
 
   <div class="adp-wrapper">
 
@@ -60,10 +60,10 @@
       </div>
 
       <!-- ── Divider ────────────────────────────────────────────────────── -->
-      <div class="adp-divider"></div>
+      <div class="adp-divider" *ngIf="isSuperAdmin"></div>
 
       <!-- ── 2. Delete ALL ─────────────────────────────────────────────── -->
-      <div class="adp-action-card adp-action-danger">
+      <div class="adp-action-card adp-action-danger" *ngIf="isSuperAdmin">
         <div class="adp-action-icon">
           <i class="fas fa-trash-alt"></i>
         </div>
