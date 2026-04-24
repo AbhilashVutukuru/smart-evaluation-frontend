@@ -1060,6 +1060,10 @@ label.disabled {
 .cqp-cancel-btn:hover { background: var(--red); color: var(--white); transform: translateY(-1px); }
 
 /* ─── Editing chip in header ─────────────────────────────────── */
+/* ─── Back to List row — edit mode only ─────────────────────────────────────── */
+/* .btn-back-pill → global.css; cqp-back-row is the CQP-specific wrapper */
+.cqp-back-row { display: flex; margin-bottom: 0.75rem; }
+
 /* ─── Input format hint ──────────────────────────────────────────────────────── */
 .input-format-hint {
   display: inline-flex;

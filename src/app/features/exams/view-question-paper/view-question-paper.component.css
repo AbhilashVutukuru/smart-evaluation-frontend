@@ -69,28 +69,7 @@
 .btn:disabled,
 .btn[disabled] { pointer-events: auto !important; cursor: not-allowed !important; }
 
-/* Back Button */
-.back-btn-row { display: flex; margin-bottom: 0.75rem; }
-
-.btn-back-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0;
-  background: none;
-  border: none;
-  color: var(--blue);
-  font-size: 0.875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s;
-  font-family: inherit;
-}
-
-.btn-back-pill i       { font-size: 0.75rem; transition: transform 0.15s; }
-.btn-back-pill:hover   { color: var(--blue); font-weight: 700; }
-.btn-back-pill:hover i { transform: translateX(-3px); }
-
+/* .back-btn-row, .btn-back-pill → global.css */
 .btn-back {
   padding: 0.5rem 1.1rem;
   background: var(--app-bg);

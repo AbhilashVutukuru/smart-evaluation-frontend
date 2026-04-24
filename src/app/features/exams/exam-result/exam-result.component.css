@@ -87,6 +87,14 @@
 }
 
 /* .rubric-table base → global.css */
+/* table-layout:auto — browser sizes each column by its content */
+.rubric-table { table-layout: auto; width: 100%; }
+/* Columns size dynamically based on content */
+.rubric-table th:nth-child(2), .rubric-table td:nth-child(2) { text-align: center; white-space: nowrap; }
+.rubric-table th:nth-child(3), .rubric-table td:nth-child(3) { text-align: center; white-space: nowrap; }
+.rubric-table th:nth-child(4), .rubric-table td:nth-child(4) { text-align: center; }
+.rubric-table th:nth-child(5), .rubric-table td:nth-child(5) { text-align: center; }
+
 .criterion-cell { max-width: 250px; padding: 0.5rem; }
 
 /* .scrollable-criterion → global.css */
@@ -292,4 +300,4 @@
 /* Reduce gap between last table and nav buttons */
 .question-section:last-of-type {
   margin-bottom: 0 !important;
-}
+}.criterion-cell { max-width: 250px; padding: 0.5rem; }
