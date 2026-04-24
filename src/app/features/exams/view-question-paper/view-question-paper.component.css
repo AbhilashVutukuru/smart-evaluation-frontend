@@ -1,7 +1,7 @@
 /* ============================================================
    VIEW QUESTION PAPER — COMPONENT STYLES
-   Brand Colors  : 🔵 Blue #0ea4f4 | 🟢 Green #7fbb06
-                   🔴 Orange-Red #f85310 | 🟡 Yellow #ffbb0a
+   Brand Colors  : var(--blue) | var(--green)
+                   var(--red) | var(--yellow)
    Global CSS handles: .btn, .btn-primary, .btn-secondary,
    .btn-success, .btn-danger, .card, .form-control, .form-label,
    .required, .row, .col-md-*, .mb-3, .table, .badge,
@@ -112,7 +112,7 @@
 /* Edit Paper Button — brand green */
 .btn-edit-paper {
   background: var(--green);
-  color: white !important;
+  color: var(--white) !important;
   border: none;
   padding: 0.625rem 1.25rem;
   border-radius: 0.375rem;
@@ -125,13 +125,13 @@
   gap: 0.5rem;
 }
 
-.btn-edit-paper:hover:not(:disabled)  { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
-.btn-edit-paper:active:not(:disabled) { background: var(--green-dark) !important; color: white !important; transform: translateY(0); }
+.btn-edit-paper:hover:not(:disabled)  { background: var(--green-dark); transform: translateY(-2px); box-shadow: var(--shadow-green); }
+.btn-edit-paper:active:not(:disabled) { background: var(--green-dark) !important; color: var(--white) !important; transform: translateY(0); }
 
 /* Delete Paper Button — brand red */
 .btn-delete-paper {
   background: var(--red);
-  color: white !important;
+  color: var(--white) !important;
   border: none;
   padding: 0.625rem 1.25rem;
   border-radius: 0.375rem;
@@ -144,8 +144,8 @@
   gap: 0.5rem;
 }
 
-.btn-delete-paper:hover:not(:disabled)  { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
-.btn-delete-paper:active:not(:disabled) { background: var(--red-dark) !important; color: white !important; transform: translateY(0); }
+.btn-delete-paper:hover:not(:disabled)  { background: var(--red-dark); transform: translateY(-2px); box-shadow: var(--shadow-red); }
+.btn-delete-paper:active:not(:disabled) { background: var(--red-dark) !important; color: var(--white) !important; transform: translateY(0); }
 
 /* Cancel Edit Button */
 .btn-cancel-edit {
@@ -163,12 +163,12 @@
   gap: 0.5rem;
 }
 
-.btn-cancel-edit:hover { background: var(--red); color: white; }
+.btn-cancel-edit:hover { background: var(--red); color: var(--white); }
 
 /* Question-level Reset Button */
 .btn-cancel-question {
   background: var(--yellow);
-  color: #fff !important;
+  color: var(--white) !important;
   border: 2px solid var(--yellow);
   padding: 0.45rem 1rem;
   border-radius: var(--border-radius);
@@ -185,9 +185,9 @@
 .btn-cancel-question:active:not(:disabled) {
   background: var(--yellow-dark) !important;
   border-color: var(--yellow-dark) !important;
-  color: #fff !important;
+  color: var(--white) !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(255, 187, 10, 0.5);
+  box-shadow: var(--shadow-yellow);
 }
 
 /* Expand Button */
@@ -209,7 +209,7 @@
 
 /* ─── Badges ────────────────────────────────────────────────────────────────── */
 /* .badge — global.css */
-.badge-primary   { background: var(--blue); color: white; padding: 0.35rem 0.75rem; border-radius: 1rem; }
+.badge-primary   { background: var(--blue); color: var(--white); padding: 0.35rem 0.75rem; border-radius: 1rem; }
 .badge-locked    { background: var(--red-light); color: var(--red); padding: 0.5rem 0.6rem; border-radius: 1rem; font-size: 0.83rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.375rem; }
 .badge-locked-sm { background: var(--red-light); color: var(--red); padding: 0.375rem 0.75rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 1rem; }
 .badge-editable  { background: var(--green-light); color: var(--green); padding: 0.375rem 0.75rem; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem; border-radius: 1rem; }
@@ -323,7 +323,7 @@
 
 .date-cal-icon:hover { color: var(--blue-dark); }
 .exam-date-error             { display: flex; align-items: center; gap: 0.3rem; color: var(--red); font-size: 0.75rem; margin-top: 0.3rem; }
-.input-date-error            { border-color: var(--red) !important; box-shadow: 0 0 0 3px rgba(248,83,16,0.15) !important; }
+.input-date-error            { border-color: var(--red) !important; box-shadow: var(--shadow-red-input) !important; }
 
 /* ─── Question Go To Dropdown (inline right of question header) ─────────────── */
 .question-goto-row  { margin-bottom: 0; }
@@ -347,7 +347,7 @@
 
 .question-header-with-marks h5 { margin: 0; font-size: 1.125rem; display: flex; align-items: center; gap: 0.5rem; }
 
-.marks-badge    { background: var(--blue); color: white; padding: 0.375rem 1rem; border-radius: 1.25rem; font-size: 0.9375rem; font-weight: 700; }
+.marks-badge    { background: var(--blue); color: var(--white); padding: 0.375rem 1rem; border-radius: 1.25rem; font-size: 0.9375rem; font-weight: 700; }
 .marks-badge-sm { background: var(--blue-light); color: var(--blue); padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700; }
 .marks-badge-sm.marks-mismatch { background: var(--red-light); color: var(--red); }
 
@@ -372,7 +372,7 @@
 
 .section-label .fa-clipboard-question {
   background: var(--blue);
-  color: white;
+  color: var(--white);
   border-radius: 50%;
   width: 1.125rem;
   height: 1.125rem;
@@ -469,8 +469,8 @@
 /* ─── Rubric Edit ───────────────────────────────────────────────────────────── */
 .rubric-edit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem; }
 
-.rubric-total-badge                    { background: var(--green); color: white; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 600; }
-.rubric-total-badge.marks-mismatch     { background: var(--red); color: white; }
+.rubric-total-badge                    { background: var(--green); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 600; }
+.rubric-total-badge.marks-mismatch     { background: var(--red); color: var(--white); }
 
 .rubric-text-edit   { width: 100%; resize: vertical; min-height: 50px; font-size: 0.8125rem; font-family: inherit; }
 .rubric-marks-input { width: 70px; text-align: center; }
@@ -490,16 +490,16 @@
   padding: 0;
 }
 
-.btn-add-rubric                         { background: var(--green); color: white; }
+.btn-add-rubric                         { background: var(--green); color: var(--white); }
 .btn-add-rubric:hover                   { background: var(--green-dark); transform: scale(1.1); }
-.btn-remove-rubric                      { background: var(--red); color: white; }
+.btn-remove-rubric                      { background: var(--red); color: var(--white); }
 .btn-remove-rubric:hover:not(:disabled) { background: var(--red-dark); transform: scale(1.1); }
 .btn-remove-rubric:disabled             { opacity: 0.35; cursor: not-allowed; }
 
 .no-rubric-state { display: flex; align-items: center; padding: 0.75rem 1rem; background: var(--gray-50); border: 1px dashed var(--gray-300); border-radius: 0.5rem; font-size: 0.875rem; color: var(--gray-500); flex-wrap: wrap; gap: 0.5rem; }
 
 /* ─── Navigation Buttons ────────────────────────────────────────────────────── */
-/* .navigation-buttons — global.css */
+/* .navigation-buttons — global.css handles layout + pill shape */
 /* Override global 2rem margin-top to tighten gap after table */
 .navigation-buttons {
   margin-top: 0.5rem !important;
@@ -511,8 +511,33 @@
   .navigation-buttons .btn { width: 100%; justify-content: center; }
 }
 
-.navigation-buttons .btn-secondary { background: var(--blue); color: white; }
-.navigation-buttons .btn-secondary:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
+/* All nav buttons — solid blue pill whether active or disabled, matches exam-result */
+.navigation-buttons .btn-secondary:not(:disabled),
+.navigation-buttons .btn-lg:not(:disabled) {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+}
+
+/* Hover state */
+.navigation-buttons .btn-secondary:hover:not(:disabled),
+.navigation-buttons .btn-lg:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-blue);
+}
+
+/* Disabled — stays blue at reduced opacity, same as btn-prev in global */
+.navigation-buttons .btn-secondary:disabled,
+.navigation-buttons .btn-lg:disabled {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
 
 /* ─── Error / Empty / Spinner ───────────────────────────────────────────────── */
 .error-text    { display: flex; align-items: center; gap: 0.375rem; font-size: 0.8rem;  font-weight: 500;color: var(--red); margin-top: 0.5rem; }
@@ -589,7 +614,7 @@
   flex-shrink: 0;
 }
 
-.btn-close-fullscreen:hover { background: var(--red); color: white; transform: scale(1.1); }
+.btn-close-fullscreen:hover { background: var(--red); color: var(--white); transform: scale(1.1); }
 
 @media (max-width: 767px) {
   .fullscreen-modal   { padding: 1rem; }
@@ -622,133 +647,9 @@
 }
 
 
-.filter-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.filter-card-header.is-collapsed { cursor: pointer; }
-.filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
-
-.collapse-indicator {
-  font-size: 0.75rem;
-  color: var(--blue);
-  margin-left: 0.5rem;
-  transition: var(--transition);
-}
-
-.filter-card-body {
-  overflow: visible;                        /* ← expanded: never clips .select-icon */
-  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
-  max-height: 1000px;
-  opacity: 1;
-  margin-top: 1.25rem;
-}
-
-.filter-card-body.collapsed {
-  overflow: hidden;                         /* ← only hidden when actually collapsed */
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
-  pointer-events: none;
-}
-
-.filter-summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-top: 0.625rem;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: var(--blue-light);
-  color: var(--blue-dark);
-  border-radius: 1rem;
-  padding: 0.2rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.filter-chip i { font-size: 0.65rem; }
-
-.section-label i {
-  font-size: 1rem !important;
-  color: var(--blue);
-}
-
-.section-label .fa-check-circle {
-  color: var(--green) !important;
-}
 /* ─── Table — NO overrides. global.css handles .table, .table th,
    .table td, .table thead fully. Same as upload-answer-sheet.  ── */
 
-/* ─── Search box above table ─────────────────────────────────── */
-.search-box-wrap {
-  margin-bottom: 0.75rem;
-}
-
-.search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.75rem;
-  color: var(--gray-400);
-  font-size: 0.875rem;
-  pointer-events: none;
-}
-
-.search-input {
-  padding-left: 2.25rem !important;
-  padding-right: 2.25rem !important;
-}
-
-.clear-search {
-  position: absolute;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--gray-400);
-  cursor: pointer;
-  padding: 0.25rem;
-  font-size: 0.875rem;
-}
-
-.clear-search:hover { color: var(--red); }
-/* ─── Papers header row: title | search | badge — all same line ─ */
-.papers-header-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.papers-header-row h4 {
-  margin: 0;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.papers-header-row .search-input-wrapper {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.papers-header-row .badge-primary {
-  flex-shrink: 0;
-  white-space: nowrap;
-}
 /* ─── Edit mode fullscreen ───────────────────────────────────────────────────── */
 .fullscreen-edit-body {
   padding: 1rem 1.5rem;
@@ -781,102 +682,16 @@
 
 /* ─── Confirm Dialogs — matches upload-answer-sheet style ────────────────────── */
 
-/* Overlay — same dark backdrop as fullscreen-modal but centred flex */
+/* ── Confirm Dialog — base styles (.confirm-dialog-box, .confirm-dialog-icon,
+   .confirm-dialog-title, .confirm-dialog-sub, .confirm-dialog-actions,
+   .confirm-ok-btn, .confirm-ok-btn--yellow, .confirm-cancel-btn) → global.css
+   VQP-specific: overlay z-index + .confirm-dialog-icon--danger variant (already global) ── */
+
+/* <div class="confirm-overlay"> — VQP overlay needs position:fixed + z-index */
 .confirm-overlay {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.55) !important;
-  backdrop-filter: blur(2px);
-}
-
-/* Dialog box */
-.confirm-dialog-box {
-  background: var(--app-bg);
-  border-radius: var(--border-radius-lg);
-  padding: 2rem 1.75rem 1.5rem;
-  width: min(90vw, 400px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  animation: confirmSlideUp 0.22s ease;
-}
-
-@keyframes confirmSlideUp {
-  from { transform: translateY(30px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* Icon circle — yellow warning (default) */
-.confirm-dialog-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  background: var(--yellow-light);
-  border: 2px solid var(--yellow);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--yellow);
-  flex-shrink: 0;
-}
-
-/* Icon circle — red danger variant */
-.confirm-dialog-icon--danger {
-  background: var(--red-light);
-  border-color: var(--red);
-  color: var(--red);
-}
-
-/* Title */
-.confirm-dialog-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  text-align: center;
-  margin: 0;
-}
-
-/* Sub text */
-.confirm-dialog-sub {
-  font-size: 0.875rem;
-  color: var(--gray-500);
-  text-align: center;
-  line-height: 1.55;
-  margin: 0;
-}
-
-/* Actions row */
-.confirm-dialog-actions {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.25rem;
-  flex-wrap: wrap;
-}
-
-/* Cancel button — red-light bg, red border/text, fills red on hover */
-.img-modal-cancel {
-  background: var(--red-light) !important;
-  color: var(--red) !important;
-  border: 2px solid var(--red) !important;
-  border-radius: var(--border-radius) !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 1rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.img-modal-cancel:hover:not(:disabled) {
-  background: var(--red) !important;
-  color: #fff !important;
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
 }
 
 /* OK button — solid red (delete) */
@@ -890,7 +705,7 @@
   border: 2px solid var(--red);
   border-radius: var(--border-radius);
   background: var(--red);
-  color: #fff !important;
+  color: var(--white) !important;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -898,19 +713,19 @@
   background: var(--red-dark);
   border-color: var(--red-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.4);
+  box-shadow: var(--shadow-red);
 }
 
 /* OK button — yellow variant (reset) */
 .confirm-ok-btn--yellow {
   background: var(--yellow);
   border-color: var(--yellow);
-  color: #fff !important;
+  color: var(--white) !important;
 }
 .confirm-ok-btn--yellow:hover:not(:disabled) {
   background: var(--yellow-dark);
   border-color: var(--yellow-dark);
-  box-shadow: 0 4px 14px rgba(255, 187, 10, 0.45);
+  box-shadow: var(--shadow-yellow);
 }
 
 /* Paper meta chips inside delete confirm dialog */

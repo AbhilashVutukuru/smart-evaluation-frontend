@@ -38,7 +38,7 @@
 /* ─── Select dropdowns — brand blue border only when selected ── */
 .select-wrapper select.form-control.selected {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.12);
+  box-shadow: var(--shadow-blue-sm);
 }
 
 /* ─── Collapsible filter card ────────────────────────────────── */
