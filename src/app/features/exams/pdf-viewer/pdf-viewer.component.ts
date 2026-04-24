@@ -12,13 +12,13 @@ import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet
     <div style="margin:0;padding:0;width:100%;height:100vh;
                 background:#404040;overflow:hidden;position:relative">
 
-      <!-- Download button -->
+      <!-- Download button — uses brand blue from styles.css -->
       <a *ngIf="blobUrl && fileName"
         [href]="blobUrl"
         [download]="fileName"
         style="position:fixed;top:10px;right:16px;z-index:9999;
-               background:#0ea4f4;color:white;padding:7px 16px;
-               border-radius:8px;font-family:sans-serif;font-size:13px;
+               background:var(--blue);color:var(--white);padding:7px 16px;
+               border-radius:var(--border-radius);font-family:sans-serif;font-size:13px;
                font-weight:600;text-decoration:none;
                display:flex;align-items:center;gap:6px;
                box-shadow:0 2px 8px rgba(0,0,0,0.3)">
@@ -36,14 +36,14 @@ import { ViewAnswerSheetService } from '../../../core/services/view-answer-sheet
       <!-- Loading -->
       <div *ngIf="isLoading"
         style="display:flex;align-items:center;justify-content:center;
-               height:100vh;color:white;font-family:sans-serif;font-size:1rem">
+               height:100vh;color:var(--white);font-family:sans-serif;font-size:1rem">
         <p>Loading answer sheet...</p>
       </div>
 
       <!-- Error -->
       <div *ngIf="error"
         style="display:flex;align-items:center;justify-content:center;
-               height:100vh;color:#fca5a5;font-family:sans-serif;font-size:1rem">
+               height:100vh;color:var(--red-light);font-family:sans-serif;font-size:1rem">
         <p>{{ error }}</p>
       </div>
 
