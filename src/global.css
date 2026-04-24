@@ -573,6 +573,22 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   font-size: var(--font-size-sm);
   line-height: 1.5;
 }
+/* <div class="warning-box"> — yellow informational callout box */
+.warning-box { background: var(--yellow-light); border: 1px solid var(--yellow); color: var(--yellow-dark); }
+/* <div class="error-box"> — red error callout box */
+.error-box   { background: var(--red-light);    border: 1px solid var(--red);    color: var(--red-dark); }
+
+/* Icon inside info/warning/error boxes */
+.info-box i,
+.warning-box i,
+.error-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+@media (max-width: 479px) {
+  .info-box,
+  .warning-box,
+  .error-box { padding: 0.875rem; font-size: var(--font-size-sm); gap: 0.625rem; }
+}
+
 
 .info-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
 
@@ -927,7 +943,7 @@ input[type="checkbox"] {
   transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
   max-height: 1000px;
   opacity: 1;
-  margin-top: 1.25rem;
+  margin-top: 0;
 }
 
 /* .collapsed modifier — clamps body to zero height with overflow:hidden */

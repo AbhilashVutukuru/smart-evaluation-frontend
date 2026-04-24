@@ -41,70 +41,9 @@
   box-shadow: var(--shadow-blue-sm);
 }
 
-/* ─── Collapsible filter card ────────────────────────────────── */
-.filter-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.filter-card-header h4 { margin: 0; }
-
-/* Only show pointer cursor when hasSearched (set via [style.cursor] in template) */
-.filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
-
-/* Chevron icon inline beside title — toggles fa-chevron-down / fa-chevron-up via template */
-.collapse-indicator {
-  font-size: 0.75rem;
-  color: var(--blue);
-  margin-left: 0.5rem;
-  vertical-align: middle;
-  transition: var(--transition);
-}
-
-/* ─── Expanded state: overflow VISIBLE so absolutely-positioned
-       .select-icon chevrons are never clipped.
-       overflow:hidden is only needed while animating closed.      ── */
-.filter-card-body {
-  overflow: visible;                        /* ← allows .select-icon to paint correctly */
-  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
-  max-height: 1000px;
-  opacity: 1;
-  margin-top: 1.25rem;
-}
-
-/* Collapsed: overflow:hidden is required to clip the sliding content */
-.filter-card-body.collapsed {
-  overflow: hidden;                         /* ← only hidden when actually collapsed */
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
-  pointer-events: none;
-}
-
-/* ─── Collapsed summary chips ────────────────────────────────── */
-.filter-summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-top: 0.625rem;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: var(--blue-light);
-  color: var(--blue-dark);
-  border-radius: 1rem;
-  padding: 0.2rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.filter-chip i { font-size: 0.65rem; }
+/* ─── Filter card collapse (.filter-card-header, .filter-card-body,
+   .filter-card-body.collapsed, .collapse-indicator,
+   .filter-summary, .filter-chip) → global.css ─── */
 
 .col-md-2 .btn {
   margin-top: 12px;
