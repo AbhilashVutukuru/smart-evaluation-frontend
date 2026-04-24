@@ -51,7 +51,7 @@ padding: 0.5rem 1.5rem 1.5rem;
 }
 
 .view-container .btn-back:hover {
-  background: #0ea4f4;
+  background: var(--primary);
   color: white;
   box-shadow: 0 3px 10px rgba(14,164,244,0.4);
   transform: translateX(-2px);
@@ -68,7 +68,7 @@ padding: 0.5rem 1.5rem 1.5rem;
   letter-spacing: -0.01em;
 }
 
-.view-container .header-title h2 i { color: var(--blue); flex-shrink: 0; }
+.view-container .header-title h2 i { color: var(--primary); flex-shrink: 0; }
 
 .view-container .breadcrumb {
   color: var(--gray-400);
@@ -92,7 +92,7 @@ padding: 0.5rem 1.5rem 1.5rem;
 .view-container .spinner {
   width: 2.5rem; height: 2.5rem;
   border: 3px solid var(--gray-200);
-  border-top-color: var(--blue);
+  border-top-color: var(--primary);
   border-radius: 50%;
   animation: ve-spin 0.8s linear infinite;
   margin: 0 auto 0.75rem;
@@ -133,16 +133,16 @@ padding: 0.5rem 1.5rem 1.5rem;
   padding: 0.625rem 1.125rem !important;
   background: var(--app-bg) !important;
   border-bottom: 1px solid var(--gray-100) !important;
-  border-top: 3px solid var(--blue) !important;
+  border-top: 3px solid var(--primary) !important;
   font-weight: 600 !important;
-  color: #1e293b !important;
+  color: var(--gray-900) !important;
   font-size: 1.0rem !important;
   margin-bottom: 0 !important;
   letter-spacing: 0.01em;
 }
 
 .view-container .card-header i {
-  color: var(--blue) !important;
+  color: var(--primary) !important;
   font-size: 0.875rem !important;
   width: 1.25rem;
   text-align: center;
@@ -177,7 +177,7 @@ padding: 0.5rem 1.5rem 1.5rem;
 .view-container .error-message,
 .view-container .error-message *,
 .view-container div.error-message {
-  color: var(--red) !important;
+  color: var(--danger) !important;
   font-size: 0.8rem !important;
   font-weight: 500 !important;
 }
@@ -190,7 +190,7 @@ padding: 0.5rem 1.5rem 1.5rem;
 }
 
 .view-container .error-message i {
-  color: var(--red) !important;
+  color: var(--danger) !important;
   font-size: 0.8rem !important;
   flex-shrink: 0;
 }
@@ -249,70 +249,63 @@ padding: 0.5rem 1.5rem 1.5rem;
 
 /* Primary — brand blue */
 .view-container .btn-primary {
-  background: var(--blue) !important;
+  background: var(--primary) !important;
   color: white !important;
   box-shadow: 0 2px 6px rgba(14,164,244,0.35) !important;
 }
 .view-container .btn-primary:hover:not(:disabled) {
-  background: var(--blue-dark) !important;
+  background: var(--primary-dark) !important;
   box-shadow: 0 4px 14px rgba(14,164,244,0.45) !important;
   transform: translateY(-1px);
 }
 
 /* Secondary */
 .view-container .btn-secondary {
-  background: #64748b !important;
+  background: var(--gray-500) !important;
   color: white !important;
   box-shadow: 0 2px 6px rgba(100,116,139,0.3) !important;
 }
 .view-container .btn-secondary:hover:not(:disabled) {
-  background: #475569 !important;
+  background: var(--gray-700) !important;
   transform: translateY(-1px);
 }
 
 /* Cancel — brand red-orange with border */
 .view-container .btn-cancel {
-  background: var(--red-light) !important;     /* light background */
-  color: var(--red) !important;                /* text color */
-  border: 1.5px solid var(--red) !important;   /* border color */
+  background: var(--danger-light) !important;
+  color: var(--danger) !important;
+  border: 1.5px solid var(--danger) !important;
   box-shadow: none !important;
 }
+.view-container .btn-cancel i { color: var(--danger) !important; }
 
-.view-container .btn-cancel i {
-  color: var(--red) !important;
-}
-
-/*  FULL RED on hover */
 .view-container .btn-cancel:hover:not(:disabled) {
-  background: var(--red) !important;
+  background: var(--danger) !important;
   color: #fff !important;
-  border-color: var(--red) !important;
+  border-color: var(--danger) !important;
 }
-
-.view-container .btn-cancel:hover:not(:disabled) i {
-  color: #fff !important;
-}
+.view-container .btn-cancel:hover:not(:disabled) i { color: #fff !important; }
 
 /* Success — brand green */
 .view-container .btn-success {
-  background: var(--green) !important;
+  background: var(--success) !important;
   color: white !important;
   box-shadow: 0 2px 6px rgba(127,187,6,0.35) !important;
 }
 .view-container .btn-success:hover:not(:disabled) {
-  background: var(--green-dark) !important;
+  background: var(--success-dark) !important;
   box-shadow: 0 4px 14px rgba(127,187,6,0.45) !important;
   transform: translateY(-1px);
 }
 
 /* Danger — brand red */
 .view-container .btn-danger {
-  background: var(--red) !important;
+  background: var(--danger) !important;
   color: white !important;
   box-shadow: 0 2px 6px rgba(248,83,16,0.35) !important;
 }
 .view-container .btn-danger:hover:not(:disabled) {
-  background: var(--red-dark) !important;
+  background: var(--danger-dark) !important;
   box-shadow: 0 4px 14px rgba(248,83,16,0.45) !important;
   transform: translateY(-1px);
 }
@@ -347,7 +340,38 @@ padding: 0.5rem 1.5rem 1.5rem;
   .view-container .action-buttons { display: none !important; }
   .view-container .card {
     box-shadow: none !important;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--gray-200) !important;
     margin-bottom: 1rem !important;
   }
+}
+/* ─── Identity lock banner ───────────────────────────────────────────────────── */
+.identity-lock-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: var(--warning-light);
+  border: 1px solid var(--warning);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.875rem;
+  font-size: 0.8125rem;
+  color: var(--yellow-dark);
+  line-height: 1.5;
+}
+
+.identity-lock-banner i {
+  color: var(--yellow-dark);
+  font-size: 0.875rem;
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+}
+
+/* ─── Field lock icon (inline in label) ─────────────────────────────────────── */
+.field-lock-icon {
+  color: var(--yellow-dark);
+  font-size: 0.7rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  opacity: 0.85;
 }

@@ -43,6 +43,14 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
   showDeleteModal = false;
   showCancelModal = false;
 
+  // TRUE when the student has uploaded answer sheets — identity fields are locked.
+  // Locked fields: firstName, lastName, classId, sectionId, rollNumber.
+  // Reason: these fields are referenced by blob paths and DB records (StudentAnswerSheet).
+  hasAnswerSheets = false;
+
+  // The 5 identity fields that must not be editable when hasAnswerSheets = true
+  private readonly LOCKED_FIELDS = ['firstName', 'lastName', 'classId', 'sectionId', 'rollNumber'] as const;
+
   touchedFields: Set<string> = new Set();
 
   private _initializing = false;
@@ -165,6 +173,16 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
       });
   }
 
+  // ─── Identity lock helper ─────────────────────────────────
+  // Call this every time the form is enabled in edit mode.
+  // Disables the 5 identity fields when hasAnswerSheets is true.
+  private applyIdentityLocks(): void {
+    if (!this.hasAnswerSheets) return;
+    this.LOCKED_FIELDS.forEach(f =>
+      this.studentForm.get(f)?.disable({ emitEvent: false })
+    );
+  }
+
   private loadSectionsAndPatchSection(classId: number, sectionId: number | string): void {
     if (!classId) return;
     this.masterDataService.getSectionsByClass(classId)
@@ -176,11 +194,16 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
           const ctrl = this.studentForm.get('sectionId');
           if (!ctrl) return;
           this._initializing = true;
+          // Only temporarily enable if NOT a locked field in edit mode
+          const isLocked = this.mode === 'edit' && this.hasAnswerSheets;
           const wasDisabled = ctrl.disabled;
-          if (wasDisabled) ctrl.enable({ emitEvent: false });
+          if (wasDisabled && !isLocked) ctrl.enable({ emitEvent: false });
           ctrl.setValue(+sectionId, { emitEvent: false });
-          if (wasDisabled) ctrl.disable({ emitEvent: false });
+          // Re-disable if it was disabled (view mode) OR if it's locked
+          if (wasDisabled || isLocked) ctrl.disable({ emitEvent: false });
           this._initializing = false;
+          // Re-apply all locks after async patch — HTTP response arrives after enableEdit
+          this.applyIdentityLocks();
         },
         error: (error) => this.errorHandler.handle('Failed to load sections', error),
       });
@@ -219,6 +242,7 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
               rollNumber: s.rollNumber, admissionDate: s.admissionDate?.split('T')[0],
             });
             this._initializing = false;
+            this.hasAnswerSheets = !!s.hasAnswerSheets;
             if (s.classId) this.loadSectionsAndPatchSection(s.classId, s.sectionId);
           } else {
             this.toastService.showError('Error', 'Student not found');
@@ -240,9 +264,15 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
     this._initializing = true;
     this.studentForm.enable();
     this._initializing = false;
+
+    // Apply locks immediately before any async call
+    this.applyIdentityLocks();
+
     const classId   = this.studentForm.get('classId')?.value;
     const sectionId = this.studentForm.get('sectionId')?.value;
+    // loadSectionsAndPatchSection also calls applyIdentityLocks() after HTTP resolves
     if (classId) this.loadSectionsAndPatchSection(+classId, sectionId ?? '');
+
     this.toastService.showInfo('Edit Mode', 'You can now edit student details');
   }
 
@@ -280,6 +310,8 @@ export class StudentViewEditComponent extends BaseComponent implements OnInit {
     }
 
     this.loading = true;
+    // form.value already excludes disabled controls — locked fields are safe.
+    // Spread only the editable fields; never send locked identity values.
     const payload = { id: this.studentId, ...this.studentForm.value };
 
     this.studentService.updateStudent(payload)
