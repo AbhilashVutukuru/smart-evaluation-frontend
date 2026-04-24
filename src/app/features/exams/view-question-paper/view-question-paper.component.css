@@ -204,6 +204,8 @@
 .download-link.disabled { opacity: 0.5; pointer-events: none; cursor: default; }
 
 /* .results-page-header → global.css */
+/* <div class="paper-actions"> — flex row wrapping Delete + Edit Paper buttons */
+.paper-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
 /* ─── Student Info Grid ─────────────────────────────────────────────────────── */
 .student-info-grid {
   display: flex;
