@@ -1183,3 +1183,338 @@ input[type="checkbox"] {
   box-shadow: var(--shadow-red-sm) !important;
   transform: translateY(-1px);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SHARED — view-question-paper + exam-result components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Question Go To row ─────────────────────────────────────── */
+/* <div class="question-goto-row"> — zero-margin row wrapping the inline goto */
+.question-goto-row    { margin-bottom: 0; }
+/* <div class="question-goto-inline"> — flex pair: "Go to question ▸" label + select */
+.question-goto-inline { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+/* <p class="goto-label"> — small uppercase "Go to question #" label */
+.goto-label           { font-size: var(--font-size-xs); font-weight: 600; color: var(--gray-500); white-space: nowrap; margin: 0; }
+
+/* ─── Question section wrapper ───────────────────────────────── */
+/* <div class="question-section"> — spacing between each Q&A block */
+.question-section              { margin-bottom: 0.875rem; }
+.question-section:last-of-type { margin-bottom: 0 !important; }
+
+/* ─── Question header with marks ─────────────────────────────── */
+/* <div class="question-header-with-marks"> — gray bar with blue left border,
+   holds question title h5 on left and marks badge on right        */
+.question-header-with-marks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.75rem;
+  border-left: 4px solid var(--blue);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.question-header-with-marks h5 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 479px) {
+  .question-header-with-marks              { padding: 0.625rem 0.875rem; margin-bottom: 0.5rem; }
+  .question-header-with-marks h5           { font-size: 1rem; }
+}
+
+/* ─── Marks badges ───────────────────────────────────────────── */
+/* <span class="marks-badge"> — solid blue pill showing total/awarded marks */
+.marks-badge    { background: var(--blue); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 1.25rem; font-size: var(--font-size-sm); font-weight: 700; white-space: nowrap; }
+/* <span class="marks-badge-sm"> — smaller blue-light pill for sub-marks */
+.marks-badge-sm { background: var(--blue-light); color: var(--blue); padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700; }
+/* Mismatch variant — red when awarded ≠ expected */
+.marks-badge-sm.marks-mismatch { background: var(--red-light); color: var(--red); }
+
+/* ─── Section label ──────────────────────────────────────────── */
+/* <div class="section-label"> — small uppercase label before question block
+   e.g. "QUESTION TEXT:", "OFFICIAL ANSWER:", "VALIDATION RULES:" */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.section-label i                      { color: var(--blue); font-size: 1rem; }
+.section-label .fa-check-circle       { color: var(--green); }
+.section-label .fa-list-check         { color: var(--blue); }
+.section-label .fa-clipboard-question { color: var(--blue); }
+.section-label .fa-user-edit          { color: var(--blue); }
+
+/* ─── Section header row (overrides global .section-header bar) ─ */
+/* <div class="section-header"> — plain flex row, no border-left bar */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
+  text-transform: unset;
+}
+
+/* ─── Scrollable text boxes ──────────────────────────────────── */
+/* <div class="scrollable-text"> — read-only text display with max-height scroll */
+.scrollable-text {
+  padding: 0.875rem 1rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+
+.scrollable-text::-webkit-scrollbar       { width: 5px; }
+.scrollable-text::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+/* <div class="scrollable-criterion"> — rubric criterion cell with scroll */
+.scrollable-criterion { max-height: 80px; overflow-y: auto; line-height: 1.4; }
+.scrollable-criterion::-webkit-scrollbar       { width: 4px; }
+.scrollable-criterion::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+/* <div class="official-answer scrollable-text"> — green-tinted answer box */
+.official-answer {
+  background: var(--green-light);
+  border-color: var(--green-light);
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+  width: 100%;
+}
+
+.official-answer::-webkit-scrollbar       { width: 5px; }
+.official-answer::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+/* ─── Rubric table ───────────────────────────────────────────── */
+/* <table class="rubric-table"> — validation rules table inside question cards */
+.rubric-table       { font-size: var(--font-size-sm); }
+.rubric-table thead { background: var(--gray-50); }
+
+.rubric-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+
+.rubric-table td { padding: 0.875rem 1rem; vertical-align: middle; }
+.rubric-table tbody tr { border-bottom: 1px solid var(--gray-200); }
+
+@media (max-width: 767px) { .rubric-table th, .rubric-table td { padding: 0.625rem 0.75rem; font-size: 0.8125rem; } }
+@media (max-width: 479px) { .rubric-table th, .rubric-table td { padding: 0.5rem; font-size: var(--font-size-xs); } }
+
+/* ─── Student info grid ──────────────────────────────────────── */
+/* <div class="info-item"> — single label+value pair inside .student-info-grid */
+.info-item  { display: flex; flex-direction: column; gap: 0.25rem; }
+/* <span class="info-label"> — tiny uppercase field label */
+.info-label { font-size: var(--font-size-xs); color: var(--gray-500); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 0.375rem; }
+.info-label i { color: var(--blue); }
+/* <span class="info-value"> — the actual field value */
+.info-value { font-size: var(--font-size-sm); color: var(--gray-900); font-weight: 500; }
+
+/* ─── Results page sub-header ────────────────────────────────── */
+/* <div class="results-page-header"> — bordered flex row above question cards */
+.results-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--gray-200);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.results-page-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 767px) { .results-page-header h3 { font-size: 1.25rem; } }
+@media (max-width: 479px) { .results-page-header h3 { font-size: 1.1rem; } }
+
+/* ─── Expand button ──────────────────────────────────────────── */
+/* <button class="btn-expand"> — icon-only button to open fullscreen text view */
+.btn-expand {
+  background: none;
+  color: var(--blue);
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.btn-expand:hover { opacity: 1; transform: scale(1.15); color: var(--blue-dark); }
+
+/* ─── Navigation buttons — blue pill, shared state ───────────── */
+/* Both VQP (btn-secondary btn-lg) and ER (btn-primary) use these overrides */
+.navigation-buttons {
+  margin-top: 0.5rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.navigation-buttons .btn-secondary:not(:disabled),
+.navigation-buttons .btn-lg:not(:disabled),
+.navigation-buttons .btn-primary:not(:disabled) {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+}
+
+.navigation-buttons .btn-secondary:hover:not(:disabled),
+.navigation-buttons .btn-lg:hover:not(:disabled),
+.navigation-buttons .btn-primary:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-blue);
+}
+
+.navigation-buttons .btn-secondary:disabled,
+.navigation-buttons .btn-lg:disabled,
+.navigation-buttons .btn-primary:disabled {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 479px) {
+  .navigation-buttons      { flex-direction: column; gap: 0.75rem; }
+  .navigation-buttons .btn { width: 100%; justify-content: center; }
+}
+
+/* ─── Fullscreen modal ───────────────────────────────────────── */
+/* <div class="fullscreen-modal"> — fixed dark overlay for text fullscreen view */
+.fullscreen-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 2rem;
+  animation: fadeIn 0.2s;
+}
+
+/* <div class="fullscreen-content"> — white modal panel */
+.fullscreen-content {
+  background: var(--app-bg);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slideUp 0.3s;
+}
+
+/* <div class="fullscreen-header"> — top bar with title + close button */
+.fullscreen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid var(--gray-200);
+  flex-shrink: 0;
+}
+
+.fullscreen-header h4 { margin: 0; font-size: 1.125rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem; }
+
+/* <div class="fullscreen-body"> — scrollable text content area */
+.fullscreen-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--gray-700);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.fullscreen-body::-webkit-scrollbar       { width: 8px; }
+.fullscreen-body::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+
+/* <button class="btn-close-fullscreen"> — red × button in header top-right */
+.btn-close-fullscreen {
+  background: var(--red-light);
+  color: var(--red);
+  border: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-close-fullscreen:hover { background: var(--red); color: var(--white); transform: scale(1.1); }
+
+@media (max-width: 767px) {
+  .fullscreen-modal               { padding: 1rem; }
+  .fullscreen-content             { width: 100%; max-height: 90vh; border-radius: var(--border-radius); }
+  .fullscreen-header              { padding: 1rem; }
+  .fullscreen-header h4           { font-size: 1rem; }
+  .fullscreen-body                { padding: 1.25rem; font-size: var(--font-size-sm); }
+}
+
+@media (max-width: 479px) {
+  .fullscreen-modal   { padding: 0.5rem; }
+  .fullscreen-content { max-height: 95vh; border-radius: var(--border-radius); }
+  .fullscreen-header  { padding: 0.875rem; }
+  .fullscreen-body    { padding: 1rem; font-size: var(--font-size-sm); line-height: 1.6; }
+}
