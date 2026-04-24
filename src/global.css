@@ -943,7 +943,7 @@ input[type="checkbox"] {
   transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
   max-height: 1000px;
   opacity: 1;
-  margin-top: 0;
+  margin-top: 1rem;
 }
 
 /* .collapsed modifier — clamps body to zero height with overflow:hidden */
