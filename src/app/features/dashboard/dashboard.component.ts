@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardSummary } from '../../core/models/dashboard-summary';
+import { BaseComponent } from '../../core/base/base.component';
+
+
 
 @Component({
   selector: 'app-dashboard',
@@ -11,7 +14,7 @@ import { DashboardSummary } from '../../core/models/dashboard-summary';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent extends BaseComponent implements OnInit {
   private dashboardService = inject(DashboardService);
 
   summary: DashboardSummary | null = null;
@@ -19,21 +22,13 @@ export class DashboardComponent implements OnInit {
   error: string | null = null;
 
   ngOnInit(): void {
-    this.dashboardService.getSummary().subscribe({
-      next: (data) => {
-        this.summary = data;
-        this.isLoading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load dashboard data.';
-        this.isLoading = false;
-      },
+    this.dashboardService.getSummary().pipe(this.cancelOnDestroy()).subscribe({
+      next: (data) => { this.summary = data; this.isLoading = false; },
+      error: ()     => { this.error = 'Failed to load dashboard data.'; this.isLoading = false; },
     });
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  get isAdmin():   boolean { return this.summary?.role === 'Admin'; }
+  get isAdmin():   boolean { return this.summary?.role === 'Admin' || this.summary?.role === 'SuperAdmin'; }
   get isTeacher(): boolean { return this.summary?.role === 'Teacher'; }
   get isStudent(): boolean { return this.summary?.role === 'Student'; }
 
@@ -49,12 +44,9 @@ export class DashboardComponent implements OnInit {
   }
 
   formatDate(dateStr: string): string {
-    return new Date(dateStr).toLocaleDateString('en-IN', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    });
+    return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
   }
 
-  // Returns CSS class based on how complete the evaluation is
   getBreakdownRowClass(evaluated: number, total: number): string {
     if (total === 0) return '';
     const pct = (evaluated / total) * 100;

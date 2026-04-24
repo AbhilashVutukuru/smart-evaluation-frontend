@@ -1,11 +1,5 @@
-<div class="result-container">
-
-  <!-- Page Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-file-alt"></i> View Question Paper</h2>
-  </div>
-
-  <!-- ══ FILTER / LIST VIEW (hidden when detail page is open) ══ -->
+<div class="page-container">
+<!-- ══ FILTER / LIST VIEW (hidden when detail page is open) ══ -->
   <ng-container *ngIf="!showDetailPage">
 
   <!-- ── Filter Card ───────────────────────────────────────────────────────── -->
@@ -13,21 +7,28 @@
     <!-- Header — clickable to expand when collapsed -->
     <div class="filter-card-header"
       [class.is-collapsed]="isFilterCollapsed"
-      (click)="isFilterCollapsed && (isFilterCollapsed = false)">
+      [style.cursor]="hasSearched || showDetailPage ? 'pointer' : 'default'"
+      (click)="(hasSearched || showDetailPage) && (isFilterCollapsed = !isFilterCollapsed)">
       <h4 style="margin:0">
-        <i class="fas fa-filter"></i> Select Question Paper
-        <i *ngIf="isFilterCollapsed"
-          class="fas fa-chevron-down collapse-indicator"
-          title="Click to expand filters"></i>
+        <i class="fas fa-filter"></i> Select Question Papers
+        <i *ngIf="hasSearched || showDetailPage"
+          class="fas collapse-indicator"
+          [class.fa-chevron-down]="isFilterCollapsed"
+          [class.fa-chevron-up]="!isFilterCollapsed"
+          [title]="isFilterCollapsed ? 'Click to expand' : 'Click to collapse'"></i>
       </h4>
     </div>
 
     <!-- Collapsed summary chips -->
-    <div class="filter-summary" *ngIf="isFilterCollapsed && selectedClass">
+    <div class="filter-summary" *ngIf="isFilterCollapsed && selectedClass && (hasSearched || showDetailPage)">
       <span class="filter-chip" *ngIf="getClassName()">
         <i class="fas fa-layer-group"></i> {{ getClassName() }}
       </span>
-      <span class="filter-chip" *ngIf="getSubjectName()">
+      <!-- Subject chip: show name or "All Subjects" -->
+      <span class="filter-chip" *ngIf="isAllSubjects">
+        <i class="fas fa-book"></i> All Subjects
+      </span>
+      <span class="filter-chip" *ngIf="!isAllSubjects && getSubjectName()">
         <i class="fas fa-book"></i> {{ getSubjectName() }}
       </span>
       <span class="filter-chip" *ngIf="getExamTypeName()">
@@ -58,7 +59,7 @@
           <select class="form-control subject-select" [(ngModel)]="selectedSubject"
             [disabled]="!selectedClass || isLoadingSubjects"
             (change)="onSubjectChange()">
-            <option value="" style="color: #1f2937;">
+            <option value="">
               {{ isLoadingSubjects ? 'Loading...' : !selectedClass ? 'Select Class First' : 'All Subjects' }}
             </option>
             <!-- <option [value]="ALL_SUBJECTS">— All Subjects —</option> -->
@@ -70,76 +71,20 @@
 
       <!-- Show Papers button — inline next to Subject when All Subjects is chosen -->
       <!-- <div class="col-md-2 mb-3" *ngIf="isAllSubjects">
-        <button class="btn btn-primary" (click)="showPapers()" [disabled]="isLoadingAllPapers">
+        <button class="btn btn-primary" (click)="showPapers(); isFilterCollapsed = true" [disabled]="isLoadingAllPapers">
           <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
           {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
         </button>
       </div> -->
-      <div class="col-md-2 mb-3" *ngIf="selectedClass && isAllSubjects">
+      <div class="col-md-2 mb-3" *ngIf="selectedClass">
         <label class="form-label">&nbsp;</label>
-        <button class="btn btn-primary w-100" (click)="showPapers()" [disabled]="isLoadingAllPapers">
+        <button class="btn btn-primary w-100" (click)="showPapers(); isFilterCollapsed = true" [disabled]="isLoadingAllPapers">
           <i [class]="isLoadingAllPapers ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
           {{ isLoadingAllPapers ? 'Loading...' : 'Show Papers' }}
         </button>
       </div>
 
-      <!-- Exam Type -->
-      <div class="col-md-3 mb-3" *ngIf="selectedSubject && !isAllSubjects">
-        <label class="form-label">Exam Type <span class="required">*</span></label>
-        <div class="select-wrapper">
-          <select class="form-control" [(ngModel)]="selectedExamType"
-            [disabled]="isLoadingExamTypes"
-            (change)="onExamTypeChange()">
-            <option value="">
-              {{ isLoadingExamTypes ? 'Loading...' : 'Select Exam Type' }}
-            </option>
-            <option *ngFor="let et of examTypes" [value]="et.id">{{ et.examTypeName }}</option>
-          </select>
-          <i class="fas fa-chevron-down select-icon"></i>
-        </div>
-      </div>
 
-      <!-- Question Paper loading -->
-      <div class="col-md-3 mb-3" *ngIf="!isAllSubjects && isLoadingPapers">
-        <label class="form-label">Question Paper <span class="required">*</span></label>
-        <div class="form-control qp-loading">
-          <i class="fas fa-spinner fa-spin"></i> Loading...
-        </div>
-      </div>
-
-      <!-- Single paper WITH a name — readonly input -->
-      <div class="col-md-3 mb-3"
-        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length === 1 && questionPapers[0].questionPaperName">
-        <label class="form-label">Question Paper <span class="required">*</span></label>
-        <div class="qp-readonly-wrapper">
-          <input type="text" class="form-control qp-readonly-input"
-            [value]="questionPapers[0].questionPaperName" readonly disabled />
-        </div>
-      </div>
-
-      <!-- Multiple papers — dropdown -->
-      <div class="col-md-3 mb-3"
-        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length > 1">
-        <label class="form-label">Question Paper <span class="required">*</span></label>
-        <div class="select-wrapper">
-          <select class="form-control" [(ngModel)]="selectedQuestionPaperId">
-            <option [ngValue]="null">Select Question Paper</option>
-            <option *ngFor="let qp of questionPapers" [ngValue]="qp.id">
-              {{ qp.questionPaperName || '(Unnamed)' }}
-            </option>
-          </select>
-          <i class="fas fa-chevron-down select-icon"></i>
-        </div>
-      </div>
-
-      <!-- View Paper button — shown when papers are loaded (with or without name) -->
-      <div class="col-md-2 mb-3"
-        *ngIf="!isAllSubjects && !isLoadingPapers && questionPapers.length > 0">
-        <button class="btn btn-primary" (click)="loadQuestionPaper()" [disabled]="!canLoad || isLoadingPaper">
-          <i [class]="isLoadingPaper ? 'fas fa-spinner fa-spin' : 'fas fa-eye'"></i>
-          {{ isLoadingPaper ? 'Loading...' : 'View Paper' }}
-        </button>
-      </div>
 
     </div>
     </div><!-- /filter-card-body -->
@@ -157,10 +102,26 @@
   <!-- ══════════════════════════════════════════════════════════════════════════
        ALL SUBJECTS — summary table
   ══════════════════════════════════════════════════════════════════════════ -->
-  <div class="card" *ngIf="isAllSubjects && showAllPapersList">
+  <div class="card" *ngIf="showAllPapersList">
 
-    <div class="card-header-flex">
-      <h4><i class="fas fa-list-alt"></i> All Question Papers</h4>
+    <div class="papers-header-row">
+      <h4><i class="fas fa-list-alt"></i> Question Papers</h4>
+
+      <!-- Search Box — centred between title and badge -->
+      <div class="search-input-wrapper" *ngIf="!isLoadingAllPapers && allPapersList.length > 0">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by subject, exam type or question paper..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+        />
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()" type="button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
       <span class="badge badge-primary" *ngIf="allPapersList.length">
         {{ allPapersList.length }} Papers
       </span>
@@ -188,34 +149,44 @@
             <th>Subject</th>
             <th>Exam Type</th>
             <th>Question Paper</th>
-            <th class="text-center">Total Marks</th>
-            <th class="text-center">Questions</th>
-            <th class="text-center">Exam Date</th>
-            <th class="text-center">Status</th>
-            <th class="text-center">Description</th>
-            <th class="text-center">Action</th>
+            <th>Total Marks</th>
+            <th>Questions</th>
+            <th>Exam Date</th>
+            <th>
+              Status
+              <span class="header-info-icon status-info" tabindex="0" aria-label="Status info">
+                <i class="fas fa-info-circle"></i>
+                <span class="header-info-tooltip">
+                  <strong class="tip-locked">Locked</strong>
+                  <ul>
+                    <li>Answer sheets already uploaded</li>
+                    <li>Exam date has passed</li>
+                  </ul>
+                  <strong class="tip-editable">Editable</strong>
+                  <ul>
+                    <li>No submissions yet and exam date is upcoming</li>
+                  </ul>
+                </span>
+              </span>
+            </th>
+            <th>Description</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let paper of allPapersList; let i = index"
+          <tr *ngFor="let paper of filteredPapersList; let i = index"
             [class.active-row]="questionPaper?.questionPaperId === paper.questionPaperId">
             <td class="text-muted">{{ i + 1 }}</td>
-            <td><strong>{{ paper.subjectName }}</strong></td>
+            <td><strong class="roll-number">{{ paper.subjectName }}</strong></td>
             <td>{{ paper.examTypeName }}</td>
             <td>{{ paper.questionPaperName }}</td>
-            <td class="text-center">
-              <span class="badge badge-primary">{{ paper.totalMarks }}</span>
+            <td><span class="badge badge-primary">{{ paper.totalMarks }}</span></td>
+            <td>{{ paper.totalQuestions }}</td>
+            <td>
+              <span *ngIf="paper.examDate; else noDate">{{ paper.examDate | date:'dd MMM yyyy' }}</span>
+              <ng-template #noDate><span>—</span></ng-template>
             </td>
-            <td class="text-center">{{ paper.totalQuestions }}</td>
-            <td class="text-center">
-              <span *ngIf="paper.examDate; else noDate">
-                {{ paper.examDate | date:'dd MMM yyyy' }}
-              </span>
-              <ng-template #noDate>
-                <span class="text-muted">—</span>
-              </ng-template>
-            </td>
-            <td class="text-center">
+            <td>
               <span *ngIf="paper.isLocked" class="badge badge-locked-sm">
                 <i class="fas fa-lock"></i> Locked
               </span>
@@ -223,24 +194,24 @@
                 <i class="fas fa-unlock-alt"></i> Editable
               </span>
             </td>
-            <!-- Description: reason for lock, dash if editable -->
-            <td class="text-center">
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'" class="lock-reason date-passed">
-                <i class="fas fa-calendar-times"></i> Date Passed
+            <td>
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Date Passed'">
+                Exam Date Passed
               </span>
-              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheet Submitted'" class="lock-reason sheet-submitted">
-                <i class="fas fa-file-upload"></i> Answer Sheet Submitted
+              <span *ngIf="paper.isLocked && paper.lockReason === 'Answer Sheets Uploaded'">
+                Answer Sheets Uploaded
               </span>
-              <span *ngIf="!paper.isLocked" class="text-muted">—</span>
+              <span *ngIf="!paper.isLocked">—</span>
             </td>
-            <td class="text-center">
-              <button class="btn btn-primary btn-sm"
+            <td>
+              <a class="download-link"
                 (click)="viewPaperFromList(paper.questionPaperId)"
-                [disabled]="isLoadingPaper">
+                href="javascript:void(0)"
+                [class.disabled]="isLoadingPaper">
                 <i [class]="isLoadingPaper && questionPaper?.questionPaperId === paper.questionPaperId
                   ? 'fas fa-spinner fa-spin' : 'fas fa-eye'"></i>
-                View Paper
-              </button>
+                <span class="link-text">View Paper</span>
+              </a>
             </td>
           </tr>
         </tbody>
@@ -266,16 +237,21 @@
     <div class="results-page-header">
       <h3><i class="fas fa-file-alt"></i> Question Paper</h3>
       <div class="paper-actions">
-        <span *ngIf="isLocked && questionPaper.answerSheetsSubmitted" class="badge badge-locked">
-          <i class="fas fa-lock"></i> Locked — answer sheets submitted
+        <span *ngIf="isLocked && questionPaper.answerSheetsUploaded" class="badge badge-locked">
+          <i class="fas fa-lock"></i> Locked — Answer Sheets Uploaded
         </span>
-        <span *ngIf="isLocked && !questionPaper.answerSheetsSubmitted" class="badge badge-locked">
+        <span *ngIf="isLocked && !questionPaper.answerSheetsUploaded" class="badge badge-locked">
           <i class="fas fa-calendar-times"></i>
-          Locked — exam date passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
-        </span>
-        <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
-          <i class="fas fa-edit"></i> Edit Paper
+          Locked — Exam Date Passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
+        </span>      
+        <button *ngIf="!isEditMode && !isLocked" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
+          <i class="fas fa-trash-alt"></i> Delete
         </button>
+          <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
+          <i class="fas fa-edit"></i> Edit Question Paper
+        </button>
+        <!-- Save All Changes / Cancel Edit buttons commented out —
+             editing is now handled by Create Question Paper component
         <ng-container *ngIf="isEditMode && !isLocked">
           <button class="btn btn-success" (click)="saveAllChanges()" [disabled]="isSaving">
             <i [class]="isSaving ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
@@ -285,6 +261,7 @@
             <i class="fas fa-times"></i> Cancel
           </button>
         </ng-container>
+        -->
       </div>
     </div>
 
@@ -306,8 +283,8 @@
         <span class="info-value">{{ questionPaper.questionPaperName }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label"><i class="fas fa-graduation-cap"></i> Academic Year</span>
-        <span class="info-value">{{ questionPaper.academicYear }}</span>
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions</span>
+        <span class="info-value">{{ questionPaper.totalQuestions }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks</span>
@@ -363,26 +340,36 @@
       </div>
     </div> -->
 
-    <!-- Question Jump Buttons -->
-    <div class="question-selector">
-      <label class="section-label"><i class="fas fa-list-ol"></i> Quick Jump:</label>
-      <div class="question-buttons">
-        <button *ngFor="let q of questionPaper.questions; let i = index"
-          class="question-number-btn"
-          [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i)">
-          Q{{ q.questionNumber }}
-        </button>
+    <!-- Go to Question Dropdown — outside *ngIf so it is never destroyed on navigation -->
+    <div class="question-goto-row" *ngIf="questionPaper && !isEditMode">
+      <div class="question-header-with-marks" id="question-top">
+        <h5 *ngIf="currentQuestion">
+          <i class="fas fa-question-circle"></i>
+          Question # {{ currentQuestion.questionNumber }}
+          <span class="marks-badge">{{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }}</span>
+        </h5>
+        <div class="question-goto-inline">
+          <label class="goto-label">Go to question #</label>
+          <div class="select-wrapper question-goto-select">
+            <select #gotoSelect class="form-control"
+              (change)="loadQuestion(+gotoSelect.value); gotoSelect.selectedIndex = 0">
+              <option value="" disabled selected>
+                Question # {{ currentQuestion?.questionNumber }} ({{ currentQuestion?.maxMarks === 1 ? '1 Mark' : currentQuestion?.maxMarks + ' Marks' }})
+              </option>
+              <ng-container *ngFor="let q of questionPaper.questions; let i = index">
+                <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                  Question # {{ q.questionNumber }} ({{ q.maxMarks === 1 ? '1 Mark' : q.maxMarks + ' Marks' }})
+                </option>
+              </ng-container>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- ── VIEW MODE ──────────────────────────────────────────────────────── -->
     <div *ngIf="!isEditMode && currentQuestion">
-
-      <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-question-circle"></i> Question {{ currentQuestion.questionNumber }}</h5>
-        <span class="marks-badge">{{ currentQuestion.maxMarks }} Marks</span>
-      </div>
 
       <div class="question-section">
         <div class="section-header">
@@ -397,49 +384,52 @@
           <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
           <button class="btn-expand" (click)="openFullscreen('officialAnswer')"><i class="fas fa-expand"></i></button>
         </div>
-        <div class="scrollable-text official-answer">{{ currentQuestion.officialAnswer }}</div>
+        <div class="scrollable-text official-answer">{{ flatText(currentQuestion.officialAnswer) }}</div>
       </div>
 
       <div class="question-section">
-        <label class="section-label">
-          <i class="fas fa-list-check"></i>
-          {{ currentQuestion.rubricAdded ? 'Rubric Criteria:' : 'Marks:' }}
-        </label>
-        <div class="table-responsive">
-          <table class="table table-bordered rubric-table" *ngIf="currentQuestion.rubricAdded; else simpleMarksView">
-            <thead>
-              <tr>
-                <th>CRITERION</th>
-                <th>ORDER</th>
-                <th>MAX MARKS</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let rubric of currentQuestion.rubrics">
-                <td class="criterion-cell">
-                  <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
-                </td>
-                <td class="text-center">{{ rubric.criterionOrder }}</td>
-                <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
-              </tr>
-              <tr class="totals-row">
-                <td colspan="2" class="text-right"><strong>Total Rubric Marks:</strong></td>
-                <td class="text-center">
-                  <span class="marks-badge-sm"
-                    [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
-                    {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <ng-template #simpleMarksView>
-            <div class="simple-marks-display">
-              <span class="marks-label">Max Marks:</span>
-              <span class="marks-badge">{{ currentQuestion.maxMarks }}</span>
-            </div>
-          </ng-template>
+        <div class="section-header">
+          <label class="section-label">
+            <i class="fas fa-list-check"></i>
+            Validation Rules:
+          </label>
         </div>
+        <ng-container *ngIf="currentQuestion.rubricAdded; else noValidationRules">
+          <div class="table-responsive">
+            <table class="table table-bordered rubric-table">
+              <thead>
+                <tr>
+                  <th>CRITERION</th>
+                  <th>ORDER</th>
+                  <th>MAX MARKS</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let rubric of currentQuestion.rubrics">
+                  <td class="criterion-cell">
+                    <div class="scrollable-criterion">{{ rubric.rubricText }}</div>
+                  </td>
+                  <td class="text-center">{{ rubric.criterionOrder }}</td>
+                  <td class="text-center"><span class="badge badge-primary">{{ rubric.maxMarks }}</span></td>
+                </tr>
+                <tr class="totals-row">
+                  <td colspan="2" class="text-right"><strong>Total Marks:</strong></td>
+                  <td class="text-center">
+                    <span class="marks-badge-sm"
+                      [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
+                      {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </ng-container>
+        <ng-template #noValidationRules>
+          <div class="simple-marks-display">
+            <span class="marks-label">None</span>
+          </div>
+        </ng-template>
       </div>
 
       <div class="navigation-buttons">
@@ -458,7 +448,7 @@
     <div *ngIf="isEditMode && !isLocked && currentDraftQuestion">
 
       <div class="question-header-with-marks" id="question-top">
-        <h5><i class="fas fa-edit"></i> Question {{ currentDraftQuestion.questionNumber }}</h5>
+        <h5><i class="fas fa-edit"></i> Question # {{ currentDraftQuestion.questionNumber }}</h5>
         <div class="marks-edit-group">
           <label class="marks-edit-label">Max Marks:</label>
           <input type="number" class="form-control form-control-sm marks-edit-input"
@@ -468,7 +458,10 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
+        <div class="section-header">
+          <label class="section-label"><i class="fas fa-question-circle"></i> Question Text:</label>
+          <button class="btn-expand" (click)="openFullscreen('editQuestionText')"><i class="fas fa-expand"></i></button>
+        </div>
         <textarea class="form-control edit-textarea"
           [(ngModel)]="currentDraftQuestion.questionText"
           (ngModelChange)="questionsEdited = true"
@@ -480,7 +473,10 @@
       </div>
 
       <div class="question-section">
-        <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
+        <div class="section-header">
+          <label class="section-label"><i class="fas fa-check-circle"></i> Official Answer:</label>
+          <button class="btn-expand" (click)="openFullscreen('editOfficialAnswer')"><i class="fas fa-expand"></i></button>
+        </div>
         <textarea class="form-control edit-textarea official-answer-edit"
           [(ngModel)]="currentDraftQuestion.officialAnswer"
           (ngModelChange)="questionsEdited = true"
@@ -490,7 +486,7 @@
       <!-- Rubric edit table — always shown; rubricAdded flips true when rubric added -->
       <div class="question-section">
         <div class="rubric-edit-header">
-          <label class="section-label"><i class="fas fa-list-check"></i> Rubric Criteria:</label>
+          <label class="section-label"><i class="fas fa-list-check"></i> Validation Rules:</label>
           <span class="rubric-total-badge"
             [class.marks-mismatch]="getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks">
             Total: {{ getDraftTotalRubricMarks() }} / {{ currentDraftQuestion.maxMarks }}
@@ -555,14 +551,7 @@
           </button>
         </div>
 
-        <div class="error-text"
-          *ngIf="currentDraftQuestion.rubricAdded && getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks">
-          <i class="fas fa-exclamation-circle"></i>
-          Rubric total must equal max marks for this question.
-        </div>
       </div>
-
-
 
       <div class="navigation-buttons">
         <button class="btn btn-secondary btn-lg"
@@ -570,9 +559,16 @@
           [disabled]="currentQuestionIndex === 0">
           <i class="fas fa-arrow-left"></i> Previous
         </button>
+        <button class="btn btn-cancel-question"
+          *ngIf="isCurrentQuestionChanged()"
+          (click)="confirmResetQuestion()"
+          title="Discard changes to this question only">
+          <i class="fas fa-undo"></i> Reset Question
+        </button>
         <button class="btn btn-secondary btn-lg"
           (click)="loadQuestion(currentQuestionIndex + 1)"
-          [disabled]="currentQuestionIndex === questionPaper!.totalQuestions - 1">
+          [disabled]="currentQuestionIndex === questionPaper!.totalQuestions - 1 ||
+            (currentDraftQuestion.rubricAdded && getDraftTotalRubricMarks() !== currentDraftQuestion.maxMarks)">
           Next <i class="fas fa-arrow-right"></i>
         </button>
       </div>
@@ -582,8 +578,8 @@
 
 </div><!-- /result-container -->
 
-<!-- Fullscreen Modal -->
-<div class="fullscreen-modal" *ngIf="fullscreenContent" (click)="closeFullscreen()">
+<!-- Fullscreen Modal — view mode (read-only) -->
+<div class="fullscreen-modal" *ngIf="fullscreenContent && fullscreenType !== 'editQuestionText' && fullscreenType !== 'editOfficialAnswer'" (click)="closeFullscreen()">
   <div class="fullscreen-content" (click)="$event.stopPropagation()">
     <div class="fullscreen-header">
       <h4>{{ getFullscreenTitle() }}</h4>
@@ -591,6 +587,95 @@
         <i class="fas fa-times"></i>
       </button>
     </div>
-    <div class="fullscreen-body">{{ getFullscreenContent() }}</div>
+    <div class="fullscreen-body" [class.fullscreen-body--official]="fullscreenType === 'officialAnswer'">{{ getFullscreenContent() }}</div>
+  </div>
+</div>
+
+<!-- Fullscreen Modal — edit mode (editable textarea) -->
+<div class="fullscreen-modal" *ngIf="fullscreenContent && (fullscreenType === 'editQuestionText' || fullscreenType === 'editOfficialAnswer')" (click)="closeFullscreen()">
+  <div class="fullscreen-content" (click)="$event.stopPropagation()">
+    <div class="fullscreen-header">
+      <h4>
+        <i class="fas fa-edit"></i>
+        {{ fullscreenType === 'editQuestionText' ? 'Question Text' : 'Official Answer' }}
+      </h4>
+      <button class="btn-close-fullscreen" (click)="closeFullscreen()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="fullscreen-body fullscreen-edit-body" [class.fullscreen-body--official]="fullscreenType === 'editOfficialAnswer'">
+      <textarea class="form-control edit-textarea fullscreen-textarea"
+        *ngIf="fullscreenType === 'editQuestionText' && currentDraftQuestion"
+        [(ngModel)]="currentDraftQuestion.questionText"
+        (ngModelChange)="questionsEdited = true"
+        placeholder="Enter question text..."></textarea>
+      <textarea class="form-control edit-textarea official-answer-edit fullscreen-textarea"
+        *ngIf="fullscreenType === 'editOfficialAnswer' && currentDraftQuestion"
+        [(ngModel)]="currentDraftQuestion.officialAnswer"
+        (ngModelChange)="questionsEdited = true"
+        placeholder="Enter official answer..."></textarea>
+    </div>
+    <div class="fullscreen-footer">
+      <button class="btn btn-primary" (click)="closeFullscreen()">
+        <i class="fas fa-check"></i> Done
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reset Question Confirm Dialog -->
+<div class="fullscreen-modal confirm-overlay" *ngIf="resetConfirmVisible" (click)="resetConfirmVisible = false">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon">
+      <i class="fas fa-undo"></i>
+    </div>
+    <p class="confirm-dialog-title">Reset Question {{ currentDraftQuestion?.questionNumber }}?</p>
+    <p class="confirm-dialog-sub">All changes to this question will be discarded and restored to their original values.</p>
+    <div class="confirm-dialog-actions">
+      <button type="button" class="btn-secondary img-modal-cancel" (click)="resetConfirmVisible = false">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="confirm-ok-btn confirm-ok-btn--yellow" (click)="resetConfirmVisible = false; cancelQuestionEdit()">
+        <i class="fas fa-undo"></i> Yes, Reset
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Question Paper Confirm Dialog -->
+<div class="fullscreen-modal confirm-overlay" *ngIf="deleteConfirmVisible" (click)="deleteConfirmVisible = false">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon confirm-dialog-icon--danger">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+    <p class="confirm-dialog-title">Delete Question Paper?</p>
+
+    <!-- Paper detail chips -->
+    <div class="confirm-paper-meta">
+      <span class="confirm-meta-chip">
+        <i class="fas fa-layer-group"></i> {{ questionPaper?.className }}
+      </span>
+      <span class="confirm-meta-chip">
+        <i class="fas fa-book-open"></i> {{ questionPaper?.subjectName }}
+      </span>
+      <span class="confirm-meta-chip">
+        <i class="fas fa-tag"></i> {{ questionPaper?.examTypeName }}
+      </span>
+      <span class="confirm-meta-chip confirm-meta-chip--paper">
+        <i class="fas fa-file-alt"></i> {{ questionPaper?.questionPaperName }}
+      </span>
+    </div>
+
+    <p class="confirm-dialog-sub">
+      This question paper will be <strong>permanently deleted</strong> and cannot be recovered.
+    </p>
+    <div class="confirm-dialog-actions">
+      <button type="button" class="btn-secondary img-modal-cancel" (click)="deleteConfirmVisible = false">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="button" class="confirm-ok-btn" (click)="confirmDeletePaper()">
+        <i class="fas fa-trash-alt"></i> Yes, Delete
+      </button>
+    </div>
   </div>
 </div>

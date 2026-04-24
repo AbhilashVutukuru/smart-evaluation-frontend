@@ -1,0 +1,31 @@
+<div class="user-menu-wrapper">
+
+  <!-- Always-visible trigger -->
+  <button class="user-avatar-btn" (click)="toggleDropdown()" [title]="userName || 'Account'">
+    <div class="user-avatar">
+      <i class="fas fa-user"></i>
+    </div>
+    <div class="user-identity">
+      <span class="user-display-name">{{ userName }}</span>
+      <span class="user-role-label">{{ userRole }}</span>
+    </div>
+    <i class="fas fa-chevron-down user-caret" [class.open]="isOpen"></i>
+  </button>
+
+  <!-- Dropdown -->
+  <div class="user-dropdown" [class.open]="isOpen">
+    <div class="dropdown-divider"></div>
+    <a routerLink="/profile" class="dropdown-item" (click)="close()">
+      <i class="fas fa-user-circle"></i>
+      <span>View Profile</span>
+    </a>
+    <div class="dropdown-divider"></div>
+    <button class="dropdown-item dropdown-logout" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </button>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="dropdown-backdrop" *ngIf="isOpen" (click)="close()"></div>
+</div>

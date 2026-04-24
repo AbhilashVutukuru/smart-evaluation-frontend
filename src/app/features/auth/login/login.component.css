@@ -13,9 +13,6 @@
   height: 100vh;
 }
 
-/* ============================================================
-   OUTER CONTAINER
-   ============================================================ */
 .login-container {
   background: linear-gradient(135deg, #0ea4f4 0%, #0882c4 100%);
   min-height: 100vh;
@@ -26,27 +23,15 @@
   box-sizing: border-box;
 }
 
-/* Tablet — top-align so card isn't awkwardly centered with keyboard open */
 @media (max-width: 767px) {
-  .login-container {
-    align-items: flex-start;
-    padding-top: 2.5rem;
-    padding-bottom: 2rem;
-  }
+  .login-container { align-items: flex-start; padding-top: 2.5rem; padding-bottom: 2rem; }
 }
 
-/* Mobile — tighter edges */
 @media (max-width: 479px) {
-  .login-container {
-    padding: 1.25rem 0.75rem;
-    padding-top: 1.75rem;
-    align-items: flex-start;
-  }
+  .login-container { padding: 1.25rem 0.75rem; padding-top: 1.75rem; align-items: flex-start; }
 }
 
-/* ============================================================
-   CARD
-   ============================================================ */
+/* ── Card ─────────────────────────────────────────────────── */
 .login-card {
   background: white;
   border-radius: 20px;
@@ -63,29 +48,15 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Tablet */
 @media (max-width: 767px) {
-  .login-card {
-    padding: 30px 28px;
-    border-radius: 16px;
-    max-width: 440px;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-  }
+  .login-card { padding: 30px 28px; border-radius: 16px; max-width: 440px; box-shadow: 0 12px 40px rgba(0,0,0,.25); }
 }
 
-/* Mobile — full-width, compressed */
 @media (max-width: 479px) {
-  .login-card {
-    padding: 24px 16px;
-    border-radius: 14px;
-    max-width: 100%;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  }
+  .login-card { padding: 24px 16px; border-radius: 14px; max-width: 100%; box-shadow: 0 8px 24px rgba(0,0,0,.2); }
 }
 
-/* ============================================================
-   LOGO SECTION
-   ============================================================ */
+/* ── Logo ─────────────────────────────────────────────────── */
 .logo-section {
   text-align: center;
   margin-bottom: 30px;
@@ -104,38 +75,31 @@
   margin-bottom: 15px;
 }
 
-.logo-section h2 {
+/* FIX: was h2 — every page needs exactly one h1 */
+.logo-section h1 {
   color: #1f2937;
   font-weight: 700;
   margin-bottom: 5px;
   font-size: 1.5rem;
 }
 
-.logo-section p {
-  color: #6b7280;
-  font-size: 0.95rem;
-  margin: 0;
-}
+.logo-section p { color: #6b7280; font-size: 0.95rem; margin: 0; }
 
-/* Tablet */
 @media (max-width: 767px) {
   .logo-section    { margin-bottom: 22px; }
   .logo-icon       { width: 64px; height: 64px; font-size: 2rem; border-radius: 16px; margin-bottom: 12px; }
-  .logo-section h2 { font-size: 1.35rem; }
+  .logo-section h1 { font-size: 1.35rem; }
   .logo-section p  { font-size: 0.9rem; }
 }
 
-/* Mobile */
 @media (max-width: 479px) {
   .logo-section    { margin-bottom: 18px; }
   .logo-icon       { width: 54px; height: 54px; font-size: 1.6rem; border-radius: 13px; margin-bottom: 10px; }
-  .logo-section h2 { font-size: 1.2rem; }
+  .logo-section h1 { font-size: 1.2rem; }
   .logo-section p  { font-size: 0.8125rem; }
 }
 
-/* ============================================================
-   ALERT
-   ============================================================ */
+/* ── Alert ────────────────────────────────────────────────── */
 .alert {
   border-radius: 10px;
   border: none;
@@ -147,42 +111,23 @@
   gap: 8px;
 }
 
-.alert-danger {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-}
-
-.btn-close {
-  margin-left: auto;
-  flex-shrink: 0;
-}
+.alert-danger { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.btn-close    { margin-left: auto; flex-shrink: 0; }
 
 @media (max-width: 479px) {
   .alert { padding: 10px 12px; font-size: 0.8125rem; }
 }
 
-/* ============================================================
-   FORM LABEL
-   ============================================================ */
-.form-label {
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
-  font-size: 0.875rem;
-  display: block;
-}
-
-.mb-3 { margin-bottom: 16px; }
+/* ── Form label ───────────────────────────────────────────── */
+.form-label { font-weight: 600; color: #374151; margin-bottom: 8px; font-size: 0.875rem; display: block; }
+.mb-3       { margin-bottom: 16px; }
 
 @media (max-width: 479px) {
   .form-label { font-size: 0.8125rem; margin-bottom: 6px; }
   .mb-3       { margin-bottom: 12px; }
 }
 
-/* ============================================================
-   INPUT GROUP
-   ============================================================ */
+/* ── Input group ──────────────────────────────────────────── */
 .input-group {
   display: flex;
   align-items: stretch;
@@ -208,11 +153,9 @@
   min-width: 0;
 }
 
-.input-group:focus-within .input-group-text {
-  border-color: #0ea4f4;
-}
+.input-group:focus-within .input-group-text { border-color: #0ea4f4; }
 
-/* Password toggle — rightmost icon */
+/* FIX: toggle-password is now a <button> — reset browser button defaults */
 .toggle-password {
   cursor: pointer;
   border: 2px solid #e5e7eb;
@@ -225,12 +168,20 @@
   align-items: center;
   flex-shrink: 0;
   transition: color 0.2s;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .toggle-password:hover { color: #0ea4f4; }
 
-.input-group:focus-within .toggle-password {
-  border-color: #0ea4f4;
+.input-group:focus-within .toggle-password { border-color: #0ea4f4; }
+
+.toggle-password:focus-visible {
+  outline: 3px solid #0ea4f4;
+  outline-offset: -2px;
 }
 
 @media (max-width: 479px) {
@@ -238,9 +189,7 @@
   .toggle-password  { padding: 0 10px; font-size: 0.875rem; }
 }
 
-/* ============================================================
-   FORM CONTROL
-   ============================================================ */
+/* ── Form control ─────────────────────────────────────────── */
 .form-control {
   border: 2px solid #e5e7eb;
   border-radius: 10px;
@@ -252,100 +201,37 @@
   font-family: inherit;
 }
 
-.form-control:focus {
-  outline: none;
-  border-color: #0ea4f4;
-  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1);
-}
-
+.form-control:focus { outline: none; border-color: #0ea4f4; box-shadow: 0 0 0 3px rgba(14,164,244,.1); }
 .form-control.is-invalid { border-color: #ef4444; }
 
-/* Tablet */
-@media (max-width: 767px) {
-  .form-control { padding: 11px 14px; font-size: 0.9rem; }
-}
+@media (max-width: 767px) { .form-control { padding: 11px 14px; font-size: 0.9rem; } }
+@media (max-width: 479px) { .form-control { padding: 10px 12px; font-size: 0.875rem; } }
 
-/* Mobile */
-@media (max-width: 479px) {
-  .form-control { padding: 10px 12px; font-size: 0.875rem; }
-}
-
-/* ============================================================
-   REMEMBER ME  &  FORGOT PASSWORD ROW
-   Desktop/Tablet : side-by-side (Bootstrap .row / .col-6)
-   Mobile         : stack — checkbox on top, forgot link below
-   ============================================================ */
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 0 -0.5rem;
-}
-
-.col-6 {
-  width: 50%;
-  padding: 0 0.5rem;
-  box-sizing: border-box;
-}
-
+/* ── Remember me / Forgot row ────────────────────────────── */
+.row   { display: flex; flex-wrap: wrap; margin: 0 -0.5rem; }
+.col-6 { width: 50%; padding: 0 0.5rem; box-sizing: border-box; }
 .text-end { text-align: right; }
 
-/* Mobile — stack the two cols */
 @media (max-width: 479px) {
   .row     { flex-direction: column; gap: 6px; margin: 0; }
   .col-6   { width: 100%; padding: 0; }
   .text-end{ text-align: left; }
 }
 
-.form-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.form-check       { display: flex; align-items: center; gap: 6px; }
+.form-check-input { width: 16px; height: 16px; cursor: pointer; accent-color: #0ea4f4; flex-shrink: 0; }
+.form-check-label { font-size: 0.875rem; color: #374151; cursor: pointer; }
 
-.form-check-input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  accent-color: #0ea4f4;
-  flex-shrink: 0;
-}
+.forgot-link { color: #0ea4f4; text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: opacity 0.2s; }
+.forgot-link:hover         { text-decoration: underline; }
+.forgot-link:focus-visible { outline: 2px solid #0ea4f4; outline-offset: 2px; border-radius: 2px; }
 
-.form-check-input:checked {
-  background-color: #0ea4f4;
-  border-color: #0ea4f4;
-}
-
-.form-check-label {
-  font-size: 0.875rem;
-  color: #374151;
-  cursor: pointer;
-}
-
-.forgot-link {
-  color: #0ea4f4;
-  text-decoration: none;
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: opacity 0.2s;
-}
-
-.forgot-link:hover { text-decoration: underline; }
-
-/* ============================================================
-   VALIDATION ERROR TEXT
-   ============================================================ */
-.text-danger {
-  color: #ef4444;
-  font-size: 0.8rem;
-  margin-top: 4px;
-}
-
+/* ── Validation error ─────────────────────────────────────── */
+.text-danger { color: #ef4444; font-size: 0.8rem; margin-top: 4px; }
 .small, small { font-size: 0.8125rem; }
 .mt-1 { margin-top: 4px; }
 
-/* ============================================================
-   SUBMIT BUTTON
-   ============================================================ */
+/* ── Submit button ────────────────────────────────────────── */
 .btn-submit {
   background: linear-gradient(135deg, #0ea4f4, #0882c4);
   border: none;
@@ -365,97 +251,20 @@
   box-sizing: border-box;
 }
 
-.btn-submit:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(14, 164, 244, 0.4);
-}
+.btn-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(14,164,244,.4); }
+.btn-submit:disabled              { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-submit:focus-visible         { outline: 3px solid #0882c4; outline-offset: 3px; }
 
-.btn-submit:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-}
+@media (max-width: 479px) { .btn-submit { padding: 11px; font-size: 0.9375rem; } }
 
-@media (max-width: 479px) {
-  .btn-submit { padding: 11px; font-size: 0.9375rem; }
-}
+/* ── Already logged in ────────────────────────────────────── */
+.already-logged-in       { text-align: center; padding: 1.5rem 0; }
+.logged-in-icon          { width: 70px; height: 70px; background: linear-gradient(135deg, #0ea4f4, #0882c4); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 1.75rem; margin-bottom: 1rem; }
 
-/* ============================================================
-   DIVIDER  (optional registration section)
-   ============================================================ */
-.divider {
-  text-align: center;
-  margin: 25px 0;
-  position: relative;
-}
-
-.divider::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e5e7eb;
-}
-
-.divider span {
-  background: white;
-  padding: 0 15px;
-  color: #9ca3af;
-  font-size: 0.9rem;
-  position: relative;
-  z-index: 1;
-}
-
-.register-link {
-  color: #0ea4f4;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.register-link:hover { text-decoration: underline; }
-
-/* ============================================================
-   ALREADY LOGGED IN STATE
-   ============================================================ */
-.already-logged-in {
-  text-align: center;
-  padding: 1.5rem 0;
-}
-
-.logged-in-icon {
-  width: 70px;
-  height: 70px;
-  background: linear-gradient(135deg, #0ea4f4, #0882c4);
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-}
-
-.already-logged-in h3 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin-bottom: 0.5rem;
-}
-
-.already-logged-in p {
-  color: #6b7280;
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.5;
-}
-
-.logged-in-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
+/* FIX: was h3 — now uses a class-named h1 for correct heading hierarchy */
+.already-logged-in-title { font-size: 1.3rem; font-weight: 700; color: #1f2937; margin-bottom: 0.5rem; }
+.already-logged-in p     { color: #6b7280; font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5; }
+.logged-in-actions       { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .btn-go-dashboard {
   background: linear-gradient(135deg, #0ea4f4, #0882c4);
@@ -475,70 +284,23 @@
   font-family: inherit;
 }
 
-.btn-go-dashboard:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(14, 164, 244, 0.35);
-}
+.btn-go-dashboard:hover         { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(14,164,244,.35); }
+.btn-go-dashboard:focus-visible { outline: 3px solid #0882c4; outline-offset: 3px; }
 
-.btn-switch-account {
-  background: white;
-  color: #6b7280;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 11px;
-  font-weight: 500;
-  font-size: 0.875rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  width: 100%;
-  font-family: inherit;
-}
-
-.btn-switch-account:hover {
-  background: #f9fafb;
-  border-color: #d1d5db;
-  color: #374151;
-}
-
-.switch-hint {
-  margin-top: 0.75rem;
-  font-size: 0.8rem;
-  color: #9ca3af;
-  text-align: center;
-  line-height: 1.5;
-  padding: 0 0.5rem;
-}
-
+.switch-hint   { margin-top: 0.75rem; font-size: 0.8rem; color: #9ca3af; text-align: center; line-height: 1.5; padding: 0 0.5rem; }
 .switch-hint i { color: #0ea4f4; }
 
-/* Already-logged-in section on tablet/mobile */
 @media (max-width: 767px) {
-  .logged-in-icon       { width: 58px; height: 58px; font-size: 1.5rem; }
-  .already-logged-in h3 { font-size: 1.15rem; }
-  .already-logged-in p  { font-size: 0.9rem; }
+  .logged-in-icon        { width: 58px; height: 58px; font-size: 1.5rem; }
+  .already-logged-in-title { font-size: 1.15rem; }
+  .already-logged-in p   { font-size: 0.9rem; }
 }
 
 @media (max-width: 479px) {
-  .already-logged-in    { padding: 1rem 0; }
-  .logged-in-icon       { width: 50px; height: 50px; font-size: 1.3rem; margin-bottom: 0.75rem; }
-  .already-logged-in h3 { font-size: 1.05rem; }
-  .already-logged-in p  { font-size: 0.8125rem; margin-bottom: 1rem; }
-  .btn-go-dashboard     { padding: 11px; font-size: 0.9rem; }
-  .btn-switch-account   { padding: 10px; font-size: 0.8125rem; }
-  .switch-hint          { font-size: 0.75rem; }
+  .already-logged-in       { padding: 1rem 0; }
+  .logged-in-icon          { width: 50px; height: 50px; font-size: 1.3rem; margin-bottom: 0.75rem; }
+  .already-logged-in-title { font-size: 1.05rem; }
+  .already-logged-in p     { font-size: 0.8125rem; margin-bottom: 1rem; }
+  .btn-go-dashboard        { padding: 11px; font-size: 0.9rem; }
+  .switch-hint             { font-size: 0.75rem; }
 }
-
-/* ============================================================
-   RESPONSIVE SUMMARY
-   ┌──────────────┬──────────────────────────────────────────┐
-   │ ≥ 1024px     │ Centered, 450px card, 40px pad           │
-   │ 768–1023px   │ Top-aligned, 440px card, 30px pad        │
-   │ 480–767px    │ Top-aligned, tighter logo & inputs       │
-   │ < 480px      │ Full-width card, 16px pad, stacked row,  │
-   │              │ compact logged-in state                  │
-   └──────────────┴──────────────────────────────────────────┘
-   ============================================================ */

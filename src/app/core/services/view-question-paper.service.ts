@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -32,7 +32,8 @@ export interface QuestionPaperViewDto {
   academicYear:          string;
   totalMarks:            number;
   totalQuestions:        number;
-  answerSheetsSubmitted: boolean;
+  //answerSheetsSubmitted: boolean;
+  answerSheetsUploaded: boolean;
   examDate:              string | null;  // ISO date string from backend, null if not set
   isLocked:              boolean;        // computed by backend
   questions:             QuestionPaperDetailDto[];
@@ -52,6 +53,14 @@ export interface QuestionPaperSummaryDto {
   lockReason:            string | null;  // 'Date Passed' | 'Answer Sheet Submitted' | null
 }
 
+export interface UpdateQuestionPaperPayload {
+  totalMarks:        number;
+  questionPaperName: string;
+  questionsEdited:   boolean;
+  examDate:          string | null;
+  questions:         any[];
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -67,17 +76,31 @@ export class ViewQuestionPaperService {
       .pipe(map((res) => {
         const d = res.data;
         d.answerSheetsSubmitted = d.answerSheetsSubmitted ?? d.AnswerSheetsSubmitted ?? false;
+        d.answerSheetsUploaded  = d.answerSheetsUploaded  ?? d.AnswerSheetsUploaded  ?? false;
         d.examDate              = d.examDate              ?? d.ExamDate              ?? null;
         d.isLocked              = d.isLocked              ?? d.IsLocked              ?? false;
         return d as QuestionPaperViewDto;
       }));
   }
 
+  updateQuestionPaper(
+    questionPaperId: number,
+    payload: UpdateQuestionPaperPayload,
+  ): Observable<{ success: boolean; message: string }> {
+    return this.http.put<{ success: boolean; message: string }>(
+      `${this.apiUrl}/question-paper/${questionPaperId}`,
+      payload,
+    );
+  }
+
   // Returns all question papers for a class (all subjects, all exam types)
-  getAllPapersByClass(classId: number): Observable<QuestionPaperSummaryDto[]> {
+  getAllPapersByClass(classId: number, subjectId: number = 0): Observable<QuestionPaperSummaryDto[]> {
+    let params = new HttpParams();
+    if (subjectId > 0) params = params.set('subjectId', subjectId);
     return this.http
       .get<{ success: boolean; data: any[] }>(
-        `${this.apiUrl}/question-paper/by-class/${classId}`,
+        `${this.apiUrl}/question-paper/class/${classId}`,
+        { params }
       )
       .pipe(map((res) => (res.data ?? []).map((d: any) => ({
         ...d,
@@ -86,5 +109,11 @@ export class ViewQuestionPaperService {
         isLocked:              d.isLocked              ?? d.IsLocked              ?? false,
         lockReason:            d.lockReason            ?? d.LockReason            ?? null,
       } as QuestionPaperSummaryDto))));
+  }
+
+  deleteQuestionPaper(questionPaperId: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.apiUrl}/question-paper/${questionPaperId}`,
+    );
   }
 }

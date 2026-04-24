@@ -7,6 +7,7 @@ import { DeleteConfirmationComponent } from '../../../shared/components/delete-c
 import { ClassDto, MasterDataService, SectionDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { BaseComponent } from '../../../core/base/base.component';
 
 @Component({
   selector: 'app-student-list',
@@ -16,7 +17,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
   styleUrls: ['./student-list.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class StudentListComponent implements OnInit {
+export class StudentListComponent extends BaseComponent implements OnInit {
   private studentService    = inject(StudentService);
   private router            = inject(Router);
   private route             = inject(ActivatedRoute);
@@ -55,7 +56,7 @@ export class StudentListComponent implements OnInit {
       this.selectedSection = qp['sectionId'];
 
       // Load sections for the restored class, then load students
-      this.masterDataService.getSectionsByClass(+this.selectedClass).subscribe({
+      this.masterDataService.getSectionsByClass(+this.selectedClass).pipe(this.cancelOnDestroy()).subscribe({
         next: (sections) => {
           this.sections = sections;
           this.loadStudents();
@@ -70,14 +71,14 @@ export class StudentListComponent implements OnInit {
   // ============================================
 
   private loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
+    this.masterDataService.getClasses().pipe(this.cancelOnDestroy()).subscribe({
       next: (classes) => (this.classes = classes),
       error: (error)  => this.errorHandler.handle('Failed to load classes', error),
     });
   }
 
   private loadSections(classId: number): void {
-    this.masterDataService.getSectionsByClass(classId).subscribe({
+    this.masterDataService.getSectionsByClass(classId).pipe(this.cancelOnDestroy()).subscribe({
       next: (sections) => (this.sections = sections),
       error: (error)   => this.errorHandler.handle('Failed to load sections', error),
     });
@@ -91,7 +92,7 @@ export class StudentListComponent implements OnInit {
 
     this.loading = true;
 
-    this.studentService.getStudents(this.selectedClass, this.selectedSection).subscribe({
+    this.studentService.getStudents(this.selectedClass, this.selectedSection).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.loading = false;
 
@@ -208,7 +209,7 @@ export class StudentListComponent implements OnInit {
   onDeleteConfirmed(): void {
     if (!this.studentToDelete) return;
 
-    this.studentService.deleteStudent(this.studentToDelete.id).subscribe({
+    this.studentService.deleteStudent(this.studentToDelete.id).pipe(this.cancelOnDestroy()).subscribe({
       next: (response) => {
         this.showDeleteModal = false;
         this.studentToDelete = null;

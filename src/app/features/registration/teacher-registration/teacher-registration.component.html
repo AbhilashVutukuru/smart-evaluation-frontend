@@ -1,15 +1,6 @@
 <!-- Teacher Registration Component -->
 <div class="registration-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-chalkboard-teacher"></i> Teacher Registration</h2>
-    <button class="btn btn-outline-primary" (click)="showBulkUpload = !showBulkUpload">
-      <i [class]="showBulkUpload ? 'fas fa-user' : 'fas fa-file-upload'"></i>
-      {{ showBulkUpload ? 'Single Registration' : 'Bulk Upload' }}
-    </button>
-  </div>
-
-  <!-- ===== SINGLE REGISTRATION FORM ===== -->
+<!-- ===== SINGLE REGISTRATION FORM ===== -->
   <div *ngIf="!showBulkUpload" class="card">
     <h4><i class="fas fa-user-plus"></i> Teacher Information</h4>
 
@@ -205,12 +196,12 @@
       </div>
 
       <div class="button-group">
-        <button type="submit" class="btn btn-primary btn-lg" [disabled]="loading">
-          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
-          {{ loading ? 'Registering...' : 'Register Teacher' }}
-        </button>
         <button type="button" class="btn btn-reset btn-lg" (click)="resetForm()" [disabled]="loading">
           <i class="fas fa-redo"></i> Reset Form
+        </button>
+        <button type="submit" class="btn btn-success btn-lg" [disabled]="loading">
+          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-check'"></i>
+          {{ loading ? 'Registering...' : 'Register Teacher' }}
         </button>
       </div>
     </form>

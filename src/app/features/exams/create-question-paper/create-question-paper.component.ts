@@ -1,8 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ToastService } from '../../../core/services/toast.service';
-import { ErrorHandlerService } from '../../../core/services/error-handler.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { ToastService }         from '../../../core/services/toast.service';
+import { ErrorHandlerService }  from '../../../core/services/error-handler.service';
 import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
 import {
   MasterDataService,
@@ -10,17 +13,19 @@ import {
   SubjectDto,
   ExamTypeDto,
 } from '../../../core/services/master-data.service';
-import {
-  ExamFormData,
-  ExamFilters,
-  QuestionSet,
-  Exam,
-} from '../../../core/models/exam';
+import { ExamFormData, QuestionSet } from '../../../core/models/exam';
+import { CreateQuestionPaperStateService } from '../../../core/services/create-question-paper.state.service';
 
 interface UploadProgress {
   visible: boolean;
-  width: string;
-  text: string;
+  width:   string;
+  text:    string;
+}
+
+interface ConfirmDialogState {
+  lines:    string[];
+  okLabel:  string;
+  onOk:     () => void;
 }
 
 @Component({
@@ -30,128 +35,297 @@ interface UploadProgress {
   templateUrl: './create-question-paper.component.html',
   styleUrls: ['./create-question-paper.component.css'],
 })
-export class CreateExamComponent implements OnInit {
-  private toastService = inject(ToastService);
-  private errorHandler = inject(ErrorHandlerService);
-  private createQuestionPaperService = inject(CreateQuestionPaperService);
-  private masterDataService = inject(MasterDataService);
+export class CreateExamComponent implements OnInit, OnDestroy {
+  private toastService                = inject(ToastService);
+  private errorHandler                = inject(ErrorHandlerService);
+  private createQuestionPaperService  = inject(CreateQuestionPaperService);
+  private masterDataService           = inject(MasterDataService);
+  private stateService                = inject(CreateQuestionPaperStateService);
+  private route                       = inject(ActivatedRoute);
+  private router                      = inject(Router);
 
-  // ─── Mode state ───────────────────────────────────────────────────────────────
-  examMode: 'upload' | 'update' = 'upload';
-  questionsGenerated = false;
-  currentQuestionIndex = 0;
-  examInfoCollapsed = false;   // collapses after Set Questions clicked
-  showExamInfoChevron = false;  // only show after Set Questions clicked
+  private destroy$ = new Subject<void>();
+  private progressTimer?: ReturnType<typeof setTimeout>;
+  private isUnloading = false;
 
-  // ─── Loading states ───────────────────────────────────────────────────────────
-  isLoading = false;
+  // ─── Edit mode (navigated from View Question Paper) ───────────────────────
+  isEditMode      = false;
+  editingPaperId  = 0;
+
+  // Display name fallbacks when dropdown arrays aren't loaded yet
+  displayClassName    = '';
+  displaySubjectName  = '';
+  displayExamTypeName = '';
+
+  // ─── Mode state ───────────────────────────────────────────────────────────
+  questionsGenerated    = false;
+  currentQuestionIndex  = 0;
+  examInfoCollapsed     = false;
+  showExamInfoChevron   = false;
+
+  /**
+   * questionsLocked: Set Questions has been clicked & API confirmed no duplicate.
+   * While locked, Set Questions button is disabled; Reset button appears.
+   * numberOfQuestions input is also disabled.
+   */
+  questionsLocked = false;
+
+  /**
+   * questionsFrozen: Header field changed after lock. Q&A inputs are disabled;
+   * user must click Set Questions again to re-validate.
+   */
+  questionsFrozen = false;
+
+  // ─── Loading states ───────────────────────────────────────────────────────
+  isLoading    = false;
   isSubmitting = false;
 
-  // ─── Touch/validation state (items 3, 6, 7, 8) ───────────────────────────────
-  questionTextTouched  = false;
-  answerTextTouched    = false;
-  rulesGenerated       = false;   // true after Set Rules clicked
+  // ─── Touch/validation state ───────────────────────────────────────────────
+  questionTextTouched = false;
+  answerTextTouched   = false;
+  rulesGenerated      = false;
 
-  // ─── Dropdown data ────────────────────────────────────────────────────────────
-  allClasses: ClassDto[] = [];
-  allSubjects: SubjectDto[] = [];
+  // ─── Dropdown data ────────────────────────────────────────────────────────
+  allClasses:   ClassDto[]    = [];
+  allSubjects:  SubjectDto[]  = [];
   allExamTypes: ExamTypeDto[] = [];
 
-  // ─── Update mode data ─────────────────────────────────────────────────────────
-  existingExams: Exam[] = [];
-  selectedExamForUpdate: Exam | null = null;
-
-  // ─── Question sets ────────────────────────────────────────────────────────────
+  // ─── Question sets ────────────────────────────────────────────────────────
   questionSets: QuestionSet[] = [];
 
-  // ─── Upload progress ──────────────────────────────────────────────────────────
+  // ─── Upload progress ──────────────────────────────────────────────────────
   uploadProgress: UploadProgress = { visible: false, width: '0%', text: '' };
 
-  // ─── Form data ────────────────────────────────────────────────────────────────
+  // ─── Confirm dialog ───────────────────────────────────────────────────────
+  confirmDialog: ConfirmDialogState | null = null;
+
+  // ─── Duplicate name flag ──────────────────────────────────────────────────
+  questionPaperNameExists = false;
+
+  // ─── Form data ────────────────────────────────────────────────────────────
   examFormData: ExamFormData = {
-    academicYear: this.createQuestionPaperService.getCurrentAcademicYear(),
-    classId: '',
-    subjectId: '',
-    examTypeId: '',
-    totalMarks: null,
+    academicYear:      this.createQuestionPaperService.getCurrentAcademicYear(),
+    classId:           '',
+    subjectId:         '',
+    examTypeId:        '',
+    totalMarks:        null,
     numberOfQuestions: null,
     questionPaperName: null,
-    examDate: null,
-    questionSets: [],
+    examDate:          null,
+    questionSets:      [],
   };
 
-  // ─── Date helpers ─────────────────────────────────────────────────────────────
-  /** Today as YYYY-MM-DD — used as the min attribute on the date input */
+  // ─── Date helpers ─────────────────────────────────────────────────────────
   get todayIso(): string {
     return new Date().toISOString().slice(0, 10);
   }
 
-  /** True when the supplied YYYY-MM-DD string is strictly before today (local) */
   isExamDateInPast(dateStr: string | null): boolean {
     if (!dateStr) return false;
     const [y, m, d] = dateStr.split('-').map(Number);
-    const selected = new Date(y, m - 1, d);   // local midnight — no TZ shift
-    const today    = new Date();
+    const selected  = new Date(y, m - 1, d);
+    const today     = new Date();
     today.setHours(0, 0, 0, 0);
     return selected < today;
   }
 
-  // ─── Filter data (update mode) ────────────────────────────────────────────────
-  examFilters: ExamFilters = {
-    filterExamClass: '',
-    filterExamSubject: '',
-    filterExamExamType: '',
-  };
-
-  // ─────────────────────────────────────────────────────────────────────────────
+  // ─── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    this.isEditMode     = this.route.snapshot.queryParamMap.get('mode') === 'edit';
+    this.editingPaperId = +(this.route.snapshot.queryParamMap.get('paperId') ?? 0);
+
+    // Refresh detection: edit mode requires saved state.
+    // If there's no saved state, this is a page refresh — drop edit mode and start fresh.
+    if (this.isEditMode && !this.stateService.restore()) {
+      this.isEditMode     = false;
+      this.editingPaperId = 0;
+      // Replace URL so it looks like a normal create page
+      window.history.replaceState({}, '', '/create/exam');
+      this.loadClasses();
+      return;
+    }
+
     this.loadClasses();
+    this.restoreState();
+    window.addEventListener('beforeunload', this.onBeforeUnload);
   }
 
-  // ─── Load Initial Data ────────────────────────────────────────────────────────
+  private onBeforeUnload = (): void => {
+    this.isUnloading = true;
+    this.stateService.clear();
+    // Strip query params so refresh loads as normal Create, not Edit
+    if (this.isEditMode) {
+      window.history.replaceState({}, '', '/create/exam');
+    }
+  };
 
-  private loadClasses(): void {
-    this.masterDataService.getClasses().subscribe({
-      next: (classes) => (this.allClasses = classes),
-      error: (error) => this.errorHandler.handle('Failed to load classes', error),
+  ngOnDestroy(): void {
+    clearTimeout(this.progressTimer);
+    if (!this.isUnloading) this.saveState();
+    this.destroy$.next();
+    this.destroy$.complete();
+    window.removeEventListener('beforeunload', this.onBeforeUnload);
+  }
+
+  onCancelEdit(): void {
+    this.isUnloading = true;
+    this.stateService.clear();
+    const paperId  = this.editingPaperId || +(this.route.snapshot.queryParamMap.get('paperId') ?? 0);
+    const fromList = this.route.snapshot.queryParamMap.get('fromList') === '1';
+    const classId  = this.examFormData.classId;
+    if (fromList && classId) {
+      this.router.navigate(['/view/exam'], { queryParams: { autoClassId: classId } });
+    } else {
+      this.router.navigate(['/view/exam'],
+        paperId ? { queryParams: { questionPaperId: paperId } } : {}
+      );
+    }
+  }
+
+  private saveState(): void {
+    this.stateService.save({
+      examFormData:         this.examFormData,
+      questionSets:         this.questionSets,
+      questionsGenerated:   this.questionsGenerated,
+      currentQuestionIndex: this.currentQuestionIndex,
+      examInfoCollapsed:    this.examInfoCollapsed,
+      showExamInfoChevron:  this.showExamInfoChevron,
+      allSubjects:          this.allSubjects,
+      allExamTypes:         this.allExamTypes,
+      questionsLocked:      this.questionsLocked,
+      questionsFrozen:      this.questionsFrozen,
+      displayClassName:     this.displayClassName    || this.getClassName(),
+      displaySubjectName:   this.displaySubjectName  || this.getSubjectName(),
+      displayExamTypeName:  this.displayExamTypeName || this.getExamTypeName(),
+      editingPaperId:       this.editingPaperId,
     });
   }
 
-  // ─── Dropdown Change Handlers (Upload Mode) ───────────────────────────────────
+  private restoreState(): void {
+    const saved = this.stateService.restore();
+    if (!saved) return;
+    this.editingPaperId = saved.editingPaperId
+      || +(this.route.snapshot.queryParamMap.get('paperId') ?? 0)
+      || this.editingPaperId;
+    this.examFormData         = saved.examFormData;
+    this.questionSets         = saved.questionSets;
+    this.questionsGenerated   = saved.questionsGenerated;
+    this.currentQuestionIndex = saved.currentQuestionIndex;
+    this.examInfoCollapsed    = saved.examInfoCollapsed;
+    this.showExamInfoChevron  = saved.showExamInfoChevron;
+    this.allSubjects          = saved.allSubjects;
+    this.allExamTypes         = saved.allExamTypes;
+    this.questionsLocked      = saved.questionsLocked  ?? (saved.questionsGenerated ? true : false);
+    this.questionsFrozen      = saved.questionsFrozen  ?? false;
+    this.displayClassName     = saved.displayClassName    ?? '';
+    this.displaySubjectName   = saved.displaySubjectName  ?? '';
+    this.displayExamTypeName  = saved.displayExamTypeName ?? '';
+    this.examFormData.questionSets = this.questionSets;
+
+    // Auto-collapse header when editing an existing paper
+    if (this.isEditMode && this.questionsGenerated) {
+      this.examInfoCollapsed   = true;
+      this.showExamInfoChevron = true;
+    }
+
+    // In edit mode, rubricPoints already exist — mark rules as generated so they show immediately
+    if (this.questionsGenerated) {
+      const current = this.questionSets[this.currentQuestionIndex];
+      if (current && current.maxMarks !== 1 && (current.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
+    }
+
+    // If navigated from View — always reload and match IDs by name in edit mode
+    if (this.examFormData.classId) {
+      const needsMatch = this.isEditMode || !this.allSubjects.length || !this.allExamTypes.length;
+      this.loadSubjectsAndExamTypes(this.examFormData.classId, needsMatch);
+    }
+  }
+
+  // ─── Load Initial Data ────────────────────────────────────────────────────
+
+  private loadClasses(): void {
+    this.masterDataService.getClasses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next:  (classes) => (this.allClasses = classes),
+        error: (error)   => this.errorHandler.handle('Failed to load classes', error),
+      });
+  }
+
+  // ─── Dropdown Change Handlers ─────────────────────────────────────────────
 
   onClassSelected(classId: string): void {
     this.resetDependentDropdowns();
-    this.resetQuestions();
+    this.onHeaderFieldChanged();
     if (!classId) return;
-    this.loadSubjectsAndExamTypes(classId);
+    this.loadSubjectsAndExamTypes(classId, false);
   }
 
   private resetDependentDropdowns(): void {
-    this.examFormData.subjectId = '';
+    this.examFormData.subjectId  = '';
     this.examFormData.examTypeId = '';
-    this.allSubjects = [];
-    this.allExamTypes = [];
+    this.allSubjects             = [];
+    this.allExamTypes            = [];
   }
 
-  private loadSubjectsAndExamTypes(classId: string): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => (this.allSubjects = subjects),
-      error: (error) => this.errorHandler.handle('Failed to load subjects', error),
-    });
+  private loadSubjectsAndExamTypes(classId: string, matchNames = false): void {
+    this.masterDataService.getSubjectsByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (subjects) => {
+          this.allSubjects = subjects;
+          if (matchNames && this.displaySubjectName) {
+            const match = subjects.find(s =>
+              s.subjectName.toLowerCase() === this.displaySubjectName.toLowerCase()
+            );
+            if (match) this.examFormData.subjectId = String(match.id);
+          }
+        },
+        error: (error) => this.errorHandler.handle('Failed to load subjects', error),
+      });
 
-    this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => (this.allExamTypes = examTypes),
-      error: (error) => this.errorHandler.handle('Failed to load exam types', error),
-    });
+    this.masterDataService.getExamTypesByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (examTypes) => {
+          this.allExamTypes = examTypes;
+          if (matchNames && this.displayExamTypeName) {
+            const match = examTypes.find(e =>
+              e.examTypeName.toLowerCase() === this.displayExamTypeName.toLowerCase()
+            );
+            if (match) this.examFormData.examTypeId = String(match.id);
+          }
+        },
+        error: (error) => this.errorHandler.handle('Failed to load exam types', error),
+      });
   }
 
-  onSubjectChange(): void {
-    this.resetQuestions();
+  onSubjectChange():  void { this.onHeaderFieldChanged(); }
+  onExamTypeChange(): void { this.onHeaderFieldChanged(); }
+
+  /**
+   * Change #8: Question Paper Name input handler.
+   * Strips digits from the base text portion (before the last hyphen-number suffix).
+   * Allows patterns like "UnitTest-6" — only the suffix number is preserved.
+   */
+  onQuestionPaperNameInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    // Allow only letters, digits, and hyphens — strip everything else
+    const cleaned = input.value.replace(/[^a-zA-Z0-9-]/g, '');
+
+    this.examFormData.questionPaperName = cleaned;
+    input.value = cleaned;
+    this.questionPaperNameExists = false;
+    this.onHeaderFieldChanged();
   }
 
-  onExamTypeChange(): void {
-    this.resetQuestions();
+  onQuestionPaperNameChange(): void {
+    this.questionPaperNameExists = false;
+    this.onHeaderFieldChanged();
   }
 
   onTotalMarksChange(event: Event): void {
@@ -163,7 +337,6 @@ export class CreateExamComponent implements OnInit {
       this.examFormData.totalMarks = value;
       input.value = String(value);
     }
-    this.resetQuestions();
   }
 
   onNumberOfQuestionsChange(event: Event): void {
@@ -175,49 +348,29 @@ export class CreateExamComponent implements OnInit {
       this.examFormData.numberOfQuestions = value;
       input.value = String(value);
     }
-    this.resetQuestions();
+    // numberOfQuestions is disabled when locked, so this only fires pre-lock
   }
 
-  onQuestionPaperNameChange(): void {
-    this.resetQuestions();
+  /**
+   * Called when Class / Subject / ExamType / QuestionPaperName changes.
+   * If questions are already locked: unlock Set Questions (so user re-validates),
+   * and freeze the Q&A section (inputs disabled, notice shown).
+   * The questionSets data is NOT cleared — just frozen.
+   */
+  private onHeaderFieldChanged(): void {
+    if (this.questionsLocked) {
+      this.questionsLocked = false;
+      this.questionsFrozen = true;
+    }
   }
 
-  // ─── Filter Handlers (Update Mode) ───────────────────────────────────────────
-
-  onFilterClassSelected(classId: string): void {
-    this.resetFilterDependents();
-    if (!classId) return;
-    this.loadFilterSubjectsAndExamTypes(classId);
-  }
-
-  private resetFilterDependents(): void {
-    this.examFilters.filterExamSubject = '';
-    this.examFilters.filterExamExamType = '';
-    this.existingExams = [];
-    this.allSubjects = [];
-    this.allExamTypes = [];
-  }
-
-  private loadFilterSubjectsAndExamTypes(classId: string): void {
-    this.masterDataService.getSubjectsByClass(classId).subscribe({
-      next: (subjects) => (this.allSubjects = subjects),
-      error: (error) => this.errorHandler.handle('Failed to load subjects', error),
-    });
-
-    this.masterDataService.getExamTypesByClass(classId).subscribe({
-      next: (examTypes) => (this.allExamTypes = examTypes),
-      error: (error) => this.errorHandler.handle('Failed to load exam types', error),
-    });
-  }
-
-  // ─── Generate Questions ───────────────────────────────────────────────────────
+  // ─── Generate Questions ───────────────────────────────────────────────────
 
   generateQuestions(): void {
     if (!this.validateExamBasicInfo()) return;
 
     this.isLoading = true;
 
-    // Check backend whether a paper with same class/subject/examType/name already exists
     this.createQuestionPaperService
       .checkQuestionPaperExists(
         +this.examFormData.classId,
@@ -225,37 +378,50 @@ export class CreateExamComponent implements OnInit {
         +this.examFormData.examTypeId,
         this.examFormData.questionPaperName?.trim() ?? null,
       )
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (exists) => {
           this.isLoading = false;
           if (exists) {
+            this.questionPaperNameExists = true;
             this.toastService.showError(
-              'Already Exists',
-              'A question paper with this name already exists for the selected class, subject and exam type.',
+              'Duplicate Question Paper Name',
+              'A question paper with the same name already exists for this class, subject, and exam type.\nPlease choose a different name.',
             );
             return;
           }
-          // Not a duplicate — generate question sets
+          this.questionPaperNameExists = false;
+
+          // If re-clicking after a freeze: just unlock and unfreeze without regenerating
+          if (this.questionsFrozen && this.questionSets.length > 0) {
+            this.questionsLocked  = true;
+            this.questionsFrozen  = false;
+            this.questionsGenerated = true;
+            this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
+            return;
+          }
+
           try {
             this.questionSets = this.createQuestionPaperService.generateQuestionSets(
               this.examFormData.numberOfQuestions!,
               this.examFormData.totalMarks!,
             );
-            // Reset each question's rubric state to blank
             this.questionSets.forEach(q => {
               q.validationRulesCount = 0;
               q.rubricPoints = [];
-              // Default maxMarks = 2 if not already set higher
-              if (!q.maxMarks || q.maxMarks < 2) {
-                q.maxMarks = 2;
-              }
+              q.maxMarks = null;
             });
             this.examFormData.questionSets = this.questionSets;
-            this.questionsGenerated = true;
-            this.currentQuestionIndex = 0;
-            this.examInfoCollapsed = true;
-            this.showExamInfoChevron = true;
-            this.toastService.showSuccess('Questions Generated', `${this.questionSets.length} questions created successfully`);
+            this.questionsGenerated        = true;
+            this.questionsLocked           = true;
+            this.questionsFrozen           = false;
+            this.currentQuestionIndex      = 0;
+            this.examInfoCollapsed         = true;
+            this.showExamInfoChevron       = true;
+            this.toastService.showSuccess(
+              'Questions Generated',
+              `${this.questionSets.length} questions created successfully`,
+            );
           } catch (error) {
             this.errorHandler.handle('Failed to generate questions', error);
           }
@@ -268,42 +434,145 @@ export class CreateExamComponent implements OnInit {
   }
 
   private validateExamBasicInfo(): boolean {
-    if (!this.examFormData.classId) {
-      this.toastService.showWarning('Warning', 'Please select a class');
-      return false;
-    }
-    if (!this.examFormData.subjectId) {
-      this.toastService.showWarning('Warning', 'Please select a subject');
-      return false;
-    }
-    if (!this.examFormData.examTypeId) {
-      this.toastService.showWarning('Warning', 'Please select an exam type');
-      return false;
-    }
+    if (!this.examFormData.classId)    { this.toastService.showWarning('Warning', 'Please select a class'); return false; }
+    if (!this.examFormData.subjectId)  { this.toastService.showWarning('Warning', 'Please select a subject'); return false; }
+    if (!this.examFormData.examTypeId) { this.toastService.showWarning('Warning', 'Please select an exam type'); return false; }
     if (!this.examFormData.questionPaperName?.trim()) {
-      this.toastService.showWarning('Warning', 'Please enter a Question Paper Name');
-      return false;
+      this.toastService.showWarning('Warning', 'Please enter a Question Paper Name'); return false;
     }
     if (!this.examFormData.totalMarks || this.examFormData.totalMarks < 1) {
-      this.toastService.showError('Error', 'Please enter valid total marks (minimum 1)');
-      return false;
+      this.toastService.showError('Error', 'Please enter valid total marks (minimum 1)'); return false;
     }
     if (!this.examFormData.numberOfQuestions || this.examFormData.numberOfQuestions < 1) {
-      this.toastService.showError('Error', 'Please enter valid number of questions (minimum 1)');
-      return false;
+      this.toastService.showError('Error', 'Please enter valid number of questions (minimum 1)'); return false;
     }
     return true;
   }
 
-  // ─── Question Navigation ──────────────────────────────────────────────────────
+  // ─── Reset ────────────────────────────────────────────────────────────────
 
-  get currentQuestionSet(): QuestionSet {
-    return this.questionSets[this.currentQuestionIndex];
+  onResetClick(): void {
+    this.confirmDialog = {
+      lines: [
+        'Are you sure you want to reset?',
+        'All entered question and answer data will be lost.',
+      ],
+      okLabel: 'Yes, Reset',
+      onOk: () => this.hardResetQuestions(),
+    };
   }
 
-  get isLastQuestion(): boolean {
-    return this.currentQuestionIndex === this.questionSets.length - 1;
+  confirmDialogOk(): void {
+    const cb = this.confirmDialog?.onOk;
+    this.confirmDialog = null;
+    cb?.();
   }
+
+  confirmDialogCancel(): void {
+    this.confirmDialog = null;
+  }
+
+  private hardResetQuestions(): void {
+    this.questionsGenerated              = false;
+    this.questionsLocked                 = false;
+    this.questionsFrozen                 = false;
+    this.questionSets                    = [];
+    this.examFormData.questionSets       = [];
+    this.examFormData.classId            = '';
+    this.examFormData.subjectId          = '';
+    this.examFormData.examTypeId         = '';
+    this.examFormData.totalMarks         = null;
+    this.examFormData.numberOfQuestions  = null;
+    this.examFormData.questionPaperName  = null;
+    this.examFormData.examDate           = null;
+    this.allSubjects                     = [];
+    this.allExamTypes                    = [];
+    this.currentQuestionIndex            = 0;
+    this.examInfoCollapsed               = false;
+    this.showExamInfoChevron             = false;
+    this.rulesGenerated                  = false;
+    this.questionPaperNameExists         = false;
+    this.stateService.clear();
+    this.resetTouchState();
+    this.toastService.showInfo('Reset', 'All details have been cleared.');
+  }
+
+  private resetForm(): void {
+    this.stateService.clear();
+    this.examFormData = {
+      academicYear:      this.createQuestionPaperService.getCurrentAcademicYear(),
+      classId:           '',
+      subjectId:         '',
+      examTypeId:        '',
+      totalMarks:        null,
+      numberOfQuestions: null,
+      questionPaperName: null,
+      examDate:          null,
+      questionSets:      [],
+    };
+    this.questionSets         = [];
+    this.questionsGenerated   = false;
+    this.questionsLocked      = false;
+    this.questionsFrozen      = false;
+    this.currentQuestionIndex = 0;
+    this.examInfoCollapsed    = false;
+    this.showExamInfoChevron  = false;
+    this.rulesGenerated       = false;
+    this.allSubjects          = [];
+    this.allExamTypes         = [];
+  }
+
+  // ─── Add / Delete Question ────────────────────────────────────────────────
+
+  /**
+   * Change #6: Add a new blank question at the end.
+   */
+  addQuestion(): void {
+    const defaultMarks = this.examFormData.totalMarks
+      ? Math.max(2, Math.floor(this.examFormData.totalMarks / (this.questionSets.length + 1)))
+      : 2;
+    const newQ: QuestionSet = {
+      questionNumber:      this.questionSets.length + 1,
+      questionText:        '',
+      answerText:          '',
+      maxMarks:            null,
+      validationRulesCount: 0,
+      rubricPoints:        [],
+    };
+    this.questionSets.push(newQ);
+    this.examFormData.questionSets = this.questionSets;
+    this.examFormData.numberOfQuestions = this.questionSets.length;
+    this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
+  }
+
+  /**
+   * Change #6: Delete the last question (or current if it's last).
+   */
+  deleteLastQuestion(): void {
+    if (this.questionSets.length <= 1) return;
+    this.confirmDialog = {
+      lines: [
+        'Delete the last question?',
+        'Any data entered for it will be lost.',
+      ],
+      okLabel: 'Yes, Delete',
+      onOk: () => {
+        this.questionSets.pop();
+        this.examFormData.questionSets = this.questionSets;
+        this.examFormData.numberOfQuestions = this.questionSets.length;
+        if (this.currentQuestionIndex >= this.questionSets.length) {
+          this.currentQuestionIndex = this.questionSets.length - 1;
+        }
+        this.resetTouchState();
+        this.toastService.showInfo('Question Deleted', 'Last question removed.');
+      },
+    };
+  }
+
+  // ─── Question Navigation ──────────────────────────────────────────────────
+
+  get currentQuestionSet(): QuestionSet { return this.questionSets[this.currentQuestionIndex]; }
+  get isLastQuestion(): boolean { return this.currentQuestionIndex === this.questionSets.length - 1; }
 
   get shouldShowValidationRules(): boolean {
     return (
@@ -314,48 +583,61 @@ export class CreateExamComponent implements OnInit {
     );
   }
 
+  /**
+   * Change #9: Save & Next is only shown when question + answer are filled
+   * (and for multi-mark: validation rules are set and marks match).
+   */
+  isCurrentQuestionReady(): boolean {
+    if (!this.currentQuestionSet) return false;
+    const q = this.currentQuestionSet;
+    if (!q.questionText?.trim() || !q.answerText?.trim()) return false;
+    if (q.maxMarks === 1) return true;
+    // For multi-mark: validation rules must be generated and marks must match
+    if (!this.rulesGenerated || (q.rubricPoints?.length ?? 0) === 0) return false;
+    return this.createQuestionPaperService.validateMarksMatch(q);
+  }
+
   goToPreviousQuestion(): void {
     if (this.currentQuestionIndex > 0) {
       this.currentQuestionIndex--;
       this.resetTouchState();
+      const q = this.currentQuestionSet;
+      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
     }
   }
 
   goToNextQuestion(): void {
-    // Touch all fields so inline errors appear
     this.questionTextTouched = true;
     this.answerTextTouched   = true;
-
-    // Touch all rule fields too
     this.currentQuestionSet?.rubricPoints?.forEach(r => {
       r.descriptionTouched = true;
       r.marksTouched       = true;
     });
 
-    if (this.currentQuestionSet.maxMarks === 1) {
-      this.autoFillOneMarkQuestion();
-    }
+    if (this.currentQuestionSet.maxMarks === 1) this.autoFillOneMarkQuestion();
 
     const errors = this.getQuestionValidationErrors();
-    if (errors.length > 0) {
-      this.toastService.showError('Validation Error', errors[0]);
-      return;
-    }
+    if (errors.length > 0) { this.toastService.showError('Validation Error', errors[0]); return; }
 
     if (this.currentQuestionSet.maxMarks !== 1 && !this.validateMarksMatch()) {
       const total = this.calculateValidationMarksTotal();
-      const max = this.currentQuestionSet.maxMarks ?? 0;
-      const message =
-        total > max
-          ? `Validation marks (${total}) exceed maximum marks (${max}). Please adjust.`
-          : `Validation marks (${total}) are less than maximum marks (${max}). Please add more.`;
-      this.toastService.showError('Validation Error', message);
+      const max   = this.currentQuestionSet.maxMarks ?? 0;
+      const msg   = total > max
+        ? `Validation marks (${total}) exceed maximum marks (${max}). Please adjust.`
+        : `Validation marks (${total}) are less than maximum marks (${max}). Please add more.`;
+      this.toastService.showError('Validation Error', msg);
       return;
     }
 
     if (this.currentQuestionIndex < this.questionSets.length - 1) {
       this.currentQuestionIndex++;
       this.resetTouchState();
+      const q = this.currentQuestionSet;
+      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+        this.rulesGenerated = true;
+      }
       const msg = this.currentQuestionSet.maxMarks === 1
         ? 'Question saved (1 mark - no rubric needed)'
         : 'Question saved! Moving to next question.';
@@ -366,15 +648,14 @@ export class CreateExamComponent implements OnInit {
   private autoFillOneMarkQuestion(): void {
     this.currentQuestionSet.validationRulesCount = 1;
     this.currentQuestionSet.rubricPoints = [
-      { description: 'Default criterion for 1-mark question', marks: 1, isAutoGenerated: true },
+      { description: 'Default criterion', marks: 1, isAutoGenerated: true },
     ];
     this.rulesGenerated = true;
   }
 
-  // ─── Submit Exam ──────────────────────────────────────────────────────────────
+  // ─── Submit Exam ──────────────────────────────────────────────────────────
 
   submitAll(): void {
-    // Touch all fields so inline errors appear
     this.questionTextTouched = true;
     this.answerTextTouched   = true;
     this.currentQuestionSet?.rubricPoints?.forEach(r => {
@@ -383,127 +664,122 @@ export class CreateExamComponent implements OnInit {
     });
 
     const currentErrors = this.getQuestionValidationErrors();
-    if (currentErrors.length > 0) {
-      this.toastService.showError('Validation Error', currentErrors[0]);
-      return;
-    }
+    if (currentErrors.length > 0) { this.toastService.showError('Validation Error', currentErrors[0]); return; }
 
     if (!this.validateMarksMatch()) {
-      this.toastService.showError('Validation Error', 'Validation marks must match maximum marks');
-      return;
+      this.toastService.showError('Validation Error', 'Validation marks must match maximum marks'); return;
     }
 
     const formValidation = this.createQuestionPaperService.validateExamForm(this.examFormData);
     if (!formValidation.isValid) {
-      this.toastService.showError('Validation Error', formValidation.errors[0]);
-      return;
+      this.toastService.showError('Validation Error', formValidation.errors[0]); return;
     }
 
-    this.submitToBackend();
+    if (this.isEditMode) {
+      this.saveChangesToBackend();
+    } else {
+      this.submitToBackend();
+    }
+  }
+
+  private saveChangesToBackend(): void {
+    if (!this.editingPaperId) {
+      this.toastService.showError('Error', 'No paper ID found for editing'); return;
+    }
+
+    this.isSubmitting   = true;
+    this.uploadProgress = { visible: true, width: '50%', text: 'Saving changes...' };
+
+    this.questionSets.forEach(q => {
+      q.questionText = q.questionText?.trim() ?? q.questionText;
+      q.answerText   = q.answerText?.trim()   ?? q.answerText;
+    });
+
+    this.createQuestionPaperService.updateExam(this.editingPaperId, this.examFormData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.uploadProgress = { visible: true, width: '100%', text: 'Changes saved!' };
+          this.progressTimer = setTimeout(() => {
+            this.uploadProgress.visible = false;
+            this.isSubmitting           = false;
+            this.toastService.showSuccess('Success', 'Question paper updated successfully');
+            this.stateService.clear();
+            this.isUnloading = true;
+            this.router.navigate(['/view/exam'], { queryParams: { questionPaperId: this.editingPaperId } });
+          }, 500);
+        },
+        error: (error) => {
+          this.uploadProgress.visible = false;
+          this.isSubmitting           = false;
+          this.errorHandler.handle('Failed to save changes', error);
+        },
+      });
   }
 
   private submitToBackend(): void {
-    this.isSubmitting = true;
+    this.isSubmitting   = true;
     this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
+
+    this.questionSets.forEach(q => {
+      q.questionText = q.questionText?.trim() ?? q.questionText;
+      q.answerText   = q.answerText?.trim()   ?? q.answerText;
+    });
 
     const apiRequest = this.createQuestionPaperService.prepareApiRequest(this.examFormData);
 
-    this.createQuestionPaperService.createExam(apiRequest).subscribe({
-      next: () => {
-        this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
-        setTimeout(() => {
+    this.createQuestionPaperService.createExam(apiRequest)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
+          this.progressTimer = setTimeout(() => {
+            this.uploadProgress.visible = false;
+            this.isSubmitting           = false;
+            this.toastService.showSuccess('Success', 'Exam uploaded successfully');
+            this.resetForm();
+          }, 500);
+        },
+        error: (error) => {
           this.uploadProgress.visible = false;
-          this.isSubmitting = false;
-          this.toastService.showSuccess('Success', 'Exam uploaded successfully');
-          this.resetForm();
-        }, 500);
-      },
-      error: (error) => {
-        this.uploadProgress.visible = false;
-        this.isSubmitting = false;
-        this.errorHandler.handle('Failed to upload exam', error);
-      },
-    });
+          this.isSubmitting           = false;
+          this.errorHandler.handle('Failed to upload exam', error);
+        },
+      });
   }
 
-  // // ─── Load Existing Exams (Update Mode) ───────────────────────────────────────
-
-  // loadExistingExams(): void {
-  //   if (!this.validateFilters()) return;
-
-  //   this.isLoading = true;
-
-  //   this.createQuestionPaperService.getMockExams(this.examFilters).subscribe({
-  //     next: (exams) => {
-  //       this.existingExams = exams;
-  //       this.isLoading = false;
-  //       if (exams.length === 0) {
-  //         this.toastService.showInfo('Info', 'No exams found with selected filters');
-  //       } else {
-  //         this.toastService.showSuccess('Success', `${exams.length} exam(s) found`);
-  //       }
-  //     },
-  //     error: (error) => {
-  //       this.isLoading = false;
-  //       this.errorHandler.handle('Failed to load exams', error);
-  //     },
-  //   });
-  // }
-
-  private validateFilters(): boolean {
-    if (!this.examFilters.filterExamClass) {
-      this.toastService.showWarning('Warning', 'Please select a class');
-      return false;
-    }
-    if (!this.examFilters.filterExamSubject) {
-      this.toastService.showWarning('Warning', 'Please select a subject');
-      return false;
-    }
-    if (!this.examFilters.filterExamExamType) {
-      this.toastService.showWarning('Warning', 'Please select an exam type');
-      return false;
-    }
-    return true;
-  }
-
-  selectExamForUpdate(exam: Exam): void {
-    this.selectedExamForUpdate = exam;
-  }
-
-  // ─── Validation Rules ─────────────────────────────────────────────────────────
+  // ─── Validation Rules ─────────────────────────────────────────────────────
 
   generateValidationRules(): void {
-    if (!this.currentQuestionSet) {
-      this.toastService.showError('Error', 'No question selected');
-      return;
+    if (!this.currentQuestionSet) { this.toastService.showError('Error', 'No question selected'); return; }
+
+    const maxMarks = this.currentQuestionSet.maxMarks;
+    if (!maxMarks || maxMarks < 1) {
+      this.toastService.showWarning('Warning', 'Please enter Maximum Marks before setting validation rules'); return;
     }
 
     const rulesCount = this.currentQuestionSet.validationRulesCount;
     if (!rulesCount || rulesCount < 1) {
-      this.toastService.showWarning('Warning', 'Please enter validation rules count first');
-      return;
+      this.toastService.showWarning('Warning', 'Please enter validation rules count first'); return;
+    }
+    if (rulesCount > 20) {
+      this.toastService.showWarning('Warning', 'Maximum 20 validation rules allowed'); return;
     }
 
     const current = this.currentQuestionSet.rubricPoints;
-
-    while (current.length < rulesCount) {
-      current.push({ description: '', marks: null });
-    }
-
-    if (current.length > rulesCount) {
-      this.currentQuestionSet.rubricPoints = current.slice(0, rulesCount);
-    }
+    while (current.length < rulesCount)  current.push({ description: '', marks: null });
+    if (current.length > rulesCount) this.currentQuestionSet.rubricPoints = current.slice(0, rulesCount);
 
     this.rulesGenerated = true;
   }
 
   clearCurrentQuestion(): void {
     if (!this.currentQuestionSet) return;
-    this.currentQuestionSet.questionText = '';
-    this.currentQuestionSet.answerText = '';
-    this.currentQuestionSet.maxMarks = null;
+    this.currentQuestionSet.questionText         = '';
+    this.currentQuestionSet.answerText           = '';
+    this.currentQuestionSet.maxMarks             = null;
     this.currentQuestionSet.validationRulesCount = 0;
-    this.currentQuestionSet.rubricPoints = [];
+    this.currentQuestionSet.rubricPoints         = [];
     this.resetTouchState();
     this.toastService.showInfo('Info', 'Question cleared');
   }
@@ -523,25 +799,10 @@ export class CreateExamComponent implements OnInit {
     return this.createQuestionPaperService.validateQuestionSet(this.currentQuestionSet).errors;
   }
 
-  // ─── Mode Management ──────────────────────────────────────────────────────────
-
-  setExamMode(mode: 'upload' | 'update'): void {
-    this.examMode = mode;
-    this.resetForm();
-  }
-
-  clearFilters(): void {
-    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
-    this.existingExams = [];
-    this.selectedExamForUpdate = null;
-  }
-
-  // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-  // ─── Name getters for collapsed exam info chips ──────────────────────────────
-  getClassName():    string { return this.allClasses.find(c  => String(c.id)  === String(this.examFormData.classId))?.className    ?? ''; }
-  getSubjectName():  string { return this.allSubjects.find(s => String(s.id)  === String(this.examFormData.subjectId))?.subjectName  ?? ''; }
-  getExamTypeName(): string { return this.allExamTypes.find(e => String(e.id) === String(this.examFormData.examTypeId))?.examTypeName ?? ''; }
+  // ─── Name getters ─────────────────────────────────────────────────────────
+  getClassName():    string { return this.allClasses.find(c  => String(c.id)  === String(this.examFormData.classId))?.className    || this.displayClassName    || ''; }
+  getSubjectName():  string { return this.allSubjects.find(s => String(s.id)  === String(this.examFormData.subjectId))?.subjectName  || this.displaySubjectName  || ''; }
+  getExamTypeName(): string { return this.allExamTypes.find(e => String(e.id) === String(this.examFormData.examTypeId))?.examTypeName || this.displayExamTypeName || ''; }
 
   formatDate(dateString: string): string {
     if (!dateString) return 'N/A';
@@ -549,74 +810,38 @@ export class CreateExamComponent implements OnInit {
       return new Date(dateString).toLocaleDateString('en-US', {
         year: 'numeric', month: 'long', day: 'numeric',
       });
-    } catch {
-      return dateString;
-    }
+    } catch { return dateString; }
   }
 
-  trackByIndex(index: number): number {
-    return index;
-  }
+  trackByIndex(index: number): number { return index; }
 
-  // ─── Reset Questions (called when any exam info field changes) ───────────────
-  private resetQuestions(): void {
-    if (this.questionsGenerated) {
-      this.questionsGenerated   = false;
-      this.questionSets         = [];
-      this.examFormData.questionSets = [];
-      this.currentQuestionIndex = 0;
-      this.examInfoCollapsed    = false;
-      this.showExamInfoChevron  = false;
-      this.rulesGenerated       = false;
-      this.resetTouchState();   // clear all field errors
-      this.toastService.showInfo('Info', 'Question form reset due to field change');
-    }
-  }
+  // ─── Touch helpers ────────────────────────────────────────────────────────
+  onQuestionTextBlur():   void { this.questionTextTouched = true; }
+  onAnswerTextBlur():     void { this.answerTextTouched   = true; }
+  onQuestionTextChange(): void { if (this.questionTextTouched && this.currentQuestionSet?.questionText?.trim()) this.questionTextTouched = false; }
+  onAnswerTextChange():   void { if (this.answerTextTouched   && this.currentQuestionSet?.answerText?.trim())   this.answerTextTouched   = false; }
 
-  private resetForm(): void {
-    this.examFormData = {
-      academicYear: this.createQuestionPaperService.getCurrentAcademicYear(),
-      classId: '',
-      subjectId: '',
-      examTypeId: '',
-      totalMarks: null,
-      numberOfQuestions: null,
-      questionPaperName: null,
-      examDate: null,
-      questionSets: [],
-    };
-    this.questionSets = [];
-    this.questionsGenerated = false;
-    this.currentQuestionIndex = 0;
-    this.examInfoCollapsed = false;
-    this.showExamInfoChevron = false;
-    this.rulesGenerated = false;
-    this.existingExams = [];
-    this.selectedExamForUpdate = null;
-    this.examFilters = { filterExamClass: '', filterExamSubject: '', filterExamExamType: '' };
-    this.allSubjects = [];
-    this.allExamTypes = [];
-  }
-  // ─── Touch helpers ────────────────────────────────────────────────────────────
+  get questionTextInvalid(): boolean { return this.questionTextTouched && (!this.currentQuestionSet?.questionText?.trim()); }
+  get answerTextInvalid():   boolean { return this.answerTextTouched   && (!this.currentQuestionSet?.answerText?.trim());   }
 
-  onQuestionTextBlur(): void    { this.questionTextTouched = true; }
-  onAnswerTextBlur(): void      { this.answerTextTouched   = true; }
-  onQuestionTextChange(): void  { if (this.questionTextTouched && this.currentQuestionSet?.questionText?.trim()) this.questionTextTouched = false; }
-  onAnswerTextChange(): void    { if (this.answerTextTouched   && this.currentQuestionSet?.answerText?.trim())   this.answerTextTouched   = false; }
-
-  get questionTextInvalid(): boolean {
-    return this.questionTextTouched &&
-           (!this.currentQuestionSet?.questionText?.trim());
-  }
-
-  get answerTextInvalid(): boolean {
-    return this.answerTextTouched &&
-           (!this.currentQuestionSet?.answerText?.trim());
+  onMaxMarksInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (isNaN(value)) return;
+    const max = this.examFormData.totalMarks ?? 200;
+    if (value < 1)   value = 1;
+    if (value > max) value = max;
+    this.currentQuestionSet.maxMarks = value;
+    input.value = String(value);
   }
 
   get canSetRules(): boolean {
-    const count = this.currentQuestionSet?.validationRulesCount;
-    return count !== null && count !== undefined && count >= 1 && count <= 10;
+    if (!this.currentQuestionSet) return false;
+    const count    = this.currentQuestionSet.validationRulesCount;
+    const maxMarks = this.currentQuestionSet.maxMarks;
+    const hasValidCount    = count    !== null && count    !== undefined && count    >= 1 && count    <= 20;
+    const hasValidMaxMarks = maxMarks !== null && maxMarks !== undefined && maxMarks >= 1;
+    return hasValidCount && hasValidMaxMarks;
   }
 
   private resetTouchState(): void {
@@ -625,13 +850,20 @@ export class CreateExamComponent implements OnInit {
     this.rulesGenerated      = false;
   }
 
-
-  // ─── Clear rules only when count = 0 ────────────────────────────────────────
-  onValidationCountChange(): void {
-    const count = this.currentQuestionSet?.validationRulesCount;
-    if (!count || count < 1) {
+  onValidationCountChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let value = parseInt(input.value, 10);
+    if (isNaN(value) || value < 1) {
+      this.currentQuestionSet.validationRulesCount = 0;
       this.currentQuestionSet.rubricPoints = [];
       this.rulesGenerated = false;
+      input.value = '';
+      return;
     }
+    if (value > 20) {
+      value = 20;
+      input.value = '20';
+    }
+    this.currentQuestionSet.validationRulesCount = value;
   }
 }

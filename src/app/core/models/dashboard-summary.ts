@@ -6,12 +6,21 @@ export interface ClassEvaluationBreakdown {
   subjectName:       string;
   examTypeName:      string;
   questionPaperName: string;
+  totalQuestions:    number;
   totalMarks:        number;
+  examDate:          string | null;
+  examStatus:        string;
+  evaluationStatus:  string;
+  questionPaperId:   number;
   totalStudents:     number;
   uploaded:          number;
   evaluated:         number;
   pending:           number;
   absent:            number;
+  classId:           number;
+  sectionId:         number;
+  subjectId:         number;
+  examTypeId:        number;
 }
 
 export interface RecentActivity {
@@ -51,6 +60,7 @@ export interface TeacherSummary {
   pendingEvaluations:    number;
   completedEvaluations:  number;
   subjectSummaries:      SubjectResultSummary[];
+  classBreakdown:        ClassEvaluationBreakdown[];
 }
 
 // ── Student ───────────────────────────────────────────────────────────────────

@@ -11,40 +11,47 @@ body {
   overflow-x: hidden;
 }
 
-/* ─── Brand Colors ─── */
+/* ─── CSS Variables ──────────────────────────────────────────────────────────── */
 :root {
-  /* ─── 4 Core Brand Colors ────────────────────── */
-  --green:          #7fbb06;
+  /* ─── 4 Core Brand Colors ─────────────────────────────────────────────────── */
   --blue:           #0ea4f4;
+  --green:          #7fbb06;
   --red:            #f85310;
   --yellow:         #ffbb0a;
 
-  /* ─── Dark Variants ──────────────────────────── */
-  --green-dark:     #5f8e04;
+  /* ─── Dark Variants ───────────────────────────────────────────────────────── */
   --blue-dark:      #0882c4;
+  --green-dark:     #5f8e04;
   --red-dark:       #d04008;
   --yellow-dark:    #d69900;
 
-  /* ─── Light Variants ─────────────────────────── */
-  --green-light:    #eef7d6;
+  /* ─── Light Variants ──────────────────────────────────────────────────────── */
   --blue-light:     #e0f4fe;
+  --green-light:    #eef7d6;
   --red-light:      #fee8e0;
   --yellow-light:   #fff8e0;
 
-  /* ─── Semantic Aliases ───────────────────────── */
-  --primary:        var(--blue-dark);
-  --primary-dark:   var(--blue);
-  --primary-light:  var(--blue-light);
-  --success:        var(--green);
-  --success-light:  var(--green-light);
-  --danger:         var(--red);
-  --danger-light:   var(--red-light);
-  --warning:        var(--yellow);
-  --warning-light:  var(--yellow-light);
-  --info:           var(--blue);
-  --info-light:     var(--blue-light);
+  /* ─── Semantic Aliases ───────────────────────────────────────────────────────── */
+--primary:       var(--blue);        
+--primary-dark:  var(--blue-dark);   
+--primary-light: var(--blue-light);
 
-  /* ─── Neutrals ───────────────────────────────── */
+--success:       var(--green);
+--success-dark:  var(--green-dark);  
+--success-light: var(--green-light);
+
+--danger:        var(--red);
+--danger-dark:   var(--red-dark);   
+--danger-light:  var(--red-light);
+
+--warning:       var(--yellow);
+--warning-dark:  var(--yellow-dark); 
+--warning-light: var(--yellow-light);
+
+--info:          var(--blue);
+--info-light:    var(--blue-light);
+
+  /* ─── Neutrals ────────────────────────────────────────────────────────────── */
   --gray-50:        #f9fafb;
   --gray-100:       #f3f4f6;
   --gray-200:       #e5e7eb;
@@ -54,7 +61,7 @@ body {
   --gray-700:       #374151;
   --gray-900:       #1f2937;
 
-  /* ─── Tokens ─────────────────────────────────── */
+  /* ─── Tokens ──────────────────────────────────────────────────────────────── */
   --border-radius:    8px;
   --border-radius-lg: 12px;
   --shadow-sm:        0 1px 3px rgba(0,0,0,0.1);
@@ -63,7 +70,8 @@ body {
   --font-size-sm:     0.875rem;
   --font-size-xs:     0.75rem;
 
-  /* ─── Sidebar ────────────────────────────────── */
+  /* ─── Sidebar ─────────────────────────────────────────────────────────────── */
+  --sidebar-bg:           var(--gray-100);
   --sidebar-bg-from:      var(--blue);
   --sidebar-bg-to:        var(--blue-dark);
   --sidebar-toggle:       var(--blue);
@@ -72,4 +80,7 @@ body {
   --sidebar-pill-border:  rgba(255, 255, 255, 0.35);
   --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
   --sidebar-badge-border: rgba(255, 255, 255, 0.4);
+
+  /* ─── App Background ──────────────────────────────────────────────────────── */
+  --app-bg: #ffffff;
 }

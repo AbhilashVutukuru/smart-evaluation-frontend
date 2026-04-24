@@ -1,18 +1,6 @@
 <!-- Student Registration Component -->
 <div class="registration-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-user-graduate"></i> Student Registration</h2>
-    <button
-      class="btn btn-outline-primary"
-      (click)="showBulkUpload = !showBulkUpload"
-    >
-      <i [class]="showBulkUpload ? 'fas fa-user' : 'fas fa-file-upload'"></i>
-      {{ showBulkUpload ? "Single Registration" : "Bulk Upload" }}
-    </button>
-  </div>
-
-  <!-- ===== SINGLE REGISTRATION FORM ===== -->
+<!-- ===== SINGLE REGISTRATION FORM ===== -->
   <div *ngIf="!showBulkUpload" class="card">
     <h4><i class="fas fa-user-plus"></i> Student Information</h4>
 
@@ -263,7 +251,7 @@
 
                 <button
           type="submit"
-          class="btn btn-primary btn-lg"
+          class="btn btn-success btn-lg"
           [disabled]="loading"
         >
           <i

@@ -1,193 +1,147 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, EMPTY } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
-// ============================================================
-// DTOs - Shared across application
-// ============================================================
+// ─── DTOs ─────────────────────────────────────────────────────────────────────
 
 export interface AcademicYear {
-  id: number;
-  yearName: string;
+  id       : number;
+  yearName : string;
   startDate: string;
-  endDate: string;
-  isActive: boolean;
+  endDate  : string;
+  isActive : boolean;
 }
 
 export interface ClassDto {
-  id: number;
-  className: string;
+  id          : number;
+  className   : string;
   classNumber?: string;
 }
 
 export interface SectionDto {
-  id: number;
+  id         : number;
   sectionName: string;
 }
 
 export interface SubjectDto {
-  selected: any;
-  id: number;
+  selected   : any;
+  id         : number;
   subjectName: string;
   subjectCode?: string;
 }
 
 export interface ExamTypeDto {
-  id: number;
+  id          : number;
   examTypeName: string;
 }
 
 export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
+  success : boolean;
+  data    : T;
   message?: string;
 }
 
-// ============================================================
-// MASTER DATA SERVICE - Reusable across ALL components
-// ============================================================
+// ─── Service ──────────────────────────────────────────────────────────────────
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class MasterDataService {
-  private http = inject(HttpClient);
+  private http   = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/master-data`;
 
-  // ✅ BehaviorSubject for instant updates
+  // Academic year broadcast — updated after fetching or manually
   private academicYearSubject = new BehaviorSubject<string | null>(null);
-  public academicYear$ = this.academicYearSubject.asObservable();
+  readonly academicYear$ = this.academicYearSubject.asObservable();
 
-   getCurrentAcademicYear(): Observable<ApiResponse<AcademicYear>> {
-    return this.http.get<ApiResponse<AcademicYear>>(
-      `${this.apiUrl}/current-academic-year`
-    ).pipe(
-      tap(response => {
-        if (response.success && response.data) {
-          this.academicYearSubject.next(response.data.yearName);
-        }
-      })
-    );
+  // ── Academic Year ──────────────────────────────────────────
+  getCurrentAcademicYear(): Observable<ApiResponse<AcademicYear>> {
+    return this.http
+      .get<ApiResponse<AcademicYear>>(`${this.apiUrl}/current-academic-year`)
+      .pipe(
+        tap(response => {
+          if (response.success && response.data) {
+            this.academicYearSubject.next(response.data.yearName);
+          }
+        }),
+      );
   }
 
-  // ✅ CRITICAL: Instantly update academic year (no API call)
+  /** Instantly update the displayed academic year without an API call. */
   updateAcademicYearInstantly(yearName: string): void {
     this.academicYearSubject.next(yearName);
   }
 
-  // ============================================================
-  // ✅ GET CLASSES (used everywhere)
-  // ============================================================
+  // ── Classes ────────────────────────────────────────────────
   getClasses(): Observable<ClassDto[]> {
     return this.http
       .get<ApiResponse<ClassDto[]>>(`${this.apiUrl}/classes`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching classes:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        // FIX: removed console.error + throwError — errors propagate naturally
+        // to the caller's error handler (ErrorHandlerService). Logging here
+        // would duplicate the error and expose internals in production.
+        catchError(() => EMPTY),
       );
   }
 
-  // ============================================================
-  // ✅ GET SECTIONS BY CLASS (cascading dropdown)
-  // ============================================================
+  // ── Sections by Class ──────────────────────────────────────
   getSectionsByClass(classId: number | string): Observable<SectionDto[]> {
     return this.http
-      .get<
-        ApiResponse<SectionDto[]>
-      >(`${this.apiUrl}/sections/by-class/${classId}`)
+      .get<ApiResponse<SectionDto[]>>(`${this.apiUrl}/sections/by-class/${classId}`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching sections:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
   }
 
-  // ============================================================
-  // ✅ GET SUBJECTS BY CLASS (cascading dropdown)
-  // ============================================================
+  // ── Subjects by Class ──────────────────────────────────────
   getSubjectsByClass(classId: number | string): Observable<SubjectDto[]> {
     return this.http
-      .get<
-        ApiResponse<SubjectDto[]>
-      >(`${this.apiUrl}/subjects/by-class/${classId}`)
+      .get<ApiResponse<SubjectDto[]>>(`${this.apiUrl}/subjects/by-class/${classId}`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching subjects:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
   }
 
-  // ============================================================
-  // ✅ GET EXAM TYPES BY CLASS (cascading dropdown)
-  // ============================================================
+  // ── Exam Types by Class ────────────────────────────────────
   getExamTypesByClass(classId: number | string): Observable<ExamTypeDto[]> {
     return this.http
-      .get<
-        ApiResponse<ExamTypeDto[]>
-      >(`${this.apiUrl}/exam-types/by-class/${classId}`)
+      .get<ApiResponse<ExamTypeDto[]>>(`${this.apiUrl}/exam-types/by-class/${classId}`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching exam types:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
-  } 
+  }
 
-  // ============================================================
-  // ✅ GET ALL MASTER SECTIONS (not filtered by class)
-  // Used in admin settings to manage master section list
-  // ============================================================
+  // ── All Sections (admin settings) ─────────────────────────
   getAllSections(): Observable<SectionDto[]> {
     return this.http
       .get<ApiResponse<SectionDto[]>>(`${this.apiUrl}/sections`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching all sections:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
   }
 
-  // ============================================================
-  // ✅ GET ALL MASTER SUBJECTS (not filtered by class)
-  // Used in admin settings to manage master subject list
-  // ============================================================
+  // ── All Subjects (admin settings) ─────────────────────────
   getAllSubjects(): Observable<SubjectDto[]> {
     return this.http
       .get<ApiResponse<SubjectDto[]>>(`${this.apiUrl}/subjects`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching all subjects:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
   }
 
-  // ============================================================
-  // ✅ GET ALL MASTER EXAM TYPES (not filtered by class)
-  // Used in admin settings to manage master exam type list
-  // ============================================================
+  // ── All Exam Types (admin settings) ───────────────────────
   getAllExamTypes(): Observable<ExamTypeDto[]> {
     return this.http
       .get<ApiResponse<ExamTypeDto[]>>(`${this.apiUrl}/exam-types`)
       .pipe(
-        map((response) => response.data || []),
-        catchError((error) => {
-          console.error('Error fetching all exam types:', error);
-          return throwError(() => error);
-        }),
+        map(r => r.data ?? []),
+        catchError(() => EMPTY),
       );
   }
 }

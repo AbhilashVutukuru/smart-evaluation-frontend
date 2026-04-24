@@ -1,10 +1,13 @@
 <!-- unauthorized.component.html -->
 <div class="unauthorized-container">
   <div class="unauthorized-card">
+
     <!-- Icon -->
-    <div class="icon-wrapper">
-      <svg xmlns="http://www.w3.org/2000/svg" class="unauthorized-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+    <div class="icon-wrapper" role="img" aria-label="Access denied">
+      <svg xmlns="http://www.w3.org/2000/svg" class="unauthorized-icon" fill="none"
+           viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
       </svg>
     </div>
 
@@ -12,56 +15,79 @@
     <h1 class="title">Access Denied</h1>
 
     <!-- Error Code -->
-    <div class="error-code">Error 403</div>
+    <div class="error-code" role="status">Error 403</div>
 
     <!-- Message -->
     <p class="message">
-      {{ isStudentBlock ? 'This portal is for school staff only.' : "You don't have permission to access this page." }}
+      @if (isStudentBlock) {
+        This portal is for school staff only.
+      } @else {
+        You don't have permission to access this page.
+      }
     </p>
 
-    <!-- User Info — only show if authenticated user data is available -->
-    <div class="user-info" *ngIf="userEmail && !isStudentBlock">
-      <p class="user-detail">
-        <strong>Logged in as:</strong> {{ userEmail }}
-      </p>
-      <p class="user-detail" *ngIf="userRole">
-        <strong>Role:</strong> {{ userRole }}
-      </p>
-    </div>
+    <!-- FIX: User info box — show friendly role label, never raw internal role string.
+         Hidden for student blocks since student was never authenticated. -->
+    @if (userEmail && !isStudentBlock) {
+      <div class="user-info" role="region" aria-label="Current user details">
+        <p class="user-detail">
+          <strong>Logged in as:</strong> {{ userEmail }}
+        </p>
+        <!-- FIX: userRoleLabel used here, not userRole — "Staff Member" not "NonTeachingStaff" -->
+        @if (userRoleLabel) {
+          <p class="user-detail">
+            <strong>Role:</strong> {{ userRoleLabel }}
+          </p>
+        }
+      </div>
+    }
 
     <!-- Description -->
-    <p class="description" *ngIf="!isStudentBlock">
-      This page requires specific permissions that your account doesn't have.
-      If you believe this is an error, please contact your administrator.
-    </p>
-    <p class="description" *ngIf="isStudentBlock">
-      Students are not permitted to log in to this portal.
-      Please contact your school administrator for assistance.
-    </p>
+    @if (isStudentBlock) {
+      <p class="description">
+        Students are not permitted to log in to this portal.
+        Please contact your school administrator for assistance.
+      </p>
+    } @else {
+      <p class="description">
+        This page requires specific permissions that your account doesn't have.
+        If you believe this is an error, please contact your administrator.
+      </p>
+    }
 
     <!-- Actions -->
     <div class="actions">
-      <button class="btn btn-primary" (click)="goBack()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+      <button class="btn btn-primary" (click)="goBack()" type="button">
+        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none"
+             viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
         {{ isStudentBlock ? 'Back to Login' : 'Go to Dashboard' }}
       </button>
-      
-      <button class="btn btn-secondary" (click)="logout()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-        </svg>
-        Logout
-      </button>
+
+      <!-- FIX: Logout button hidden for student block — student was never
+           authenticated so there is no session to log out of. Showing it
+           would be confusing and calling logout() on a null session is wasteful. -->
+      @if (!isStudentBlock) {
+        <button class="btn btn-secondary" (click)="logout()" type="button">
+          <svg xmlns="http://www.w3.org/2000/svg" class="btn-icon" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+          Logout
+        </button>
+      }
     </div>
 
-    <!-- Help Link -->
+    <!-- Help -->
     <div class="help-section">
       <p class="help-text">
-        Need help? 
+        Need help?
         <a routerLink="/help" class="help-link">Contact Support</a>
       </p>
     </div>
+
   </div>
 </div>

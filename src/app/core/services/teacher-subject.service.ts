@@ -1,16 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/auth.model';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class TeacherSubjectService {
-  private readonly apiUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) {}
+  private http   = inject(HttpClient); // FIX: inject() pattern
+  private apiUrl = environment.apiUrl;
 
   assignSubjectsToTeacher(data: any): Observable<ApiResponse> {
     return this.http.post<ApiResponse>(`${this.apiUrl}/teacher-subjects/assign`, data);

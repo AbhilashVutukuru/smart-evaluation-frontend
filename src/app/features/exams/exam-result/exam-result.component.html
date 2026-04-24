@@ -1,10 +1,5 @@
-<div class="result-container">
-  <!-- Page Header -->
-  <div class="page-header">
-    <h2><i class="fas fa-chart-bar"></i> View Exam Results</h2>
-  </div>
-
-  <app-exam-filter
+<div class="page-container">
+<app-exam-filter
     [hidden]="showResultsCard"
     [classes]="classes"
     [sections]="sections"
@@ -22,6 +17,7 @@
     [canShowStudents]="canShowStudents"
     [showEmptyState]="showStudentsCard && students.length === 0 && !isLoading"
     [noExamPaperFound]="noExamPaperFound"
+    [hasSearched]="hasSearched"
     [isCollapsed]="isFilterCollapsed"
     (isCollapsedChange)="isFilterCollapsed = $event"
     (classChanged)="onClassChange($event)"
@@ -34,16 +30,25 @@
 
 
   <!--  Students Table with Statistics -->
-  <div
-    class="card"
-    *ngIf="showStudentsCard && students.length > 0 && !showResultsCard"
-  >
-    <!-- Header -->
-    <div class="card-header-flex">
-      <h4><i class="fas fa-users"></i> Back to List</h4>
-      <span class="badge badge-primary"
-        >{{ statistics.totalStudents }} Students</span
-      >
+  <div class="card" *ngIf="showStudentsCard && students.length > 0 && !showResultsCard">
+
+    <!-- Header row: title | search | badge — same pattern as view-question-paper -->
+    <div class="papers-header-row">
+      <h4><i class="fas fa-users"></i> Students</h4>
+
+      <div class="search-input-wrapper er-search" *ngIf="students.length > 0">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          class="form-control search-input"
+          placeholder="Search by name or roll number..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchInput()"
+        />
+        <button *ngIf="searchTerm" class="clear-search" (click)="clearSearch()" type="button">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
     </div>
 
     <!--  Statistics Cards -->
@@ -56,7 +61,6 @@
           <p>Total Students</p>
         </div>
       </div>
-
       <!-- Absent -->
       <div class="stat-card stat-absent">
         <div class="stat-icon"><i class="fas fa-user-slash"></i></div>
@@ -65,29 +69,35 @@
           <p>Absent</p>
         </div>
       </div>
-
-      <!-- Uploaded/Evaluated -->
+      <!-- Evaluated -->
       <div class="stat-card stat-uploaded">
         <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.evaluatedCount }}</h3>
-          <p>Evaluated</p>
+          <p>Evaluation Completed</p>
         </div>
       </div>
-
-      <!-- Pending/Not Evaluated -->
+      <!-- Not Evaluated -->
       <div class="stat-card stat-pending">
         <div class="stat-icon"><i class="fas fa-clock"></i></div>
         <div class="stat-content">
           <h3>{{ statistics.notEvaluatedCount }}</h3>
-          <p>Not Evaluated</p>
+          <p>Evaluation Pending</p>
         </div>
       </div>
     </div>
 
     <!-- Students Table -->
     <div class="table-responsive">
-      <table class="table">
+
+      <!-- No results state -->
+      <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
+        <i class="fas fa-search"></i>
+        <h5>No Students Found</h5>
+        <p>No students match "<strong>{{ searchTerm }}</strong>"</p>
+      </div>
+
+      <table class="table" *ngIf="filteredStudents.length > 0">
         <thead>
           <tr>
             <th>Roll No</th>
@@ -99,20 +109,15 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let student of students">
+          <tr *ngFor="let student of filteredStudents">
             <td>
               <strong class="roll-number">{{ student.rollNumber }}</strong>
             </td>
             <td>{{ student.studentName }}</td>
-            <td>{{ totalMarks || "-" }}</td>
+            <td>{{ totalMarks || "—" }}</td>
             <td>
-              {{
-                student.isAbsent
-                  ? "-"
-                  : !student.hasUploaded
-                    ? "-"
-                    : student.obtainedMarks
-              }}
+              <span *ngIf="student.isAbsent || !student.hasUploaded">—</span>
+              <span *ngIf="!student.isAbsent && student.hasUploaded">{{ student.obtainedMarks }}</span>
             </td>
             <td>
               <span *ngIf="student.isAbsent" class="badge badge-danger">
@@ -123,7 +128,7 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated' && student.hasUploaded"
                 class="badge badge-success"
               >
-                Evaluated
+                Evaluation Completed
               </span>
 
               <!-- Not Evaluated -->
@@ -131,24 +136,22 @@
                 *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending' && student.hasUploaded"
                 class="badge badge-warning"
               >
-                Not Evaluated
+                Evaluation Pending
               </span>
 
               <!-- Not Uploaded — show Submission Completed only if batch was submitted -->
               <span *ngIf="!student.isAbsent && !student.hasUploaded && answerSheetsSubmitted"
-                class="badge badge-submitted">
+                class="badge badge-primary">
                 <i class="fas fa-paper-plane"></i> Submission Completed
               </span>
 
               <!-- Not Uploaded — batch not yet submitted -->
-              <span *ngIf="!student.isAbsent && !student.hasUploaded && !answerSheetsSubmitted">
-                -
-              </span>
+              <span *ngIf="!student.isAbsent && !student.hasUploaded && !answerSheetsSubmitted">—</span>
             </td>
 
             <td>
               <!-- Absent -->
-              <span *ngIf="student.isAbsent" class="text-muted">-</span>
+              <span *ngIf="student.isAbsent" class=>—</span>
 
               <!-- Evaluated — link style matching upload answer sheet -->
               <a
@@ -161,7 +164,7 @@
               </a>
 
               <!-- Pending -->
-              <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'" class="text-muted">-</span>
+              <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending'">—</span>
             </td>
           </tr>
         </tbody>
@@ -205,6 +208,10 @@
       <div class="info-item">
         <span class="info-label"><i class="fas fa-user-graduate"></i> Student Name:</span>
         <span class="info-value">{{ selectedStudent.studentName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label"><i class="fas fa-list-ol"></i> Total Questions:</span>
+        <span class="info-value">{{ totalQuestions }}</span>
       </div>
       <div class="info-item">
         <span class="info-label"><i class="fas fa-trophy"></i> Total Marks:</span>
@@ -252,39 +259,40 @@
       </div>
     </div> -->
 
-    <!-- Question Navigation -->
-    <div class="question-selector" *ngIf="questionNumbers.length">
-      <label class="section-label">
-        <i class="fas fa-list-ol"></i> Quick Jump:
-      </label>
-
-      <div class="question-buttons">
-        <button
-          *ngFor="let q of questionNumbers; let i = index"
-          class="question-number-btn"
-          [class.active]="i === currentQuestionIndex"
-          (click)="loadQuestion(i, true)"
-          [disabled]="isAnyRubricEditing()"
-        >
-          Q{{ q }}
-        </button>
+    <div class="question-goto-row" *ngIf="questionNumbers.length">
+      <div class="question-header-with-marks" id="question-top">
+        <h5 *ngIf="currentQuestion && !isLoadingQuestion">
+          <i class="fas fa-question"></i>
+          Question # {{ currentQuestion.questionNumber }}
+          <span class="question-marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
+        </h5>
+        <h5 *ngIf="isLoadingQuestion">
+          <i class="fas fa-spinner fa-spin"></i> Loading...
+        </h5>
+        <div class="question-goto-inline">
+          <label class="goto-label">Go to question #</label>
+          <div class="select-wrapper question-goto-select">
+            <select #gotoSelect class="form-control"
+              [disabled]="isAnyRubricEditing()"
+              (change)="loadQuestion(+gotoSelect.value, true); gotoSelect.selectedIndex = 0">
+              <option value="" disabled selected>
+                Question # {{ currentQuestion?.questionNumber }}
+                {{ currentQuestion ? '(' + currentQuestion.maxMarks + (currentQuestion.maxMarks === 1 ? ' Mark)' : ' Marks)') : '' }}
+              </option>
+              <ng-container *ngFor="let q of questionNumbers; let i = index">
+                <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                  Question # {{ q }}{{ questionMaxMarks[i] ? ' (' + questionMaxMarks[i] + (questionMaxMarks[i] === 1 ? ' Mark)' : ' Marks)') : '' }}
+                </option>
+              </ng-container>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Current Question -->
     <div *ngIf="currentQuestion && !isLoadingQuestion">
-      <!-- Question Header with Marks -->
-      <div class="question-header-with-marks" id="question-top">
-        <h5>
-          <i class="fas fa-question"></i> Question
-          {{ currentQuestion.questionNumber }}
-        </h5>
-        <div class="marks-badge-group">
-          <span class="marks-badge">{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}</span>
-          <span class="marks-label-text">Obtained / Total Marks</span>
-        </div>
-      </div>
-
       <!-- Question Text -->
       <div class="question-section">
         <div class="section-header">
@@ -343,26 +351,38 @@
               <tr>
                 <th>MAX MARKS</th>
                 <th>SYSTEM MARKS</th>
+                <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
-                  <i
-                    class="fas fa-info-circle header-info-icon"
-                    title="By default system marks assigned to teacher marks but you can override"
-                  ></i>
+                  <span class="header-info-icon" tabindex="0">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="header-info-tooltip">
+                      By default system marks are assigned to teacher marks, but you can override.
+                    </span>
+                  </span>
                 </th>
-                <th>REMARKS</th>
+                <th>TEACHER REMARKS</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let rubric of currentQuestion.rubrics; let i = index">
                 <!-- Max Marks -->
-                <td class="text-center">
+                <td>
                   <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
                 </td>
 
                 <!-- System Marks -->
-                <td class="text-center">
+                <td>
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- System Remarks -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <span class="system-remarks-text">
+                      {{ rubric.systemRemarks || '—' }}
+                    </span>
+                  </div>
                 </td>
 
                 <!-- Teacher Marks - compact with inline Edit -->
@@ -422,12 +442,12 @@
                   <div class="scrollable-remarks">
                     <input
                       type="text"
-                      [(ngModel)]="rubric.remarks"
+                      [(ngModel)]="rubric.teacherRemarks"
                       [disabled]="!rubric.isEditing"
                       class="form-control form-control-sm"
                       [class.is-invalid]="
                         rubric.isEditing &&
-                        (!rubric.remarks || rubric.remarks.trim() === '')
+                        (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                       "
                       placeholder="Add remarks"
                     />
@@ -435,7 +455,7 @@
                   <div
                     *ngIf="
                       rubric.isEditing &&
-                      (!rubric.remarks || rubric.remarks.trim() === '')
+                      (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                     "
                     class="error-text"
                   >
@@ -451,24 +471,27 @@
       <!-- rubricAdded = true → full rubric table -->
       <div class="question-section" *ngIf="currentQuestion.rubricAdded">
         <label class="section-label">
-          <i class="fas fa-list-check"></i> Rubric Criteria:
+          <i class="fas fa-list-check"></i> Validation Rules:
         </label>
 
         <div class="table-responsive">
           <table class="table table-bordered rubric-table">
             <thead>
               <tr>
-                <th>CRITERION</th>
+                <th>VALIDATION</th>
                 <th>MAX MARKS</th>
                 <th>SYSTEM MARKS</th>
+                <th>SYSTEM REMARKS</th>
                 <th>
                   TEACHER MARKS
-                  <i
-                    class="fas fa-info-circle header-info-icon"
-                    title="By default system marks assigned to teacher marks you can override"
-                  ></i>
+                  <span class="header-info-icon" tabindex="0">
+                    <i class="fas fa-info-circle"></i>
+                    <span class="header-info-tooltip">
+                      By default system marks are assigned to teacher marks, but you can override.
+                    </span>
+                  </span>
                 </th>
-                <th>REMARKS</th>
+                <th>TEACHER REMARKS</th>
               </tr>
             </thead>
             <tbody>
@@ -481,13 +504,22 @@
                 </td>
 
                 <!-- Max Marks -->
-                <td class="text-center">
+                <td>
                   <span class="badge bg-secondary">{{ rubric.maxMarks }}</span>
                 </td>
 
                 <!-- System Marks -->
-                <td class="text-center">
+                <td>
                   <strong>{{ rubric.marksAssignedBySystem || 0 }}</strong>
+                </td>
+
+                <!-- System Remarks — readonly, set by AI -->
+                <td class="remarks-cell">
+                  <div class="scrollable-remarks">
+                    <span class="system-remarks-text">
+                      {{ rubric.systemRemarks || '—' }}
+                    </span>
+                  </div>
                 </td>
 
                 <!-- Teacher Marks - compact with inline Edit -->
@@ -544,17 +576,17 @@
                   </div>
                 </td>
 
-                <!-- Remarks with scroll -->
+                <!-- Teacher Remarks — editable on override -->
                 <td class="remarks-cell">
                   <div class="scrollable-remarks">
                     <input
                       type="text"
-                      [(ngModel)]="rubric.remarks"
+                      [(ngModel)]="rubric.teacherRemarks"
                       [disabled]="!rubric.isEditing"
                       class="form-control form-control-sm"
                       [class.is-invalid]="
                         rubric.isEditing &&
-                        (!rubric.remarks || rubric.remarks.trim() === '')
+                        (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                       "
                       placeholder="Add remarks"
                     />
@@ -562,7 +594,7 @@
                   <div
                     *ngIf="
                       rubric.isEditing &&
-                      (!rubric.remarks || rubric.remarks.trim() === '')
+                      (!rubric.teacherRemarks || rubric.teacherRemarks.trim() === '')
                     "
                     class="error-text"
                   >
@@ -575,30 +607,31 @@
         </div>
       </div>
 
-      <!-- Navigation Buttons -->
-      <div class="navigation-buttons">
-        <button
-          class="btn btn-secondary btn-lg"
-          (click)="previousQuestion()"
-          [disabled]="
-            currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
-          "
-        >
-          <i class="fas fa-arrow-left"></i> Previous
-        </button>
+    </div>
 
-        <button
-          class="btn btn-secondary btn-lg"
-          (click)="nextQuestion()"
-          [disabled]="
-            currentQuestionIndex === totalQuestions - 1 ||
-            isLoading ||
-            isAnyRubricEditing()
-          "
-        >
-          Next <i class="fas fa-arrow-right"></i>
-        </button>
-      </div>
+    <!-- Navigation Buttons — outside card to remove card padding gap -->
+    <div class="navigation-buttons">
+      <button
+        class="btn btn-primary"
+        (click)="previousQuestion()"
+        [disabled]="
+          currentQuestionIndex === 0 || isLoading || isAnyRubricEditing()
+        "
+      >
+        <i class="fas fa-arrow-left"></i> Previous
+      </button>
+
+      <button
+        class="btn btn-primary"
+        (click)="nextQuestion()"
+        [disabled]="
+          currentQuestionIndex === totalQuestions - 1 ||
+          isLoading ||
+          isAnyRubricEditing()
+        "
+      >
+        Next <i class="fas fa-arrow-right"></i>
+      </button>
     </div>
 
     <!-- Loading Question -->
