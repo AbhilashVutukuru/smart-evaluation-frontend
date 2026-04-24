@@ -724,6 +724,12 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-top: 0;
 }
 
+/* Sizing for all nav buttons — Previous, Save & Next, Submit All */
+.q-nav .btn {
+  padding: 0.5rem 1.5rem;
+  font-size: var(--font-size-sm);
+}
+
 /* Chevron icon — brand blue color + smooth rotate */
 .exam-chevron {
   color: var(--blue) !important;
@@ -732,27 +738,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-left: 0.25rem;
 }
 
-/* ─── Previous button — distinct color ──────────────────────────────────────── */
-.btn-prev {
-  background: var(--blue);
-  color: var(--white);
-  border: none;
-  outline: none;
-}
-
-.btn-prev:hover:not(:disabled) {
-  background: var(--blue-dark);
-  color: var(--white);
-}
-
-.btn-prev:active:not(:disabled),
-.btn-prev:focus:not(:disabled) {
-  background: var(--blue-dark);
-  color: var(--white);
-  border: none;
-  outline: none;
-  box-shadow: none;
-}
+/* .btn-prev + hover/active/focus → global.css */
 
 /* ─── Disabled state — blocked cursor ───────────────────────────────────────── */
 .btn:disabled,
@@ -1053,11 +1039,11 @@ label.disabled {
 .cqp-confirm-box      { background: var(--app-bg); border-radius: var(--border-radius-lg); padding: 2rem 1.75rem 1.5rem; width: min(90vw, 400px); box-shadow: 0 20px 60px rgba(0,0,0,0.3); display: flex; flex-direction: column; align-items: center; gap: 1rem; animation: confirmSlideUp 0.22s ease; }
 .cqp-confirm-icon     { width: 3.5rem; height: 3.5rem; background: var(--yellow-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--yellow); flex-shrink: 0; }
 .cqp-confirm-message  { font-size: var(--font-size-sm); color: var(--gray-700); text-align: center; line-height: 1.55; margin: 0; }
-.cqp-confirm-actions  { display: flex; gap: 0.75rem; width: 100%; justify-content: center; margin-top: 0.25rem; }
+.cqp-confirm-actions  { display: flex; gap: 0.75rem; width: 100%; justify-content: center; margin-top: 0.25rem; padding-bottom: 0.25rem; overflow: visible; }
 .cqp-confirm-ok-btn   { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 1.25rem; font-weight: 600; font-size: var(--font-size-sm); border: 2px solid var(--red); border-radius: var(--border-radius); background: var(--red); color: var(--white); cursor: pointer; transition: var(--transition); }
-.cqp-confirm-ok-btn:hover { background: var(--red-dark); border-color: var(--red-dark); transform: translateY(-1px); }
+.cqp-confirm-ok-btn:hover { background: var(--red-dark); border-color: var(--red-dark); transform: translateY(-1px); box-shadow: var(--shadow-red-sm); }
 .cqp-cancel-btn       { background: var(--red-light); color: var(--red); border: 1.5px solid var(--red); font-weight: 600; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.45rem 1rem; border-radius: var(--border-radius); cursor: pointer; transition: var(--transition); }
-.cqp-cancel-btn:hover { background: var(--red); color: var(--white); transform: translateY(-1px); }
+.cqp-cancel-btn:hover { background: var(--red); color: var(--white); transform: translateY(-1px); box-shadow: var(--shadow-red-sm); }
 
 /* ─── Editing chip in header ─────────────────────────────────── */
 /* ─── Back to List row — edit mode only ─────────────────────────────────────── */

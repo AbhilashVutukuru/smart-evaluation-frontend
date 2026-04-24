@@ -589,7 +589,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 
 /* Pill shape + consistent size regardless of btn-lg class */
 .navigation-buttons .btn {
-  border-radius: 999px;
+ border-radius: var(--border-radius);
   padding: 0.5rem 1.5rem;
   font-size: var(--font-size-sm);
 }
