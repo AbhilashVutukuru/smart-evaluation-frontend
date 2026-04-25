@@ -176,11 +176,11 @@
         <tbody>
           <tr *ngFor="let paper of filteredPapersList; let i = index"
             [class.active-row]="questionPaper?.questionPaperId === paper.questionPaperId">
-            <td class="text-muted">{{ i + 1 }}</td>
-            <td><strong class="roll-number">{{ paper.subjectName }}</strong></td>
+            <td><strong class="roll-number">{{ i + 1 }}</strong></td>
+            <td>{{ paper.subjectName }}</td>
             <td>{{ paper.examTypeName }}</td>
             <td>{{ paper.questionPaperName }}</td>
-            <td><span class="badge badge-primary">{{ paper.totalMarks }}</span></td>
+            <td>{{ paper.totalMarks }}</td>
             <td>{{ paper.totalQuestions }}</td>
             <td>
               <span *ngIf="paper.examDate; else noDate">{{ paper.examDate | date:'dd MMM yyyy' }}</span>

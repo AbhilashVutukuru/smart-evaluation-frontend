@@ -66,12 +66,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let staff of filteredStaff">
-            <td><strong class="emp-code">{{ staff.employeeCode }}</strong></td>
+            <td><strong>{{ staff.employeeCode }}</strong></td>
             <td>
               <div class="teacher-info">
-                <div class="avatar">{{ staff.firstName[0] }}{{ staff.lastName[0] }}</div>
+                <!-- <div class="avatar">{{ staff.firstName[0] }}{{ staff.lastName[0] }}</div> -->
                 <div>
-                  <div class="name">{{ staff.firstName }} {{ staff.lastName }}</div>
+                  <div>{{ staff.firstName }} {{ staff.lastName }}</div>
                 </div>
               </div>
             </td>
