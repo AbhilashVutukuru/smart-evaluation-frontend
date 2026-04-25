@@ -228,7 +228,7 @@
 .nav-item:hover span { color: var(--blue); }
 
 .nav-item.active {
-  background: var(--blue-light);
+  background: var(--app-bg);
   border-left-color: var(--blue);
   color: var(--blue);
 }
@@ -301,10 +301,11 @@
   margin-left: auto !important;
   width: auto !important;
   margin-right: 0.25rem !important;
-  font-size: 0.65rem !important;
+  font-size: 0.9rem !important;
   opacity: 0.5;
   transition: transform 0.3s ease, opacity 0.2s;
   flex-shrink: 0;
+  color: var(--blue);
 }
 
 .nav-group-header:hover .submenu-arrow { opacity: 0.8; }
@@ -341,7 +342,7 @@
 }
 
 .nav-subitem.active {
-  background: var(--blue-light);
+  background: var(--app-bg);
   border-left-color: var(--blue);
 }
 

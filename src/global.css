@@ -437,7 +437,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .table-bordered { border: 1px solid var(--gray-200); }
 .table-bordered td, .table-bordered th { border: 1px solid var(--gray-200); }
 
-.roll-number { color: var(--primary); font-weight: 600; }
+.roll-number { font-weight: 600; }
 
 @media (max-width: 767px) {
   .table th, .table td { padding: 0.625rem 0.75rem; font-size: 0.8125rem; }
