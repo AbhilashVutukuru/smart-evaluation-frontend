@@ -38,7 +38,7 @@
   height: 3.5rem;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--blue), var(--blue-dark));
-  color: white;
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -81,7 +81,7 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--gray-700);
   margin-bottom: 1rem;
@@ -115,7 +115,7 @@
   word-break: break-all;
 }
 
-.info-icon { color: var(--blue); font-size: 0.75rem; flex-shrink: 0; }
+.info-icon { color: var(--blue); font-size: var(--font-size-xs); flex-shrink: 0; }
 
 /* ── Password Form ─────────────────────────────────────────── */
 .form-group {
@@ -131,7 +131,7 @@
   color: var(--gray-700);
 }
 
-.required { color: var(--red); }
+/* .required → global.css */
 
 /* ── Password Input Wrapper ────────────────────────────────── */
 .pwd-input-wrap {
@@ -146,7 +146,7 @@
 
 .pwd-input-wrap:focus-within {
   border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.12);
+  box-shadow: 0 0 0 3px var(--shadow-blue-card);
 }
 
 .pwd-input-wrap.invalid { border-color: var(--red); }
@@ -197,11 +197,11 @@
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.8rem;
+  font-size: var(--font-size-xs);
   font-weight: 500;
   color: var(--red);
 }
-.error-msg i { font-size: 0.75rem; }
+.error-msg i { font-size: var(--font-size-xs); }
 
 /* ── Buttons ───────────────────────────────────────────────── */
 .btn-full { width: 100%; justify-content: center; margin-top: 0.25rem; }
@@ -230,7 +230,7 @@
   align-self: flex-end;
 }
 
-.btn-logout:hover         { background: var(--red); color: white; }
+.btn-logout:hover         { background: var(--red); color: var(--white); }
 .btn-logout:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
 
 .logout-wrap { display: flex; justify-content: flex-end; }

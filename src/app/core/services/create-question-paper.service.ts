@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
@@ -19,10 +19,31 @@ export interface ValidationResult {
   errors : string[];
 }
 
+export interface DraftStatusDto {
+  questionPaperId:    number;
+  questionPaperName:  string;
+  classId:            number;
+  subjectId:          number;
+  examTypeId:         number;
+  className:          string;
+  subjectName:        string;
+  examTypeName:       string;
+  totalMarks:         number;
+  numberOfQuestions:  number;
+  questionsCompleted: number;
+  examDate:           string | null;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CreateQuestionPaperService {
   private http   = inject(HttpClient); // FIX: inject() pattern
   private apiUrl = environment.apiUrl;
+
+  getQuestionPaperForResume(questionPaperId: number): Observable<any> {
+    return this.http
+      .get<any>(`${this.apiUrl}/question-paper/${questionPaperId}`)
+      .pipe(map(r => r.data));
+  }
 
   // ── Existence Check ────────────────────────────────────────
   checkQuestionPaperExists(
@@ -171,6 +192,68 @@ export class CreateQuestionPaperService {
       examDate         : formData.examDate ? `${formData.examDate}T00:00:00Z` : null,
       questions,
     };
+  }
+
+  // ── Check Exists + Create Draft (combined) ────────────────────────────────
+  checkExistsAndCreateDraft(dto: {
+    classId: number; subjectId: number; examTypeId: number;
+    totalMarks: number; numberOfQuestions: number;
+    questionPaperName: string; examDate: string | null;
+  }): Observable<number> {
+    return this.http
+      .post<ApiResponse<{ questionPaperId: number }>>(
+        `${this.apiUrl}/question-paper/draft`, dto)
+      .pipe(
+        map(r => r.data!.questionPaperId),
+        catchError(err => { throw err; }),
+      );
+  }
+
+  // ── Draft API ──────────────────────────────────────────────────────────────
+
+  getDraft(): Observable<DraftStatusDto | null> {
+    return this.http
+      .get<ApiResponse<DraftStatusDto | null>>(`${this.apiUrl}/question-paper/draft`)
+      .pipe(map(r => r.data ?? null));
+  }
+
+  createDraft(dto: {
+    classId: number; subjectId: number; examTypeId: number;
+    totalMarks: number; numberOfQuestions: number;
+    questionPaperName: string; examDate: string | null;
+  }): Observable<number> {
+    return this.http
+      .post<ApiResponse<{ questionPaperId: number }>>(
+        `${this.apiUrl}/question-paper/draft`, dto)
+      .pipe(map(r => r.data!.questionPaperId));
+  }
+
+  saveQuestion(questionPaperId: number, question: {
+    questionNumber: number; questionText: string; answerText: string;
+    maxMarks: number; rubricAdded: boolean;
+    rubrics: { criterionOrder: number; rubricText: string; maxMarks: number; }[];
+  }): Observable<unknown> {
+    return this.http
+      .put(`${this.apiUrl}/question-paper/${questionPaperId}/question`, question)
+      .pipe(catchError(err => { throw err; }));
+  }
+
+  deleteQuestion(questionPaperId: number, questionNumber: number): Observable<unknown> {
+    return this.http
+      .delete(`${this.apiUrl}/question-paper/${questionPaperId}/question/${questionNumber}`)
+      .pipe(catchError(err => { throw err; }));
+  }
+
+  completeDraft(questionPaperId: number): Observable<unknown> {
+    return this.http
+      .put(`${this.apiUrl}/question-paper/${questionPaperId}/complete`, {})
+      .pipe(catchError(err => { throw err; }));
+  }
+
+  discardDraft(questionPaperId: number): Observable<unknown> {
+    return this.http
+      .delete(`${this.apiUrl}/question-paper/${questionPaperId}/draft`)
+      .pipe(catchError(err => { throw err; }));
   }
 
   // ── CRUD ───────────────────────────────────────────────────

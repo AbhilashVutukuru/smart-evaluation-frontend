@@ -28,9 +28,9 @@
   <div class="card" *ngIf="selectedTeacherId">
     <h4><i class="fas fa-plus-circle"></i> Add Subject Assignment</h4>
 
-    <div class="row">
+    <div class="row align-items-end">
       <!-- Class -->
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label class="form-label">Class <span class="required">*</span></label>
         <div class="select-wrapper">
           <select class="form-control" [(ngModel)]="selectedClassId" (change)="onClassChange()">
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Section -->
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label class="form-label">Section <span class="required">*</span></label>
         <div class="select-wrapper">
           <select class="form-control" [(ngModel)]="selectedSectionId" [disabled]="!selectedClassId">
@@ -54,7 +54,7 @@
       </div>
 
       <!-- Subject -->
-      <div class="col-md-4 mb-3">
+      <div class="col-md-3 mb-3">
         <label class="form-label">Subject <span class="required">*</span></label>
         <div class="select-wrapper">
           <select class="form-control" [(ngModel)]="selectedSubjectId" [disabled]="!selectedClassId">
@@ -64,21 +64,25 @@
           <i class="fas fa-chevron-down select-icon"></i>
         </div>
       </div>
-    </div>
 
-    <div class="d-flex">
-      <button
-        class="btn btn-primary"
-        (click)="addAssignment()"
-        [disabled]="!selectedClassId || !selectedSectionId || !selectedSubjectId"
-      >
-        <i class="fas fa-plus"></i> Add to List
-      </button>
+      <!-- Add to List button — aligned with selects -->
+      <div class="col-md-3 mb-3">
+        <button
+          class="btn btn-primary w-100"
+          (click)="addAssignment()"
+          [disabled]="!selectedClassId || !selectedSectionId || !selectedSubjectId"
+        >
+          <i class="fas fa-plus"></i> Add to List
+        </button>
+      </div>
     </div>
   </div>
 
+  <!-- Pending + Current Assignments — side by side -->
+  <div class="assignments-row">
+
   <!-- Pending Assignments -->
-  <div class="card" *ngIf="assignments.length > 0">
+  <div class="card assignments-card" *ngIf="assignments.length > 0">
     <div class="card-header-flex">
       <h4><i class="fas fa-list"></i> Pending Assignments</h4>
       <span class="badge badge-warning">{{ assignments.length }} Pending</span>
@@ -120,7 +124,7 @@
   </div>
 
   <!-- Existing Assignments -->
-  <div class="card" *ngIf="selectedTeacherId && existingAssignments.length > 0">
+  <div class="card assignments-card" *ngIf="selectedTeacherId && existingAssignments.length > 0">
     <div class="card-header-flex">
       <h4><i class="fas fa-check-circle"></i> Current Assignments</h4>
       <span class="badge badge-success">{{ existingAssignments.length }} Assigned</span>
@@ -158,6 +162,8 @@
     </div>
   </div>
 
+  </div><!-- /assignments-row -->
+
   <!-- Empty State -->
   <div class="card" *ngIf="selectedTeacherId && existingAssignments.length === 0 && assignments.length === 0">
     <div class="empty-state">
@@ -168,21 +174,46 @@
   </div>
 </div>
 
-<app-confirmation-modal
-  [isOpen]="showRemoveModal"
-  title="Remove Assignment"
-  message="Are you sure you want to remove this assignment?"
-  [details]="assignmentToRemove ? [
-    { label: 'Class',   value: assignmentToRemove.className },
-    { label: 'Section', value: assignmentToRemove.sectionName },
-    { label: 'Subject', value: assignmentToRemove.subjectName }
-  ] : []"
-  warningText="This action cannot be undone."
-  confirmText="Remove"
-  cancelText="Cancel"
-  [loading]="removing"
-  loadingText="Removing..."
-  type="danger"
-  (confirmed)="confirmRemove()"
-  (cancelled)="closeRemoveModal()">
-</app-confirmation-modal>
+<!-- Remove Assignment Confirmation — inline global confirm-dialog -->
+<div class="confirm-overlay" *ngIf="showRemoveModal" (click)="closeRemoveModal()">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+
+    <div class="confirm-dialog-icon confirm-dialog-icon--danger">
+      <i class="fas fa-user-minus"></i>
+    </div>
+
+    <p class="confirm-dialog-title">Remove Assignment</p>
+    <p class="confirm-dialog-sub">Are you sure you want to remove this assignment?</p>
+
+    <div class="confirm-item-info" *ngIf="assignmentToRemove">
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Class:</span>
+        <span class="confirm-detail-value">{{ assignmentToRemove.className }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Section:</span>
+        <span class="confirm-detail-value">{{ assignmentToRemove.sectionName }}</span>
+      </div>
+      <div class="confirm-detail-row">
+        <span class="confirm-detail-label">Subject:</span>
+        <span class="confirm-detail-value">{{ assignmentToRemove.subjectName }}</span>
+      </div>
+    </div>
+
+    <div class="confirm-warning-strip">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span>This action cannot be undone.</span>
+    </div>
+
+    <div class="confirm-dialog-actions">
+      <button class="img-modal-cancel" (click)="closeRemoveModal()" [disabled]="removing">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="confirm-ok-btn" (click)="confirmRemove()" [disabled]="removing">
+        <i [class]="removing ? 'fas fa-spinner fa-spin' : 'fas fa-trash-alt'"></i>
+        {{ removing ? 'Removing...' : 'Remove' }}
+      </button>
+    </div>
+
+  </div>
+</div>

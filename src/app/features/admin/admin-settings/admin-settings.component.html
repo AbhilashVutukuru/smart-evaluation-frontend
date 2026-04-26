@@ -92,13 +92,13 @@
             <i class="fas fa-plus-circle"></i> Add New Class
           </div>
           <form [formGroup]="classForm" (ngSubmit)="createClass()">
-            <div class="field-group">
-              <label class="field-label"
-                >Class Name <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Class Name <span class="required">*</span></label
               >
               <input
                 type="text"
-                class="field-input"
+                class="form-control"
                 formControlName="classNumber"
                 placeholder="e.g., 1, 2 … 12"
                 maxlength="2"
@@ -107,7 +107,7 @@
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || classForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i> {{ loading ? 'Saving...' : 'Save Class' }}
@@ -117,16 +117,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> All Classes
-            <span class="count-badge">{{ classes.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="classFilter"
+                placeholder="Search classes..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ classes.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="classFilter"
-            placeholder="🔍 Search classes..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -151,7 +154,7 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('class', cls)"
                       [disabled]="cls.isUsed"
                       [title]="cls.isUsed ? 'In use' : 'Delete'"
@@ -173,22 +176,19 @@
     <!-- MASTER: SECTION -->
     <div *ngIf="masterTab === 'section'" class="content-area">
       <div class="split-layout">
+        <!-- FIX: panel-header now correctly wraps both the title and the info icon -->
         <div class="form-panel">
           <div class="panel-header">
             <i class="fas fa-plus-circle"></i> Add New Section
           </div>
-          <div class="info-tip">
-            <i class="fas fa-info-circle"></i> Add master section names here.
-            Assign them to classes in the <strong>Assignments</strong> tab.
-          </div>
           <form [formGroup]="sectionForm" (ngSubmit)="createSection()">
-            <div class="field-group">
-              <label class="field-label"
-                >Section Name <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Section Name <span class="required">*</span></label
               >
               <input
                 type="text"
-                class="field-input"
+                class="form-control"
                 formControlName="sectionName"
                 placeholder="e.g., A, B, C"
                 maxlength="1"
@@ -197,7 +197,7 @@
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || sectionForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i> {{ loading ? 'Saving...' : 'Save Section' }}
@@ -207,16 +207,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> All Sections
-            <span class="count-badge">{{ masterSections.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="sectionFilter"
+                placeholder="Search sections..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ masterSections.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="sectionFilter"
-            placeholder="🔍 Search sections..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -241,7 +244,7 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('master-section', s)"
                       [disabled]="s.isUsed"
                     >
@@ -262,29 +265,26 @@
     <!-- MASTER: SUBJECT -->
     <div *ngIf="masterTab === 'subject'" class="content-area">
       <div class="split-layout">
+        <!-- FIX: panel-header now correctly wraps both the title and the info icon -->
         <div class="form-panel">
           <div class="panel-header">
             <i class="fas fa-plus-circle"></i> Add New Subject
           </div>
-          <div class="info-tip">
-            <i class="fas fa-info-circle"></i> Add subject names here. Assign
-            them to classes in the <strong>Assignments</strong> tab.
-          </div>
           <form [formGroup]="subjectForm" (ngSubmit)="createSubject()">
-            <div class="field-group">
-              <label class="field-label"
-                >Subject Name <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Subject Name <span class="required">*</span></label
               >
               <input
                 type="text"
-                class="field-input"
+                class="form-control"
                 formControlName="subjectName"
                 placeholder="e.g., Mathematics"
               />
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || subjectForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i> {{ loading ? 'Saving...' : 'Save Subject' }}
@@ -294,16 +294,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> All Subjects
-            <span class="count-badge">{{ masterSubjects.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="subjectFilter"
+                placeholder="Search subjects..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ masterSubjects.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="subjectFilter"
-            placeholder="🔍 Search subjects..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -328,7 +331,7 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('master-subject', sub)"
                       [disabled]="sub.isUsed"
                     >
@@ -349,29 +352,26 @@
     <!-- MASTER: EXAM TYPE -->
     <div *ngIf="masterTab === 'examtype'" class="content-area">
       <div class="split-layout">
+        <!-- FIX: panel-header now correctly wraps both the title and the info icon -->
         <div class="form-panel">
           <div class="panel-header">
             <i class="fas fa-plus-circle"></i> Add New Exam Type
           </div>
-          <div class="info-tip">
-            <i class="fas fa-info-circle"></i> Add exam type names here. Assign
-            them to classes in the <strong>Assignments</strong> tab.
-          </div>
           <form [formGroup]="examTypeForm" (ngSubmit)="createExamType()">
-            <div class="field-group">
-              <label class="field-label"
-                >Exam Type Name <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Exam Type Name <span class="required">*</span></label
               >
               <input
                 type="text"
-                class="field-input"
+                class="form-control"
                 formControlName="examTypeName"
                 placeholder="e.g., Mid Term, Final"
               />
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || examTypeForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i> {{ loading ? 'Saving...' : 'Save Exam Type' }}
@@ -381,16 +381,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> All Exam Types
-            <span class="count-badge">{{ masterExamTypes.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="examTypeFilter"
+                placeholder="Search exam types..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ masterExamTypes.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="examTypeFilter"
-            placeholder="🔍 Search exam types..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -415,7 +418,7 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('master-examtype', et)"
                       [disabled]="et.isUsed"
                     >
@@ -481,37 +484,39 @@
             <i class="fas fa-plus-circle"></i> Assign Section to Class
           </div>
           <form [formGroup]="assignSectionForm" (ngSubmit)="assignSection()">
-            <div class="field-group">
-              <label class="field-label"
-                >Class <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Class <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="classId">
-                <option value="">-- Choose Class --</option>
-                <option *ngFor="let cls of classes" [value]="cls.id">
-                  Class {{ cls.classNumber }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="classId">
+                  <option value="">-- Choose Class --</option>
+                  <option *ngFor="let cls of classes" [value]="cls.id">
+                    Class {{ cls.classNumber }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
-            <div class="field-group">
-              <label class="field-label"
-                >Section <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Section <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="sectionId">
-                <option value="">-- Choose Section --</option>
-                <option *ngFor="let s of masterSections" [value]="s.id">
-                  {{ s.sectionName }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="sectionId"
+                  [disabled]="!assignSectionForm.get('classId')?.value"
+                  >
+                  <option value="">-- Choose Section --</option>
+                  <option *ngFor="let s of masterSections" [value]="s.id">
+                    {{ s.sectionName }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || assignSectionForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-link'"></i> {{ loading ? 'Saving...' : 'Assign Section' }}
@@ -522,16 +527,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> Assigned Sections
-            <span class="count-badge">{{ assignedSections.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="assignSectionFilter"
+                placeholder="Search assigned sections..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ assignedSections.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="assignSectionFilter"
-            placeholder="🔍 Search..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -560,7 +568,7 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('assigned-section', item)"
                       [disabled]="item.isUsed"
                       [title]="item.isUsed ? 'Students enrolled' : 'Remove'"
@@ -600,37 +608,39 @@
             <i class="fas fa-plus-circle"></i> Assign Subject to Class
           </div>
           <form [formGroup]="assignSubjectForm" (ngSubmit)="assignSubject()">
-            <div class="field-group">
-              <label class="field-label"
-                >Class <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Class <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="classId">
-                <option value="">-- Choose Class --</option>
-                <option *ngFor="let cls of classes" [value]="cls.id">
-                  Class {{ cls.classNumber }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="classId">
+                  <option value="">-- Choose Class --</option>
+                  <option *ngFor="let cls of classes" [value]="cls.id">
+                    Class {{ cls.classNumber }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
-            <div class="field-group">
-              <label class="field-label"
-                >Subject <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Subject <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="subjectId">
-                <option value="">-- Choose Subject --</option>
-                <option *ngFor="let sub of masterSubjects" [value]="sub.id">
-                  {{ sub.subjectName }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="subjectId"
+                  [disabled]="!assignSubjectForm.get('classId')?.value"
+                  >
+                  <option value="">-- Choose Subject --</option>
+                  <option *ngFor="let sub of masterSubjects" [value]="sub.id">
+                    {{ sub.subjectName }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || assignSubjectForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-link'"></i> {{ loading ? 'Saving...' : 'Assign Subject' }}
@@ -641,22 +651,25 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> Assigned Subjects
-            <span class="count-badge">{{ assignedSubjects.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="assignSubjectFilter"
+                placeholder="Search assigned subjects..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ assignedSubjects.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="assignSubjectFilter"
-            placeholder="🔍 Search..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
                   <th>Class</th>
                   <th>Subject</th>
-                   <th>Status</th>
+                  <th>Status</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -670,7 +683,7 @@
                     <strong>{{ item.subjectName }}</strong>
                   </td>
                   <td>
-                     <span
+                    <span
                       class="status-badge"
                       [class.used]="item.isUsed"
                       [class.free]="!item.isUsed"
@@ -679,9 +692,9 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('assigned-subject', item)"
-                       [disabled]="item.isUsed"
+                      [disabled]="item.isUsed"
                       [title]="item.isUsed ? 'Students enrolled' : 'Remove'"
                     >
                       <i class="fas fa-trash"></i>
@@ -719,37 +732,39 @@
             <i class="fas fa-plus-circle"></i> Assign Exam Type to Class
           </div>
           <form [formGroup]="assignExamTypeForm" (ngSubmit)="assignExamType()">
-            <div class="field-group">
-              <label class="field-label"
-                >Class <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Class <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="classId">
-                <option value="">-- Choose Class --</option>
-                <option *ngFor="let cls of classes" [value]="cls.id">
-                  Class {{ cls.classNumber }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="classId">
+                  <option value="">-- Choose Class --</option>
+                  <option *ngFor="let cls of classes" [value]="cls.id">
+                    Class {{ cls.classNumber }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
-            <div class="field-group">
-              <label class="field-label"
-                >Exam Type <span class="req">*</span></label
+            <div class="mb-3">
+              <label class="form-label"
+                >Exam Type <span class="required">*</span></label
               >
               <div class="select-wrapper">
-              <select class="field-input" formControlName="examTypeId">
-                <option value="">-- Choose Exam Type --</option>
-                <option *ngFor="let et of masterExamTypes" [value]="et.id">
-                  {{ et.examTypeName }}
-                </option>
-              </select>
+                <select class="form-control" formControlName="examTypeId"
+                  [disabled]="!assignExamTypeForm.get('classId')?.value"
+                  >
+                  <option value="">-- Choose Exam Type --</option>
+                  <option *ngFor="let et of masterExamTypes" [value]="et.id">
+                    {{ et.examTypeName }}
+                  </option>
+                </select>
                 <i class="fas fa-chevron-down select-icon"></i>
               </div>
             </div>
             <button
               type="submit"
-              class="btn-add"
+              class="btn btn-success w-100"
               [disabled]="loading || assignExamTypeForm.invalid"
             >
               <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-link'"></i> {{ loading ? 'Saving...' : 'Assign Exam Type' }}
@@ -760,16 +775,19 @@
         <div class="list-panel">
           <div class="panel-header">
             <i class="fas fa-list"></i> Assigned Exam Types
-            <span class="count-badge">{{ assignedExamTypes.length }}</span>
+            <div class="search-input-wrapper panel-search">
+              <i class="fas fa-search search-icon"></i>
+              <input
+                type="text"
+                class="form-control search-input"
+                [(ngModel)]="assignExamTypeFilter"
+                placeholder="Search assigned exam types..."
+              />
+            </div>
+            <span class="badge badge-primary">{{ assignedExamTypes.length }}</span>
           </div>
-          <input
-            type="text"
-            class="search-input"
-            [(ngModel)]="assignExamTypeFilter"
-            placeholder="🔍 Search..."
-          />
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-responsive">
+            <table class="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -789,7 +807,7 @@
                     <strong>{{ item.examTypeName }}</strong>
                   </td>
                   <td>
-                     <span
+                    <span
                       class="status-badge"
                       [class.used]="item.isUsed"
                       [class.free]="!item.isUsed"
@@ -798,9 +816,9 @@
                   </td>
                   <td>
                     <button
-                      class="btn-del"
+                      class="btn-action btn-delete"
                       (click)="openDeleteModal('assigned-examtype', item)"
-                       [disabled]="item.isUsed"
+                      [disabled]="item.isUsed"
                       [title]="item.isUsed ? 'Students enrolled' : 'Remove'"
                     >
                       <i class="fas fa-trash"></i>
@@ -832,67 +850,67 @@
           <i class="fas fa-plus-circle"></i> Add New Academic Year
         </div>
         <form [formGroup]="academicYearForm" (ngSubmit)="createAcademicYear()">
-          <div class="field-group">
-            <label class="field-label"
-              >Year Name <span class="req">*</span></label
+          <div class="mb-3">
+            <label class="form-label"
+              >Year Name <span class="required">*</span></label
             >
             <input
               type="text"
-              class="field-input"
+              class="form-control"
               formControlName="yearName"
               placeholder="e.g., 2025-2026"
               maxlength="9"
               (input)="onYearNameInput($event)"
             />
-            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['invalidFormat'] && academicYearForm.get('yearName')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.get('yearName')?.errors?.['invalidFormat'] && academicYearForm.get('yearName')?.dirty">
               Format must be YYYY-YYYY (e.g. 2026-2027)
             </span>
-            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['notConsecutive'] && academicYearForm.get('yearName')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.get('yearName')?.errors?.['notConsecutive'] && academicYearForm.get('yearName')?.dirty">
               Second year must be exactly one year after the first (e.g. 2026-2027)
             </span>
-            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['pastYear'] && academicYearForm.get('yearName')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.get('yearName')?.errors?.['pastYear'] && academicYearForm.get('yearName')?.dirty">
               Year cannot be in the past — use current or next year only
             </span>
-            <span class="field-error" *ngIf="academicYearForm.get('yearName')?.errors?.['tooFarFuture'] && academicYearForm.get('yearName')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.get('yearName')?.errors?.['tooFarFuture'] && academicYearForm.get('yearName')?.dirty">
               Only current year ({{ currentYear }}-{{ currentYear+1 }}) or next year ({{ currentYear+1 }}-{{ currentYear+2 }}) allowed
             </span>
           </div>
-          <div class="field-group">
-            <label class="field-label"
-              >Start Date <span class="req">*</span></label
+          <div class="mb-3">
+            <label class="form-label"
+              >Start Date <span class="required">*</span></label
             >
             <input
               type="date"
-              class="field-input date-input"
+              class="form-control"
               formControlName="startDate"
               [min]="startDateMin"
               [max]="startDateMax"
             />
-            <span class="field-error" *ngIf="academicYearForm.errors?.['startDateYearMismatch'] && academicYearForm.get('startDate')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.errors?.['startDateYearMismatch'] && academicYearForm.get('startDate')?.dirty">
               Start date must be within the first year of the academic year name
             </span>
           </div>
-          <div class="field-group">
-            <label class="field-label"
-              >End Date <span class="req">*</span></label
+          <div class="mb-3">
+            <label class="form-label"
+              >End Date <span class="required">*</span></label
             >
             <input
               type="date"
-              class="field-input date-input"
+              class="form-control"
               formControlName="endDate"
               [min]="endDateMin"
               [max]="endDateMax"
             />
-            <span class="field-error" *ngIf="academicYearForm.errors?.['endDateYearMismatch'] && academicYearForm.get('endDate')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.errors?.['endDateYearMismatch'] && academicYearForm.get('endDate')?.dirty">
               End date must be within the second year of the academic year name
             </span>
-            <span class="field-error" *ngIf="academicYearForm.errors?.['endBeforeStart'] && academicYearForm.get('endDate')?.dirty">
+            <span class="error-message" *ngIf="academicYearForm.errors?.['endBeforeStart'] && academicYearForm.get('endDate')?.dirty">
               End date must be after start date
             </span>
           </div>
           <button
             type="submit"
-            class="btn-add"
+            class="btn btn-success w-100"
             [disabled]="loading || academicYearForm.invalid"
           >
             <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i> {{ loading ? 'Saving...' : 'Save Academic Year' }}
@@ -903,16 +921,19 @@
       <div class="list-panel">
         <div class="panel-header">
           <i class="fas fa-list"></i> All Academic Years
-          <span class="count-badge">{{ academicYears.length }}</span>
+          <div class="search-input-wrapper panel-search">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              class="form-control search-input"
+              [(ngModel)]="academicYearFilter"
+              placeholder="Search years..."
+            />
+          </div>
+          <span class="badge badge-primary">{{ academicYears.length }}</span>
         </div>
-        <input
-          type="text"
-          class="search-input"
-          [(ngModel)]="academicYearFilter"
-          placeholder="🔍 Search years..."
-        />
-        <div class="table-wrap">
-          <table class="data-table">
+        <div class="table-responsive">
+          <table class="table">
             <thead>
               <tr>
                 <th>#</th>
@@ -965,82 +986,50 @@
 
     <!-- Promote Students -->
     <div class="promo-card">
+
+      <!-- Header with info tooltip -->
       <div class="panel-header">
-        <i class="fas fa-graduation-cap"></i> Promote Students to Next Academic
-        Year
+        <i class="fas fa-graduation-cap"></i> Promote Students to Next Academic Year
       </div>
-      <div class="info-tip">
-        <i class="fas fa-info-circle"></i>
-        Creates new enrollments for all students, moving them from one academic
-        year to the next while retaining their current class and section.
-      </div>
-      <div
-        *ngIf="
-          activeAcademicYears.length === 0 || availableTargetYears.length === 0
-        "
-        class="warn-tip"
-      >
-        <i class="fas fa-exclamation-triangle"></i>
-        <strong>Note:</strong> You need at least one active academic year and
-        one available inactive target year to promote students.
-      </div>
-      <form
-        [formGroup]="promoteStudentsForm"
-        (ngSubmit)="promoteStudents()"
-        class="promo-form"
-      >
-        <div class="field-group">
-          <label class="field-label"
-            >From (Active Year) <span class="req">*</span></label
-          >
-          <div class="select-wrapper">
-            <select
-              class="field-input"
-              formControlName="fromYearId"
-              [disabled]="activeAcademicYears.length === 0"
-            >
-              <option value="">Select Active Academic Year</option>
-              <option *ngFor="let y of activeAcademicYears" [value]="y.id">
-                {{ y.yearName }}
-              </option>
-            </select>
-            <i class="fas fa-chevron-down select-icon"></i>
+
+      <!-- Form -->
+      <form [formGroup]="promoteStudentsForm" (ngSubmit)="promoteStudents()">
+
+        <!-- Dropdowns + button row -->
+        <div class="promo-form">
+
+          <div class="mb-3">
+            <label class="form-label">From (Active Year) <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-control" formControlName="fromYearId"
+                [disabled]="activeAcademicYears.length === 0">
+                <option value="">Select Active Academic Year</option>
+                <option *ngFor="let y of activeAcademicYears" [value]="y.id">{{ y.yearName }}</option>
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+            </div>
           </div>
-        </div>
-        <div class="promo-arrow"><i class="fas fa-arrow-right"></i></div>
-        <div class="field-group">
-          <label class="field-label"
-            >To (Target Year) <span class="req">*</span></label
-          >
-          <div class="select-wrapper">
-            <select
-              class="field-input"
-              formControlName="toYearId"
-              [disabled]="availableTargetYears.length === 0"
-            >
-              <option value="">Select Target Academic Year</option>
-              <option *ngFor="let y of availableTargetYears" [value]="y.id">
-                {{ y.yearName }}
-              </option>
-            </select>
-            <i class="fas fa-chevron-down select-icon"></i>
+
+          <div class="promo-arrow"><i class="fas fa-arrow-right"></i></div>
+
+          <div class="mb-3">
+            <label class="form-label">To (Target Year) <span class="required">*</span></label>
+            <div class="select-wrapper">
+              <select class="form-control" formControlName="toYearId"
+                [disabled]="availableTargetYears.length === 0">
+                <option value="">Select Target Academic Year</option>
+                <option *ngFor="let y of availableTargetYears" [value]="y.id">{{ y.yearName }}</option>
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+            </div>
           </div>
-          <!-- <small class="field-hint"
-            >Only inactive years without completed promotions are shown</small
-          > -->
+
+          <button type="submit" class="btn btn-success"
+            [disabled]="loading || promoteStudentsForm.invalid || activeAcademicYears.length === 0 || availableTargetYears.length === 0">
+            <i class="fas fa-level-up-alt"></i> Promote Students
+          </button>
+
         </div>
-        <button
-          type="submit"
-          class="btn-promote"
-          [disabled]="
-            loading ||
-            promoteStudentsForm.invalid ||
-            activeAcademicYears.length === 0 ||
-            availableTargetYears.length === 0
-          "
-        >
-          <i class="fas fa-level-up-alt"></i> Promote Students
-        </button>
       </form>
     </div>
   </div>
@@ -1056,23 +1045,23 @@
           <i class="fas fa-user-plus"></i> Assign Admin Role
         </div>
         <form [formGroup]="adminAssignForm" (ngSubmit)="assignAdmin()">
-          <div class="field-group">
-            <label class="field-label"
-              >Select User <span class="req">*</span></label
+          <div class="mb-3">
+            <label class="form-label"
+              >Select User <span class="required">*</span></label
             >
             <div class="select-wrapper">
-            <select class="field-input" formControlName="userId">
-              <option value="">-- Choose User --</option>
-              <option *ngFor="let user of users" [value]="user.userId">
-                {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
-              </option>
-            </select>
+              <select class="form-control" formControlName="userId">
+                <option value="">-- Choose User --</option>
+                <option *ngFor="let user of users" [value]="user.userId">
+                  {{ user.firstName }} {{ user.lastName }} ({{ user.email }})
+                </option>
+              </select>
               <i class="fas fa-chevron-down select-icon"></i>
             </div>
           </div>
           <button
             type="submit"
-            class="btn-add"
+            class="btn btn-success w-100"
             [disabled]="loading || adminAssignForm.invalid"
           >
             <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-shield'"></i> {{ loading ? 'Saving...' : 'Assign Admin' }}
@@ -1083,35 +1072,42 @@
       <div class="list-panel">
         <div class="panel-header">
           <i class="fas fa-users-cog"></i> Current Admins
-          <span class="count-badge">{{ admins.length }}</span>
+          <div class="search-input-wrapper panel-search">
+            <i class="fas fa-search search-icon"></i>
+            <input
+              type="text"
+              class="form-control search-input"
+              [(ngModel)]="adminFilter"
+              placeholder="Search admins..."
+            />
+          </div>
+          <span class="badge badge-primary">{{ admins.length }}</span>
         </div>
-        <div class="table-wrap">
-          <table class="data-table">
+        <div class="table-responsive">
+          <table class="table">
             <thead>
               <tr>
                 <th>#</th>
                 <th>Name</th>
                 <th>Email</th>
-                <th>Assigned Date</th>
                 <th>Assigned By</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let admin of admins; let i = index">
+              <tr *ngFor="let admin of filteredAdmins; let i = index">
                 <td class="idx">{{ i + 1 }}</td>
                 <td>
                   <strong>{{ admin.firstName }} {{ admin.lastName }}</strong>
                 </td>
                 <td>{{ admin.email }}</td>
-                <td>{{ admin.assignedDate | date: "shortDate" }}</td>
                 <td>{{ admin.assignedBy }}</td>
                 <td>
-                  <!-- <button class="btn-del" (click)="removeAdmin(admin.userId)" [disabled]="loading" title="Remove admin role">
+                  <!-- <button class="btn-action btn-delete" (click)="removeAdmin(admin.userId)" [disabled]="loading" title="Remove admin role">
                     <i class="fas fa-user-minus"></i>
                   </button>                   -->
                   <button
-                    class="btn-del"
+                    class="btn-action btn-delete"
                     (click)="openRemoveAdminModal(admin)"
                     [disabled]="loading"
                     title="Remove admin role"
@@ -1120,8 +1116,8 @@
                   </button>
                 </td>
               </tr>
-              <tr *ngIf="admins.length === 0">
-                <td colspan="6" class="empty-row">No admins assigned yet</td>
+              <tr *ngIf="filteredAdmins.length === 0">
+                <td colspan="5" class="empty-row">No admins assigned yet</td>
               </tr>
             </tbody>
           </table>
@@ -1132,26 +1128,87 @@
   <!-- /admin -->
 </div>
 
-<!-- Delete Confirmation Modal -->
-<app-delete-confirmation
-  [show]="showDeleteModal"
-  [title]="deleteModalTitle"
-  [message]="deleteModalMessage"
-  [itemName]="deleteItemName"
-  [loading]="deleting"
-  (confirmed)="onDeleteConfirmed()"
-  (cancelled)="onDeleteCancelled()"
->
-</app-delete-confirmation>
 
-<!-- Remove Admin Confirmation Modal -->
-<app-delete-confirmation
-  [show]="showRemoveAdminModal"
-  title="Remove Admin Role"
-  [message]="'Are you sure you want to remove admin privileges from ' + deleteItemName + '? They will no longer have access to admin features.'"
-  [itemName]="deleteItemName"
-  confirmText="Remove Admin"
-  cancelText="Cancel"
-  (confirmed)="confirmRemoveAdmin()"
-  (cancelled)="closeRemoveAdminModal()">
-</app-delete-confirmation>
+<!-- ═══════════════════════════════════════════════════════════
+     MODALS — inline global confirm-dialog (global.css ~line 1013)
+     ═══════════════════════════════════════════════════════════ -->
+
+<!-- Delete Confirmation -->
+<div class="confirm-overlay adm-confirm-overlay" *ngIf="showDeleteModal" (click)="onDeleteCancelled()">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon confirm-dialog-icon--danger">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+    <p class="confirm-dialog-title">{{ deleteModalTitle }}</p>
+    <p class="confirm-dialog-sub">{{ deleteModalMessage }}</p>
+    <div class="adm-item-info" *ngIf="deleteItemName">
+      <i class="fas fa-user"></i>
+      <strong>{{ deleteItemName }}</strong>
+    </div>
+    <div class="adm-warning-strip">
+      <i class="fas fa-info-circle"></i>
+      <span>This action cannot be undone!</span>
+    </div>
+    <div class="confirm-dialog-actions">
+      <button class="confirm-cancel-btn" (click)="onDeleteCancelled()" [disabled]="deleting">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="confirm-ok-btn" (click)="onDeleteConfirmed()" [disabled]="deleting">
+        <i [class]="deleting ? 'fas fa-spinner fa-spin' : 'fas fa-trash'"></i>
+        {{ deleting ? 'Deleting...' : 'Delete' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Remove Admin Confirmation -->
+<div class="confirm-overlay adm-confirm-overlay" *ngIf="showRemoveAdminModal" (click)="closeRemoveAdminModal()">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon confirm-dialog-icon--danger">
+      <i class="fas fa-user-minus"></i>
+    </div>
+    <p class="confirm-dialog-title">Remove Admin Role</p>
+    <p class="confirm-dialog-sub">
+      Are you sure you want to remove admin privileges from
+      <strong>{{ deleteItemName }}</strong>?
+      They will no longer have access to admin features.
+    </p>
+    <div class="adm-warning-strip">
+      <i class="fas fa-info-circle"></i>
+      <span>This action cannot be undone!</span>
+    </div>
+    <div class="confirm-dialog-actions">
+      <button class="confirm-cancel-btn" (click)="closeRemoveAdminModal()" [disabled]="loading">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="confirm-ok-btn" (click)="confirmRemoveAdmin()" [disabled]="loading">
+        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-user-minus'"></i>
+        {{ loading ? 'Removing...' : 'Remove Admin' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Promote Students Confirmation -->
+<div class="confirm-overlay adm-confirm-overlay" *ngIf="showPromoteModal" (click)="onPromoteCancelled()">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+    <div class="confirm-dialog-icon">
+      <i class="fas fa-level-up-alt"></i>
+    </div>
+    <p class="confirm-dialog-title">Promote Students</p>
+    <p class="confirm-dialog-sub">{{ promoteModalMessage }}</p>
+    <div class="adm-warning-strip">
+      <i class="fas fa-info-circle"></i>
+      <span>This action cannot be undone!</span>
+    </div>
+    <div class="confirm-dialog-actions">
+      <button class="confirm-cancel-btn" (click)="onPromoteCancelled()" [disabled]="loading">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button class="confirm-ok-btn confirm-ok-btn--yellow" (click)="onPromoteConfirmed()" [disabled]="loading">
+        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-level-up-alt'"></i>
+        {{ loading ? 'Promoting...' : 'Yes, Promote' }}
+      </button>
+    </div>
+  </div>
+</div>

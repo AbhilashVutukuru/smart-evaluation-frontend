@@ -1,15 +1,29 @@
 <!-- Create Exam Component - Complete HTML with Fixed Alignment -->
 <div class="page-container">
 
-  <!-- Back to List — only shown in edit mode -->
-  <div *ngIf="isEditMode" class="cqp-back-row">
-    <button class="btn-back-pill" (click)="onCancelEdit()" type="button">
-      <i class="fas fa-chevron-left"></i> Back to List
-    </button>
+  <!-- PENDING DRAFT BANNER — shown when user returns with 0 questions filled -->
+  <div *ngIf="pendingDraft" class="pending-draft-banner">
+    <div class="pending-draft-info">
+      <i class="fas fa-clock"></i>
+      <div>
+        <strong>Pending Question Paper</strong>
+        <span>You have an unfinished paper: <strong>{{ pendingDraft.questionPaperName }}</strong>
+          — {{ pendingDraft.numberOfQuestions }} questions, {{ pendingDraft.totalMarks }} marks.
+          Continue filling it in or discard and start fresh.</span>
+      </div>
+    </div>
+    <div class="pending-draft-actions">
+      <button class="btn btn-primary btn-sm" (click)="continuePendingDraft()">
+        <i class="fas fa-play"></i> Continue
+      </button>
+      <button class="btn btn-reset-sq btn-sm" (click)="discardPendingDraftWithConfirm()">
+        <i class="fas fa-trash"></i> Discard
+      </button>
+    </div>
   </div>
 
   <!-- EXAM FORM -->
-  <div class="card filter-card">
+  <div class="card">
     <div class="filter-card-header"
          [class.is-collapsed]="examInfoCollapsed"
          [style.cursor]="questionsGenerated ? 'pointer' : 'default'"
@@ -17,6 +31,9 @@
       <h4>
         <i class="fas fa-clipboard-list"></i>
         {{ isEditMode ? 'Edit Details' : 'Exam Details' }}
+        <span *ngIf="isEditMode" class="editing-chip">
+          Editing
+        </span>
         <i *ngIf="questionsGenerated"
            class="fas collapse-indicator"
            [class.fa-chevron-down]="examInfoCollapsed"
@@ -26,7 +43,7 @@
     </div>
 
     <!-- Summary chips — always visible when generated, shown below header when collapsed -->
-    <div class="filter-summary" *ngIf="questionsGenerated && examFormData.classId">
+    <div class="filter-summary" *ngIf="questionsGenerated && examFormData.classId && examInfoCollapsed">
       <span class="filter-chip" [hidden]="!(getClassName() || displayClassName)">
         <i class="fas fa-layer-group"></i> {{ getClassName() || displayClassName }}
       </span>
@@ -48,6 +65,16 @@
       <span class="filter-chip" [hidden]="!examFormData.examDate">
         <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate }}
       </span>
+      <button
+        *ngIf="isEditMode && examInfoCollapsed"
+        class="btn btn-reset-sq ms-2 btn-sm"
+        style="font-size:0.75rem; padding:0.2rem 0.6rem;"
+        (click)="onCancelEdit()"
+        type="button"
+        title="Cancel editing and go back"
+      >
+        <i class="fas fa-times"></i> Cancel
+      </button>
     </div>
 
     <div class="filter-card-body" [class.collapsed]="examInfoCollapsed">
@@ -121,8 +148,8 @@
           <span class="header-info-icon" tabindex="0">
             <i class="fas fa-info-circle"></i>
             <span class="header-info-tooltip">
-              <span class="tip-line">Alphanumeric and hyphens only (A–Z, 0–9, -).</span>
-              <span class="tip-line">Use this to uniquely identify an exam within the same exam type (e.g., MidTerm-1, UnitTest-2).</span>
+              Please use this field to uniquely identify an exam within the same exam type.
+              (e.g., Unit Test-1, Unit Test-2).
             </span>
           </span>
         </label>
@@ -132,7 +159,7 @@
           (input)="onQuestionPaperNameInput($event)"
           (change)="onQuestionPaperNameChange()"
           maxlength="200"
-          placeholder="e.g., MidTerm-1, UnitTest-2"
+          placeholder="e.g., Mid Term-1, Unit Test-2"
           class="form-control"
           [class.is-invalid]="questionPaperNameExists"
         />
@@ -217,6 +244,7 @@
             class="btn btn-primary flex-1"
             (click)="generateQuestions()"
             [disabled]="
+              !!pendingDraft ||
               questionsLocked ||
               !examFormData.classId ||
               !examFormData.subjectId ||
@@ -236,9 +264,18 @@
             class="btn btn-reset-sq"
             (click)="onResetClick()"
             type="button"
-            title="Reset all questions"
+            title="Reset questions"
           >
             <i class="fas fa-undo"></i> Reset
+          </button>
+          <button
+            *ngIf="isEditMode && !examInfoCollapsed"
+            class="btn btn-reset-sq"
+            (click)="onCancelEdit()"
+            type="button"
+            title="Cancel editing"
+          >
+            <i class="fas fa-times"></i> Cancel
           </button>
         </div>
       </div>
@@ -257,6 +294,14 @@
         <i class="fas fa-question-circle"></i>
         Question &amp; Answers
       </h4>
+      <button
+        *ngIf="draftPaperId && !pendingDraft && !isEditMode"
+        class="btn btn-reset-sq btn-sm ms-auto"
+        (click)="discardPendingDraftWithConfirm()"
+        type="button"
+      >
+        <i class="fas fa-trash"></i> Discard
+      </button>
     </div>
 
     <!-- Frozen banner: shown when header fields changed after lock -->
@@ -468,7 +513,7 @@
     <div class="q-nav">
       <button
         class="btn btn-primary"
-        [disabled]="currentQuestionIndex === 0"
+        [disabled]="currentQuestionIndex === 0 || isSaving"
         (click)="goToPreviousQuestion()"
       >
         <i class="fas fa-arrow-left"></i> Previous
@@ -479,9 +524,10 @@
           class="btn btn-primary"
           *ngIf="!isLastQuestion"
           (click)="goToNextQuestion()"
-          [disabled]="!isCurrentQuestionReady() || (currentQuestionSet.maxMarks !== 1 && shouldShowValidationRules && !validateMarksMatch())"
+          [disabled]="isSaving || !isCurrentQuestionReady() || (currentQuestionSet.maxMarks !== 1 && shouldShowValidationRules && !validateMarksMatch())"
         >
-          Save &amp; Next <i class="fas fa-arrow-right"></i>
+          <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-arrow-right'"></i>
+          {{ isSaving ? 'Saving...' : 'Save &amp; Next' }}
         </button>
         <button
           class="btn btn-success"
@@ -513,15 +559,49 @@
 <div class="cqp-overlay" *ngIf="confirmDialog" (click)="confirmDialogCancel()">
   <div class="cqp-confirm-box" (click)="$event.stopPropagation()">
     <div class="cqp-confirm-icon">
-      <i class="fas fa-exclamation-triangle"></i>
+      <i class="fas" [ngClass]="confirmDialog.isDanger ? 'fa-trash' : 'fa-clock'"></i>
     </div>
+    <p *ngIf="confirmDialog.title" class="cqp-confirm-message" style="font-weight:700; font-size:1rem; color:var(--gray-900);">{{ confirmDialog.title }}</p>
     <p *ngFor="let line of confirmDialog.lines" class="cqp-confirm-message">{{ line }}</p>
+
+    <!-- Draft detail chips -->
+    <div *ngIf="confirmDialog.draftDetails" class="filter-summary" style="justify-content:center;">
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.className">
+        <i class="fas fa-layer-group"></i> {{ confirmDialog.draftDetails.className }}
+      </span>
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.subjectName">
+        <i class="fas fa-book"></i> {{ confirmDialog.draftDetails.subjectName }}
+      </span>
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.examTypeName">
+        <i class="fas fa-file-alt"></i> {{ confirmDialog.draftDetails.examTypeName }}
+      </span>
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.paperName">
+        <i class="fas fa-file-signature"></i> {{ confirmDialog.draftDetails.paperName }}
+      </span>
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.totalMarks + ' Marks'">
+        <i class="fas fa-star"></i> {{ confirmDialog.draftDetails.totalMarks }} Marks
+      </span>
+      <span class="filter-chip" [title]="confirmDialog.draftDetails.completed + ' of ' + confirmDialog.draftDetails.questions + ' questions saved'">
+        <i class="fas fa-list-ol"></i> {{ confirmDialog.draftDetails.completed }} / {{ confirmDialog.draftDetails.questions }} Questions
+      </span>
+      <span *ngIf="confirmDialog.draftDetails.examDate" class="filter-chip" title="Exam Date">
+        <i class="fas fa-calendar-alt"></i> {{ confirmDialog.draftDetails.examDate | date:'dd MMM yyyy' }}
+      </span>
+    </div>
+
     <div class="cqp-confirm-actions">
-      <button type="button" class="btn cqp-cancel-btn" (click)="confirmDialogCancel()">
-        <i class="fas fa-times"></i> Cancel
+      <button type="button" class="btn cqp-cancel-btn"
+              [title]="confirmDialog.cancelLabel === 'Discard' ? 'Permanently delete this question paper' : 'Cancel'"
+              (click)="confirmDialogCancel()">
+        <i class="fas" [ngClass]="confirmDialog.cancelLabel === 'Discard' ? 'fa-trash' : 'fa-times'"></i>
+        {{ confirmDialog.cancelLabel || 'Cancel' }}
       </button>
-      <button type="button" class="cqp-confirm-ok-btn" (click)="confirmDialogOk()">
-        <i class="fas fa-check"></i> {{ confirmDialog.okLabel }}
+      <button type="button" class="cqp-confirm-ok-btn"
+              [style.background]="!confirmDialog.isDanger ? 'var(--yellow)' : ''"
+              [style.border-color]="!confirmDialog.isDanger ? 'var(--yellow)' : ''"
+              (click)="confirmDialogOk()">
+        <i class="fas" [ngClass]="confirmDialog.okLabel === 'Continue' ? 'fa-play' : 'fa-check'"></i>
+        {{ confirmDialog.okLabel }}
       </button>
     </div>
   </div>

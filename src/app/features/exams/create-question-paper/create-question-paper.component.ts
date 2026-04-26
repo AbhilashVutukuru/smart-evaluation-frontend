@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ToastService }         from '../../../core/services/toast.service';
 import { ErrorHandlerService }  from '../../../core/services/error-handler.service';
-import { CreateQuestionPaperService } from '../../../core/services/create-question-paper.service';
+import { CreateQuestionPaperService, DraftStatusDto } from '../../../core/services/create-question-paper.service';
 import {
   MasterDataService,
   ClassDto,
@@ -23,9 +23,25 @@ interface UploadProgress {
 }
 
 interface ConfirmDialogState {
-  lines:    string[];
-  okLabel:  string;
-  onOk:     () => void;
+  title?:        string;
+  lines:         string[];
+  okLabel:       string;
+  cancelLabel?:  string;
+  isDanger?:     boolean;
+  draftDetails?: DraftDetails;
+  onOk:          () => void;
+  onCancel?:     () => void;
+}
+
+interface DraftDetails {
+  className:    string;
+  subjectName:  string;
+  examTypeName: string;
+  paperName:    string;
+  totalMarks:   number;
+  questions:    number;
+  completed:    number;
+  examDate:     string | null;
 }
 
 @Component({
@@ -51,6 +67,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   // ─── Edit mode (navigated from View Question Paper) ───────────────────────
   isEditMode      = false;
   editingPaperId  = 0;
+  draftPaperId    = 0; // set after createDraft API call; 0 = no active draft
 
   // Display name fallbacks when dropdown arrays aren't loaded yet
   displayClassName    = '';
@@ -79,6 +96,10 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   // ─── Loading states ───────────────────────────────────────────────────────
   isLoading    = false;
   isSubmitting = false;
+  isSaving     = false;
+
+  // ─── Snapshot map: questionNumber → JSON of last saved state ─────────────
+  private savedSnapshots = new Map<number, string>();
 
   // ─── Touch/validation state ───────────────────────────────────────────────
   questionTextTouched = false;
@@ -148,17 +169,272 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
     this.loadClasses();
     this.restoreState();
+
+    // Check for incomplete draft (only in create mode, not edit mode, not state restore)
+    if (!this.isEditMode && !this.stateService.restore()) {
+      this.checkForIncompleteDraft();
+    }
+
     window.addEventListener('beforeunload', this.onBeforeUnload);
   }
 
   private onBeforeUnload = (): void => {
     this.isUnloading = true;
     this.stateService.clear();
-    // Strip query params so refresh loads as normal Create, not Edit
     if (this.isEditMode) {
       window.history.replaceState({}, '', '/create/exam');
     }
   };
+
+  private checkForIncompleteDraft(): void {
+    this.createQuestionPaperService.getDraft()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (draft) => {
+          if (!draft) return;
+          if (draft.questionsCompleted === 0) {
+            // No questions filled yet — show inline banner only
+            this.pendingDraft     = draft;
+            this.draftPaperId     = draft.questionPaperId;
+            this.pendingDiscardId = draft.questionPaperId;
+          } else {
+            // Partial progress — show dialog with details, Continue or Discard
+            this.pendingDiscardId = draft.questionPaperId;
+            this.confirmDialog = {
+              title:       'Unfinished Question Paper',
+              lines:       [],
+              okLabel:     'Continue',
+              cancelLabel: 'Discard',
+              isDanger:    false,
+              draftDetails: {
+                className:   draft.className,
+                subjectName: draft.subjectName,
+                examTypeName: draft.examTypeName,
+                paperName:   draft.questionPaperName,
+                totalMarks:  draft.totalMarks,
+                questions:   draft.numberOfQuestions,
+                completed:   draft.questionsCompleted,
+                examDate:    draft.examDate,
+              },
+              onOk:     () => this.resumeDraft(draft),
+              onCancel: () => this.discardPendingDraft(),
+            };
+          }
+        },
+        error: () => {}
+      });
+  }
+
+  pendingDiscardId = 0;
+  pendingDraft: DraftStatusDto | null = null;
+
+  discardPendingDraft(): void {
+    const id = this.pendingDraft?.questionPaperId ?? this.pendingDiscardId ?? this.draftPaperId;
+    this.pendingDraft        = null;
+    this.draftPaperId        = 0;
+    this.pendingDiscardId    = 0;
+    this.questionsGenerated  = false;
+    this.questionsLocked     = false;
+    this.questionsFrozen     = false;
+    this.questionSets        = [];
+    this.currentQuestionIndex = 0;
+    this.savedSnapshots.clear();
+    if (id) {
+      this.createQuestionPaperService.discardDraft(id)
+        .pipe(takeUntil(this.destroy$)).subscribe();
+    }
+  }
+
+  discardPendingDraftWithConfirm(): void {
+    const name = this.pendingDraft?.questionPaperName ?? 'this question paper';
+    const id   = this.pendingDraft?.questionPaperId   ?? this.pendingDiscardId ?? this.draftPaperId;
+    if (!id) return;
+    this.confirmDialog = {
+      title:    'Discard Question Paper?',
+      lines:    [
+        `"${name}" will be permanently deleted.`,
+        'This action cannot be undone.',
+      ],
+      okLabel:  'Discard',
+      isDanger: true,
+      onOk:     () => this.discardPendingDraft(),
+    };
+  }
+
+  continuePendingDraft(): void {
+    if (!this.pendingDraft) return;
+    const draft = this.pendingDraft;
+    this.pendingDraft     = null;
+    this.draftPaperId     = draft.questionPaperId;
+    this.pendingDiscardId = 0;
+
+    const classId    = String(draft.classId    || '');
+    const subjectId  = String(draft.subjectId  || '');
+    const examTypeId = String(draft.examTypeId || '');
+
+    // Populate text fields immediately
+    this.examFormData.questionPaperName = draft.questionPaperName || '';
+    this.examFormData.totalMarks        = draft.totalMarks;
+    this.examFormData.numberOfQuestions = draft.numberOfQuestions;
+    this.examFormData.examDate          = draft.examDate ? draft.examDate.slice(0, 10) : null;
+    this.displayClassName               = draft.className    || '';
+    this.displaySubjectName             = draft.subjectName  || '';
+    this.displayExamTypeName            = draft.examTypeName || '';
+
+    // Load classes → set classId AFTER array populated so <select> renders correctly
+    this.masterDataService.getClasses()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (classes) => { this.allClasses = classes; this.examFormData.classId = classId; } });
+
+    // Load subjects → set subjectId AFTER array populated
+    this.masterDataService.getSubjectsByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (subjects) => { this.allSubjects = subjects; this.examFormData.subjectId = subjectId; } });
+
+    // Load examTypes → set examTypeId AFTER array populated
+    this.masterDataService.getExamTypesByClass(classId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({ next: (examTypes) => { this.allExamTypes = examTypes; this.examFormData.examTypeId = examTypeId; } });
+
+    // Load saved questions and build question slots
+    this.createQuestionPaperService
+      .getQuestionPaperForResume(draft.questionPaperId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (paper) => {
+          const totalQ = draft.numberOfQuestions;
+          this.questionSets = Array.from({ length: totalQ }, (_, i) => {
+            const saved = paper.questions?.find((q: any) => q.questionNumber === i + 1);
+            if (saved) {
+              return {
+                questionNumber:       i + 1,
+                questionText:         saved.questionText || '',
+                answerText:           saved.officialAnswer || '',
+                maxMarks:             saved.maxMarks ?? null,
+                validationRulesCount: saved.rubrics?.length ?? 0,
+                rubricPoints: (saved.rubrics ?? []).map((r: any) => ({
+                  description: r.rubricText, marks: r.maxMarks,
+                })),
+              };
+            }
+            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [] };
+          });
+
+          const firstEmpty = this.questionSets.findIndex(q => !q.questionText?.trim());
+          this.currentQuestionIndex      = firstEmpty >= 0 ? firstEmpty : 0;
+          this.examFormData.questionSets = this.questionSets;
+          this.questionsGenerated        = true;
+          this.questionsLocked           = true;
+          this.questionsFrozen           = false;
+          this.examInfoCollapsed         = draft.questionsCompleted > 0;
+          this.showExamInfoChevron       = true;
+
+          // Snapshot all already-saved questions so they won't be re-saved on Next
+          this.savedSnapshots.clear();
+          this.questionSets.forEach(qs => {
+            if (qs.questionText?.trim()) this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
+          });
+
+          const q = this.currentQuestionSet;
+          if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) this.rulesGenerated = true;
+
+          this.toastService.showSuccess('Resumed',
+            draft.questionsCompleted > 0
+              ? `Continuing from Question ${this.currentQuestionIndex + 1} of ${totalQ}.`
+              : `Continue filling ${totalQ} questions.`
+          );
+        },
+        error: () => {
+          const totalQ = draft.numberOfQuestions;
+          this.questionSets = Array.from({ length: totalQ }, (_, i) => ({
+            questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [],
+          }));
+          this.examFormData.questionSets = this.questionSets;
+          this.questionsGenerated = true; this.questionsLocked = true;
+          this.questionsFrozen = false; this.currentQuestionIndex = 0;
+          this.examInfoCollapsed = false; this.showExamInfoChevron = true;
+          this.toastService.showSuccess('Resumed', `Continue filling ${totalQ} questions.`);
+        },
+      });
+  }
+
+  confirmDialogCancel(): void {
+    const onCancel = this.confirmDialog?.onCancel;
+    this.confirmDialog = null;
+    if (onCancel) {
+      onCancel();
+      return;
+    }
+    if (this.pendingDiscardId && !this.pendingDraft) {
+      const id = this.pendingDiscardId;
+      this.pendingDiscardId = 0;
+      this.createQuestionPaperService.discardDraft(id)
+        .pipe(takeUntil(this.destroy$)).subscribe();
+    }
+  }
+
+  private resumeDraft(draft: DraftStatusDto): void {
+    this.draftPaperId     = draft.questionPaperId;
+    this.pendingDiscardId = draft.questionPaperId;
+
+    this.createQuestionPaperService
+      .getQuestionPaperForResume(draft.questionPaperId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (paper) => {
+          const totalQ = draft.numberOfQuestions;
+          this.questionSets = Array.from({ length: totalQ }, (_, i) => {
+            const saved = paper.questions?.find((q: any) => q.questionNumber === i + 1);
+            if (saved) {
+              return {
+                questionNumber:      i + 1,
+                questionText:        saved.questionText,
+                answerText:          saved.officialAnswer,
+                maxMarks:            saved.maxMarks,
+                validationRulesCount: saved.rubrics?.length ?? 0,
+                rubricPoints: (saved.rubrics ?? []).map((r: any) => ({
+                  description:     r.rubricText,
+                  marks:           r.maxMarks,
+                  isAutoGenerated: r.isAutoGenerated,
+                })),
+              };
+            }
+            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [] };
+          });
+
+          const firstEmpty = this.questionSets.findIndex(q => !q.questionText?.trim());
+          this.currentQuestionIndex = firstEmpty >= 0 ? firstEmpty : Math.min(draft.questionsCompleted, totalQ - 1);
+
+          this.examFormData.questionSets        = this.questionSets;
+          this.examFormData.numberOfQuestions   = totalQ;
+          this.examFormData.totalMarks          = draft.totalMarks;
+          this.questionsGenerated               = true;
+          this.questionsLocked                  = true;
+          this.questionsFrozen                  = false;
+          this.examInfoCollapsed                = true;
+          this.showExamInfoChevron              = true;
+
+          // Snapshot all already-saved questions so they won't be re-saved on Next
+          this.savedSnapshots.clear();
+          this.questionSets.forEach(qs => {
+            if (qs.questionText?.trim()) this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
+          });
+
+          const q = this.currentQuestionSet;
+          if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+            this.rulesGenerated = true;
+          }
+
+          this.toastService.showSuccess(
+            'Draft Resumed',
+            `Continuing from Question ${this.currentQuestionIndex + 1} of ${totalQ}.`,
+          );
+        },
+        error: () => {
+          this.toastService.showWarning('Warning', 'Could not load draft. Starting fresh.');
+        },
+      });
+  }
 
   ngOnDestroy(): void {
     clearTimeout(this.progressTimer);
@@ -371,68 +647,79 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
     this.isLoading = true;
 
-    this.createQuestionPaperService
-      .checkQuestionPaperExists(
-        +this.examFormData.classId,
-        +this.examFormData.subjectId,
-        +this.examFormData.examTypeId,
-        this.examFormData.questionPaperName?.trim() ?? null,
-      )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (exists) => {
-          this.isLoading = false;
-          if (exists) {
-            this.questionPaperNameExists = true;
-            this.toastService.showError(
-              'Duplicate Question Paper Name',
-              'A question paper with the same name already exists for this class, subject, and exam type.\nPlease choose a different name.',
-            );
-            return;
-          }
-          this.questionPaperNameExists = false;
+    // If re-clicking after a freeze: just unlock without regenerating
+    if (this.questionsFrozen && this.questionSets.length > 0) {
+      this.isLoading = false;
+      this.questionsLocked    = true;
+      this.questionsFrozen    = false;
+      this.questionsGenerated = true;
+      this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
+      return;
+    }
 
-          // If re-clicking after a freeze: just unlock and unfreeze without regenerating
-          if (this.questionsFrozen && this.questionSets.length > 0) {
-            this.questionsLocked  = true;
-            this.questionsFrozen  = false;
-            this.questionsGenerated = true;
-            this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
-            return;
-          }
+    // If pendingDraft banner is showing — reuse it
+    if (this.pendingDraft) {
+      this.isLoading = false;
+      this.continuePendingDraft();
+      return;
+    }
 
-          try {
-            this.questionSets = this.createQuestionPaperService.generateQuestionSets(
-              this.examFormData.numberOfQuestions!,
-              this.examFormData.totalMarks!,
-            );
-            this.questionSets.forEach(q => {
-              q.validationRulesCount = 0;
-              q.rubricPoints = [];
-              q.maxMarks = null;
-            });
-            this.examFormData.questionSets = this.questionSets;
-            this.questionsGenerated        = true;
-            this.questionsLocked           = true;
-            this.questionsFrozen           = false;
-            this.currentQuestionIndex      = 0;
-            this.examInfoCollapsed         = true;
-            this.showExamInfoChevron       = true;
-            this.toastService.showSuccess(
-              'Questions Generated',
-              `${this.questionSets.length} questions created successfully`,
-            );
-          } catch (error) {
-            this.errorHandler.handle('Failed to generate questions', error);
-          }
-        },
-        error: (error) => {
-          this.isLoading = false;
-          this.errorHandler.handle('Failed to check question paper', error);
-        },
-      });
+    // Check exists + create draft in one step
+    this.createQuestionPaperService.checkExistsAndCreateDraft({
+      classId:           +this.examFormData.classId,
+      subjectId:         +this.examFormData.subjectId,
+      examTypeId:        +this.examFormData.examTypeId,
+      totalMarks:        this.examFormData.totalMarks!,
+      numberOfQuestions: this.examFormData.numberOfQuestions!,
+      questionPaperName: this.examFormData.questionPaperName?.trim() ?? '',
+      examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: (paperId) => {
+        this.isLoading    = false;
+        this.draftPaperId = paperId;
+        this.questionPaperNameExists = false;
+        try {
+          this.questionSets = this.createQuestionPaperService.generateQuestionSets(
+            this.examFormData.numberOfQuestions!,
+            this.examFormData.totalMarks!,
+          );
+          this.questionSets.forEach(q => {
+            q.validationRulesCount = 0;
+            q.rubricPoints         = [];
+            q.maxMarks             = null;
+          });
+          this.examFormData.questionSets = this.questionSets;
+          this.questionsGenerated        = true;
+          this.questionsLocked           = true;
+          this.questionsFrozen           = false;
+          this.currentQuestionIndex      = 0;
+          this.examInfoCollapsed         = true;
+          this.showExamInfoChevron       = true;
+          this.toastService.showSuccess(
+            'Questions Generated',
+            `${this.questionSets.length} questions created. Fill in each question and click Save & Next.`,
+          );
+        } catch (error) {
+          this.errorHandler.handle('Failed to generate questions', error);
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        const msg = error?.error?.message ?? '';
+        if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate')) {
+          this.questionPaperNameExists = true;
+          this.toastService.showError(
+            'Duplicate Question Paper Name',
+            'A question paper with the same name already exists for this class, subject, and exam type.\nPlease choose a different name.',
+          );
+        } else {
+          this.errorHandler.handle('Failed to set questions', error);
+        }
+      },
+    });
   }
-
   private validateExamBasicInfo(): boolean {
     if (!this.examFormData.classId)    { this.toastService.showWarning('Warning', 'Please select a class'); return false; }
     if (!this.examFormData.subjectId)  { this.toastService.showWarning('Warning', 'Please select a subject'); return false; }
@@ -468,10 +755,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     cb?.();
   }
 
-  confirmDialogCancel(): void {
-    this.confirmDialog = null;
-  }
-
   private hardResetQuestions(): void {
     this.questionsGenerated              = false;
     this.questionsLocked                 = false;
@@ -492,6 +775,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.showExamInfoChevron             = false;
     this.rulesGenerated                  = false;
     this.questionPaperNameExists         = false;
+    this.savedSnapshots.clear();
     this.stateService.clear();
     this.resetTouchState();
     this.toastService.showInfo('Reset', 'All details have been cleared.');
@@ -553,23 +837,54 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.confirmDialog = {
       lines: [
         'Delete the last question?',
-        'Any data entered for it will be lost.',
+        'This will permanently remove it from the database.',
       ],
       okLabel: 'Yes, Delete',
       onOk: () => {
-        this.questionSets.pop();
-        this.examFormData.questionSets = this.questionSets;
-        this.examFormData.numberOfQuestions = this.questionSets.length;
-        if (this.currentQuestionIndex >= this.questionSets.length) {
-          this.currentQuestionIndex = this.questionSets.length - 1;
+        const lastQ    = this.questionSets[this.questionSets.length - 1];
+        const paperId  = this.draftPaperId;
+
+        const doDelete = () => {
+          this.questionSets.pop();
+          this.examFormData.questionSets        = this.questionSets;
+          this.examFormData.numberOfQuestions   = this.questionSets.length;
+          if (this.currentQuestionIndex >= this.questionSets.length) {
+            this.currentQuestionIndex = this.questionSets.length - 1;
+          }
+          this.resetTouchState();
+          this.toastService.showInfo('Deleted', 'Last question permanently deleted.');
+        };
+
+        if (paperId && !this.isEditMode) {
+          this.createQuestionPaperService
+            .deleteQuestion(paperId, lastQ.questionNumber)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: doDelete,
+              error: (error) => this.errorHandler.handle('Failed to delete question', error),
+            });
+        } else {
+          doDelete();
         }
-        this.resetTouchState();
-        this.toastService.showInfo('Question Deleted', 'Last question removed.');
       },
     };
   }
 
   // ─── Question Navigation ──────────────────────────────────────────────────
+
+  private snapshotQuestion(qs: QuestionSet): string {
+    return JSON.stringify({
+      questionText:  qs.questionText?.trim(),
+      answerText:    qs.answerText?.trim(),
+      maxMarks:      qs.maxMarks,
+      rubricPoints:  qs.rubricPoints.map(r => ({ description: r.description?.trim(), marks: r.marks })),
+    });
+  }
+
+  private hasQuestionChanged(qs: QuestionSet): boolean {
+    const saved = this.savedSnapshots.get(qs.questionNumber);
+    return saved === undefined || saved !== this.snapshotQuestion(qs);
+  }
 
   get currentQuestionSet(): QuestionSet { return this.questionSets[this.currentQuestionIndex]; }
   get isLastQuestion(): boolean { return this.currentQuestionIndex === this.questionSets.length - 1; }
@@ -598,17 +913,19 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   goToPreviousQuestion(): void {
-    if (this.currentQuestionIndex > 0) {
-      this.currentQuestionIndex--;
-      this.resetTouchState();
-      const q = this.currentQuestionSet;
-      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
-        this.rulesGenerated = true;
-      }
+    if (this.currentQuestionIndex === 0 || this.isSaving) return;
+    this.currentQuestionIndex--;
+    this.resetTouchState();
+    const q = this.currentQuestionSet;
+    if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+      this.rulesGenerated = true;
     }
   }
 
   goToNextQuestion(): void {
+    if (this.isSaving) return;
+    this.isSaving = true;
+
     this.questionTextTouched = true;
     this.answerTextTouched   = true;
     this.currentQuestionSet?.rubricPoints?.forEach(r => {
@@ -619,7 +936,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (this.currentQuestionSet.maxMarks === 1) this.autoFillOneMarkQuestion();
 
     const errors = this.getQuestionValidationErrors();
-    if (errors.length > 0) { this.toastService.showError('Validation Error', errors[0]); return; }
+    if (errors.length > 0) {
+      this.isSaving = false;
+      this.toastService.showError('Validation Error', errors[0]);
+      return;
+    }
 
     if (this.currentQuestionSet.maxMarks !== 1 && !this.validateMarksMatch()) {
       const total = this.calculateValidationMarksTotal();
@@ -627,21 +948,69 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       const msg   = total > max
         ? `Validation marks (${total}) exceed maximum marks (${max}). Please adjust.`
         : `Validation marks (${total}) are less than maximum marks (${max}). Please add more.`;
+      this.isSaving = false;
       this.toastService.showError('Validation Error', msg);
       return;
     }
 
-    if (this.currentQuestionIndex < this.questionSets.length - 1) {
-      this.currentQuestionIndex++;
-      this.resetTouchState();
-      const q = this.currentQuestionSet;
-      if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
-        this.rulesGenerated = true;
+    if (this.currentQuestionIndex >= this.questionSets.length - 1) {
+      this.isSaving = false;
+      return;
+    }
+
+    // Save question to DB before moving
+    const qs = this.currentQuestionSet;
+    const paperId = this.draftPaperId || this.editingPaperId;
+
+    if (paperId && !this.isEditMode) {
+      if (!this.hasQuestionChanged(qs)) {
+        // Nothing changed — skip API, just navigate
+        this.isSaving = false;
+        this.advanceToNextQuestion();
+        return;
       }
-      const msg = this.currentQuestionSet.maxMarks === 1
+      this.createQuestionPaperService.saveQuestion(paperId, {
+        questionNumber: qs.questionNumber,
+        questionText:   qs.questionText?.trim(),
+        answerText:     qs.answerText?.trim(),
+        maxMarks:       qs.maxMarks ?? 0,
+        rubricAdded:    qs.maxMarks !== 1,
+        rubrics: qs.rubricPoints.map((r, i) => ({
+          criterionOrder:  i + 1,
+          rubricText:      r.description,
+          maxMarks:        r.marks ?? 0,
+        })),
+      }).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
+          this.isSaving = false;
+          this.advanceToNextQuestion();
+          const msg = qs.maxMarks === 1
+            ? 'Question saved (1 mark - no rubric needed)'
+            : 'Question saved! Moving to next question.';
+          this.toastService.showSuccess('Saved', msg);
+        },
+        error: (error) => {
+          this.isSaving = false;
+          this.errorHandler.handle('Failed to save question', error);
+        },
+      });
+    } else {
+      this.isSaving = false;
+      this.advanceToNextQuestion();
+      const msg = qs.maxMarks === 1
         ? 'Question saved (1 mark - no rubric needed)'
         : 'Question saved! Moving to next question.';
       this.toastService.showSuccess('Success', msg);
+    }
+  }
+
+  private advanceToNextQuestion(): void {
+    this.currentQuestionIndex++;
+    this.resetTouchState();
+    const q = this.currentQuestionSet;
+    if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+      this.rulesGenerated = true;
     }
   }
 
@@ -719,33 +1088,63 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
   private submitToBackend(): void {
     this.isSubmitting   = true;
-    this.uploadProgress = { visible: true, width: '50%', text: 'Uploading exam...' };
+    this.uploadProgress = { visible: true, width: '30%', text: 'Saving last question...' };
 
-    this.questionSets.forEach(q => {
-      q.questionText = q.questionText?.trim() ?? q.questionText;
-      q.answerText   = q.answerText?.trim()   ?? q.answerText;
+    const qs      = this.currentQuestionSet;
+    const paperId = this.draftPaperId;
+
+    if (!paperId) {
+      this.toastService.showError('Error', 'No draft found. Please click Set Questions again.');
+      this.isSubmitting = false;
+      this.uploadProgress.visible = false;
+      return;
+    }
+
+    // Save the last question first, then complete
+    this.createQuestionPaperService.saveQuestion(paperId, {
+      questionNumber: qs.questionNumber,
+      questionText:   qs.questionText?.trim(),
+      answerText:     qs.answerText?.trim(),
+      maxMarks:       qs.maxMarks ?? 0,
+      rubricAdded:    qs.maxMarks !== 1,
+      rubrics: qs.rubricPoints.map((r, i) => ({
+        criterionOrder:  i + 1,
+        rubricText:      r.description,
+        maxMarks:        r.marks ?? 0,
+
+      })),
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: () => {
+        this.uploadProgress = { visible: true, width: '70%', text: 'Submitting question paper...' };
+        this.createQuestionPaperService.completeDraft(paperId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.uploadProgress = { visible: true, width: '100%', text: 'Submitted successfully!' };
+              this.progressTimer = setTimeout(() => {
+                this.uploadProgress.visible = false;
+                this.isSubmitting           = false;
+                this.draftPaperId           = 0;
+                this.toastService.showSuccess('Success', 'Question paper submitted successfully!');
+                this.stateService.clear();
+                this.resetForm();
+              }, 500);
+            },
+            error: (error) => {
+              this.uploadProgress.visible = false;
+              this.isSubmitting           = false;
+              this.errorHandler.handle('Failed to submit question paper', error);
+            },
+          });
+      },
+      error: (error) => {
+        this.uploadProgress.visible = false;
+        this.isSubmitting           = false;
+        this.errorHandler.handle('Failed to save last question', error);
+      },
     });
-
-    const apiRequest = this.createQuestionPaperService.prepareApiRequest(this.examFormData);
-
-    this.createQuestionPaperService.createExam(apiRequest)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.uploadProgress = { visible: true, width: '100%', text: 'Upload complete!' };
-          this.progressTimer = setTimeout(() => {
-            this.uploadProgress.visible = false;
-            this.isSubmitting           = false;
-            this.toastService.showSuccess('Success', 'Exam uploaded successfully');
-            this.resetForm();
-          }, 500);
-        },
-        error: (error) => {
-          this.uploadProgress.visible = false;
-          this.isSubmitting           = false;
-          this.errorHandler.handle('Failed to upload exam', error);
-        },
-      });
   }
 
   // ─── Validation Rules ─────────────────────────────────────────────────────
