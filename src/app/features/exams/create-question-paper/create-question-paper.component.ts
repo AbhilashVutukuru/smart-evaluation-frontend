@@ -167,13 +167,15 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.loadClasses();
-    this.restoreState();
-
-    // Check for incomplete draft (only in create mode, not edit mode, not state restore)
+    // Check for incomplete draft first (only in create mode)
+    // loadClasses() is called inside continuePendingDraft or restoreState path
     if (!this.isEditMode && !this.stateService.restore()) {
       this.checkForIncompleteDraft();
+      return;
     }
+
+    this.loadClasses();
+    this.restoreState();
 
     window.addEventListener('beforeunload', this.onBeforeUnload);
   }
@@ -192,34 +194,27 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (draft) => {
           if (!draft) return;
-          if (draft.questionsCompleted === 0) {
-            // No questions filled yet — show inline banner only
-            this.pendingDraft     = draft;
-            this.draftPaperId     = draft.questionPaperId;
-            this.pendingDiscardId = draft.questionPaperId;
-          } else {
-            // Partial progress — show dialog with details, Continue or Discard
-            this.pendingDiscardId = draft.questionPaperId;
-            this.confirmDialog = {
-              title:       'Unfinished Question Paper',
-              lines:       [],
-              okLabel:     'Continue',
-              cancelLabel: 'Discard',
-              isDanger:    false,
-              draftDetails: {
-                className:   draft.className,
-                subjectName: draft.subjectName,
-                examTypeName: draft.examTypeName,
-                paperName:   draft.questionPaperName,
-                totalMarks:  draft.totalMarks,
-                questions:   draft.numberOfQuestions,
-                completed:   draft.questionsCompleted,
-                examDate:    draft.examDate,
-              },
-              onOk:     () => this.resumeDraft(draft),
-              onCancel: () => this.discardPendingDraft(),
-            };
-          }
+          // Always show dialog — whether 0 questions or partial progress
+          this.pendingDiscardId = draft.questionPaperId;
+          this.confirmDialog = {
+            title:       'Unfinished Question Paper',
+            lines:       [],
+            okLabel:     'Continue',
+            cancelLabel: 'Discard',
+            isDanger:    false,
+            draftDetails: {
+              className:    draft.className,
+              subjectName:  draft.subjectName,
+              examTypeName: draft.examTypeName,
+              paperName:    draft.questionPaperName,
+              totalMarks:   draft.totalMarks,
+              questions:    draft.numberOfQuestions,
+              completed:    draft.questionsCompleted,
+              examDate:     draft.examDate,
+            },
+            onOk:     () => this.continuePendingDraft(draft),
+            onCancel: () => this.discardPendingDraft(),
+          };
         },
         error: () => {}
       });
@@ -261,12 +256,18 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     };
   }
 
-  continuePendingDraft(): void {
-    if (!this.pendingDraft) return;
-    const draft = this.pendingDraft;
-    this.pendingDraft     = null;
-    this.draftPaperId     = draft.questionPaperId;
-    this.pendingDiscardId = 0;
+  continuePendingDraft(draftArg?: DraftStatusDto): void {
+    const draft = draftArg ?? this.pendingDraft;
+    if (!draft) return;
+    this.pendingDraft        = null;
+    this.draftPaperId        = draft.questionPaperId;
+    this.pendingDiscardId    = 0;
+    this.questionsGenerated  = false;
+    this.questionsLocked     = false;
+    this.questionsFrozen     = false;
+    this.examInfoCollapsed   = false;
+    this.showExamInfoChevron = false;
+    this.stateService.clear();
 
     const classId    = String(draft.classId    || '');
     const subjectId  = String(draft.subjectId  || '');
@@ -281,22 +282,47 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.displaySubjectName             = draft.subjectName  || '';
     this.displayExamTypeName            = draft.examTypeName || '';
 
-    // Load classes → set classId AFTER array populated so <select> renders correctly
+    // Load classes then set all form values atomically - no race condition
     this.masterDataService.getClasses()
       .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (classes) => { this.allClasses = classes; this.examFormData.classId = classId; } });
+      .subscribe({ next: (classes) => {
+        this.allClasses = classes;
+        this.examFormData = {
+          academicYear:      this.createQuestionPaperService.getCurrentAcademicYear(),
+          classId:           classId,
+          subjectId:         '',
+          examTypeId:        '',
+          questionPaperName: draft.questionPaperName || '',
+          totalMarks:        draft.totalMarks,
+          numberOfQuestions: draft.numberOfQuestions,
+          examDate:          draft.examDate ? draft.examDate.slice(0, 10) : null,
+          questionSets:      [],
+        };
+        this.loadSubjectsAndExamTypes(classId, true);
+      }});
 
-    // Load subjects → set subjectId AFTER array populated
-    this.masterDataService.getSubjectsByClass(classId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (subjects) => { this.allSubjects = subjects; this.examFormData.subjectId = subjectId; } });
+    // 0-questions draft — generate blank slots and show Q&A immediately
+    if (draft.questionsCompleted === 0) {
+      const totalQ = draft.numberOfQuestions;
+      this.questionSets = Array.from({ length: totalQ }, (_, i) => ({
+        questionNumber:       i + 1,
+        questionText:         '',
+        answerText:           '',
+        maxMarks:             null,
+        validationRulesCount: null!,
+        rubricPoints:         [],
+      }));
+      this.examFormData.questionSets = this.questionSets;
+      this.currentQuestionIndex      = 0;
+      this.questionsGenerated        = true;
+      this.questionsLocked           = true;
+      this.examInfoCollapsed         = true;
+      this.showExamInfoChevron       = true;
+      this.toastService.showSuccess('Draft Loaded', `Continue filling ${totalQ} questions.`);
+      return;
+    }
 
-    // Load examTypes → set examTypeId AFTER array populated
-    this.masterDataService.getExamTypesByClass(classId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (examTypes) => { this.allExamTypes = examTypes; this.examFormData.examTypeId = examTypeId; } });
-
-    // Load saved questions and build question slots
+    // Partial draft — load saved questions
     this.createQuestionPaperService
       .getQuestionPaperForResume(draft.questionPaperId)
       .pipe(takeUntil(this.destroy$))
@@ -317,7 +343,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
                 })),
               };
             }
-            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [] };
+            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: null!, rubricPoints: [] };
           });
 
           const firstEmpty = this.questionSets.findIndex(q => !q.questionText?.trim());
@@ -326,10 +352,9 @@ export class CreateExamComponent implements OnInit, OnDestroy {
           this.questionsGenerated        = true;
           this.questionsLocked           = true;
           this.questionsFrozen           = false;
-          this.examInfoCollapsed         = draft.questionsCompleted > 0;
+          this.examInfoCollapsed         = true;
           this.showExamInfoChevron       = true;
 
-          // Snapshot all already-saved questions so they won't be re-saved on Next
           this.savedSnapshots.clear();
           this.questionSets.forEach(qs => {
             if (qs.questionText?.trim()) this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
@@ -338,16 +363,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
           const q = this.currentQuestionSet;
           if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) this.rulesGenerated = true;
 
-          this.toastService.showSuccess('Resumed',
-            draft.questionsCompleted > 0
-              ? `Continuing from Question ${this.currentQuestionIndex + 1} of ${totalQ}.`
-              : `Continue filling ${totalQ} questions.`
-          );
+          this.toastService.showSuccess('Resumed', `Continuing from Question ${this.currentQuestionIndex + 1} of ${totalQ}.`);
         },
         error: () => {
           const totalQ = draft.numberOfQuestions;
           this.questionSets = Array.from({ length: totalQ }, (_, i) => ({
-            questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [],
+            questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: null!, rubricPoints: [],
           }));
           this.examFormData.questionSets = this.questionSets;
           this.questionsGenerated = true; this.questionsLocked = true;
@@ -373,6 +394,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ─── FIX: resumeDraft now loads allClasses + allSubjects + allExamTypes ───
   private resumeDraft(draft: DraftStatusDto): void {
     this.draftPaperId     = draft.questionPaperId;
     this.pendingDiscardId = draft.questionPaperId;
@@ -387,10 +409,10 @@ export class CreateExamComponent implements OnInit, OnDestroy {
             const saved = paper.questions?.find((q: any) => q.questionNumber === i + 1);
             if (saved) {
               return {
-                questionNumber:      i + 1,
-                questionText:        saved.questionText,
-                answerText:          saved.officialAnswer,
-                maxMarks:            saved.maxMarks,
+                questionNumber:       i + 1,
+                questionText:         saved.questionText,
+                answerText:           saved.officialAnswer,
+                maxMarks:             saved.maxMarks,
                 validationRulesCount: saved.rubrics?.length ?? 0,
                 rubricPoints: (saved.rubrics ?? []).map((r: any) => ({
                   description:     r.rubricText,
@@ -399,20 +421,46 @@ export class CreateExamComponent implements OnInit, OnDestroy {
                 })),
               };
             }
-            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: 0, rubricPoints: [] };
+            return { questionNumber: i + 1, questionText: '', answerText: '', maxMarks: null, validationRulesCount: null!, rubricPoints: [] };
           });
 
           const firstEmpty = this.questionSets.findIndex(q => !q.questionText?.trim());
           this.currentQuestionIndex = firstEmpty >= 0 ? firstEmpty : Math.min(draft.questionsCompleted, totalQ - 1);
 
-          this.examFormData.questionSets        = this.questionSets;
-          this.examFormData.numberOfQuestions   = totalQ;
-          this.examFormData.totalMarks          = draft.totalMarks;
-          this.questionsGenerated               = true;
-          this.questionsLocked                  = true;
-          this.questionsFrozen                  = false;
-          this.examInfoCollapsed                = true;
-          this.showExamInfoChevron              = true;
+          // ── FIX: set IDs so dropdowns bind correctly when user expands Exam Details ──
+          const classId    = String(draft.classId    || '');
+          const subjectId  = String(draft.subjectId  || '');
+          const examTypeId = String(draft.examTypeId || '');
+
+          this.examFormData.questionSets      = this.questionSets;
+          this.examFormData.numberOfQuestions = totalQ;
+          this.examFormData.totalMarks        = draft.totalMarks;
+          this.examFormData.questionPaperName = draft.questionPaperName;
+          this.examFormData.examDate          = draft.examDate ? draft.examDate.split('T')[0] : null;
+          this.examFormData.classId           = classId;    // ← FIX: was never set
+          this.examFormData.subjectId         = subjectId;  // ← FIX: was never set
+          this.examFormData.examTypeId        = examTypeId; // ← FIX: was never set
+
+          this.displayClassName    = draft.className    || '';
+          this.displaySubjectName  = draft.subjectName  || '';
+          this.displayExamTypeName = draft.examTypeName || '';
+
+          this.questionsGenerated  = true;
+          this.questionsLocked     = true;
+          this.questionsFrozen     = false;
+          this.examInfoCollapsed   = true;
+          this.showExamInfoChevron = true;
+
+          // ── FIX: load dropdown lists so selects render correctly on expand ──
+          if (!this.allClasses.length) {
+            this.masterDataService.getClasses()
+              .pipe(takeUntil(this.destroy$))
+              .subscribe({ next: (classes) => (this.allClasses = classes) });
+          }
+          if (classId) {
+            // IDs already known from draft — no name-matching needed
+            this.loadSubjectsAndExamTypes(classId, false);
+          }
 
           // Snapshot all already-saved questions so they won't be re-saved on Next
           this.savedSnapshots.clear();
@@ -511,6 +559,15 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       if (current && current.maxMarks !== 1 && (current.rubricPoints?.length ?? 0) > 0) {
         this.rulesGenerated = true;
       }
+    }
+
+    // Snapshot ALL questions on restore so hasQuestionChanged() correctly
+    // shows "Save & Next" only when a question is actually modified
+    if (this.isEditMode && this.questionsGenerated) {
+      this.savedSnapshots.clear();
+      this.questionSets.forEach(qs => {
+        this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
+      });
     }
 
     // If navigated from View — always reload and match IDs by name in edit mode
@@ -612,6 +669,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       if (value > 200) value = 200;
       this.examFormData.totalMarks = value;
       input.value = String(value);
+      if (this.questionsLocked) this.onHeaderFieldChanged();
     }
   }
 
@@ -623,8 +681,8 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       if (value > 50) value = 50;
       this.examFormData.numberOfQuestions = value;
       input.value = String(value);
+      if (this.questionsLocked) this.onHeaderFieldChanged();
     }
-    // numberOfQuestions is disabled when locked, so this only fires pre-lock
   }
 
   /**
@@ -649,11 +707,32 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
     // If re-clicking after a freeze: just unlock without regenerating
     if (this.questionsFrozen && this.questionSets.length > 0) {
-      this.isLoading = false;
-      this.questionsLocked    = true;
-      this.questionsFrozen    = false;
-      this.questionsGenerated = true;
-      this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
+      const paperId = this.draftPaperId || this.editingPaperId;
+      if (paperId) {
+        this.createQuestionPaperService.updateDraftHeader(paperId, {
+          totalMarks:        this.examFormData.totalMarks!,
+          numberOfQuestions: this.examFormData.numberOfQuestions!,
+          examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
+        }).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.isLoading       = false;
+            this.questionsLocked = true;
+            this.questionsFrozen = false;
+            this.questionsGenerated = true;
+            this.toastService.showSuccess('Updated', 'Question paper header updated. You can continue editing.');
+          },
+          error: (error) => {
+            this.isLoading = false;
+            this.errorHandler.handle('Failed to update question paper', error);
+          },
+        });
+      } else {
+        this.isLoading       = false;
+        this.questionsLocked = true;
+        this.questionsFrozen = false;
+        this.questionsGenerated = true;
+        this.toastService.showSuccess('Validated', 'Question paper validated. You can continue editing.');
+      }
       return;
     }
 
@@ -720,6 +799,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       },
     });
   }
+
   private validateExamBasicInfo(): boolean {
     if (!this.examFormData.classId)    { this.toastService.showWarning('Warning', 'Please select a class'); return false; }
     if (!this.examFormData.subjectId)  { this.toastService.showWarning('Warning', 'Please select a subject'); return false; }
@@ -742,7 +822,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.confirmDialog = {
       lines: [
         'Are you sure you want to reset?',
-        'All entered question and answer data will be lost.',
+        'All entered question and answer data will be delete.',
       ],
       okLabel: 'Yes, Reset',
       onOk: () => this.hardResetQuestions(),
@@ -756,6 +836,13 @@ export class CreateExamComponent implements OnInit, OnDestroy {
   }
 
   private hardResetQuestions(): void {
+    // Hard-delete draft from backend if one exists
+    const draftId = this.draftPaperId || this.pendingDiscardId;
+    if (draftId) {
+      this.createQuestionPaperService.discardDraft(draftId)
+        .pipe(takeUntil(this.destroy$)).subscribe();
+    }
+
     this.questionsGenerated              = false;
     this.questionsLocked                 = false;
     this.questionsFrozen                 = false;
@@ -776,6 +863,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.rulesGenerated                  = false;
     this.questionPaperNameExists         = false;
     this.savedSnapshots.clear();
+    this.draftPaperId     = 0;
+    this.pendingDiscardId = 0;
+    this.pendingDraft     = null;
+    this.displayClassName    = '';
+    this.displaySubjectName  = '';
+    this.displayExamTypeName = '';
     this.stateService.clear();
     this.resetTouchState();
     this.toastService.showInfo('Reset', 'All details have been cleared.');
@@ -812,21 +905,35 @@ export class CreateExamComponent implements OnInit, OnDestroy {
    * Change #6: Add a new blank question at the end.
    */
   addQuestion(): void {
-    const defaultMarks = this.examFormData.totalMarks
-      ? Math.max(2, Math.floor(this.examFormData.totalMarks / (this.questionSets.length + 1)))
-      : 2;
     const newQ: QuestionSet = {
-      questionNumber:      this.questionSets.length + 1,
-      questionText:        '',
-      answerText:          '',
-      maxMarks:            null,
+      questionNumber:       this.questionSets.length + 1,
+      questionText:         '',
+      answerText:           '',
+      maxMarks:             null,
       validationRulesCount: 0,
-      rubricPoints:        [],
+      rubricPoints:         [],
     };
     this.questionSets.push(newQ);
-    this.examFormData.questionSets = this.questionSets;
+    this.examFormData.questionSets      = this.questionSets;
     this.examFormData.numberOfQuestions = this.questionSets.length;
-    this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
+
+    const paperId = this.draftPaperId || this.editingPaperId;
+    if (paperId) {
+      this.createQuestionPaperService.updateDraftHeader(paperId, {
+        classId:           +this.examFormData.classId,
+        subjectId:         +this.examFormData.subjectId,
+        examTypeId:        +this.examFormData.examTypeId,
+        questionPaperName: this.examFormData.questionPaperName?.trim() ?? '',
+        totalMarks:        this.examFormData.totalMarks!,
+        numberOfQuestions: this.questionSets.length,
+        examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
+      }).pipe(takeUntil(this.destroy$)).subscribe({
+        next:  () => this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`),
+        error: (error) => this.errorHandler.handle('Failed to add question', error),
+      });
+    } else {
+      this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
+    }
   }
 
   /**
@@ -837,8 +944,9 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.confirmDialog = {
       lines: [
         'Delete the last question?',
-        'This will permanently remove it from the database.',
+        'This will permanently remove the last question.',
       ],
+      isDanger: true,
       okLabel: 'Yes, Delete',
       onOk: () => {
         const lastQ    = this.questionSets[this.questionSets.length - 1];
@@ -881,7 +989,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     });
   }
 
-  private hasQuestionChanged(qs: QuestionSet): boolean {
+  hasQuestionChanged(qs: QuestionSet): boolean {
     const saved = this.savedSnapshots.get(qs.questionNumber);
     return saved === undefined || saved !== this.snapshotQuestion(qs);
   }
@@ -960,9 +1068,9 @@ export class CreateExamComponent implements OnInit, OnDestroy {
 
     // Save question to DB before moving
     const qs = this.currentQuestionSet;
-    const paperId = this.draftPaperId || this.editingPaperId;
+    const paperId = this.isEditMode ? this.editingPaperId : this.draftPaperId;
 
-    if (paperId && !this.isEditMode) {
+    if (paperId) {
       if (!this.hasQuestionChanged(qs)) {
         // Nothing changed — skip API, just navigate
         this.isSaving = false;
@@ -985,10 +1093,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
           this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
           this.isSaving = false;
           this.advanceToNextQuestion();
-          const msg = qs.maxMarks === 1
-            ? 'Question saved (1 mark - no rubric needed)'
-            : 'Question saved! Moving to next question.';
-          this.toastService.showSuccess('Saved', msg);
+          this.toastService.showSuccess('Saved', 'Question saved! Moving to next.');
         },
         error: (error) => {
           this.isSaving = false;
@@ -998,10 +1103,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     } else {
       this.isSaving = false;
       this.advanceToNextQuestion();
-      const msg = qs.maxMarks === 1
-        ? 'Question saved (1 mark - no rubric needed)'
-        : 'Question saved! Moving to next question.';
-      this.toastService.showSuccess('Success', msg);
     }
   }
 
@@ -1057,33 +1158,39 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting   = true;
-    this.uploadProgress = { visible: true, width: '50%', text: 'Saving changes...' };
+    this.uploadProgress = { visible: true, width: '50%', text: 'Saving question...' };
 
-    this.questionSets.forEach(q => {
-      q.questionText = q.questionText?.trim() ?? q.questionText;
-      q.answerText   = q.answerText?.trim()   ?? q.answerText;
-    });
+    const qs = this.currentQuestionSet;
 
-    this.createQuestionPaperService.updateExam(this.editingPaperId, this.examFormData)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.uploadProgress = { visible: true, width: '100%', text: 'Changes saved!' };
-          this.progressTimer = setTimeout(() => {
-            this.uploadProgress.visible = false;
-            this.isSubmitting           = false;
-            this.toastService.showSuccess('Success', 'Question paper updated successfully');
-            this.stateService.clear();
-            this.isUnloading = true;
-            this.router.navigate(['/view/exam'], { queryParams: { questionPaperId: this.editingPaperId } });
-          }, 500);
-        },
-        error: (error) => {
+    this.createQuestionPaperService.saveQuestion(this.editingPaperId, {
+      questionNumber: qs.questionNumber,
+      questionText:   qs.questionText?.trim(),
+      answerText:     qs.answerText?.trim(),
+      maxMarks:       qs.maxMarks ?? 0,
+      rubricAdded:    qs.maxMarks !== 1,
+      rubrics: qs.rubricPoints.map((r, i) => ({
+        criterionOrder:  i + 1,
+        rubricText:      r.description,
+        maxMarks:        r.marks ?? 0,
+      })),
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: () => {
+        this.savedSnapshots.set(qs.questionNumber, this.snapshotQuestion(qs));
+        this.uploadProgress = { visible: true, width: '100%', text: 'Saved!' };
+        this.progressTimer = setTimeout(() => {
           this.uploadProgress.visible = false;
           this.isSubmitting           = false;
-          this.errorHandler.handle('Failed to save changes', error);
-        },
-      });
+          this.toastService.showSuccess('Saved', 'Question saved successfully');
+        }, 500);
+      },
+      error: (error) => {
+        this.uploadProgress.visible = false;
+        this.isSubmitting           = false;
+        this.errorHandler.handle('Failed to save question', error);
+      },
+    });
   }
 
   private submitToBackend(): void {
@@ -1111,7 +1218,6 @@ export class CreateExamComponent implements OnInit, OnDestroy {
         criterionOrder:  i + 1,
         rubricText:      r.description,
         maxMarks:        r.marks ?? 0,
-
       })),
     })
     .pipe(takeUntil(this.destroy$))
@@ -1170,6 +1276,20 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (current.length > rulesCount) this.currentQuestionSet.rubricPoints = current.slice(0, rulesCount);
 
     this.rulesGenerated = true;
+  }
+
+  addRule(): void {
+    const qs = this.currentQuestionSet;
+    if (!qs || qs.rubricPoints.length >= 20) return;
+    qs.rubricPoints.push({ description: '', marks: null });
+    qs.validationRulesCount = qs.rubricPoints.length;
+  }
+
+  removeRule(index: number): void {
+    const qs = this.currentQuestionSet;
+    if (!qs || qs.rubricPoints.length <= 1) return;
+    qs.rubricPoints.splice(index, 1);
+    qs.validationRulesCount = qs.rubricPoints.length;
   }
 
   clearCurrentQuestion(): void {
@@ -1232,6 +1352,10 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     if (value > max) value = max;
     this.currentQuestionSet.maxMarks = value;
     input.value = String(value);
+    // Reset rules so user must click Set Validation Rules again
+    this.rulesGenerated = false;
+    this.currentQuestionSet.rubricPoints = [];
+    this.currentQuestionSet.validationRulesCount = null!;
   }
 
   get canSetRules(): boolean {
@@ -1249,7 +1373,8 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.rulesGenerated      = false;
   }
 
-  onValidationCountChange(event: Event): void {
+  onValidationCountChange(event?: Event | null): void {
+    if (!event) return; // called from spinner buttons — count already set directly
     const input = event.target as HTMLInputElement;
     let value = parseInt(input.value, 10);
     if (isNaN(value) || value < 1) {

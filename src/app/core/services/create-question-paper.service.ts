@@ -295,4 +295,18 @@ export class CreateQuestionPaperService {
     const y = new Date().getFullYear();
     return `${y}-${y + 1}`;
   }
+
+  updateDraftHeader(questionPaperId: number, dto: {
+    classId?:          number;
+    subjectId?:        number;
+    examTypeId?:       number;
+    questionPaperName?: string;
+    totalMarks:        number;
+    numberOfQuestions: number;
+    examDate:          string | null;
+  }): Observable<unknown> {
+    return this.http
+      .put(`${this.apiUrl}/question-paper/${questionPaperId}/draft-header`, dto)
+      .pipe(catchError(err => { throw err; }));
+  }
 }

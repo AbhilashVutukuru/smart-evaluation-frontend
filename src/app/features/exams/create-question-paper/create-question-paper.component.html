@@ -1,28 +1,14 @@
 <!-- Create Exam Component - Complete HTML with Fixed Alignment -->
 <div class="page-container">
 
-  <!-- PENDING DRAFT BANNER — shown when user returns with 0 questions filled -->
-  <div *ngIf="pendingDraft" class="pending-draft-banner">
-    <div class="pending-draft-info">
-      <i class="fas fa-clock"></i>
-      <div>
-        <strong>Pending Question Paper</strong>
-        <span>You have an unfinished paper: <strong>{{ pendingDraft.questionPaperName }}</strong>
-          — {{ pendingDraft.numberOfQuestions }} questions, {{ pendingDraft.totalMarks }} marks.
-          Continue filling it in or discard and start fresh.</span>
-      </div>
-    </div>
-    <div class="pending-draft-actions">
-      <button class="btn btn-primary btn-sm" (click)="continuePendingDraft()">
-        <i class="fas fa-play"></i> Continue
-      </button>
-      <button class="btn btn-reset-sq btn-sm" (click)="discardPendingDraftWithConfirm()">
-        <i class="fas fa-trash"></i> Discard
-      </button>
-    </div>
+  <!-- EXAM FORM -->
+  <!-- Back to List pill — shown in edit mode, outside card like View QP -->
+  <div *ngIf="isEditMode" class="back-btn-row">
+    <button class="btn-back-pill" (click)="onCancelEdit()" type="button">
+      <i class="fas fa-chevron-left"></i> Back to List
+    </button>
   </div>
 
-  <!-- EXAM FORM -->
   <div class="card">
     <div class="filter-card-header"
          [class.is-collapsed]="examInfoCollapsed"
@@ -31,9 +17,6 @@
       <h4>
         <i class="fas fa-clipboard-list"></i>
         {{ isEditMode ? 'Edit Details' : 'Exam Details' }}
-        <span *ngIf="isEditMode" class="editing-chip">
-          Editing
-        </span>
         <i *ngIf="questionsGenerated"
            class="fas collapse-indicator"
            [class.fa-chevron-down]="examInfoCollapsed"
@@ -43,7 +26,7 @@
     </div>
 
     <!-- Summary chips — always visible when generated, shown below header when collapsed -->
-    <div class="filter-summary" *ngIf="questionsGenerated && examFormData.classId && examInfoCollapsed">
+    <div class="filter-summary" *ngIf="questionsGenerated && examInfoCollapsed">
       <span class="filter-chip" [hidden]="!(getClassName() || displayClassName)">
         <i class="fas fa-layer-group"></i> {{ getClassName() || displayClassName }}
       </span>
@@ -65,16 +48,6 @@
       <span class="filter-chip" [hidden]="!examFormData.examDate">
         <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate }}
       </span>
-      <button
-        *ngIf="isEditMode && examInfoCollapsed"
-        class="btn btn-reset-sq ms-2 btn-sm"
-        style="font-size:0.75rem; padding:0.2rem 0.6rem;"
-        (click)="onCancelEdit()"
-        type="button"
-        title="Cancel editing and go back"
-      >
-        <i class="fas fa-times"></i> Cancel
-      </button>
     </div>
 
     <div class="filter-card-body" [class.collapsed]="examInfoCollapsed">
@@ -189,23 +162,31 @@
       <!-- Number of Questions — +/- buttons below -->
       <div class="col-md-3 mb-3">
         <label class="form-label">No. of Questions <span class="required">*</span></label>
-        <input
-          type="number"
-          [(ngModel)]="examFormData.numberOfQuestions"
-          (input)="onNumberOfQuestionsChange($event)"
-          [disabled]="questionsLocked"
-          min="1"
-          max="50"
-          placeholder="e.g., 10"
-          class="form-control no-spinner"
-        />
-        <div *ngIf="questionsLocked" class="noq-btn-row">
-          <button class="btn btn-sm btn-add-q" (click)="addQuestion()" type="button" title="Add Question">
-            <i class="fas fa-plus"></i>
-          </button>
-          <button class="btn btn-sm btn-delete-q" (click)="deleteLastQuestion()" [disabled]="questionSets.length <= 1" type="button" title="Delete Last Question">
-            <i class="fas fa-minus"></i>
-          </button>
+        <div class="spinner-input-wrap">
+          <input
+            type="number"
+            [(ngModel)]="examFormData.numberOfQuestions"
+            (input)="onNumberOfQuestionsChange($event)"
+            [disabled]="questionsLocked"
+            min="1"
+            max="50"
+            placeholder="e.g., 10"
+            class="form-control no-spinner"
+          />
+          <div class="spinner-btns" *ngIf="questionsLocked">
+            <button type="button" class="spinner-btn spinner-up"
+                    title="Add question"
+                    [disabled]="questionSets.length >= 50"
+                    (click)="addQuestion()">
+              <i class="fas fa-plus"></i>
+            </button>
+            <button type="button" class="spinner-btn spinner-down"
+                    title="Delete last question"
+                    [disabled]="questionSets.length <= 1"
+                    (click)="deleteLastQuestion()">
+              <i class="fas fa-minus"></i>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -244,7 +225,6 @@
             class="btn btn-primary flex-1"
             (click)="generateQuestions()"
             [disabled]="
-              !!pendingDraft ||
               questionsLocked ||
               !examFormData.classId ||
               !examFormData.subjectId ||
@@ -268,15 +248,6 @@
           >
             <i class="fas fa-undo"></i> Reset
           </button>
-          <button
-            *ngIf="isEditMode && !examInfoCollapsed"
-            class="btn btn-reset-sq"
-            (click)="onCancelEdit()"
-            type="button"
-            title="Cancel editing"
-          >
-            <i class="fas fa-times"></i> Cancel
-          </button>
         </div>
       </div>
 
@@ -294,14 +265,6 @@
         <i class="fas fa-question-circle"></i>
         Question &amp; Answers
       </h4>
-      <button
-        *ngIf="draftPaperId && !pendingDraft && !isEditMode"
-        class="btn btn-reset-sq btn-sm ms-auto"
-        (click)="discardPendingDraftWithConfirm()"
-        type="button"
-      >
-        <i class="fas fa-trash"></i> Discard
-      </button>
     </div>
 
     <!-- Frozen banner: shown when header fields changed after lock -->
@@ -310,21 +273,41 @@
       <span>Header fields changed — click <strong>Set Questions</strong> again to re-validate before editing.</span>
     </div>
 
-    <!-- Question Header: badge + progress bar + clear button -->
+    <!-- Question Header: left badge | centre progress | right goto+clear -->
     <div class="question-header" style="margin-top:1rem">
+      <!-- Left: badge -->
       <div class="question-badge">
         Question {{ currentQuestionIndex + 1 }} of {{ questionSets.length }}
       </div>
-      <!-- Progress bar inline next to badge -->
+      <!-- Centre: progress bar -->
       <div class="q-progress-inline">
         <div class="q-progress-bar-wrap">
           <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
         </div>
         <span class="q-progress-text">{{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%</span>
       </div>
-      <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()" [disabled]="questionsFrozen">
-        <i class="fas fa-trash"></i> Clear
-      </button>
+      <!-- Right: goto dropdown + clear -->
+      <div class="question-goto-inline">
+        <label class="goto-label">Go to question #</label>
+        <div class="select-wrapper question-goto-select">
+          <select #cqpGotoSelect class="form-control"
+            (change)="currentQuestionIndex = +cqpGotoSelect.value; cqpGotoSelect.selectedIndex = 0"
+            [disabled]="questionsFrozen">
+            <option value="" disabled selected>
+              Question # {{ currentQuestionIndex + 1 }} ({{ currentQuestionSet.maxMarks === 1 ? '1 Mark' : (currentQuestionSet.maxMarks ?? '?') + ' Marks' }})
+            </option>
+            <ng-container *ngFor="let qs of questionSets; let i = index">
+              <option *ngIf="i !== currentQuestionIndex" [value]="i">
+                Question # {{ qs.questionNumber }} ({{ qs.maxMarks === 1 ? '1 Mark' : (qs.maxMarks ?? '?') + ' Marks' }})
+              </option>
+            </ng-container>
+          </select>
+          <i class="fas fa-chevron-down select-icon"></i>
+        </div>
+        <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()" [disabled]="questionsFrozen">
+          <i class="fas fa-trash"></i> Clear
+        </button>
+      </div>
     </div>
 
     <!-- Frozen wrapper: all Q&A inputs disabled when header fields changed -->
@@ -419,16 +402,32 @@
               </span>
             </span>
           </label>
-          <input
-            type="number"
-            [(ngModel)]="currentQuestionSet.validationRulesCount"
-            (input)="onValidationCountChange($event)"
-            min="1"
-            max="20"
-            placeholder="e.g., 3"
-            class="form-control"
-            [disabled]="questionsFrozen || !currentQuestionSet.maxMarks || currentQuestionSet.maxMarks < 1"
-          />
+          <div class="spinner-input-wrap">
+            <input
+              type="number"
+              [(ngModel)]="currentQuestionSet.validationRulesCount"
+              (input)="onValidationCountChange($event)"
+              min="1"
+              max="20"
+              placeholder="e.g., 3"
+              class="form-control"
+              [disabled]="questionsFrozen || !currentQuestionSet.maxMarks || currentQuestionSet.maxMarks < 1 || rulesGenerated"
+            />
+            <div class="spinner-btns" *ngIf="rulesGenerated">
+              <button type="button" class="spinner-btn spinner-up"
+                      title="Add validation rule"
+                      [disabled]="questionsFrozen || (currentQuestionSet.validationRulesCount ?? 0) >= 20"
+                      (click)="currentQuestionSet.validationRulesCount = (currentQuestionSet.validationRulesCount ?? 0) + 1; generateValidationRules()">
+                <i class="fas fa-plus"></i>
+              </button>
+              <button type="button" class="spinner-btn spinner-down"
+                      title="Remove validation rule"
+                      [disabled]="questionsFrozen || (currentQuestionSet.validationRulesCount ?? 0) <= 1"
+                      (click)="currentQuestionSet.validationRulesCount = (currentQuestionSet.validationRulesCount ?? 0) - 1; generateValidationRules()">
+                <i class="fas fa-minus"></i>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="col-md-3 mb-3">
@@ -441,7 +440,7 @@
             <button
               class="btn btn-primary w-100"
               (click)="generateValidationRules()"
-              [disabled]="!canSetRules || questionsFrozen"
+              [disabled]="!canSetRules || questionsFrozen || rulesGenerated"
             >
               <i class="fas fa-list-check"></i> Set Validation Rules
             </button>
@@ -527,17 +526,16 @@
           [disabled]="isSaving || !isCurrentQuestionReady() || (currentQuestionSet.maxMarks !== 1 && shouldShowValidationRules && !validateMarksMatch())"
         >
           <i class="fas" [ngClass]="isSaving ? 'fa-spinner fa-spin' : 'fa-arrow-right'"></i>
-          {{ isSaving ? 'Saving...' : 'Save &amp; Next' }}
+          {{ isSaving ? 'Saving...' : (hasQuestionChanged(currentQuestionSet) ? 'Save &amp; Next' : 'Next') }}
         </button>
         <button
-          class="btn btn-success"
-          *ngIf="isLastQuestion"
+          [class]="isEditMode ? 'btn btn-primary' : 'btn btn-success'"
+          *ngIf="isLastQuestion && (!isEditMode || hasQuestionChanged(currentQuestionSet))"
           (click)="submitAll()"
-          [disabled]="isSubmitting"
+          [disabled]="isSubmitting || !isCurrentQuestionReady() || (currentQuestionSet.maxMarks !== 1 && shouldShowValidationRules && !validateMarksMatch())"
         >
-          <i class="fas" [ngClass]="isSubmitting ? 'fa-spinner fa-spin' : 'fa-check-double'"></i>
-          <span *ngIf="!isSubmitting">{{ isEditMode ? 'Save Changes' : 'Submit All' }}</span>
-          <span *ngIf="isSubmitting">{{ isEditMode ? 'Saving...' : 'Submitting...' }}</span>
+          <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+          <span>{{ isSubmitting ? (isEditMode ? 'Saving...' : 'Submitting...') : (isEditMode ? 'Save' : 'Submit All') }}</span>
         </button>
       </div>
     </div>
@@ -555,14 +553,21 @@
   </div>
 </div>
 
-<!-- ── CONFIRM DIALOG ── -->
-<div class="cqp-overlay" *ngIf="confirmDialog" (click)="confirmDialogCancel()">
-  <div class="cqp-confirm-box" (click)="$event.stopPropagation()">
-    <div class="cqp-confirm-icon">
+<!-- ── CONFIRM DIALOG — global confirm-dialog classes ── -->
+<div class="confirm-overlay" *ngIf="confirmDialog" (click)="confirmDialogCancel()">
+  <div class="confirm-dialog-box" (click)="$event.stopPropagation()">
+
+    <!-- Icon: danger=red, warning=yellow -->
+    <div class="confirm-dialog-icon"
+         [class.confirm-dialog-icon--danger]="confirmDialog.isDanger">
       <i class="fas" [ngClass]="confirmDialog.isDanger ? 'fa-trash' : 'fa-clock'"></i>
     </div>
-    <p *ngIf="confirmDialog.title" class="cqp-confirm-message" style="font-weight:700; font-size:1rem; color:var(--gray-900);">{{ confirmDialog.title }}</p>
-    <p *ngFor="let line of confirmDialog.lines" class="cqp-confirm-message">{{ line }}</p>
+
+    <!-- Title -->
+    <p *ngIf="confirmDialog.title" class="confirm-dialog-title">{{ confirmDialog.title }}</p>
+
+    <!-- Message lines -->
+    <p *ngFor="let line of confirmDialog.lines" class="confirm-dialog-sub">{{ line }}</p>
 
     <!-- Draft detail chips -->
     <div *ngIf="confirmDialog.draftDetails" class="filter-summary" style="justify-content:center;">
@@ -589,20 +594,21 @@
       </span>
     </div>
 
-    <div class="cqp-confirm-actions">
-      <button type="button" class="btn cqp-cancel-btn"
+    <!-- Actions -->
+    <div class="confirm-dialog-actions">
+      <button type="button" class="img-modal-cancel"
               [title]="confirmDialog.cancelLabel === 'Discard' ? 'Permanently delete this question paper' : 'Cancel'"
               (click)="confirmDialogCancel()">
         <i class="fas" [ngClass]="confirmDialog.cancelLabel === 'Discard' ? 'fa-trash' : 'fa-times'"></i>
         {{ confirmDialog.cancelLabel || 'Cancel' }}
       </button>
-      <button type="button" class="cqp-confirm-ok-btn"
-              [style.background]="!confirmDialog.isDanger ? 'var(--yellow)' : ''"
-              [style.border-color]="!confirmDialog.isDanger ? 'var(--yellow)' : ''"
+      <button type="button" class="confirm-ok-btn"
+              [class.confirm-ok-btn--yellow]="!confirmDialog.isDanger"
               (click)="confirmDialogOk()">
         <i class="fas" [ngClass]="confirmDialog.okLabel === 'Continue' ? 'fa-play' : 'fa-check'"></i>
         {{ confirmDialog.okLabel }}
       </button>
     </div>
+
   </div>
 </div>

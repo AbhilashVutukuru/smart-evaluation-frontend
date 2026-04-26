@@ -40,57 +40,14 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-.card h4 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--gray-900);
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+/* .card h4, .card h4 i, .card h5 → global.css */
 
-.card h4 i { color: var(--blue);}
-
-.card h5 {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--gray-900);
-  margin-bottom: 1rem;
-}
-
-@media (max-width: 767px) {
-  .card    { padding: 1.25rem; margin-bottom: 1rem; }
-  .card h4 { font-size: 1rem; margin-bottom: 1rem; }
-}
-
-@media (max-width: 479px) {
-  .card    { padding: 1rem; margin-bottom: 0.875rem; border-radius: 10px; }
-  .card h4 { font-size: 0.9375rem; }
-  .card h5 { font-size: 0.9rem; }
-}
+/* .card + .card h4 mobile overrides → global.css */
 
 /* ============================================================
    INFO / WARNING / ERROR BOXES
    ============================================================ */
-.info-box,
-.warning-box,
-/* .error-box — see below */
-
-
-/* .info-box — global.css */
-.warning-box { background: var(--yellow-light); border: 1px solid var(--yellow); color: var(--yellow-dark); }
-.error-box   { background: var(--red-light); border: 1px solid var(--red); color: var(--red-dark); }
-
-.info-box i,
-.warning-box i,
-.error-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
-
-@media (max-width: 479px) {
-  .info-box,
-  .warning-box,
-  .error-box { padding: 0.875rem; font-size: 0.8125rem; gap: 0.625rem; }
-}
+/* .info-box, .warning-box, .error-box + icons + mobile → global.css */
 
 /* ── Alert inline (matches input height) ── */
 .alert-info-inline {
@@ -127,8 +84,8 @@
    ============================================================ */
 /* .row — global.css */
 
-.col-md-3,
-.col-md-4,
+/* .col-md-3, .col-md-4 → global.css */
+/* Component-specific column widths not in global: */
 .col-md-5,
 .col-md-8 {
   padding: 0 0.5rem;
@@ -137,16 +94,11 @@
 }
 
 @media (min-width: 768px) {
-  .col-md-3 { width: 25%; }
-  .col-md-4 { width: 33.333333%; }
   .col-md-5 { width: 41.666667%; }
   .col-md-8 { width: 66.666667%; }
 }
 
-/* On tablet — let 3-col rows wrap to 2-col naturally */
 @media (max-width: 767px) and (min-width: 480px) {
-  .col-md-3 { width: 50%; }
-  .col-md-4 { width: 50%; }
   .col-md-5 { width: 100%; }
   .col-md-8 { width: 100%; }
 }
@@ -163,17 +115,7 @@
 
 /* .btn:disabled — global.css */
 
-/* .btn-primary — global.css */
-.btn-primary:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14, 164, 244,0.45); }
-
-/* .btn-secondary — global.css */
-.btn-secondary:hover:not(:disabled) { background: var(--gray-700); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(107,114,128,0.35); }
-
-/* .btn-success — global.css */
-.btn-success:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
-
-/* .btn-danger — global.css */
-.btn-danger:hover:not(:disabled)  { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
+/* .btn-*:hover → global.css */
 
 /* .btn-sm — global.css */
 
@@ -182,10 +124,7 @@
 /* .d-flex — global.css */
 /* .gap-2 — global.css */
 
-@media (max-width: 479px) {
-  .btn    { padding: 0.5rem 1rem; font-size: 0.8125rem; }
-  .btn-sm { padding: 0.4375rem 0.75rem; font-size: 0.75rem; }
-}
+/* .btn + .btn-sm mobile → global.css */
 
 /* ============================================================
    SELECT WRAPPER
@@ -198,16 +137,7 @@
 /* ============================================================
    DATE INPUT
    ============================================================ */
-input[type="date"].form-control { cursor: pointer; }
-
-input[type="date"].form-control::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.7;
-}
-
-input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
-  opacity: 1;
-}
+/* input[type="date"].form-control cursor/opacity → global.css */
 
 /* Date input group (clear btn + calendar icon) */
 .exam-date-input-group {
@@ -250,7 +180,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .input-date-error {
   border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.15) !important;
+  box-shadow: 0 0 0 3px var(--shadow-red-input) !important;
 }
 
 .exam-date-error {
@@ -299,7 +229,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   border-color: var(--blue) !important;
   border-color: var(--blue);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(14, 164, 244, 0.15);
+  box-shadow: 0 4px 12px var(--shadow-blue-card);
 }
 
 .exam-card.selected {
@@ -350,7 +280,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid var(--gray-200);
@@ -359,7 +289,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 /* ── Badge ── */
 .question-badge {
   background: var(--green);
-  color: #fff;
+  color: var(--white);
   border: none;
   height: 32px;
   padding: 0 1.25rem;
@@ -497,7 +427,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   width: 2rem;
   height: 2rem;
   background: var(--blue);
-  color: #fff;
+  color: var(--white);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -551,6 +481,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    ============================================================ */
 /* .navigation-buttons — global.css */
 
+/* navigation-buttons mobile stack → component-specific */
 @media (max-width: 479px) {
   .navigation-buttons {
     flex-direction: column;
@@ -580,9 +511,10 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-bottom: 0.75rem;
 }
 
+/* .progress-bar — CQP uses simpler gradient variant */
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--blue), var(--blue));
+  background: var(--blue);
   border-radius: 50px;
   transition: width 0.3s ease;
 }
@@ -628,16 +560,11 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
    ============================================================ */
 
 /* ─── Inline field validation error ─────────────────────────────────────────── */
+/* .field-error — CQP override: adds !important + font-weight */
 .field-error {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
   color: var(--red) !important;
-  font-size: 0.8rem;
   font-weight: 500;
-  margin-top: 0.25rem;
 }
-
 .field-error i { font-size: 0.75rem; }
 
 /* ─── Push nav buttons to right ──────────────────────────────────────────────── */
@@ -654,7 +581,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
 
 .q-field .form-control.is-invalid {
   border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.1) !important;
+  box-shadow: 0 0 0 3px var(--shadow-red-focus) !important;
 }
 
 /* ─── Marks row — compact, no bottom spacing ─────────────────────────────────── */
@@ -732,17 +659,8 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   margin-left: 0.25rem;
 }
 
-/* ─── Collapsible exam info (exam-filter pattern) ────────────── */
-.filter-card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 0;
-}
-
-.filter-card-header h4 { margin: 0; }
-.filter-card-header.is-collapsed { cursor: pointer; }
-.filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
-
+/* .filter-card-header, .collapse-indicator → global.css */
+/* .filter-card-header.is-collapsed cursor/hover are global too */
 .collapse-indicator {
   font-size: 0.75rem;
   color: var(--blue);
@@ -751,63 +669,26 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator:hover {
   transition: var(--transition);
 }
 
-.filter-card-body {
-  overflow: hidden;
-  transition: max-height 0.25s ease, opacity 0.2s ease;
-  max-height: 600px;
-  opacity: 1;
-  margin-top: 1.25rem;
-}
+/* .filter-card-body/summary/chip → global.css */
 
-.filter-card-body.collapsed {
-  max-height: 0;
-  opacity: 0;
-  margin-top: 0;
-  pointer-events: none;
-  visibility: hidden;
-}
-
-/* ─── Collapsed summary chips ────────────────────────────────── */
-.filter-summary {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.375rem;
-  margin-top: 0.625rem;
-}
-
-.filter-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  background: var(--blue-light);
-  color: var(--blue-dark);
-  border-radius: 1rem;
-  padding: 0.2rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.filter-chip i { font-size: 0.65rem; }
 
 /* ─── Previous button — distinct color ──────────────────────────────────────── */
 .btn-prev {
   background: var(--blue);
-  color: #fff;
+  color: var(--white);
   border: none;
   outline: none;
 }
 
 .btn-prev:hover:not(:disabled) {
   background: var(--blue-dark);
-  color: #fff;
+  color: var(--white);
 }
 
 .btn-prev:active:not(:disabled),
 .btn-prev:focus:not(:disabled) {
   background: var(--blue-dark);
-  color: #fff;
+  color: var(--white);
   border: none;
   outline: none;
   box-shadow: none;
@@ -844,7 +725,7 @@ label.disabled {
 
 .form-label .fa-question {
   background: var(--blue);
-  color: #fff;
+  color: var(--white);
   border-radius: 50%;
   width: 0.93rem;
   height: 0.93rem;
@@ -863,14 +744,10 @@ label.disabled {
 
 /* ─── Inline progress bar ────────────────────────────────────────────────────── */
 .q-progress-inline {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-43%);
-  width: 50%;
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  pointer-events: none;
 }
 
 .q-progress-inline .q-progress-bar-wrap {
@@ -905,13 +782,10 @@ label.disabled {
 /* ── Mobile — full width second row ── */
 @media (max-width: 575px) {
   .q-progress-inline {
-    position: static;           
-    transform: none;
-    width: 100%;               
-    order: 3;                 
-    pointer-events: auto;
-    margin-top: 0;
-     align-items: center;
+    flex: 1;
+    order: 3;
+    width: 100%;
+    align-items: center;
   }
   .q-progress-inline .q-progress-bar-wrap { height: 10px; }
 }
@@ -962,7 +836,7 @@ label.disabled {
 .btn-reset-sq:hover {
   background: var(--red);
   color: var(--app-bg);
-  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
+  box-shadow: 0 4px 14px var(--shadow-red-sm);
   transform: translateY(-1px);
 }
  
@@ -1000,7 +874,7 @@ label.disabled {
 .btn-add-q:hover:not(:disabled) {
   background: var(--green);
   color: var(--app-bg);
-  box-shadow: 0 4px 12px rgba(127, 187, 6, 0.35);
+  box-shadow: 0 4px 12px var(--shadow-green-sm);
   transform: translateY(-1px);
 }
  
@@ -1015,7 +889,7 @@ label.disabled {
 .btn-delete-q:hover:not(:disabled) {
   background: var(--red);
   color: var(--app-bg);
-  box-shadow: 0 4px 12px rgba(248, 83, 16, 0.35);
+  box-shadow: 0 4px 12px var(--shadow-red-sm);
   transform: translateY(-1px);
 }
  
@@ -1100,85 +974,23 @@ label.disabled {
   animation: fadeIn 0.18s ease;
 }
 
+/* .cqp-confirm-box → extends .confirm-dialog-box from global.css */
 .cqp-confirm-box {
-  background: var(--app-bg, var(--app-bg));
-  border-radius: var(--border-radius-lg, 14px);
+  width: min(90vw, 400px);  /* size override */
   padding: 2rem 1.75rem 1.5rem;
-  width: min(90vw, 400px);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  animation: slideUp 0.22s ease;
 }
 
-.cqp-confirm-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  background: var(--yellow-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--yellow);
-  flex-shrink: 0;
-}
+/* .cqp-confirm-icon → use .confirm-dialog-icon from global */
 
-.cqp-confirm-message {
-  font-size: 0.9rem;
-  color: var(--gray-700);
-  text-align: center;
-  line-height: 1.55;
-  margin: 0;
-}
+/* .cqp-confirm-message → .confirm-dialog-sub from global */
 
-.cqp-confirm-actions {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.25rem;
-}
+/* .cqp-confirm-actions → .confirm-dialog-actions from global */
 
-.cqp-confirm-ok-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 1.25rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  border: 2px solid var(--red);
-  border-radius: var(--border-radius, 8px);
-  background: var(--red);
-  color: var(--app-bg);
-  cursor: pointer;
-  transition: var(--transition, all 0.2s);
-  box-shadow: 0 4px 12px rgba(248, 83, 16, 0.35);
-}
-.cqp-confirm-ok-btn:hover {
-  background: var(--red-dark);
-  border-color: var(--red-dark);
-  box-shadow: 0 6px 18px rgba(248, 83, 16, 0.5);
-  transform: translateY(-1px);
-}
+/* .confirm-ok-btn → global.css */
 
-.cqp-cancel-btn {
-  background: var(--red-light);
-  color: var(--red);
-  border: 1.5px solid var(--red);
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-}
-.cqp-cancel-btn:hover {
-  background: var(--red);
-  color: var(--app-bg);
-  box-shadow: 0 4px 14px rgba(248, 83, 16, 0.35);
-  transform: translateY(-1px);
-}
+
+/* .img-modal-cancel → global.css */
+
 /* ─── Editing chip in header ─────────────────────────────────── */
 .editing-chip {
   display: inline-flex;
@@ -1277,8 +1089,139 @@ label.disabled {
   vertical-align: middle;
 }
 
-/* ── Override confirm-overlay backdrop — remove grey background ───── */
-::ng-deep .confirm-overlay {
-  background: transparent;
-  backdrop-filter: none;
+/* ── Rule add / remove buttons ────────────────────────────────────── */
+.rule-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 0.35rem;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.btn-rule-add,
+.btn-rule-remove {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition, all 0.2s);
+  font-weight: 700;
+}
+
+.btn-rule-add {
+  background: var(--blue);
+  color: var(--white);
+}
+.btn-rule-add:hover {
+  background: var(--blue-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px var(--shadow-blue);
+}
+
+.btn-rule-remove {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+}
+.btn-rule-remove:hover:not(:disabled) {
+  background: var(--red);
+  color: var(--white);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px var(--shadow-red-sm);
+}
+.btn-rule-remove:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.validation-rule {
+  grid-template-columns: auto 1fr auto;
+}
+
+/* ── Custom number spinner for Validation Rules count ─────────────── */
+.spinner-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.spinner-input-wrap .form-control {
+  padding-right: 2rem;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.spinner-input-wrap .form-control::-webkit-outer-spin-button,
+.spinner-input-wrap .form-control::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.spinner-btns {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--gray-300);
+}
+
+.spinner-btn {
+  flex: 1;
+  background: var(--gray-100);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  color: var(--gray-500);
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+.spinner-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.spinner-up {
+  border-radius: 0 var(--border-radius, 8px) 0 0;
+  border-bottom: 1px solid var(--gray-300);
+  border-top: 1px solid var(--gray-300);
+  border-right: 1px solid var(--gray-300);
+}
+.spinner-up:hover:not(:disabled) {
+  background: var(--blue);
+  color: var(--white);
+  border-color: var(--blue);
+}
+.spinner-down {
+  border-radius: 0 0 var(--border-radius, 8px) 0;
+  border-bottom: 1px solid var(--gray-300);
+  border-right: 1px solid var(--gray-300);
+}
+.spinner-down:hover:not(:disabled) {
+  background: var(--red);
+  color: var(--white);
+  border-color: var(--red);
+}
+/* .q-header-right → .question-goto-inline from global */
+
+/* .goto-label → global.css */
+
+.question-goto-select {
+  min-width: 190px;
+  max-width: 220px;
+  flex-shrink: 0;
+}
+
+.question-goto-select .form-control {
+  height: 32px;
+  font-size: 0.82rem;
+  padding-right: 2rem;
 }
