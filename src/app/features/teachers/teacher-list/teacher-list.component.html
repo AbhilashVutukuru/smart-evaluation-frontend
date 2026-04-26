@@ -76,12 +76,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let teacher of filteredTeachers">
-            <td><strong class="emp-code">{{ teacher.employeeCode }}</strong></td>
+            <td><strong>{{ teacher.employeeCode }}</strong></td>
             <td>
               <div class="teacher-info">
-                <div class="avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div>
+                <!-- <div class="avatar">{{ teacher.firstName[0] }}{{ teacher.lastName[0] }}</div> -->
                 <div>
-                  <div class="name">{{ teacher.firstName }} {{ teacher.lastName }}</div>
+                  <div>{{ teacher.firstName }} {{ teacher.lastName }}</div>
                   <!-- <small class="text-muted">{{ teacher.gender }}</small> -->
                 </div>
               </div>

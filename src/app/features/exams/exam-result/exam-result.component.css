@@ -28,7 +28,7 @@
 /* ── Table — NO overrides. global.css handles table design fully ── */
 
 /* ── Roll number ────────────────────────────────────────────── */
-.roll-number { color: var(--blue); font-size: 1rem; }
+.roll-number { font-size: 1rem; }
 
 /* .results-page-header → global.css */
 /* ── Student info grid ──────────────────────────────────────── */

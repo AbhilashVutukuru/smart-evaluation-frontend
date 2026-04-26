@@ -21,21 +21,21 @@
     <ng-container *ngIf="isAdmin && summary.admin as admin">
 
       <div class="stats-grid">
-        <div class="stat-card stat-blue">
+        <div class="stat-card stat-red">
           <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
           <div class="stat-body">
             <span class="stat-number">{{ admin.totalStudents }}</span>
             <span class="stat-label">Total Students</span>
           </div>
         </div>
-        <div class="stat-card stat-red">
+        <div class="stat-card stat-green">
           <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
           <div class="stat-body">
             <span class="stat-number">{{ admin.totalTeachers }}</span>
             <span class="stat-label">Total Teachers</span>
           </div>
         </div>
-        <div class="stat-card stat-green">
+        <div class="stat-card stat-blue">
           <div class="stat-icon"><i class="fas fa-school"></i></div>
           <div class="stat-body">
             <span class="stat-number">{{ admin.totalClasses }}</span>
@@ -69,23 +69,23 @@
       <div class="card">
         <h4><i class="fas fa-bolt"></i> Quick Actions</h4>
         <div class="quick-actions">
-          <a routerLink="/create/exam" class="action-btn action-blue">
+          <a routerLink="/create/exam" class="action-btn action-red">
             <i class="fas fa-file-alt"></i>
             <span>Create Question Paper</span>
           </a>
-          <a routerLink="/view/exam" class="action-btn action-blue">
+          <a routerLink="/view/exam" class="action-btn action-green">
             <i class="fas fa-eye"></i>
             <span>View Question Papers</span>
           </a>
-          <a routerLink="/upload-answer-sheets" class="action-btn action-red">
+          <a routerLink="/upload-answer-sheets" class="action-btn action-blue">
             <i class="fas fa-cloud-upload-alt"></i>
             <span>Upload Answer Sheets</span>
           </a>
-          <a routerLink="/results" class="action-btn action-green">
+          <a routerLink="/results" class="action-btn action-orange">
             <i class="fas fa-chart-bar"></i>
             <span>View Exam Results</span>
           </a>
-          <a routerLink="/admin-settings" class="action-btn action-orange">
+          <a routerLink="/admin-settings" class="action-btn action-red">
             <i class="fas fa-cog"></i>
             <span>Settings</span>
           </a>
