@@ -1,9 +1,8 @@
-import { Component, ViewEncapsulation, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TeacherSubjectService } from '../../../core/services/teacher-subject.service';
 import { TeacherService } from '../../../core/services/teacher.service';
-import { ConfirmationModalComponent } from '../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { ClassDto, MasterDataService, SectionDto, SubjectDto } from '../../../core/services/master-data.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -21,10 +20,9 @@ interface Assignment {
 @Component({
   selector: 'app-assign-teacher-subjects',
   standalone: true,
-  imports: [CommonModule, FormsModule, ConfirmationModalComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './assign-teacher-subjects.component.html',
   styleUrls: ['./assign-teacher-subjects.component.css'],
-  encapsulation: ViewEncapsulation.None,
 })
 export class AssignTeacherSubjectsComponent extends BaseComponent implements OnInit {
   private teacherSubjectService = inject(TeacherSubjectService);

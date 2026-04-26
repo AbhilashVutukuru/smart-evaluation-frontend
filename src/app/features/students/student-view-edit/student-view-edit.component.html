@@ -32,14 +32,14 @@
   </div>
 
   <!-- Identity lock banner — shown in edit mode when answer sheets exist -->
-  <div *ngIf="mode === 'edit' && hasAnswerSheets" class="identity-lock-banner">
+  <!-- <div *ngIf="mode === 'edit' && hasAnswerSheets" class="identity-lock-banner">
     <i class="fas fa-lock"></i>
     <span>
       <strong>Some fields are locked.</strong>
       First Name, Last Name, Class, Section and Roll Number cannot be changed
       because this student has uploaded answer sheets linked to these values.
     </span>
-  </div>
+  </div> -->
 
   <!-- Form Content -->
   <div *ngIf="!loading || mode === 'edit'" class="form-content">

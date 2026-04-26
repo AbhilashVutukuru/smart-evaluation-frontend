@@ -25,7 +25,8 @@ import { ToastService } from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
 import { StudentUploadStatus } from '../../../core/models/upload-answer-sheet.models';
 
-const ADMIN_EMAIL = 'venkatlearning2025@gmail.com';
+const SUPER_ADMIN_EMAIL = 'venkatlearning2025@gmail.com';
+const INDOWEST_DOMAIN   = 'indowest';
 
 @Component({
   selector: 'app-admin-delete-panel',
@@ -59,7 +60,8 @@ export class AdminDeletePanelComponent implements OnChanges {
   private errorHandler = inject(ErrorHandlerService);
 
   // ── Gate ────────────────────────────────────────────────────────────────────
-  isSuperAdmin = false;
+  isSuperAdmin = false;   // venkatlearning2025@gmail.com — sees both buttons
+  isIndowest   = false;   // *indowest* emails          — sees Delete Section only
 
   // ── UI state ────────────────────────────────────────────────────────────────
   isDeletingSection = false;
@@ -70,8 +72,9 @@ export class AdminDeletePanelComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['userEmail']) {
-      this.isSuperAdmin =
-        (this.userEmail ?? '').trim().toLowerCase() === ADMIN_EMAIL;
+      const email = (this.userEmail ?? '').trim().toLowerCase();
+      this.isSuperAdmin = email === SUPER_ADMIN_EMAIL;
+      this.isIndowest   = !this.isSuperAdmin && email.includes(INDOWEST_DOMAIN);
     }
   }
 

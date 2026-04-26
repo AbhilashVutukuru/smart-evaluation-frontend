@@ -195,7 +195,7 @@
           currentResults.evaluationStatus === 'Evaluated'
         "
       >
-        <i class="fas fa-check-circle"></i> Evaluated
+        <!-- <i class="fas fa-check-circle"></i> Evaluated -->
       </span>
     </div>
 
@@ -264,7 +264,7 @@
         <h5 *ngIf="currentQuestion && !isLoadingQuestion">
           <i class="fas fa-question"></i>
           Question # {{ currentQuestion.questionNumber }}
-          <span class="question-marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
+          <span class="marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
         </h5>
         <h5 *ngIf="isLoadingQuestion">
           <i class="fas fa-spinner fa-spin"></i> Loading...

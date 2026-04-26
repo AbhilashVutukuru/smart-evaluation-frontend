@@ -31,7 +31,8 @@
   gap: 0.75rem;
 }
 
-.page-header h2 i { color: #0ea4f4; }
+/* <h2><i> — icon inside page title (fa-* icon beside heading text) */
+.page-header h2 i { color: var(--blue); }
 
 @media (max-width: 767px) {
   .page-header { margin-bottom: 1.25rem; }
@@ -44,8 +45,9 @@
 }
 
 /* ─── Card ──────────────────────────────────────────────────────────────────── */
+/* <div class="card"> — base white surface card with shadow and rounded corners */
 .card {
-  background: white;
+  background: var(--white);
   border-radius: var(--border-radius-lg);
   padding: 1.5rem;
   margin-bottom: 1.5rem;
@@ -64,14 +66,15 @@
   gap: 0.5rem;
 }
 
-.card h4 i { color: #0ea4f4; }
+.card h4 i { color: var(--blue); }
 
+/* <div class="card-header"> — gray gradient bar at top of a card, primary icon + title */
 .card-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+  background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
   border-bottom: 2px solid var(--gray-200);
   font-weight: 600;
   color: var(--gray-900);
@@ -91,6 +94,7 @@
   gap: 0.5rem;
 }
 
+/* <div class="card-footer"> — gray bottom strip, used for action button rows */
 .card-footer {
   display: flex;
   gap: 0.5rem;
@@ -102,13 +106,15 @@
 @media (max-width: 767px) {
   .card { padding: 1.25rem; margin-bottom: 1rem; }
   .card h4 { font-size: 1rem; margin-bottom: 1rem; }
-  .card-header { padding: 1rem 1.25rem; }
+  /* <div class="card-header"> — gray gradient bar at top of a card, primary icon + title */
+.card-header { padding: 1rem 1.25rem; }
   .card-body   { padding: 1.25rem; }
 }
 
 @media (max-width: 479px) {
   .card { padding: 1rem; border-radius: 10px; }
-  .card-header { padding: 0.875rem 1rem; font-size: 0.875rem; }
+  /* <div class="card-header"> — gray gradient bar at top of a card, primary icon + title */
+.card-header { padding: 0.875rem 1rem; font-size: 0.875rem; }
   .card-body   { padding: 1rem; }
 }
 
@@ -157,6 +163,7 @@
 .text-right  { text-align: right !important; }
 
 /* ─── Form Labels ───────────────────────────────────────────────────────────── */
+/* <label class="form-label"> — input label above form controls */
 .form-label {
   display: block;
   margin-bottom: 0.5rem;
@@ -165,11 +172,15 @@
   font-size: var(--font-size-sm);
 }
 
+/* <span class="required">*</span> — red asterisk for required field labels */
 .required { color: var(--danger); font-weight: 600; }
 
-@media (max-width: 479px) { .form-label { font-size: 0.8125rem; } }
+@media (max-width: 479px) { /* <label class="form-label"> — input label above form controls */
+.form-label { font-size: 0.8125rem; } }
 
 /* ─── Form Controls ─────────────────────────────────────────────────────────── */
+/* <input|select|textarea class="form-control"> — full-width branded input
+   focus: blue border + ring; disabled: gray bg; is-invalid: red border */
 .form-control {
   width: 100%;
   padding: 0.625rem 0.875rem;
@@ -185,13 +196,13 @@
   font-family: inherit;
 }
 
-.form-control:focus         { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1); }
+.form-control:focus         { border-color: var(--blue); box-shadow: var(--shadow-blue-sm); }
 .form-control:focus-visible { outline: none; }
 .form-control:disabled      { background: var(--gray-100); color: var(--gray-400); cursor: not-allowed; border-color: var(--gray-300) !important; }
 
 .form-control.is-invalid {
   border-color: var(--red) !important;
-  box-shadow: 0 0 0 3px rgba(248, 83, 16, 0.1) !important;
+  box-shadow: var(--shadow-red-focus) !important;
 }
 
 textarea.form-control        { resize: vertical; font-family: inherit; min-height: unset; }
@@ -232,7 +243,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   color: var(--gray-900);
 }
 
-.select-wrapper select.form-control:focus                    { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1); }
+.select-wrapper select.form-control:focus                    { border-color: var(--blue); box-shadow: var(--shadow-blue-sm); }
 .select-wrapper select.form-control:disabled                 { background-color: var(--gray-100); color: var(--gray-400); cursor: not-allowed; border-color: var(--gray-300) !important; }
 .select-wrapper select.form-control:disabled + .select-icon  { color: var(--gray-400); }
 .select-wrapper select.form-control.is-invalid + .select-icon { color: var(--danger); }
@@ -261,7 +272,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  color: #dc2626;
+  color: var(--danger);
   font-size: 0.8rem;
   font-weight: 600;
   margin-top: 0.25rem;
@@ -270,6 +281,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .field-error i { font-size: 0.75rem; flex-shrink: 0; }
 
 /* ─── Buttons ───────────────────────────────────────────────────────────────── */
+/* <button class="btn btn-primary|secondary|success|danger|back|edit"> — base button */
 .btn {
   padding: 0.625rem 1.25rem;
   border: none;
@@ -292,41 +304,42 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
 .btn-sm { padding: 0.5rem 0.875rem; font-size: 0.8125rem; }
 
-/* .btn-primary   { background: #0882c4; color: white; }
-.btn-primary:hover:not(:disabled)   { background: #0ea4f4; transform: translateY(-1px); } */
+/* .btn-primary   { background: var(--blue-dark); color: var(--white); }
+.btn-primary:hover:not(:disabled)   { background: var(--blue); transform: translateY(-1px); } */
 
-.btn-primary   { background: #0ea4f4; color: white; }
+.btn-primary   { background: var(--blue); color: var(--white); }
 
 .btn-primary:disabled,
 .btn-primary[disabled] {
-  background: #0ea4f4 !important;
-  color: #ffffff !important;
+  background: var(--blue) !important;
+  color: var(--white) !important;
   opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn-primary:disabled i,
 .btn-primary i.fa-spinner {
-  color: #ffffff !important;
+  color: var(--white) !important;
 }
 
-.btn-primary:hover:not(:disabled)   { background: #0882c4; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.45); }
+.btn-primary:hover:not(:disabled)   { background: var(--blue-dark); transform: translateY(-2px); box-shadow: var(--shadow-blue); }
 
-.btn-secondary { background: var(--blue); color: white; }
-.btn-secondary:hover:not(:disabled) { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(14,164,244,0.35); }
+/* <button class="btn-secondary"> — neutral gray outline button for secondary actions */
+.btn-secondary { background: var(--gray-100); color: var(--gray-700); border: 1px solid var(--gray-300); }
+.btn-secondary:hover:not(:disabled) { background: var(--gray-200); color: var(--gray-900); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
 
-/* .btn-success   { background: #0882c4; color: white; }
-.btn-success:hover:not(:disabled)   { background: #7fbb06; } */
+/* .btn-success   { background: var(--blue-dark); color: var(--white); }
+.btn-success:hover:not(:disabled)   { background: var(--green); } */
 
-.btn-success   { background: #7fbb06; color: white; border: none; }
-.btn-success:hover:not(:disabled)   { background: #5f8e04; transform: translateY(-2px); box-shadow: 0 4px 14px rgba(127,187,6,0.45); }
+.btn-success   { background: var(--green); color: var(--white); border: none; }
+.btn-success:hover:not(:disabled)   { background: var(--green-dark); transform: translateY(-2px); box-shadow: var(--shadow-green); }
 
-.btn-danger    { background: #f85310; color: white; }
-.btn-danger:hover:not(:disabled)    { background: var(--red-dark); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(248,83,16,0.45); }
+.btn-danger    { background: var(--red); color: var(--white); }
+.btn-danger:hover:not(:disabled)    { background: var(--red-dark); transform: translateY(-2px); box-shadow: var(--shadow-red); }
 
 .btn-back {
   padding: 0.625rem 1.25rem;
-  background: white;
+  background: var(--white);
   color: var(--gray-500);
   border: 2px solid var(--gray-200);
   border-radius: var(--border-radius);
@@ -342,7 +355,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .btn-back:hover { border-color: var(--primary); color: var(--primary); }
 
 .btn-edit { background: var(--primary-light); color: var(--primary); border: none; padding: 0.5rem 1rem; border-radius: var(--border-radius); font-weight: 500; cursor: pointer; }
-.btn-edit:hover { background: #ddd6fe; }
+.btn-edit:hover { background: var(--primary-light); }
 
 @media (max-width: 479px) {
   .btn    { padding: 0.5rem 1rem; font-size: 0.8125rem; }
@@ -350,6 +363,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 }
 
 /* ─── Badges ────────────────────────────────────────────────────────────────── */
+/* <span class="badge badge-*"> — status pill used in tables, headers, cards */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -361,12 +375,13 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   white-space: nowrap;
 }
 
-.badge-primary { background: var(--blue); color: white; }
+.badge-primary { background: var(--blue); color: var(--white); }
 .badge-success { background: var(--green-light);  color: var(--green-dark); }
 .badge-warning { background: var(--yellow-light); color: var(--yellow-dark); }
 .badge-danger  { background: var(--red-light);    color: var(--red); }
 
 /* ─── Alerts ────────────────────────────────────────────────────────────────── */
+/* <div class="alert alert-success|error|danger|warning"> — feedback banner with icon */
 .alert {
   padding: 1rem 1.25rem;
   border-radius: var(--border-radius-lg);
@@ -382,10 +397,10 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .alert i    { font-size: 1.25rem; flex-shrink: 0; }
 .alert span { flex: 1; font-weight: 600; }
 
-.alert-success { background: #ecfdf5; border-color: var(--success); color: #065f46; }
-.alert-error   { background: #fef2f2; border-color: var(--danger);  color: #991b1b; }
-.alert-danger  { background: #fef2f2; border-color: var(--danger);  color: #991b1b; }
-.alert-warning { background: var(--warning-light); border-color: var(--warning); color: #92400e; }
+.alert-success { background: var(--green-light); border-color: var(--success); color: var(--green-dark); }
+.alert-error   { background: var(--red-light); border-color: var(--danger);  color: var(--red-dark); }
+.alert-danger  { background: var(--red-light); border-color: var(--danger);  color: var(--red-dark); }
+.alert-warning { background: var(--warning-light); border-color: var(--warning); color: var(--yellow-dark); }
 
 .alert-close {
   background: none;
@@ -407,6 +422,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   -webkit-overflow-scrolling: touch;
 }
 
+/* <table class="table"> — full-width data table; thead uses gray-50 background */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -446,6 +462,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 /* ─── Loading State ─────────────────────────────────────────────────────────── */
 .loading-state { text-align: center; padding: 3rem 1rem; }
 
+/* <div class="spinner"> — rotating ring shown inside .loading-state while data fetches */
 .spinner {
   width: 3rem;
   height: 3rem;
@@ -459,6 +476,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .loading-state p { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
 
 /* ─── Empty State ───────────────────────────────────────────────────────────── */
+/* <div class="empty-state"> — centered icon + heading + text when a list has no items */
 .empty-state { text-align: center; padding: 3rem 1rem; }
 .empty-state i  { font-size: 4rem; color: var(--gray-300); margin-bottom: 1rem; display: block; }
 .empty-state h5 { font-size: 1.125rem; font-weight: 600; color: var(--gray-700); margin-bottom: 0.5rem; }
@@ -481,8 +499,9 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 @media (max-width: 479px)  { .stats-grid { margin-bottom: 1rem; } }
 @media (max-width: 340px)  { .stats-grid { grid-template-columns: 1fr; } }
 
+/* <div class="stat-card stat-total|absent|uploaded|pending"> — compact KPI card in .stats-grid */
 .stat-card {
-  background: white;
+  background: var(--white);
   border: 2px solid var(--gray-200);
   border-radius: var(--border-radius-lg);
   padding: 0.5rem 0.75rem;
@@ -511,7 +530,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .stat-card.stat-pending  .stat-icon { background: var(--yellow-light); color: var(--yellow); }
 
 .stat-content { display: flex; flex-direction: column; gap: 0.25rem; }
-.stat-content h3 { font-size: 1.1rem; font-weight: 700; color: #1a1a1a; line-height: 1.2; margin: 0; }
+.stat-content h3 { font-size: 1.1rem; font-weight: 700; color: var(--gray-900); line-height: 1.2; margin: 0; }
 .stat-content p  { font-size: 0.7rem; color: var(--gray-500); font-weight: 500; margin: 0; }
 
 @media (max-width: 479px) {
@@ -521,6 +540,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 }
 
 /* ─── Section Header ────────────────────────────────────────────────────────── */
+/* <div class="section-header"> — blue left-border label bar used as a sub-section title */
 .section-header {
   display: flex;
   align-items: center;
@@ -539,23 +559,41 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .section-header i { color: var(--primary); font-size: 1.125rem; }
 
 /* ─── Info Box ──────────────────────────────────────────────────────────────── */
+/* <div class="info-box"> — blue informational callout box with icon + text */
 .info-box {
   padding: 0.9375rem 1.25rem;
   border-radius: 10px;
   margin-bottom: 1.25rem;
-  background: #eff6ff;
-  border: 2px solid #3b82f6;
-  color: #1e40af;
+  background: var(--blue-light);
+  border: 2px solid var(--blue);
+  color: var(--blue-dark);
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
   font-size: var(--font-size-sm);
   line-height: 1.5;
 }
+/* <div class="warning-box"> — yellow informational callout box */
+.warning-box { background: var(--yellow-light); border: 1px solid var(--yellow); color: var(--yellow-dark); }
+/* <div class="error-box"> — red error callout box */
+.error-box   { background: var(--red-light);    border: 1px solid var(--red);    color: var(--red-dark); }
+
+/* Icon inside info/warning/error boxes */
+.info-box i,
+.warning-box i,
+.error-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+@media (max-width: 479px) {
+  .info-box,
+  .warning-box,
+  .error-box { padding: 0.875rem; font-size: var(--font-size-sm); gap: 0.625rem; }
+}
+
 
 .info-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
 
 /* ─── Navigation Buttons ────────────────────────────────────────────────────── */
+/* <div class="navigation-buttons"> — space-between row for Prev/Next buttons at bottom of multi-step forms */
 .navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -563,6 +601,13 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   margin-top: 2rem;
   padding-top: 1.5rem;
   border-top: 2px solid var(--gray-200);
+}
+
+/* Pill shape + consistent size regardless of btn-lg class */
+.navigation-buttons .btn {
+ border-radius: var(--border-radius);
+  padding: 0.5rem 1.5rem;
+  font-size: var(--font-size-sm);
 }
 
 .action-buttons {
@@ -578,15 +623,17 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 @media (max-width: 479px) {
   .action-buttons { flex-direction: column-reverse; gap: 0.75rem; }
   .action-buttons .btn { width: 100%; }
-  .navigation-buttons { flex-direction: column; gap: 1rem; }
+  /* <div class="navigation-buttons"> — space-between row for Prev/Next buttons at bottom of multi-step forms */
+.navigation-buttons { flex-direction: column; gap: 1rem; }
   .navigation-buttons .btn { width: 100%; }
 }
 
-/* Previous button stays blue when disabled — used across all navigation-buttons */
+/* <button class="btn btn-prev"> — Previous navigation button; stays blue even when
+   disabled so it reads as a navigation action, not an unavailable feature         */
 .btn.btn-prev:disabled,
 .btn.btn-prev[disabled] {
   background: var(--blue) !important;
-  color: white !important;
+  color: var(--white) !important;
   opacity: 0.45;
   cursor: not-allowed;
   transform: none !important;
@@ -610,13 +657,14 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   overflow: hidden;
 }
 
+/* <div class="progress-bar"> — fill bar inside .progress track; driven by [style.width] binding */
 .progress-bar {
   height: 100%;
   background: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--white);
   font-size: var(--font-size-sm);
   font-weight: 600;
   transition: width 0.3s;
@@ -630,6 +678,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 }
 
 /* ─── Download Link ─────────────────────────────────────────────────────────── */
+/* <a class="download-link"> — inline link with icon to view/download answer sheet PDF */
 .download-link {
   color: var(--blue);
   text-decoration: none;
@@ -668,7 +717,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   transition: var(--transition);
 }
 
-.upload-section:hover { border-color: var(--primary); background: #f0f9ff; }
+.upload-section:hover { border-color: var(--primary); background: var(--blue-light); }
 
 /* ─── Text Utilities ────────────────────────────────────────────────────────── */
 .text-muted   { color: var(--gray-400) !important; }
@@ -701,18 +750,19 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 /* ─── Print ─────────────────────────────────────────────────────────────────── */
 @media print {
   .btn, .action-buttons, .navigation-buttons,
-  .search-section, .card-footer { display: none; }
+  .search-section, /* <div class="card-footer"> — gray bottom strip, used for action button rows */
+.card-footer { display: none; }
   .card { box-shadow: none; page-break-inside: avoid; }
 }
 /* ─── Checkbox — brand blue ──────────────────────────────────── */
 input[type="checkbox"] {
-  accent-color: #0882c4;
+  accent-color: var(--blue-dark);
 }
 
 /* ─── Header Info Icon & Tooltip ────────────────────────────────────────────── */
-/* Info icon style */
-/* .header-info-icon { margin-left: 0.1rem; font-size: 0.87rem; cursor: help; color: var(--red) !important;} */
+/* .header-info-icon (old commented-out override removed) */
 
+/* <span class="header-info-icon"> — yellow info (ⓘ) icon that reveals .header-info-tooltip on hover */
 .header-info-icon {
   display: inline-flex;
   align-items: center;
@@ -734,13 +784,14 @@ input[type="checkbox"] {
   opacity: 0.8;
 }
 
+/* <div class="header-info-tooltip"> — floating tooltip shown on .header-info-icon hover/focus */
 .header-info-tooltip {
   display: none;
   position: absolute;
   top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  background: #ffffff;
+  background: var(--white);
   color: var(--gray-900);
   border: 1px solid var(--gray-200);
   border-radius: 0.5rem;
@@ -774,11 +825,12 @@ input[type="checkbox"] {
   left: 50%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-bottom-color: #ffffff;
+  border-bottom-color: var(--white);
 }
 
 .header-info-icon:hover .header-info-tooltip,
-.header-info-icon:focus .header-info-tooltip {
+.header-info-icon:focus /* <div class="header-info-tooltip"> — floating tooltip shown on .header-info-icon hover/focus */
+.header-info-tooltip {
   display: block;
 }
 
@@ -791,4 +843,2024 @@ input[type="checkbox"] {
   border-top: 1px solid var(--gray-100);
   margin-top: 0.25rem;
   padding-top: 0.25rem;
+}
+/* ─── Search Bar Row — shared across view-question-paper,
+   upload-answer-sheet, exam-result components.
+   Pattern: title h4 | search input wrapper | count badge   ──── */
+/* <div class="papers-header-row"> — flex row: title | search | badge */
+.papers-header-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+/* h4 inside papers-header-row — title label, never wraps */
+.papers-header-row h4 {
+  margin: 0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* .search-input-wrapper inside papers-header-row — fills remaining space */
+.papers-header-row .search-input-wrapper {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* .badge-primary inside papers-header-row — count badge, never wraps */
+.papers-header-row .badge-primary {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* <div class="search-input-wrapper"> — standalone usage outside papers-header-row */
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* <i class="search-icon"> — fa-search icon pinned to left of input */
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--blue);
+  font-size: var(--font-size-sm);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* <input class="search-input form-control"> — extra padding for icon + clear btn */
+.search-input {
+  padding-left: 2.25rem !important;
+  padding-right: 2.25rem !important;
+}
+
+/* <button class="clear-search"> — × button pinned to right of input */
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: var(--font-size-sm);
+}
+
+.clear-search:hover { color: var(--red); }
+
+/* ─── Filter Card Collapse — shared across exam-filter,
+   view-question-paper, create-question-paper components    ──── */
+/* <div class="filter-card-header"> — card header row with collapse toggle */
+.filter-card-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.filter-card-header h4 { margin: 0; }
+
+/* .is-collapsed modifier — shows pointer cursor when clickable */
+.filter-card-header.is-collapsed { cursor: pointer; }
+.filter-card-header.is-collapsed:hover h4 { color: var(--blue); }
+
+/* <i class="collapse-indicator"> — fa-chevron-down/up inside h4 */
+.collapse-indicator {
+  font-size: var(--font-size-xs);
+  color: var(--blue);
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  transition: var(--transition);
+}
+
+/* <div class="filter-card-body"> — collapsible body; overflow:visible so
+   absolutely-positioned .select-icon chevrons are never clipped         */
+.filter-card-body {
+  overflow: visible;
+  transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+  max-height: 1000px;
+  opacity: 1;
+  margin-top: 1rem;
+}
+
+/* .collapsed modifier — clamps body to zero height with overflow:hidden */
+.filter-card-body.collapsed {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  pointer-events: none;
+}
+
+/* <div class="filter-summary"> — row of chips shown when filter is collapsed */
+.filter-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.625rem;
+}
+
+/* <span class="filter-chip"> — individual blue pill per selected filter value */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: var(--blue-light);
+  color: var(--blue-dark);
+  border-radius: 1rem;
+  padding: 0.2rem 0.625rem;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Icon inside each filter chip (fa-layer-group, fa-users, fa-book etc.) */
+.filter-chip i { font-size: 0.65rem; }
+
+/* ─── Back Pill Button — shared across exam-result,
+   create-question-paper, view-question-paper            ──── */
+/* <button class="btn-back-pill"> — ghost text button with left-arrow icon */
+.btn-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--blue);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: inherit;
+}
+
+/* fa-chevron-left icon — slides left on hover */
+.btn-back-pill i       { font-size: var(--font-size-xs); transition: transform 0.15s; }
+.btn-back-pill:hover   { color: var(--blue-dark); font-weight: 700; }
+.btn-back-pill:hover i { transform: translateX(-3px); }
+
+/* <div class="back-btn-row"> — flex wrapper above the card for btn-back-pill */
+.back-btn-row { display: flex; margin-bottom: 0.75rem; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CONFIRM DIALOG — shared across all components.
+   HTML usage:
+     Overlay  : <div class="confirm-overlay">        (position:fixed backdrop)
+     Box      : <div class="confirm-dialog-box">     (centered modal card)
+     Icon     : <div class="confirm-dialog-icon">    (yellow warning circle, default)
+                <div class="confirm-dialog-icon confirm-dialog-icon--danger"> (red)
+     Title    : <p  class="confirm-dialog-title">
+     Sub-text : <p  class="confirm-dialog-sub">
+     Message  : <p  class="confirm-dialog-message">  (alias of sub, single-line variant)
+     Actions  : <div class="confirm-dialog-actions">
+     OK btn   : <button class="confirm-ok-btn">      (red solid)
+                <button class="confirm-ok-btn confirm-ok-btn--yellow"> (yellow variant)
+     Cancel   : <button class="confirm-cancel-btn">  (red-light outline → fills on hover)
+   Component overlays that extend this:
+     adp-confirm-overlay — adds z-index:10500 (admin panel sits above everything)
+     cqp-overlay         — adds z-index:10000 + blur(6px)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Full-screen backdrop — components add position:fixed + z-index on top */
+/* <div class="confirm-overlay"> */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--overlay-bg);
+  backdrop-filter: blur(4px);
+  padding: 1rem;
+}
+
+/* Centered modal card */
+/* <div class="confirm-dialog-box"> */
+.confirm-dialog-box {
+  background: var(--app-bg);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem 1.75rem 1.5rem;
+  width: min(90vw, 400px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: confirmSlideUp 0.22s ease;
+}
+
+@keyframes confirmSlideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Warning icon circle — yellow (default) */
+/* <div class="confirm-dialog-icon"> */
+.confirm-dialog-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: var(--yellow-light);
+  border: 2px solid var(--yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--yellow);
+  flex-shrink: 0;
+}
+
+/* Danger variant — red icon circle */
+/* <div class="confirm-dialog-icon confirm-dialog-icon--danger"> */
+.confirm-dialog-icon--danger {
+  background: var(--red-light);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+/* Dialog title */
+/* <p class="confirm-dialog-title"> */
+.confirm-dialog-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  text-align: center;
+  margin: 0;
+}
+
+/* Dialog body text — sub or message */
+/* <p class="confirm-dialog-sub"> or <p class="confirm-dialog-message"> */
+.confirm-dialog-sub,
+.confirm-dialog-message {
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  text-align: center;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Actions row — centered button pair */
+/* <div class="confirm-dialog-actions"> */
+.confirm-dialog-actions {
+  display: flex;
+  gap: 0.75rem;
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+/* OK / confirm button — solid red */
+/* <button class="confirm-ok-btn"> */
+.confirm-ok-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1.25rem;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  border: 2px solid var(--red);
+  border-radius: var(--border-radius);
+  background: var(--red);
+  color: var(--white);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.confirm-ok-btn:hover:not(:disabled) {
+  background: var(--red-dark);
+  border-color: var(--red-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-red);
+}
+
+/* Yellow variant — for reset/warning actions */
+/* <button class="confirm-ok-btn confirm-ok-btn--yellow"> */
+.confirm-ok-btn--yellow {
+  background: var(--yellow);
+  border-color: var(--yellow);
+}
+
+.confirm-ok-btn--yellow:hover:not(:disabled) {
+  background: var(--yellow-dark);
+  border-color: var(--yellow-dark);
+  box-shadow: var(--shadow-yellow);
+}
+
+/* Cancel button — red-light outline, fills red on hover */
+/* <button class="confirm-cancel-btn"> */
+.confirm-cancel-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  background: var(--red-light);
+  color: var(--red);
+  border: 2px solid var(--red);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.confirm-cancel-btn:hover:not(:disabled) {
+  background: var(--red);
+  color: var(--white);
+  box-shadow: var(--shadow-red-sm);
+  transform: translateY(-1px);
+}
+
+/* ─── img-modal-cancel — Cancel button used in confirm dialogs and
+   image preview modals across upload-answer-sheet and view-question-paper.
+   Red-light bg + red border → fills solid red on hover.
+   <button class="btn-secondary img-modal-cancel"> or
+   <button class="img-modal-cancel">                                     ── */
+.img-modal-cancel {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 2px solid var(--red) !important;
+  border-radius: var(--border-radius) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 1rem;
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+.img-modal-cancel:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  box-shadow: var(--shadow-red-sm) !important;
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHARED — view-question-paper + exam-result components
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Question Go To row ─────────────────────────────────────── */
+/* <div class="question-goto-row"> — zero-margin row wrapping the inline goto */
+.question-goto-row    { margin-bottom: 0; }
+/* <div class="question-goto-inline"> — flex pair: "Go to question ▸" label + select */
+.question-goto-inline { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+/* <p class="goto-label"> — small uppercase "Go to question #" label */
+.goto-label           { font-size: var(--font-size-xs); font-weight: 600; color: var(--gray-500); white-space: nowrap; margin: 0; }
+
+/* ─── Question section wrapper ───────────────────────────────── */
+/* <div class="question-section"> — spacing between each Q&A block */
+.question-section              { margin-bottom: 0.875rem; }
+.question-section:last-of-type { margin-bottom: 0 !important; }
+
+/* ─── Question header with marks ─────────────────────────────── */
+/* <div class="question-header-with-marks"> — gray bar with blue left border,
+   holds question title h5 on left and marks badge on right        */
+.question-header-with-marks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--gray-50);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.75rem;
+  border-left: 4px solid var(--blue);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.question-header-with-marks h5 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 479px) {
+  .question-header-with-marks              { padding: 0.625rem 0.875rem; margin-bottom: 0.5rem; }
+  .question-header-with-marks h5           { font-size: 1rem; }
+}
+
+/* ─── Marks badges ───────────────────────────────────────────── */
+/* <span class="marks-badge"> — solid blue pill showing total/awarded marks */
+.marks-badge    { background: var(--blue); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 1.25rem; font-size: var(--font-size-sm); font-weight: 700; white-space: nowrap; }
+/* <span class="marks-badge-sm"> — smaller blue-light pill for sub-marks */
+.marks-badge-sm { background: var(--blue-light); color: var(--blue); padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700; }
+/* Mismatch variant — red when awarded ≠ expected */
+.marks-badge-sm.marks-mismatch { background: var(--red-light); color: var(--red); }
+
+/* ─── Section label ──────────────────────────────────────────── */
+/* <div class="section-label"> — small uppercase label before question block
+   e.g. "QUESTION TEXT:", "OFFICIAL ANSWER:", "VALIDATION RULES:" */
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.section-label i                      { color: var(--blue); font-size: 1rem; }
+.section-label .fa-check-circle       { color: var(--green); }
+.section-label .fa-list-check         { color: var(--blue); }
+.section-label .fa-clipboard-question { color: var(--blue); }
+.section-label .fa-user-edit          { color: var(--blue); }
+
+/* ─── Section header row (overrides global .section-header bar) ─ */
+/* <div class="section-header"> — plain flex row, no border-left bar */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.375rem;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: unset;
+  font-weight: unset;
+  color: unset;
+  text-transform: unset;
+}
+
+/* ─── Scrollable text boxes ──────────────────────────────────── */
+/* <div class="scrollable-text"> — read-only text display with max-height scroll */
+.scrollable-text {
+  padding: 0.875rem 1rem;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius);
+  max-height: 120px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: var(--gray-700);
+}
+
+.scrollable-text::-webkit-scrollbar       { width: 5px; }
+.scrollable-text::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+/* <div class="scrollable-criterion"> — rubric criterion cell with scroll */
+.scrollable-criterion { max-height: 80px; overflow-y: auto; line-height: 1.4; }
+.scrollable-criterion::-webkit-scrollbar       { width: 4px; }
+.scrollable-criterion::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 2px; }
+
+/* <div class="official-answer scrollable-text"> — green-tinted answer box */
+.official-answer {
+  background: var(--green-light);
+  border-color: var(--green-light);
+  overflow-y: auto;
+  white-space: normal;
+  word-break: break-word;
+  width: 100%;
+}
+
+.official-answer::-webkit-scrollbar       { width: 5px; }
+.official-answer::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+
+/* ─── Rubric table ───────────────────────────────────────────── */
+/* <table class="rubric-table"> — validation rules table inside question cards */
+.rubric-table       { font-size: var(--font-size-sm); }
+.rubric-table thead { background: var(--gray-50); }
+
+.rubric-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid var(--gray-200);
+  white-space: nowrap;
+}
+
+.rubric-table td { padding: 0.875rem 1rem; vertical-align: middle; }
+.rubric-table tbody tr { border-bottom: 1px solid var(--gray-200); }
+
+@media (max-width: 767px) { .rubric-table th, .rubric-table td { padding: 0.625rem 0.75rem; font-size: 0.8125rem; } }
+@media (max-width: 479px) { .rubric-table th, .rubric-table td { padding: 0.5rem; font-size: var(--font-size-xs); } }
+
+/* ─── Student info grid ──────────────────────────────────────── */
+/* <div class="info-item"> — single label+value pair inside .student-info-grid */
+.info-item  { display: flex; flex-direction: column; gap: 0.25rem; }
+/* <span class="info-label"> — tiny uppercase field label */
+.info-label { font-size: var(--font-size-xs); color: var(--gray-500); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 0.375rem; }
+.info-label i { color: var(--blue); }
+/* <span class="info-value"> — the actual field value */
+.info-value { font-size: var(--font-size-sm); color: var(--gray-900); font-weight: 500; }
+
+/* ─── Results page sub-header ────────────────────────────────── */
+/* <div class="results-page-header"> — bordered flex row above question cards */
+.results-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid var(--gray-200);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.results-page-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+@media (max-width: 767px) { .results-page-header h3 { font-size: 1.25rem; } }
+@media (max-width: 479px) { .results-page-header h3 { font-size: 1.1rem; } }
+
+/* ─── Expand button ──────────────────────────────────────────── */
+/* <button class="btn-expand"> — icon-only button to open fullscreen text view */
+.btn-expand {
+  background: none;
+  color: var(--blue);
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.btn-expand:hover { opacity: 1; transform: scale(1.15); color: var(--blue-dark); }
+
+/* ─── Navigation buttons — blue pill, shared state ───────────── */
+/* Both VQP (btn-secondary btn-lg) and ER (btn-primary) use these overrides */
+.navigation-buttons {
+  margin-top: 0.5rem !important;
+  padding-top: 0.75rem !important;
+}
+
+.navigation-buttons .btn-secondary:not(:disabled),
+.navigation-buttons .btn-lg:not(:disabled),
+.navigation-buttons .btn-primary:not(:disabled) {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+}
+
+.navigation-buttons .btn-secondary:hover:not(:disabled),
+.navigation-buttons .btn-lg:hover:not(:disabled),
+.navigation-buttons .btn-primary:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-blue);
+}
+
+.navigation-buttons .btn-secondary:disabled,
+.navigation-buttons .btn-lg:disabled,
+.navigation-buttons .btn-primary:disabled {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border: none !important;
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 479px) {
+  .navigation-buttons      { flex-direction: column; gap: 0.75rem; }
+  .navigation-buttons .btn { width: 100%; justify-content: center; }
+}
+
+/* ─── Fullscreen modal ───────────────────────────────────────── */
+/* <div class="fullscreen-modal"> — fixed dark overlay for text fullscreen view */
+.fullscreen-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 2rem;
+  animation: fadeIn 0.2s;
+}
+
+/* <div class="fullscreen-content"> — white modal panel */
+.fullscreen-content {
+  background: var(--app-bg);
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 1200px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: slideUp 0.3s;
+}
+
+/* <div class="fullscreen-header"> — top bar with title + close button */
+.fullscreen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid var(--gray-200);
+  flex-shrink: 0;
+}
+
+.fullscreen-header h4 { margin: 0; font-size: 1.125rem; color: var(--gray-900); display: flex; align-items: center; gap: 0.5rem; }
+
+/* <div class="fullscreen-body"> — scrollable text content area */
+.fullscreen-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+  font-size: 0.9375rem;
+  line-height: 1.8;
+  color: var(--gray-700);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.fullscreen-body::-webkit-scrollbar       { width: 8px; }
+.fullscreen-body::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
+
+/* <button class="btn-close-fullscreen"> — red × button in header top-right */
+.btn-close-fullscreen {
+  background: var(--red-light);
+  color: var(--red);
+  border: none;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.btn-close-fullscreen:hover { background: var(--red); color: var(--white); transform: scale(1.1); }
+
+@media (max-width: 767px) {
+  .fullscreen-modal               { padding: 1rem; }
+  .fullscreen-content             { width: 100%; max-height: 90vh; border-radius: var(--border-radius); }
+  .fullscreen-header              { padding: 1rem; }
+  .fullscreen-header h4           { font-size: 1rem; }
+  .fullscreen-body                { padding: 1.25rem; font-size: var(--font-size-sm); }
+}
+
+@media (max-width: 479px) {
+  .fullscreen-modal   { padding: 0.5rem; }
+  .fullscreen-content { max-height: 95vh; border-radius: var(--border-radius); }
+  .fullscreen-header  { padding: 0.875rem; }
+  .fullscreen-body    { padding: 1rem; font-size: var(--font-size-sm); line-height: 1.6; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRATION SHARED — student-registration, teacher-registration,
+   non-teaching-registration all use .registration-container.
+   Single source of truth here; component files are now empty.
+   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================
+   STUDENT / TEACHER REGISTRATION — POLISHED STYLES
+   ViewEncapsulation.None — scoped via .registration-container
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.registration-container {
+padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) { .registration-container { padding: 0.875rem 1rem; } }
+@media (max-width: 479px) { .registration-container { padding: 0.75rem; } }
+
+/* ─── Page Header ───────────────────────────────────────────────────────────── */
+.registration-container .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* .registration-container .page-header h2 {
+  color: var(--gray-900);
+  font-weight: 500;
+  margin: 0;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+    margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+    margin-left: 1rem;
+} */
+
+.registration-container .page-header h2 i { color: var(--blue); flex-shrink: 0; }
+
+@media (max-width: 479px) {
+  .registration-container .page-header { flex-direction: column; align-items: stretch; }
+  .registration-container .page-header h2 { font-size: 1rem; }
+}
+
+/* ─── Form Content max-width ─────────────────────────────────────────────────── */
+.registration-container .card {
+  background: var(--white) !important;
+  border-radius: var(--border-radius-lg) !important;
+  margin-bottom: 0.75rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04) !important;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  animation: reg-fade 0.25s ease;
+  max-width: 820px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+@keyframes reg-fade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card h4 (used inside card before form) ─────────────────────────────────── */
+.registration-container .card h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.125rem !important;
+  background: var(--white) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  border-top: 3px solid var(--blue) !important;
+  font-weight: 600 !important;
+  color: var(--gray-900) !important;
+  font-size: 1.15rem !important;
+  margin-bottom: 0 !important;
+  letter-spacing: 0.01em;
+}
+
+.registration-container .card h4 i { color: var(--blue) !important; font-size: 1rem !important; }
+
+/* ─── Card Body (wraps the form content) ────────────────────────────────────── */
+.registration-container form {
+  padding: 0.875rem 1.125rem;
+}
+
+/* ─── Section Headers ───────────────────────────────────────────────────────── */
+.registration-container .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;  /* override the space-between from general .section-header */
+  gap: 0.5rem;
+  padding: 0.45rem 0.875rem;
+  background: var(--gray-50);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--border-radius);
+  margin: 0.875rem 0 0.625rem 0;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.registration-container .section-header i { color: var(--blue); font-size: var(--font-size-sm); }
+
+/* ─── Form Controls ─────────────────────────────────────────────────────────── */
+/* .registration-container .form-label — global.css */
+/* .registration-container .required — global.css */
+/* .registration-container .form-control — global.css */
+/* .registration-container .form-control:focus, :disabled, :focus-visible — global.css */
+/* .registration-container .form-control.is-invalid — global.css */
+/* .registration-container textarea.form-control — global.css */
+/* .registration-container input[type="date"].form-control — global.css */
+
+/* ─── Custom Select ─────────────────────────────────────────────────────────── */
+/* .registration-container .select-wrapper — global.css */
+/* .registration-container .select-wrapper .select-icon — global.css */
+/* .registration-container .select-wrapper select.form-control — global.css */
+
+/* ─── Error Message ─────────────────────────────────────────────────────────── */
+.registration-container .error-message,
+.registration-container .error-message * {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+}
+
+.registration-container .error-message {
+  margin-top: 0.2rem !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.registration-container .error-message::before { content: none !important; display: none !important; }
+
+/* ─── Grid ───────────────────────────────────────────────────────────────────── */
+.registration-container .row { display: flex; flex-wrap: wrap; margin: 0 -0.375rem; }
+
+.registration-container .col-md-4,
+.registration-container .col-md-6,
+.registration-container .col-sm-6 {
+  padding: 0 0.375rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .registration-container .col-md-4 { width: 33.333333%; }
+  .registration-container .col-md-6 { width: 50%; }
+}
+
+@media (max-width: 767px) and (min-width: 480px) {
+  .registration-container .col-md-4 { width: 50%; }
+}
+
+/* col-sm-6 stays 50% even on mobile */
+@media (max-width: 479px) {
+  .registration-container .col-sm-6 { width: 50% !important; }
+}
+
+.registration-container .mb-3 { margin-bottom: 0.625rem !important; }
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.registration-container .btn {
+  padding: 0.45rem 1.125rem !important;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.registration-container .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+.registration-container .btn-lg { padding: 0.55rem 1.375rem !important; }
+.registration-container .btn-sm { padding: 0.375rem 0.75rem !important; font-size: var(--font-size-xs) !important; }
+
+/* Primary */
+.registration-container .btn-primary { background: var(--green) !important; color: var(--white) !important; box-shadow: 0 2px 6px var(--shadow-blue-xs) !important; }
+.registration-container .btn-primary:hover:not(:disabled) { background: var(--green-dark) !important; box-shadow: 0 4px 14px var(--shadow-blue) !important; transform: translateY(-1px); }
+
+/* Outline primary (Bulk Upload toggle) */
+.registration-container .btn-outline-primary { background: transparent !important; color: var(--blue) !important; border: 1.5px solid var(--blue) !important; box-shadow: none !important; }
+.registration-container .btn-outline-primary:hover:not(:disabled) { background: var(--blue) !important; color: var(--white) !important; }
+
+/* Reset — brand red-orange */
+.registration-container .btn-reset,
+.registration-container .btn-secondary {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+}
+.registration-container .btn-reset i,
+.registration-container .btn-secondary i { color: var(--red) !important; }
+.registration-container .btn-reset:hover:not(:disabled),
+.registration-container .btn-secondary:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm) !important;
+  transform: translateY(-1px);
+}
+.registration-container .btn-reset:hover:not(:disabled) i,
+.registration-container .btn-secondary:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* Success */
+.registration-container .btn-success { background: var(--green) !important; color: var(--white) !important; box-shadow: none !important; }
+.registration-container .btn-success:hover:not(:disabled) { background: var(--green-dark) !important; box-shadow: var(--shadow-green) !important; transform: translateY(-1px); }
+
+/* Danger */
+.registration-container .btn-danger { background: var(--red) !important; color: var(--white) !important; box-shadow: none !important; }
+.registration-container .btn-danger:hover:not(:disabled) { background: var(--red-dark) !important; box-shadow: 0 4px 14px var(--shadow-red) !important; transform: translateY(-1px); }
+
+/* ─── Button Group ───────────────────────────────────────────────────────────── */
+/* .button-group → see below */
+
+@media (max-width: 479px) {
+  .registration-container .button-group {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+  .registration-container .button-group .btn { width: 100%; }
+}
+
+/* ─── Info card (bulk upload instructions) ──────────────────────────────────── */
+/* .info-card → see polished version below */
+
+.registration-container .info-card h4 {
+  border-top: 3px solid var(--blue) !important;
+  background: var(--blue-light) !important;
+}
+
+/* ─── Instructions list ──────────────────────────────────────────────────────── */
+/* .instructions-list → see below */
+
+/* ─── Upload section ─────────────────────────────────────────────────────────── */
+/* .upload-section → see below */
+
+.registration-container .upload-section:hover { border-color: var(--blue); background: var(--blue-light); }
+.registration-container .upload-placeholder i { font-size: 3rem; color: var(--gray-300); margin-bottom: 0.75rem; display: block; }
+.registration-container .upload-placeholder p { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0.25rem 0; }
+.registration-container .file-icon { font-size: 2.5rem; color: var(--green); flex-shrink: 0; }
+/* .registration-container .file-details strong { color: var(--gray-900); font-size: var(--font-size-sm); word-break: break-all; } */
+.registration-container .file-details span { color: var(--gray-500); font-size: var(--font-size-sm); }
+
+.registration-container .file-details strong {
+    color: var(--gray-900);
+    font-size: var(--font-size-sm);
+    word-break: break-all;
+}
+/* ─── Upload Results ─────────────────────────────────────────────────────────── */
+.registration-container .upload-results {
+  background: var(--gray-50);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem 1.125rem;
+  margin: 0.75rem 1.125rem;
+}
+
+.registration-container .upload-results h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registration-container .upload-results h5 i { color: var(--blue); }
+
+.registration-container .results-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 479px) { .registration-container .results-grid { grid-template-columns: repeat(3,1fr); gap: 0.5rem; } }
+
+.registration-container .result-card {
+  background: var(--app-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid;
+}
+
+.registration-container .result-card i      { font-size: 1.75rem; flex-shrink: 0; }
+.registration-container .result-card strong { font-size: 1.375rem; font-weight: 700; line-height: 1; }
+.registration-container .result-card span   { font-size: var(--font-size-xs); color: var(--gray-500); font-weight: 500; }
+
+.registration-container .result-card.total   { border-color: var(--blue); }
+.registration-container .result-card.total i { color: var(--blue); }
+.registration-container .result-card.total strong { color: var(--blue-dark); }
+
+.registration-container .result-card.success   { border-color: var(--green); }
+.registration-container .result-card.success i { color: var(--green); }
+.registration-container .result-card.success strong { color: var(--green-dark); }
+
+.registration-container .result-card.failed   { border-color: var(--red); }
+.registration-container .result-card.failed i { color: var(--red); }
+.registration-container .result-card.failed strong { color: var(--red-dark); }
+
+/* ─── Error table ────────────────────────────────────────────────────────────── */
+.registration-container .error-details {
+  background: var(--app-bg);
+  border-radius: var(--border-radius);
+  padding: 0.875rem;
+  border: 1px solid var(--red-light);
+  margin-top: 0.75rem;
+}
+
+.registration-container .error-details h6 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--red-dark);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registration-container .error-details h6 i { color: var(--red); }
+.registration-container .error-table-wrap { max-height: 360px; overflow-y: auto; overflow-x: auto; border-radius: var(--border-radius); border: 1px solid var(--red-light); }
+.registration-container .error-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-xs); min-width: 400px; }
+.registration-container .error-table thead { background: var(--red-light); position: sticky; top: 0; z-index: 1; }
+.registration-container .error-table thead th { padding: 0.5rem 0.75rem; text-align: left; font-size: var(--font-size-xs); font-weight: 700; color: var(--red-dark); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--red-light); white-space: nowrap; }
+.registration-container .error-table tbody tr { border-bottom: 1px solid var(--red-light); vertical-align: top; }
+.registration-container .error-table tbody tr:hover { background: var(--red-light); }
+.registration-container .error-table td { padding: 0.625rem 0.75rem; }
+.registration-container .row-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; background: var(--red-light); color: var(--red-dark); border-radius: var(--border-radius); font-size: var(--font-size-xs); font-weight: 700; padding: 0 4px; }
+.registration-container .row-badge.unknown { background: var(--gray-100); color: var(--gray-400); }
+.registration-container .col-error-item { display: flex; align-items: flex-start; gap: 0.4rem; font-size: var(--font-size-xs); color: var(--red-dark); line-height: 1.4; }
+.registration-container .col-error-item i { color: var(--red); font-size: var(--font-size-xs); margin-top: 0.15rem; flex-shrink: 0; }
+
+/* ─── Success msg ────────────────────────────────────────────────────────────── */
+.registration-container .all-success-msg {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--green-light);
+  border: 1px solid var(--green);
+  border-radius: var(--border-radius);
+  color: var(--green-dark);
+  font-weight: 600; font-size: 0.9rem;
+}
+
+.registration-container .all-success-msg i { color: var(--green); font-size: 1.125rem; flex-shrink: 0; }
+
+/* ─── Utilities ──────────────────────────────────────────────────────────────── */
+/* .d-flex → global.css */
+/* .gap-2 → global.css */
+.registration-container .mt-3   { margin-top: 0.875rem; }
+/* .text-danger → global.css */
+/* .text-muted → global.css */
+
+/* ─── Print ──────────────────────────────────────────────────────────────────── */
+@media print {
+  .registration-container { padding: 0; background: var(--app-bg); }
+  .registration-container .btn, .registration-container .button-group { display: none; }
+  .registration-container .card { box-shadow: none !important; }
+}
+
+/* ─── Bulk Upload — polished to match edit-view style ────────────────────────── */
+
+/* Instructions card — subtle blue tint, no heavy border */
+.registration-container .info-card {
+  background: var(--blue-light) !important;
+  border: 1px solid var(--blue-light) !important;
+  border-top: 3px solid var(--blue) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 0 !important;
+}
+
+.registration-container .info-card h4 {
+  background: var(--white) !important;
+  border-top: 3px solid var(--blue) !important;
+  border-bottom: 1px solid var(--blue-light) !important;
+  color: var(--blue-dark) !important;
+  font-size: 1rem !important;
+}
+
+.registration-container .info-card h4 i { color: var(--blue) !important; }
+
+/* Instructions list inside card body */
+.registration-container .instructions-list {
+  padding: 0.75rem 1.125rem !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+.registration-container .instructions-list li {
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+}
+
+.registration-container .instructions-list li i { color: var(--green); }
+
+/* Download template button — outline style, not full width */
+.registration-container .info-card .btn-outline-primary {
+  background: var(--white) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+  margin: 0 1.125rem 0.875rem !important;
+  width: auto !important;
+}
+
+.registration-container .info-card .btn-outline-primary:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  box-shadow: 0 4px 14px var(--shadow-red) !important;
+}
+
+/* Upload section — cleaner dashed box */
+.registration-container .upload-section {
+  background: var(--white) !important;
+  border: 2px dashed var(--gray-300) !important;
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem !important;
+  margin: 0 1.125rem 0.875rem !important;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.registration-container .upload-section:hover {
+  border-color: var(--blue);
+}
+
+/* Upload placeholder icon */
+.registration-container .upload-placeholder i {
+  font-size: 2.5rem;
+  color: var(--gray-400);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.registration-container .upload-placeholder p {
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+  margin: 0.2rem 0;
+}
+
+/* Browse Files button — compact, not huge */
+.registration-container label[for="fileInput"].btn {
+  padding: 0.45rem 1.25rem !important;
+  font-size: var(--font-size-sm) !important;
+  margin-top: 0.75rem;
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border-radius: var(--border-radius);
+  display: inline-flex !important;
+  width: auto !important;
+}
+
+.registration-container label[for="fileInput"].btn:hover {
+  background: var(--blue-dark) !important;
+}
+
+/* Upload button group */
+.registration-container .button-group {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin: 0 !important;
+  padding: 0.75rem 1.125rem !important;
+  border-top: 1px solid var(--gray-100) !important;
+  flex-wrap: wrap;
+}
+
+/* ─── Force Download Template button to auto width ───────────────────────────── */
+.registration-container .info-card button,
+.registration-container .info-card .btn {
+  width: auto !important;
+  display: inline-flex !important;
+  margin: 0 1.125rem 0.875rem !important;
+}
+
+/* ─── Upload card inner padding fix ─────────────────────────────────────────── */
+.registration-container .card > .row,
+.registration-container .card > div.row {
+  padding: 0.875rem 1.125rem 0;
+}
+
+.registration-container .card > .mb-3 {
+  padding: 0 1.125rem;
+}
+
+/* ─── Bulk upload card row padding ───────────────────────────────────────────── */
+.registration-container .card > .row {
+  padding: 1rem 1.125rem 0.25rem !important;
+}
+
+/* ─── Download Template button icon — brand red-orange ───────────────────────── */
+.registration-container .info-card .btn-outline-primary i {
+  color: var(--red) !important;
+}
+.registration-container .info-card .btn-outline-primary:hover:not(:disabled) i {
+  color: var(--white) !important;
+}
+
+/* ─── Reset any orange hover bleeding from info-card icon rule ───────────────── */
+/* Page header Bulk Upload toggle — keep blue */
+.registration-container .page-header .btn-outline-primary {
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+  box-shadow: none !important;
+}
+.registration-container .page-header .btn-outline-primary:hover:not(:disabled) {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 4px 12px var(--shadow-blue-xs) !important;
+}
+.registration-container .page-header .btn-outline-primary i { color: var(--blue) !important; }
+.registration-container .page-header .btn-outline-primary:hover:not(:disabled) i { color: var(--white) !important; }
+/* ─── File selected — clean close button ─────────────────────────────────────── */
+.registration-container .file-info .btn-danger {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+}
+.registration-container .file-info .btn-danger:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.registration-container .file-info {
+  justify-content: center;   /* 👈 centers horizontally */
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.registration-container .file-name-row {
+  align-items: center;
+  justify-content: center;  /* 👈 important */
+  gap: 0.5rem;
+}
+
+/* ─── File name row — inline with close button ───────────────────────────────── */
+.registration-container .file-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.registration-container .file-name-row strong {
+  color: var(--gray-900);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.registration-container .file-size {
+  color: var(--gray-400);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.registration-container .btn-close-file {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: var(--font-size-xs) !important;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.registration-container .btn-close-file:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+}
+
+/* ─── col-sm-6 mobile fix ────────────────────────────────────────────────────── */
+@media (max-width: 479px) {
+  .registration-container .col-sm-6 { width: 50% !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIEW / EDIT SHARED — student-view-edit, teacher-view-edit,
+   non-teaching-view-edit all use .view-container.
+   Single source of truth here; component files are now empty.
+   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================
+   STUDENT VIEW / EDIT — POLISHED STYLES
+   ViewEncapsulation.None — scoped via .view-container
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.view-container {
+padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) { .view-container { padding: 0.875rem 1rem; } }
+@media (max-width: 479px) { .view-container { padding: 0.75rem; } }
+
+/* ─── Page Header ───────────────────────────────────────────────────────────── */
+.view-container .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.view-container .header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.view-container .btn-back {
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--white);
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+}
+
+.view-container .btn-back:hover {
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 3px 10px var(--shadow-blue-xs);
+  transform: translateX(-2px);
+}
+
+.view-container .header-title h2 {
+  color: var(--gray-900);
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.view-container .header-title h2 i { color: var(--blue); flex-shrink: 0; }
+
+.view-container .breadcrumb {
+  color: var(--gray-400);
+  font-size: var(--font-size-xs);
+  margin: 0.1rem 0 0 0;
+  letter-spacing: 0.01em;
+}
+
+.view-container .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+@media (max-width: 479px) {
+  .view-container .page-header    { flex-direction: column; align-items: stretch; }
+  .view-container .header-left    { width: 100%; }
+  .view-container .header-actions { width: 100%; }
+  .view-container .header-actions .btn { flex: 1; justify-content: center; }
+}
+
+/* ─── Loading ────────────────────────────────────────────────────────────────── */
+.view-container .loading-state { text-align: center; padding: 3rem 1rem; }
+
+.view-container .spinner {
+  width: 2.5rem; height: 2.5rem;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: ve-spin 0.8s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes ve-spin { to { transform: rotate(360deg); } }
+.view-container .loading-state p { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+
+/* ─── Form Content ───────────────────────────────────────────────────────────── */
+.view-container .form-content {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.view-container .card {
+  background: var(--app-bg) !important;
+  border-radius: var(--border-radius-lg) !important;
+  margin-bottom: 0.875rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04) !important;
+  overflow: visible;
+  padding: 0 !important;
+  border: 1px solid var(--gray-200) !important;
+  animation: ve-fade 0.25s ease;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+@keyframes ve-fade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card Header — colored top border accent ───────────────────────────────── */
+.view-container .card-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.625rem !important;
+  padding: 0.625rem 1.125rem !important;
+  background: var(--app-bg) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  border-top: 3px solid var(--blue) !important;
+  font-weight: 600 !important;
+  color: var(--gray-900) !important;
+  font-size: 1.0rem !important;
+  margin-bottom: 0 !important;
+  letter-spacing: 0.01em;
+}
+
+.view-container .card-header i {
+  color: var(--blue) !important;
+  font-size: var(--font-size-sm) !important;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ─── Card Body ─────────────────────────────────────────────────────────────── */
+.view-container .card-body {
+  padding: 1rem 1.125rem !important;
+}
+
+@media (max-width: 479px) {
+  .view-container .card-header { padding: 0.5rem 0.875rem !important; }
+  .view-container .card-body   { padding: 0.75rem 0.875rem !important; }
+}
+
+/* ─── Form Controls ─────────────────────────────────────────────────────────── */
+/* .view-container .form-label — global.css */
+/* .view-container .required — global.css */
+/* .view-container .form-control — global.css */
+/* .view-container .form-control:focus, :disabled, :focus-visible — global.css */
+/* .view-container .form-control.is-invalid — global.css */
+/* .view-container textarea.form-control — global.css */
+/* .view-container input[type="date"].form-control — global.css */
+
+/* ─── Custom Select ─────────────────────────────────────────────────────────── */
+/* .view-container .select-wrapper — global.css */
+/* .view-container .select-wrapper .select-icon — global.css */
+/* .view-container .select-wrapper select.form-control — global.css */
+
+/* ─── Error Message ─────────────────────────────────────────────────────────── */
+.view-container .error-message,
+.view-container .error-message *,
+.view-container div.error-message {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+}
+
+.view-container .error-message {
+  margin-top: 0.2rem !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.view-container .error-message i {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  flex-shrink: 0;
+}
+
+/* Override global ::before with brand color */
+.view-container .error-message::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* ─── Grid ───────────────────────────────────────────────────────────────────── */
+.view-container .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.375rem;
+}
+
+.view-container .col-md-4,
+.view-container .col-md-6 {
+  padding: 0 0.375rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .view-container .col-md-4 { width: 33.333333%; }
+  .view-container .col-md-6 { width: 50%; }
+}
+
+@media (max-width: 767px) and (min-width: 480px) {
+  .view-container .col-md-4 { width: 50%; }
+}
+
+.view-container .mb-3 { margin-bottom: 0.625rem !important; }
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.view-container .btn {
+  padding: 0.45rem 1.125rem !important;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.view-container .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+.view-container .btn-lg { padding: 0.55rem 1.375rem !important; }
+
+/* Primary — brand blue */
+.view-container .btn-primary {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-primary:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  box-shadow: 0 4px 14px var(--shadow-blue) !important;
+  transform: translateY(-1px);
+}
+
+/* Secondary */
+.view-container .btn-secondary {
+  background: var(--gray-500) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-secondary:hover:not(:disabled) {
+  background: var(--gray-700) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-gray) !important;
+}
+
+/* Cancel — brand red-orange with border */
+.view-container .btn-cancel {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-cancel i { color: var(--red) !important; }
+
+.view-container .btn-cancel:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm) !important;
+  transform: translateY(-1px);
+}
+.view-container .btn-cancel:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* Success — brand green */
+.view-container .btn-success {
+  background: var(--green) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-success:hover:not(:disabled) {
+  background: var(--green-dark) !important;
+  box-shadow: var(--shadow-green) !important;
+  transform: translateY(-1px);
+}
+
+/* Danger — brand red */
+.view-container .btn-danger {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-danger:hover:not(:disabled) {
+  background: var(--red-dark) !important;
+  box-shadow: 0 4px 14px var(--shadow-red) !important;
+  transform: translateY(-1px);
+}
+
+/* ─── Action Buttons footer ──────────────────────────────────────────────────── */
+.view-container .action-buttons {
+  display: flex !important;
+  gap: 0.625rem !important;
+  margin-top: 0.75rem !important;
+  padding-top: 0.875rem !important;
+  border-top: 1px solid var(--gray-100) !important;
+  border-bottom: none !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 479px) {
+  .view-container .action-buttons {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    padding-top: 0.625rem !important;
+  }
+  .view-container .action-buttons .btn { width: 100%; }
+}
+
+/* ─── Print ─────────────────────────────────────────────────────────────────── */
+@media print {
+  .view-container { padding: 0; background: var(--white); }
+  .view-container .btn,
+  .view-container .btn-back,
+  .view-container .header-actions,
+  .view-container .action-buttons { display: none !important; }
+  .view-container .card {
+    box-shadow: none !important;
+    border: 1px solid var(--gray-200) !important;
+    margin-bottom: 1rem !important;
+  }
+}
+/* ─── Identity lock banner ───────────────────────────────────────────────────── */
+/* .identity-lock-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: var(--warning-light);
+  border: 1px solid var(--warning);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.875rem;
+  font-size: var(--font-size-sm);
+  color: var(--yellow-dark);
+  line-height: 1.5;
+}
+
+.identity-lock-banner i {
+  color: var(--yellow-dark);
+  font-size: var(--font-size-sm);
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+} */
+
+/* ─── Field lock icon (inline in label) ─────────────────────────────────────── */
+.field-lock-icon {
+  color: var(--yellow-dark);
+  font-size: 0.7rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+/* ═══════════════════════════════════════════════════════════════
+   LIST SHARED — student-list, teacher-list, non-teaching-list
+   All use the same search, filter, action buttons, cards pattern.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Search Section ─────────────────────────────────────────── */
+/* <div class="search-section"> — grid: filter dropdowns + button */
+.search-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+@media (max-width: 767px) {
+  .search-section { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+  .search-section .filter-wrapper:last-child { grid-column: 1 / -1; }
+  .search-section .filter-wrapper:last-child .btn { width: 100%; }
+}
+
+@media (max-width: 479px) {
+  .search-section { grid-template-columns: 1fr; gap: 0.5rem; }
+  .search-section .filter-wrapper:last-child { grid-column: 1; }
+}
+
+/* <div class="filter-wrapper"> — column wrapper for each filter slot */
+.filter-wrapper { display: flex; flex-direction: column; }
+.filter-wrapper:last-child .btn { min-width: 6rem; }
+
+/* ─── Search below filters ───────────────────────────────────── */
+/* <div class="search-below"> — search input shown after first load */
+.search-below { margin-bottom: 1rem; position: relative; }
+
+/* ─── Name & Roll Number ─────────────────────────────────────── */
+/* <div class="name"> — person's full name in table/card */
+.name        { font-weight: 600; color: var(--gray-900); font-size: var(--font-size-sm); line-height: 1.2; }
+/* <strong class="roll-number"> / <strong class="emp-code"> */
+.roll-number,
+.emp-code    { color: var(--blue); font-weight: 600; }
+
+/* ─── Table Action Buttons ───────────────────────────────────── */
+/* Reset global .action-buttons (form footer) for inline table icon group */
+.table .action-buttons,
+.page-container .table .action-buttons,
+.list-container .table .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.3rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* <button class="btn-action btn-view|btn-se-edit|btn-delete"> — icon button */
+.btn-action {
+  width: 1.875rem;
+  height: 1.875rem;
+  border: none;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+  padding: 0 !important;
+}
+
+/* View — blue */
+.btn-action.btn-view                { background: var(--blue-light) !important; color: var(--blue) !important; }
+.btn-action.btn-view i              { color: var(--blue) !important; }
+.btn-action.btn-view:hover          { background: var(--blue) !important; color: var(--white) !important; box-shadow: var(--shadow-blue-xs) !important; transform: translateY(-1px); }
+.btn-action.btn-view:hover i        { color: var(--white) !important; }
+
+/* Edit — yellow */
+.btn-action.btn-se-edit             { background: var(--yellow-light) !important; color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit i           { color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit:hover       { background: var(--yellow) !important; color: var(--white) !important; box-shadow: var(--shadow-yellow-xs) !important; transform: translateY(-1px); }
+.btn-action.btn-se-edit:hover i     { color: var(--white) !important; }
+
+/* Delete — red */
+.btn-action.btn-delete              { background: var(--red-light) !important; color: var(--red) !important; }
+.btn-action.btn-delete i            { color: var(--red) !important; }
+.btn-action.btn-delete:hover        { background: var(--red) !important; color: var(--white) !important; box-shadow: var(--shadow-red-sm) !important; transform: translateY(-1px); }
+.btn-action.btn-delete:hover i      { color: var(--white) !important; }
+
+/* Mobile card footer btn-action — wider to fill card */
+.card-footer .btn-action {
+  width: auto !important;
+  flex: 1;
+  height: 2rem !important;
+  font-size: var(--font-size-sm) !important;
+  padding: 0 0.5rem !important;
+  gap: 0.375rem;
+}
+
+/* ─── Info Row (mobile cards) ────────────────────────────────── */
+/* <div class="info-row"> — icon + text row in mobile cards */
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  min-width: 0;
+}
+
+.info-row i    { width: 1.125rem; color: var(--blue); flex-shrink: 0; text-align: center; font-size: var(--font-size-sm); }
+.info-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* ─── Results Footer ─────────────────────────────────────────── */
+/* <div class="results-footer"> — "Showing N of M" count at bottom */
+.results-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-200);
+  text-align: center;
+}
+
+.results-footer p      { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+.results-footer strong { color: var(--blue); font-weight: 700; }
+
+/* ─── Avatar ─────────────────────────────────────────────────── */
+/* <div class="avatar"> — small initials circle in table row */
+.avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+}
+
+/* <div class="teacher-avatar"> / <div class="student-avatar"> — larger avatar in cards */
+.teacher-avatar,
+.student-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+/* ─── Mobile Card — shared card layout for student/teacher/staff ─ */
+/* <div class="student-card"> / <div class="teacher-card"> */
+.student-card,
+.teacher-card {
+  background: var(--app-bg);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.student-card:hover,
+.teacher-card:hover { box-shadow: var(--shadow-md); }
+
+/* Override global .card-header inside mobile cards */
+.student-card .card-header,
+.teacher-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--blue-light);
+  flex-wrap: wrap;
+  font-weight: normal;
+  font-size: inherit;
+  color: inherit;
+  border-top: none;
+}
+
+/* <div class="student-details"> / <div class="teacher-details"> */
+.student-details,
+.teacher-details { flex: 1; min-width: 0; }
+
+.student-details h4,
+.teacher-details h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-details p,
+.teacher-details p { margin: 0.15rem 0 0; font-size: var(--font-size-sm); }
+
+/* Override global .card-body inside mobile cards */
+.student-card .card-body,
+.teacher-card .card-body {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Override global .card-footer inside mobile cards */
+.student-card .card-footer,
+.teacher-card .card-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.student-card .card-footer .btn,
+.teacher-card .card-footer .btn { flex: 1; }
+
+@media (max-width: 479px) {
+  .student-avatar,
+  .teacher-avatar              { width: 2rem; height: 2rem; font-size: var(--font-size-xs); }
+  .student-details h4,
+  .teacher-details h4          { font-size: var(--font-size-sm); }
+  .student-card .card-body,
+  .teacher-card .card-body     { padding: 0.625rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer,
+  .teacher-card .card-footer   { padding: 0.5rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer .btn,
+  .teacher-card .card-footer .btn { font-size: var(--font-size-xs); padding: 0.375rem 0.5rem; }
+  .info-row                    { gap: 0.5rem; }
+}
+
+/* ─── Clear Search Button — used in teacher-list, non-teaching-list ─────────── */
+/* <button class="btn btn-clear-search"> — red-light pill, fills red on hover */
+.btn-clear-search {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.btn-clear-search i { color: var(--red-dark) !important; }
+
+.btn-clear-search:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm);
+  transform: translateY(-1px);
+}
+
+.btn-clear-search:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   UPLOAD ANSWER SHEET — Students table column widths
+   The Answer Sheet(s) column must always be wide enough to show
+   the Upload / Update pill button without clipping.
+   Scoped via .students-table-wrap added to the table-responsive div.
+   ═══════════════════════════════════════════════════════════════ */
+.students-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.students-table-wrap .table {
+  table-layout: fixed !important;
+  min-width: 900px !important;
+  width: 100%;
+}
+
+/* Column widths — fixed layout honours these exactly */
+.students-table-wrap .table th:nth-child(1) { width:  75px; }  /* Roll No          */
+.students-table-wrap .table th:nth-child(2) { width: 140px; }  /* Student Name      */
+.students-table-wrap .table th:nth-child(3) { width: 145px; }  /* Attendance        */
+.students-table-wrap .table th:nth-child(4) { width: 135px; }  /* Answer Sheet Type */
+.students-table-wrap .table th:nth-child(5) { width: 250px; }  /* Answer Sheet(s)   */
+.students-table-wrap .table th:nth-child(6) { width: 130px; }  /* Evaluation Status */
+.students-table-wrap .table th:nth-child(7) { width: 150px; }  /* Action            */
+
+/* Cells: clip long filenames, never clip the button */
+.students-table-wrap .table td { vertical-align: middle; }
+.students-table-wrap .doc-cell { white-space: nowrap; overflow: visible; }
+.students-table-wrap .doc-cell .pdf-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }

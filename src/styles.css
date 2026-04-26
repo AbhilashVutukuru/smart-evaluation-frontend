@@ -70,6 +70,26 @@ body {
   --font-size-sm:     0.875rem;
   --font-size-xs:     0.75rem;
 
+  /* ─── Brand Shadows — tinted hover glows per brand color ─────────────────── */
+  --shadow-blue:      0 4px 14px rgba(14,  164, 244, 0.45); /* --blue hover     */
+  --shadow-blue-sm:   0 0   0 3px rgba(14,  164, 244, 0.1); /* focus ring       */
+  --shadow-green:     0 4px 14px rgba(95, 142, 4,   0.55); /* --green hover    */
+  --shadow-red:       0 4px 14px rgba(248, 83,  16,  0.45); /* --red hover      */
+  --shadow-red-sm:    0 4px 12px rgba(248, 83,  16,  0.35); /* --red cancel btn */
+  --shadow-red-focus: 0 0   0 3px rgba(248, 83,  16,  0.1); /* invalid ring     */
+  --shadow-yellow:    0 4px 14px rgba(255, 187, 10,  0.45); /* --yellow hover   */
+  --shadow-gray:       0 4px 14px rgba(107,114,128,0.35); /* --gray btn hover      */
+  --shadow-blue-xs:    0 4px 12px rgba(14, 164,244, 0.3);  /* thumb hover glow      */
+  --shadow-blue-card:  0 4px 12px rgba(14, 164,244, 0.15); /* card hover glow       */
+  --shadow-red-input:  0 0   0 3px rgba(248, 83, 16, 0.15);/* date error focus ring */
+  --shadow-green-sm:   0 4px 12px rgba(127,187,6,  0.35);  /* green sm btn hover    */
+  --shadow-yellow-sm:  0 4px 12px rgba(255,187,10, 0.5);   /* yellow sm btn hover   */
+  --shadow-yellow-xs:  0 4px 12px rgba(255,187,10, 0.35);  /* yellow xs btn hover   */
+  --surface-blue-num:  rgba(8,  130,196, 0.9);              /* preview page number bg*/
+  --surface-red-glass: rgba(239,68,  68, 0.15);             /* lightbox close bg     */
+  --surface-red-glass-border: rgba(239,68,68,0.3);          /* lightbox close border */
+  --surface-green-hover: rgba(95,142,4,  0.15);             /* slot-done hover tint  */
+
   /* ─── Sidebar ─────────────────────────────────────────────────────────────── */
   --sidebar-bg:           var(--gray-100);
   --sidebar-bg-from:      var(--blue);
@@ -81,6 +101,9 @@ body {
   --sidebar-badge-bg:     rgba(255, 255, 255, 0.25);
   --sidebar-badge-border: rgba(255, 255, 255, 0.4);
 
-  /* ─── App Background ──────────────────────────────────────────────────────── */
-  --app-bg: #ffffff;
+  /* ─── App Background & Surface ───────────────────────────────────────────── */
+  --white:        #fff;            /* pure white — button text, icon fills      */
+  --app-bg:       var(--white);    /* page/card background                      */
+  --surface-dark: #1e1e2e;         /* dark surface for lightbox/media viewers   */
+  --overlay-bg:   rgba(0,0,0,0.55);/* modal backdrop scrim                      */
 }

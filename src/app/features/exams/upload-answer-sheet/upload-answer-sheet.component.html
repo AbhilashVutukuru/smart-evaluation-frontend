@@ -84,7 +84,7 @@
     </div>
 
     <!-- Table -->
-    <div class="table-responsive" *ngIf="students.length > 0">
+    <div class="table-responsive students-table-wrap" *ngIf="students.length > 0">
 
       <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
         <i class="fas fa-search"></i>
@@ -190,7 +190,7 @@
                   <!-- Images type: Update dropdown — PDF / Images (Preview & Edit) / Remove -->
                   <ng-container *ngIf="student.answerSheetType === 'Images' && !isSubmittedForEvaluation && !student.isUploading">
                     <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
-                      <button type="button" class="btn-action btn-action-update"
+                      <button type="button" class="btn-upload-action btn-action-update"
                         (click)="toggleMenu(student.studentId)" title="Update answer sheet">
                         <i class="fas fa-sync-alt"></i> Update
                         <i class="fas fa-chevron-down menu-chevron"></i>
@@ -217,7 +217,7 @@
                   <!-- PDF type: Update dropdown with PDF + Images options -->
                   <ng-container *ngIf="student.answerSheetType !== 'Images' && !isSubmittedForEvaluation && !student.isUploading">
                     <div class="doc-action-menu doc-inline-btn" (click)="$event.stopPropagation()">
-                      <button type="button" class="btn-action btn-action-update"
+                      <button type="button" class="btn-upload-action btn-action-update"
                         (click)="toggleMenu(student.studentId)" title="Update answer sheet">
                         <i class="fas fa-sync-alt"></i> Update
                         <i class="fas fa-chevron-down menu-chevron"></i>
@@ -252,7 +252,7 @@
               <ng-container *ngIf="!student.isUploaded && !student.isAbsent && !isSubmittedForEvaluation">
                 <ng-container *ngIf="!student.isUploading">
                   <div class="doc-action-menu" (click)="$event.stopPropagation()">
-                    <button type="button" class="btn-action btn-action-upload"
+                    <button type="button" class="btn-upload-action btn-action-upload"
                       (click)="toggleMenu(student.studentId)" title="Upload answer sheet">
                       <i class="fas fa-upload"></i> Upload
                       <i class="fas fa-chevron-down menu-chevron"></i>

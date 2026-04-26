@@ -71,65 +71,6 @@
   white-space: nowrap;
 }
 
-/* ── Search bar row: title | search input | count badge ─────── */
-/* Exact same pattern as view-question-paper component           */
-.papers-header-row {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.75rem;
-}
-
-.papers-header-row h4 {
-  margin: 0;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.papers-header-row .search-input-wrapper {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.papers-header-row .badge-primary {
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.search-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-icon {
-  position: absolute;
-  left: 0.75rem;
-  color: var(--gray-400);
-  font-size: 0.875rem;
-  pointer-events: none;
-}
-
-.search-input {
-  padding-left: 2.25rem !important;
-  padding-right: 2.25rem !important;
-}
-
-.clear-search {
-  position: absolute;
-  right: 0.5rem;
-  background: none;
-  border: none;
-  color: var(--gray-400);
-  cursor: pointer;
-  padding: 0.25rem;
-  font-size: 0.875rem;
-}
-
-.clear-search:hover { color: var(--red); }
-
 /* ── Stats grid — sizing handled by global.css ─────────────── */
 @media (max-width: 767px) {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
@@ -144,41 +85,7 @@
 .badge-secondary { background: var(--gray-200);   color: var(--gray-500); }
 .badge-submitted { background: var(--blue-light); color: var(--blue-dark); }
 
-/* ── Form control focus override ────────────────────────────── */
-.form-control:focus {
-  border-color: var(--blue);
-  box-shadow: 0 0 0 3px rgba(14, 164, 244, 0.1);
-}
-
-/* ── Select wrapper ────────────────────────────────────────── */
-.select-wrapper { position: relative; }
-
-.select-wrapper .select-icon {
-  position: absolute;
-  right: 0.85rem;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: var(--blue);
-  font-size: 0.75rem;
-  z-index: 1;
-}
-
-.select-wrapper select.form-control {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: none !important;
-  padding-right: 2.5rem;
-  cursor: pointer;
-  color: var(--gray-900);
-}
-
-.select-wrapper select.form-control:focus                    { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(14,164,244,0.1); }
-.select-wrapper select.form-control:disabled                 { background-color: var(--gray-100); color: var(--gray-400); cursor: not-allowed; }
-.select-wrapper select.form-control:disabled + .select-icon  { color: var(--gray-400); }
-.select-wrapper select.form-control option[value=""]         { color: var(--gray-400); }
-.select-wrapper select.form-control option:not([value=""])   { color: var(--gray-900); }
+/* ── Select wrapper → global.css ── */
 
 /* ── Checkbox ──────────────────────────────────────────────── */
 .form-check      { display: flex; align-items: center; gap: 6px; margin: 0; padding: 0; }
@@ -208,12 +115,12 @@ input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-colo
 .upload-section { display: inline-flex; align-items: center; background: transparent; border: none; padding: 0; margin: 0; }
 
 /* ── btn-warning override ───────────────────────────────────── */
-.btn-warning                      { background: var(--yellow); color: white; border: none !important; }
+.btn-warning                      { background: var(--yellow); color: var(--white); border: none !important; }
 .btn-warning:hover:not(:disabled) { background: var(--yellow-dark); }
 .btn-warning:hover:not(.disabled) { background: var(--yellow-dark); }
 
 /* ── btn-info ───────────────────────────────────────────────── */
-.btn-info                      { background: var(--blue); color: white; }
+.btn-info                      { background: var(--blue); color: var(--white); }
 .btn-info:hover:not(.disabled) { background: var(--blue-dark); }
 
 /* ── btn-xs ─────────────────────────────────────────────────── */
@@ -237,7 +144,7 @@ input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-colo
   font-family: inherit;
 }
 
-.btn-outline-indigo:hover:not(.disabled) { background: var(--blue); color: white; }
+.btn-outline-indigo:hover:not(.disabled) { background: var(--blue); color: var(--white); }
 .btn-outline-indigo.disabled             { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
 
 /* ── Submit section ─────────────────────────────────────────── */
@@ -280,8 +187,11 @@ input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-colo
 .doc-desktop-btns { align-items: center; gap: 6px; }
 
 /* ── Document column ────────────────────────────────────────── */
-.doc-cell { vertical-align: middle; }
-@media (max-width: 767px) { .doc-cell { min-width: 180px; } }
+/* .students-table-wrap table layout → global.css
+   (Angular ViewEncapsulation scopes component CSS, breaking
+   descendant selectors like .students-table-wrap .table —
+   global.css is unscoped so these rules apply correctly) */
+.doc-cell { vertical-align: middle; white-space: nowrap; overflow: visible; }
 
 /* ── Document action buttons (btn-doc) ─────────────────────── */
 label.btn-doc,
@@ -301,7 +211,7 @@ label.btn-doc,
   font-family: inherit;
   line-height: 1.2;
   text-decoration: none;
-  color: white !important;
+  color: var(--white) !important;
   user-select: none;
   transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
@@ -340,11 +250,11 @@ label.btn-doc-img,
   flex-shrink: 0;
 }
 
-.btn-doc-icon-pdf { color: var(--blue); border-color: #b3e0fa; background: var(--blue-light); }
-.btn-doc-icon-img { color: var(--green); border-color: var(--green-light); background: #f0fdf9; }
+.btn-doc-icon-pdf { color: var(--blue); border-color: var(--blue-light); background: var(--blue-light); }
+.btn-doc-icon-img { color: var(--green); border-color: var(--green-light); background: var(--green-light); }
 
-.btn-doc-icon-pdf:hover:not(.disabled) { background: var(--blue); border-color: var(--blue); color: white; transform: scale(1.08); }
-.btn-doc-icon-img:hover:not(.disabled) { background: var(--green); border-color: var(--green); color: white; transform: scale(1.08); }
+.btn-doc-icon-pdf:hover:not(.disabled) { background: var(--blue); border-color: var(--blue); color: var(--white); transform: scale(1.08); }
+.btn-doc-icon-img:hover:not(.disabled) { background: var(--green); border-color: var(--green); color: var(--white); transform: scale(1.08); }
 .btn-doc-icon.disabled                 { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
 /* ── Update wrap ────────────────────────────────────────────── */
@@ -384,10 +294,10 @@ label.btn-doc-img,
 }
 
 .btn-capture.disabled                 { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-.btn-capture-cam                      { background: var(--blue-light); color: var(--blue);  border: 2px solid #7dd3f8; }
+.btn-capture-cam                      { background: var(--blue-light); color: var(--blue);  border: 2px solid var(--blue-light); }
 .btn-capture-gal                      { background: var(--green-light); color: var(--green); border: 2px solid var(--green); }
-.btn-capture-cam:hover:not(.disabled) { background: var(--blue);       color: white; border-color: var(--blue);  transform: scale(1.08); }
-.btn-capture-gal:hover:not(.disabled) { background: var(--green); color: white; border-color: var(--green);      transform: scale(1.08); }
+.btn-capture-cam:hover:not(.disabled) { background: var(--blue);       color: var(--white); border-color: var(--blue);  transform: scale(1.08); }
+.btn-capture-gal:hover:not(.disabled) { background: var(--green); color: var(--white); border-color: var(--green);      transform: scale(1.08); }
 
 .capture-spinner   { display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--blue); font-weight: 600; }
 .capture-spinner i { font-size: 0.875rem; }
@@ -400,7 +310,7 @@ label.btn-doc-img,
   margin-top: 8px;
   padding: 10px 12px;
   background: var(--blue-light);
-  border: 1.5px solid #7dd3f8;
+  border: 1.5px solid var(--blue-light);
   border-radius: 10px;
   animation: fadeIn 0.25s ease;
   box-sizing: border-box;
@@ -437,7 +347,7 @@ label.btn-doc-img,
   padding-bottom: 8px;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: auto;
-  scrollbar-color: #7dd3f8 var(--blue-light);
+  scrollbar-color: var(--blue-light) var(--blue-light);
 }
 
 .preview-thumbs-row::-webkit-scrollbar        { height: 8px; }
@@ -452,21 +362,21 @@ label.btn-doc-img,
   height: 56px;
   object-fit: cover;
   border-radius: 6px;
-  border: 2px solid #7dd3f8;
+  border: 2px solid var(--blue-light);
   display: block;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   cursor: pointer;
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.preview-thumb:hover { transform: scale(1.08); border-color: var(--blue); box-shadow: 0 4px 12px rgba(14,164,244,0.3); }
+.preview-thumb:hover { transform: scale(1.08); border-color: var(--blue); box-shadow: var(--shadow-blue-xs); }
 
 .preview-page-num {
   position: absolute;
   bottom: 3px;
   right: 3px;
-  background: rgba(8,130,196,0.9);
-  color: white;
+  background: var(--surface-blue-num);
+  color: var(--white);
   font-size: 0.6rem;
   font-weight: 700;
   border-radius: 3px;
@@ -499,7 +409,7 @@ label.btn-doc-img,
   height: 18px;
   border-radius: 50%;
   background: var(--red);
-  color: white;
+  color: var(--white);
   border: 2px solid white;
   font-size: 0.55rem;
   display: flex;
@@ -538,7 +448,7 @@ label.btn-doc-img,
 }
 
 .lightbox-box {
-  background: #1e1e2e;
+  background: var(--surface-dark);
   border-radius: 14px;
   display: flex;
   flex-direction: column;
@@ -557,12 +467,12 @@ label.btn-doc-img,
 }
 
 .lightbox-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
-.lightbox-label  { color: #7dd3f8; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.lightbox-label  { color: var(--blue-light); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
 
 .lightbox-close {
-  background: rgba(239,68,68,0.15);
-  border: 1px solid rgba(239,68,68,0.3);
-  color: #f87171;
+  background: var(--surface-red-glass);
+  border: 1px solid var(--surface-red-glass-border);
+  color: var(--red);
   width: 32px;
   height: 32px;
   border-radius: var(--border-radius);
@@ -574,7 +484,7 @@ label.btn-doc-img,
   transition: all 0.15s;
 }
 
-.lightbox-close:hover { background: var(--red); color: white; border-color: var(--red); }
+.lightbox-close:hover { background: var(--red); color: var(--white); border-color: var(--red); }
 
 .lightbox-body     { flex: 1; display: flex; flex-direction: row; align-items: center; min-height: 0; overflow: hidden; padding: 0; }
 .lightbox-img-wrap { flex: 1; min-width: 0; min-height: 0; overflow: auto; display: flex; align-items: center; justify-content: center; padding: 1rem 0.5rem; }
@@ -610,7 +520,7 @@ label.btn-doc-img,
   padding: 0;
 }
 
-.lightbox-nav:hover:not(:disabled) { background: rgba(255,255,255,0.15); color: white; }
+.lightbox-nav:hover:not(:disabled) { background: rgba(255,255,255,0.15); color: var(--white); }
 .lightbox-nav:disabled              { opacity: 0.15; cursor: default; }
 .lightbox-prev { border-radius: 0 0 0 14px; }
 .lightbox-next { border-radius: 0 0 14px 0; }
@@ -724,7 +634,7 @@ label.btn-doc-img,
   transition: var(--transition);
 }
 
-.page-picker-close:hover { background: var(--red); color: white; }
+.page-picker-close:hover { background: var(--red); color: var(--white); }
 
 .page-picker-body {
   padding: 1.5rem;
@@ -868,7 +778,7 @@ label.btn-doc-img,
   height: 20px;
   border-radius: 50%;
   background: var(--red);
-  color: white;
+  color: var(--white);
   border: 2px solid white;
   font-size: 0.55rem;
   display: flex;
@@ -898,7 +808,7 @@ label.btn-doc-img,
   transition: var(--transition);
 }
 
-.slot-reupload-btn:hover { background: var(--blue); color: white; }
+.slot-reupload-btn:hover { background: var(--blue); color: var(--white); }
 
 /* Footer */
 .page-picker-footer {
@@ -979,7 +889,7 @@ label.btn-doc-img,
 }
 
 .slot-upload-area:hover { background: var(--blue-light); }
-.slot-deleted .slot-upload-area:hover { background: #fcc8b5; }
+.slot-deleted .slot-upload-area:hover { background: var(--red-light); }
 
 /* Thumbnail preview area (uploaded slot) */
 .slot-preview-area {
@@ -1033,7 +943,7 @@ label.btn-doc-img,
 }
 
 .slot-lightbox-box {
-  background: #1e1e2e;
+  background: var(--surface-dark);
   border-radius: var(--border-radius-lg);
   display: flex;
   flex-direction: column;
@@ -1093,7 +1003,7 @@ label.btn-doc-img,
   border-radius: var(--border-radius);
 }
 
-.slot-done-area:hover { background: rgba(95, 142, 4, 0.15); }
+.slot-done-area:hover { background: var(--surface-green-hover); }
 
 .slot-done-area .slot-number { color: var(--green-dark); }
 .slot-done-area .slot-status-icon { color: var(--green); font-size: 0.875rem; }
@@ -1125,7 +1035,7 @@ label.btn-doc-img,
   border-color: var(--blue);
 }
 
-.slot-cam-btn:hover { background: var(--blue); color: white; }
+.slot-cam-btn:hover { background: var(--blue); color: var(--white); }
 
 .slot-gal-btn {
   background: var(--green-light);
@@ -1133,12 +1043,12 @@ label.btn-doc-img,
   border-color: var(--green);
 }
 
-.slot-gal-btn:hover { background: var(--green); color: white; }
+.slot-gal-btn:hover { background: var(--green); color: var(--white); }
 
 .slot-deleted .slot-cam-btn { background: var(--red-light); color: var(--red); border-color: var(--red); }
-.slot-deleted .slot-cam-btn:hover { background: var(--red); color: white; }
+.slot-deleted .slot-cam-btn:hover { background: var(--red); color: var(--white); }
 .slot-deleted .slot-gal-btn { background: var(--red-light); color: var(--red); border-color: var(--red); }
-.slot-deleted .slot-gal-btn:hover { background: var(--red); color: white; }
+.slot-deleted .slot-gal-btn:hover { background: var(--red); color: var(--white); }
 
 /* ─── Cancel button — light red background, red on hover ──────── */
 .page-picker-actions .btn-secondary {
@@ -1148,9 +1058,10 @@ label.btn-doc-img,
 }
 .page-picker-actions .btn-secondary:hover:not(:disabled) {
   background: var(--red);
-  color: white;
+  color: var(--white);
   border-color: var(--red);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-red-sm);
 }
 
 /* ─── Upload / Update dropdown menu ─────────────────────────── */
@@ -1159,7 +1070,7 @@ label.btn-doc-img,
   display: inline-flex;
 }
 
-.btn-action {
+.btn-upload-action {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -1169,17 +1080,17 @@ label.btn-doc-img,
   font-weight: 600;
   cursor: pointer;
   border: none;
-  color: white;
+  color: var(--white);
   transition: var(--transition);
   white-space: nowrap;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.btn-action-upload { background: var(--blue); }
-.btn-action-upload:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.btn-upload-action.btn-action-upload { background: var(--blue); }
+.btn-upload-action.btn-action-upload:hover { background: var(--blue-dark); transform: translateY(-1px); }
 
-.btn-action-update { background: var(--yellow); color: white; }
-.btn-action-update:hover:not(:disabled) { background: var(--yellow-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 187, 10, 0.5); }
+.btn-upload-action.btn-action-update { background: var(--yellow); color: var(--white); }
+.btn-upload-action.btn-action-update:hover:not(:disabled) { background: var(--yellow-dark); transform: translateY(-1px); box-shadow: var(--shadow-yellow-sm); }
 
 .menu-chevron { font-size: 0.65rem; margin-left: 2px; }
 
@@ -1285,7 +1196,7 @@ label.btn-doc-img,
   align-items: flex-start;
 }
 
-.mobile-direct-btns .btn-action {
+.mobile-direct-btns .btn-upload-action {
   width: 100%;
   justify-content: center;
   padding: 0.5rem 1rem;
@@ -1298,15 +1209,10 @@ label.btn-doc-img,
 .badge-warning { background: var(--yellow-light); color: var(--yellow-dark) !important; }
 
 /* ─── View Answer Sheet — single line on mobile ──────────────── */
-.download-link {
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--blue);
-  text-decoration: none;
-}
-.download-link:hover { color: var(--blue); text-decoration: none; }
+/* .download-link base (inline-flex, gap, color, text-decoration) → global.css */
+/* UAS-specific: white-space:nowrap so links never wrap in table cells */
+.download-link { white-space: nowrap; }
+/* .download-link:hover (color) → global.css */
 .download-link:hover .link-text {
   text-decoration: underline;
   text-decoration-color: var(--blue);
@@ -1314,7 +1220,7 @@ label.btn-doc-img,
   text-underline-offset: 2px;
 }
 .download-link span:not(.link-text) { text-decoration: none; }
-.download-link i { text-decoration: none !important; }
+/* .download-link i { text-decoration: none } → global.css */
 
 
 
@@ -1372,17 +1278,9 @@ label.btn-doc-img,
 }
 
 /* ─── Stat card hover ────────────────────────────────────────── */
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-.stat-card.stat-total:hover    { border-color: var(--blue); }
-.stat-card.stat-absent:hover   { border-color: var(--red); }
-.stat-card.stat-uploaded:hover { border-color: var(--green); }
-.stat-card.stat-pending:hover  { border-color: var(--yellow); }
+/* .stat-card:hover border-color variants → global.css */
 
-/* ─── Stat card icon brand colors ────────────────────────────── */
-.stat-card.stat-total    .stat-icon { background: var(--blue-light);   color: var(--blue); }
-.stat-card.stat-absent   .stat-icon { background: var(--red-light);    color: var(--red); }
-.stat-card.stat-uploaded .stat-icon { background: var(--green-light);  color: var(--green); }
-.stat-card.stat-pending  .stat-icon { background: var(--yellow-light); color: var(--yellow); }
+/* .stat-card.stat-*.stat-icon → global.css */
 /* ─── Uploaded row — filename + Update button same line ─────── */
 .doc-uploaded-row {
   display: flex !important;
@@ -1439,14 +1337,14 @@ label.btn-doc-img,
 }
 
 /* Overwrite */
-.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--yellow) !important;}
+/* .header-info-icon base → global.css; icon is yellow by default from global */
 /* .header-info-icon:hover { color:var(--yellow-dark); } */
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW & EDIT MODAL
    ══════════════════════════════════════════════════════════════ */
 
 /* Preview & Edit button in the Answer Sheet(s) cell */
-.btn-action-preview {
+.btn-upload-action.btn-action-preview {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -1454,7 +1352,7 @@ label.btn-doc-img,
   font-size: 0.78rem;
   font-weight: 600;
   border: 1.5px solid var(--blue);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
   background: transparent;
   color: var(--blue);
   cursor: pointer;
@@ -1463,7 +1361,7 @@ label.btn-doc-img,
 }
 .btn-action-preview:hover {
   background: var(--blue);
-  color: #fff;
+  color: var(--white);
 }
 
 /* Override page-picker-box width for image preview modal */
@@ -1474,7 +1372,7 @@ label.btn-doc-img,
 /* Hint text */
 .image-preview-hint {
   font-size: 0.82rem;
-  color: var(--gray-600);
+  color: var(--gray-500);
   margin-bottom: 1rem;
   display: flex;
   align-items: flex-start;
@@ -1498,7 +1396,7 @@ label.btn-doc-img,
   align-items: center;
   gap: 0.5rem;
   border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius);
+  border-radius: var(--border-radius);
   padding: 0.75rem 0.5rem;
   background: var(--gray-50);
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -1514,7 +1412,7 @@ label.btn-doc-img,
   width: 100%;
   aspect-ratio: 3/4;
   background: var(--gray-100);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1526,7 +1424,7 @@ label.btn-doc-img,
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
 }
 .preview-thumb-new {
   border: 2px solid var(--success);
@@ -1552,7 +1450,7 @@ label.btn-doc-img,
   top: 6px;
   right: 6px;
   background: var(--success);
-  color: #fff;
+  color: var(--white);
   font-size: 0.68rem;
   font-weight: 700;
   padding: 2px 6px;
@@ -1589,16 +1487,16 @@ label.btn-doc-img,
   font-size: 0.75rem;
   font-weight: 600;
   border: 1.5px solid var(--blue);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
   background: transparent;
   color: var(--blue);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
   text-align: center;
 }
-.btn-replace:hover         { background: var(--blue); color: #fff; }
+.btn-replace:hover         { background: var(--blue); color: var(--white); }
 .btn-replace-changed       { border-color: var(--success); color: var(--success); }
-.btn-replace-changed:hover { background: var(--success); color: #fff; }
+.btn-replace-changed:hover { background: var(--success); color: var(--white); }
 
 /* Loading spinner inside preview slot */
 .preview-thumb-placeholder i.fa-spinner {
@@ -1610,7 +1508,7 @@ label.btn-doc-img,
 .image-preview-modal .page-picker-actions .btn-primary {
   background: var(--success);
   border-color: var(--success);
-  color: #fff;
+  color: var(--white);
 }
 .image-preview-modal .page-picker-actions .btn-primary:hover:not(:disabled) {
   background: var(--green-dark);
@@ -1620,26 +1518,6 @@ label.btn-doc-img,
 .image-preview-modal .page-picker-actions .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-/* ── Image preview modal footer buttons ──────────────────────── */
-.img-modal-cancel {
-  background: var(--red-light) !important;
-  color: var(--red) !important;
-  border: 2px solid var(--red) !important;
-  border-radius: var(--border-radius) !important;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 1rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.img-modal-cancel:hover:not(:disabled) {
-  background: var(--red) !important;
-  color: #fff !important;
 }
 
 .img-modal-add {
@@ -1670,7 +1548,7 @@ label.btn-doc-img,
 .img-modal-save {
   background: var(--success) !important;
   border-color: var(--success) !important;
-  color: #fff !important;
+  color: var(--white) !important;
   border-radius: var(--border-radius) !important;
   display: inline-flex;
   align-items: center;
@@ -1735,7 +1613,7 @@ label.btn-doc-img,
 }
 .btn-replace-remove:hover {
   background: var(--red) !important;
-  color: #fff !important;
+  color: var(--white) !important;
 }
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW MODAL — FIXES
@@ -1758,7 +1636,7 @@ label.btn-doc-img,
   align-items: center;
   gap: 0.35rem;
   border: 1.5px solid var(--gray-200);
-  border-radius: var(--radius);
+  border-radius: var(--border-radius);
   padding: 0.5rem 0.4rem;
   background: var(--gray-50);
   transition: border-color 0.15s;
@@ -1770,7 +1648,7 @@ label.btn-doc-img,
   width: 100%;
   aspect-ratio: 3/4;
   background: var(--gray-100);
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
   overflow: hidden;
   cursor: pointer;
   display: flex;
@@ -1789,10 +1667,10 @@ label.btn-doc-img,
   justify-content: center;
   opacity: 0;
   transition: opacity 0.15s;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
 }
 .preview-view-overlay i {
-  color: #fff;
+  color: var(--white);
   font-size: 1.4rem;
 }
 
@@ -1812,12 +1690,12 @@ label.btn-doc-img,
   width: 2rem;
   padding: 0.28rem 0;
   border-color: var(--gray-400);
-  color: var(--gray-600);
+  color: var(--gray-500);
 }
 .preview-slot-actions .btn-replace-cam:hover {
   background: var(--gray-600);
-  color: #fff;
-  border-color: var(--gray-600);
+  color: var(--white);
+  border-color: var(--gray-500);
 }
 .preview-slot-actions .btn-replace-remove {
   flex: 0 0 auto;
@@ -1835,7 +1713,7 @@ label.btn-doc-img,
   height: 100%;
   object-fit: cover;
   object-position: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
 }
 
 /* ── Remove button for new slots — full width, centered ─────── */
@@ -1848,18 +1726,18 @@ label.btn-doc-img,
 }
 .btn-remove-new:hover {
   background: var(--red) !important;
-  color: #fff !important;
+  color: var(--white) !important;
 }
 
 /* ── Camera button — brand blue ──────────────────────────────── */
 .btn-replace-cam {
-  background: var(--blue-light, #e8f4fd) !important;
+  background: var(--blue-light) !important;
   border-color: var(--blue) !important;
   color: var(--blue) !important;
 }
 .btn-replace-cam:hover {
   background: var(--blue) !important;
-  color: #fff !important;
+  color: var(--white) !important;
 }
 
 /* ── Force all slots to same fixed size — no stretching ─────── */
@@ -1944,70 +1822,11 @@ label.btn-doc-img,
   opacity: 0.7;
 }
 
-/* ══════════════════════════════════════════════════════════════
-   CONFIRM DIALOG
-   ══════════════════════════════════════════════════════════════ */
-.confirm-dialog-box {
-  background: var(--app-bg);
-  border-radius: var(--border-radius-lg);
-  padding: 2rem 1.75rem 1.5rem;
-  width: min(90vw, 400px);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  animation: slideUp 0.22s ease;
-}
+/* ── Confirm Dialog — all base styles → global.css
+   (.confirm-dialog-box, .confirm-dialog-icon, .confirm-dialog-message,
+    .confirm-dialog-actions, .confirm-ok-btn, .confirm-cancel-btn)
+   UAS overlay uses .page-picker-overlay (already defined above) as backdrop ── */
 
-.confirm-dialog-icon {
-  width: 3.5rem;
-  height: 3.5rem;
-  background: var(--warning-light, #fff7e6);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  color: var(--yellow, #f59e0b);
-  flex-shrink: 0;
-}
-
-.confirm-dialog-message {
-  font-size: 0.9rem;
-  color: var(--gray-700);
-  text-align: center;
-  line-height: 1.55;
-  margin: 0;
-}
-
-.confirm-dialog-actions {
-  display: flex;
-  gap: 0.75rem;
-  width: 100%;
-  justify-content: center;
-  margin-top: 0.25rem;
-}
-
-.confirm-ok-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 1.25rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  border: 2px solid var(--red);
-  border-radius: var(--border-radius);
-  background: var(--red);
-  color: #fff;
-  cursor: pointer;
-  transition: var(--transition);
-}
-.confirm-ok-btn:hover {
-  background: var(--red-dark, #c0392b);
-  border-color: var(--red-dark, #c0392b);
-  transform: translateY(-1px);
-}
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW MODAL — SLOT WITH ACTUAL IMAGE
    ══════════════════════════════════════════════════════════════ */
@@ -2052,7 +1871,7 @@ label.btn-doc-img,
   transition: opacity 0.15s;
 }
 .img-slot-loaded:hover .img-slot-overlay { opacity: 1; }
-.img-slot-overlay i { color: #fff; font-size: 1.5rem; }
+.img-slot-overlay i { color: var(--white); font-size: 1.5rem; }
 
 /* Replaced badge inside slot */
 .img-slot-badge {
@@ -2069,7 +1888,7 @@ label.btn-doc-img,
 }
 .img-slot-badge-replaced {
   background: var(--success);
-  color: #fff;
+  color: var(--white);
 }
 
 /* Replace button at bottom of slot */
@@ -2089,9 +1908,9 @@ label.btn-doc-img,
   transition: background 0.15s, color 0.15s;
   flex-shrink: 0;
 }
-.img-slot-replace-btn:hover          { background: var(--blue); color: #fff; }
+.img-slot-replace-btn:hover          { background: var(--blue); color: var(--white); }
 .img-slot-replace-btn-done           { border-color: var(--success); color: var(--success); }
-.img-slot-replace-btn-done:hover     { background: var(--success); color: #fff; }
+.img-slot-replace-btn-done:hover     { background: var(--success); color: var(--white); }
 
 /* Camera button (mobile only) */
 .img-slot-cam-btn {
@@ -2101,14 +1920,14 @@ label.btn-doc-img,
   width: 2rem;
   height: 2rem;
   border: none;
-  background: var(--blue-light, #e8f4fd);
+  background: var(--blue-light);
   color: var(--blue);
   cursor: pointer;
   font-size: 0.8rem;
   position: absolute;
   bottom: 2rem;
   right: 4px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--border-radius);
 }
 @media (max-width: 767px) { .img-slot-cam-btn { display: flex; } }
 
@@ -2192,7 +2011,7 @@ label.btn-doc-img,
   transition: opacity 0.15s;
 }
 .slot-done-area.slot-img-area:hover .slot-img-overlay { opacity: 1; }
-.slot-img-overlay i { color: #fff; font-size: 1.4rem; }
+.slot-img-overlay i { color: var(--white); font-size: 1.4rem; }
 
 /* Slot must be flex column so image fills remaining space */
 .page-slot-btn.slot-done {
@@ -2233,13 +2052,13 @@ label.btn-doc-img,
 }
 /* Change Count button — brand blue */
 .page-count-input-row button.page-go-btn {
-  background: #0ea4f4 !important;
-  border-color: #0ea4f4 !important;
-  color: #fff !important;
+  background: var(--blue) !important;
+  border-color: var(--blue) !important;
+  color: var(--white) !important;
 }
 .page-count-input-row button.page-go-btn:hover {
-  background: #0882c4 !important;
-  border-color: #0882c4 !important;
+  background: var(--blue-dark) !important;
+  border-color: var(--blue-dark) !important;
 }
 /* ── Divider line — same style as footer border ─────────────── */
 .page-count-divider {
@@ -2270,7 +2089,7 @@ label.btn-doc-img,
 .slot-filename-page {
   font-size: 0.72rem;
   font-weight: 700;
-  color: var(--gray-600);
+  color: var(--gray-500);
 }
 .slot-filename-name {
   font-size: 0.65rem;
