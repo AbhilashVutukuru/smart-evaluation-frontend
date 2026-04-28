@@ -1,4 +1,65 @@
 <div class="login-container">
+  <!-- Left side - Marketing Card (desktop only) -->
+  <div class="marketing-card">
+    <div class="marketing-content">
+      <div class="trusted-badge">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span>Trusted by schools to grade smarter and improve learning outcomes</span>
+      </div>
+
+      <h1 class="marketing-title">
+        Reduce Teacher <br>
+        Grading Time by <span class="highlight">80%</span> <br>
+        with <span class="highlight">AI</span>
+      </h1>
+
+      <p class="marketing-subtitle">
+        Automate answer evaluation, ensure consistent grading, and get instant insights — so teachers can focus on teaching, not grading papers.
+      </p>
+
+      <!-- Features Grid -->
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-icon">
+              <i class="fas fa-clock" aria-hidden="true"></i>
+            </div>
+            <h3>Save Time</h3>
+          </div>
+          <!-- <p>Automate repetitive grading tasks and save up to 80% of valuable time.</p> -->
+           <p>Automate repetitive grading and reduce manual work instantly.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-icon">
+              <i class="fas fa-check" aria-hidden="true"></i>
+            </div>
+            <h3>Ensure Consistency</h3>
+          </div>
+          <p>AI-powered evaluation ensures fair, accurate, and consistent grading every time.</p>
+        </div>
+
+        <div class="feature-item">
+          <div class="feature-header">
+            <div class="feature-icon">
+              <i class="fas fa-chart-line" aria-hidden="true"></i>
+            </div>
+            <h3>Gain Insights</h3>
+          </div>
+          <!-- <p>Get detailed analytics on class performance and identify learning gaps instantly.</p> -->
+           <p>Identify weak areas and improve student performance faster.</p>
+        </div>
+      </div>
+
+      <button type="button" class="demo-btn-marketing" (click)="openEnquiryModal()">
+        <i class="fas fa-play-circle" aria-hidden="true"></i>
+        See Smart Grader in Action
+      </button>
+    </div>
+  </div>
+
+  <!-- Right side - Login Card -->
   <div class="login-card">
 
     <!-- ── Login form ──────────────────────────────────────── -->
@@ -39,6 +100,14 @@
             autocomplete="email"
           >
         </div>
+<<<<<<< HEAD
+        <h1 class="already-logged-in-title">Already Signed In</h1>
+        <p>You are currently logged in as <strong>{{ loggedInUserName }}</strong></p>
+        <div class="logged-in-actions">
+          <button type="button" class="btn-go-dashboard" (click)="goToDashboard()">
+            <i class="fas fa-th-large" aria-hidden="true"></i>
+            Go to Dashboard
+=======
         @if (f['email'].invalid && f['email'].touched) {
           <div class="text-danger small mt-1" role="alert">
             @if (f['email'].errors?.['required']) { Email is required }
@@ -70,11 +139,26 @@
             (click)="togglePassword()"
             [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
             <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+>>>>>>> azure/main
           </button>
         </div>
+<<<<<<< HEAD
+      </div>
+    }
+
+    <!-- ── Normal login form ──────────────────────────────────── -->
+    @if (!alreadyLoggedIn) {
+      <div class="logo-section">
+        <div class="logo-icon" role="img" aria-label="School portal">
+          <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+        </div>
+        <h1>Welcome Back!</h1>
+        <p>Sign in to continue to School Portal</p>
+=======
         @if (f['password'].invalid && f['password'].touched) {
           <div class="text-danger small mt-1" role="alert">Password is required</div>
         }
+>>>>>>> azure/main
       </div>
 
       <!-- Remember Me & Forgot Password -->
@@ -87,9 +171,68 @@
               id="rememberMe"
               formControlName="rememberMe"
             >
+<<<<<<< HEAD
+          </div>
+          @if (f['email'].invalid && f['email'].touched) {
+            <div class="text-danger small mt-1" role="alert">
+              @if (f['email'].errors?.['required']) { Email is required }
+              @if (f['email'].errors?.['email']) { Please enter a valid email }
+            </div>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text" aria-hidden="true">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              class="form-control"
+              id="password"
+              formControlName="password"
+              placeholder="Enter your password"
+              (input)="clearError()"
+              [class.is-invalid]="f['password'].invalid && f['password'].touched"
+              autocomplete="current-password"
+            >
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="togglePassword()"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+            </button>
+          </div>
+          @if (f['password'].invalid && f['password'].touched) {
+            <div class="text-danger small mt-1" role="alert">Password is required</div>
+          }
+        </div>
+
+        <!-- Remember Me & Forgot Password -->
+        <div class="row mb-3">
+          <div class="col-6">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                id="rememberMe"
+                formControlName="rememberMe"
+              >
+              <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
+                Remember me
+              </label>
+            </div>
+          </div>
+          <div class="col-6 text-end">
+            <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
+=======
             <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
               Remember me
             </label>
+>>>>>>> azure/main
           </div>
         </div>
         <div class="col-6 text-end">
@@ -107,7 +250,262 @@
         {{ loading ? 'Signing in...' : 'Sign In' }}
       </button>
 
+<<<<<<< HEAD
+      </form>
+
+      <!-- Request Demo Button -->
+      <div class="request-demo-section">
+        <p class="divider-text">Not a user yet?</p>
+        <button type="button" class="request-demo-btn" (click)="openEnquiryModal()">
+          <i class="fas fa-envelope" aria-hidden="true"></i>
+          Request Demo / Trail Access
+        </button>
+      </div>
+    }
+=======
     </form>
+>>>>>>> azure/main
 
   </div>
 </div>
+
+<!-- Enquiry Modal -->
+@if (showEnquiryModal) {
+  <div class="modal-overlay" (click)="closeEnquiryModal()" [attr.aria-hidden]="!showEnquiryModal">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Request Demo / Trial Access</h2>
+        <button type="button" class="modal-close" (click)="closeEnquiryModal()" aria-label="Close modal">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        @if (enquirySuccess) {
+          <div class="success-message">
+            <div class="success-icon">
+              <i class="fas fa-check-circle" aria-hidden="true"></i>
+            </div>
+            <h3>Thank You!</h3>
+            <p>Your enquiry has been submitted successfully. Our team will contact you soon.</p>
+          </div>
+        } @else {
+          @if (enquiryError) {
+            <div class="alert alert-danger" role="alert" aria-live="polite">
+              <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+              {{ enquiryError }}
+            </div>
+          }
+
+          <form [formGroup]="enquiryForm" (ngSubmit)="submitEnquiry()" novalidate>
+
+            <!-- Contact Person Name -->
+            <div class="form-group">
+              <label for="enquiry-contact-name" class="form-label">Contact Person Name <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="enquiry-contact-name"
+                formControlName="contactPersonName"
+                placeholder="Enter your full name"
+                [class.is-invalid]="ef['contactPersonName'].invalid && ef['contactPersonName'].touched"
+              >
+              @if (ef['contactPersonName'].invalid && ef['contactPersonName'].touched) {
+                <div class="text-danger small mt-1" role="alert">
+                  @if (ef['contactPersonName'].errors?.['required']) { Name is required }
+                  @if (ef['contactPersonName'].errors?.['minlength']) { Name must be at least 2 characters }
+                </div>
+              }
+            </div>
+
+            <!-- Email -->
+            <div class="form-group">
+              <label for="enquiry-email" class="form-label">Email Address <span class="required">*</span></label>
+              <input
+                type="email"
+                class="form-control"
+                id="enquiry-email"
+                formControlName="email"
+                placeholder="your@school.edu"
+                [class.is-invalid]="ef['email'].invalid && ef['email'].touched"
+              >
+              @if (ef['email'].invalid && ef['email'].touched) {
+                <div class="text-danger small mt-1" role="alert">
+                  @if (ef['email'].errors?.['required']) { Email is required }
+                  @if (ef['email'].errors?.['email']) { Please enter a valid email }
+                </div>
+              }
+            </div>
+
+            <!-- Phone Number -->
+            <div class="form-group">
+              <label for="enquiry-phone" class="form-label">Phone Number <span class="required">*</span></label>
+              <input
+                type="tel"
+                class="form-control"
+                id="enquiry-phone"
+                formControlName="phoneNumber"
+                placeholder="10-digit mobile number"
+                [class.is-invalid]="ef['phoneNumber'].invalid && ef['phoneNumber'].touched"
+              >
+              @if (ef['phoneNumber'].invalid && ef['phoneNumber'].touched) {
+                <div class="text-danger small mt-1" role="alert">
+                  @if (ef['phoneNumber'].errors?.['required']) { Phone number is required }
+                  @if (ef['phoneNumber'].errors?.['pattern']) { Please enter a valid 10-digit number }
+                </div>
+              }
+            </div>
+
+            <!-- Institute Name -->
+            <div class="form-group">
+              <label for="enquiry-institute" class="form-label">Institute/School Name <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="enquiry-institute"
+                formControlName="instituteName"
+                placeholder="School or Institution name"
+                [class.is-invalid]="ef['instituteName'].invalid && ef['instituteName'].touched"
+              >
+              @if (ef['instituteName'].invalid && ef['instituteName'].touched) {
+                <div class="text-danger small mt-1" role="alert">Institute name is required</div>
+              }
+            </div>
+
+            <!-- Institute Type -->
+            <div class="form-group">
+              <label for="enquiry-institute-type" class="form-label">Institute Type <span class="required">*</span></label>
+              <select
+                class="form-control"
+                id="enquiry-institute-type"
+                formControlName="instituteType"
+                [class.is-invalid]="ef['instituteType'].invalid && ef['instituteType'].touched"
+              >
+                <option value="" disabled>Select institute type</option>
+                <option value="School">School</option>
+                <option value="College">College</option>
+                <option value="University">University</option>
+                <option value="Coaching Center">Coaching Center</option>
+                <option value="Other">Other</option>
+              </select>
+              @if (ef['instituteType'].invalid && ef['instituteType'].touched) {
+                <div class="text-danger small mt-1" role="alert">Please select institute type</div>
+              }
+            </div>
+
+            <!-- Website URL -->
+<div class="form-group">
+  <label for="enquiry-website" class="form-label">Website URL (Optional)</label>
+  <input
+    type="url"
+    class="form-control"
+    id="enquiry-website"
+    formControlName="websiteUrl"
+    placeholder="https://www.yourschool.edu"
+    [class.is-invalid]="ef['websiteUrl'].invalid && ef['websiteUrl'].touched"
+  >
+  @if (ef['websiteUrl'].invalid && ef['websiteUrl'].touched) {
+    <div class="text-danger small mt-1" role="alert">
+      @if (ef['websiteUrl'].errors?.['pattern']) { Please enter a valid URL (e.g. https://www.school.com) }
+    </div>
+  }
+</div>
+
+            <!-- Address -->
+            <div class="form-group">
+              <label for="enquiry-address" class="form-label">Address <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="enquiry-address"
+                formControlName="address"
+                placeholder="Street address"
+                [class.is-invalid]="ef['address'].invalid && ef['address'].touched"
+              >
+              @if (ef['address'].invalid && ef['address'].touched) {
+                <div class="text-danger small mt-1" role="alert">Address is required</div>
+              }
+            </div>
+
+            <!-- Town/City -->
+            <div class="form-group">
+              <label for="enquiry-city" class="form-label">Town/City <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="enquiry-city"
+                formControlName="townOrCity"
+                placeholder="City or Town"
+                [class.is-invalid]="ef['townOrCity'].invalid && ef['townOrCity'].touched"
+              >
+              @if (ef['townOrCity'].invalid && ef['townOrCity'].touched) {
+                <div class="text-danger small mt-1" role="alert">Town/City is required</div>
+              }
+            </div>
+
+            <!-- State -->
+            <div class="form-group">
+              <label for="enquiry-state" class="form-label">State <span class="required">*</span></label>
+              <input
+                type="text"
+                class="form-control"
+                id="enquiry-state"
+                formControlName="state"
+                placeholder="State or Province"
+                [class.is-invalid]="ef['state'].invalid && ef['state'].touched"
+              >
+              @if (ef['state'].invalid && ef['state'].touched) {
+                <div class="text-danger small mt-1" role="alert">State is required</div>
+              }
+            </div>
+
+            <!-- Number of Students -->
+            <div class="form-group">
+              <label for="enquiry-students" class="form-label">Number of Students <span class="required">*</span></label>
+              <input
+                type="number"
+                class="form-control"
+                id="enquiry-students"
+                formControlName="numberOfStudents"
+                placeholder="Total number of students"
+                [class.is-invalid]="ef['numberOfStudents'].invalid && ef['numberOfStudents'].touched"
+              >
+              @if (ef['numberOfStudents'].invalid && ef['numberOfStudents'].touched) {
+                <div class="text-danger small mt-1" role="alert">
+                  @if (ef['numberOfStudents'].errors?.['required']) { Number of students is required }
+                  @if (ef['numberOfStudents'].errors?.['min']) { Must be at least 1 }
+                </div>
+              }
+            </div>
+
+            <!-- Message -->
+            <div class="form-group">
+              <label for="enquiry-message" class="form-label">Message (Optional)</label>
+              <textarea
+                class="form-control"
+                id="enquiry-message"
+                formControlName="message"
+                placeholder="Tell us about your requirements..."
+                rows="3"
+                [class.is-invalid]="ef['message'].invalid && ef['message'].touched"
+              ></textarea>
+              @if (ef['message'].invalid && ef['message'].touched) {
+                <div class="text-danger small mt-1" role="alert">Message must be at least 10 characters</div>
+              }
+            </div>
+
+            <!-- Submit Button -->
+            <button
+              type="submit"
+              class="btn btn-enquiry-submit"
+              [disabled]="enquiryLoading || enquiryForm.invalid"
+              [attr.aria-busy]="enquiryLoading">
+              <i [class]="enquiryLoading ? 'fas fa-spinner fa-spin' : 'fas fa-paper-plane'" aria-hidden="true"></i>
+              {{ enquiryLoading ? 'Submitting...' : 'Submit Request' }}
+            </button>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+}

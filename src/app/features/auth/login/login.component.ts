@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { EnquiryService } from '../../../core/services/enquiry.service';
 import {
   FormBuilder,
   FormGroup,
@@ -22,13 +23,19 @@ export class LoginComponent extends BaseComponent implements OnInit {
   private authService = inject(AuthService);
   private router      = inject(Router);
   private route       = inject(ActivatedRoute);
+  private enquiryService = inject(EnquiryService);
 
   loginForm: FormGroup;
+  enquiryForm: FormGroup;
   loading          = false;
   error            = '';
   showPassword     = false;
   alreadyLoggedIn  = false;
   loggedInUserName = '';
+  showEnquiryModal = false;
+  enquiryLoading   = false;
+  enquiryError     = '';
+  enquirySuccess   = false;
 
   constructor() {
     super();
@@ -36,6 +43,20 @@ export class LoginComponent extends BaseComponent implements OnInit {
       email     : ['', [Validators.required, Validators.email]],
       password  : ['', Validators.required],
       rememberMe: [false],
+    });
+
+    this.enquiryForm = this.fb.group({
+      contactPersonName: ['', [Validators.required, Validators.minLength(2)]],
+      email           : ['', [Validators.required, Validators.email]],
+      phoneNumber     : ['', [Validators.required, Validators.pattern(/^\d{10}$/)]],
+      instituteName   : ['', Validators.required],
+      instituteType   : ['', Validators.required],
+      websiteUrl      : ['', [Validators.pattern(/^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(\/\S*)?$/i)]],
+      address         : ['', Validators.required],
+      townOrCity      : ['', Validators.required],
+      state           : ['', Validators.required],
+      numberOfStudents: ['', [Validators.required, Validators.min(1)]],
+      message         : ['', Validators.minLength(10)],
     });
   }
 
@@ -59,9 +80,73 @@ export class LoginComponent extends BaseComponent implements OnInit {
   }
 
   get f() { return this.loginForm.controls; }
+  get ef() { return this.enquiryForm.controls; }
 
   togglePassword(): void { this.showPassword = !this.showPassword; }
   clearError(): void     { if (this.error) this.error = ''; }
+
+  openEnquiryModal(): void {
+    this.showEnquiryModal = true;
+    this.enquiryError = '';
+    this.enquirySuccess = false;
+    this.enquiryForm.reset();
+  }
+
+  closeEnquiryModal(): void {
+    this.showEnquiryModal = false;
+    this.enquiryForm.reset();
+    this.enquiryError = '';
+    this.enquirySuccess = false;
+  }
+
+ submitEnquiry(): void {
+  if (this.enquiryForm.invalid) return;
+
+  this.enquiryLoading = true;
+  this.enquiryError = '';
+  this.enquirySuccess = false;
+
+  const formValue = this.enquiryForm.value;
+
+  const payload = {
+    instituteName    : formValue.instituteName,
+    state            : formValue.state,
+    townOrCity       : formValue.townOrCity,
+    address          : formValue.address,
+    contactPersonName: formValue.contactPersonName,
+    email            : formValue.email,
+    phoneNumber      : formValue.phoneNumber,
+    numberOfStudents : Number(formValue.numberOfStudents),
+    instituteType    : formValue.instituteType,
+    websiteUrl       : formValue.websiteUrl || null,
+    message          : formValue.message || '',
+  };
+
+  this.enquiryService
+    .submitEnquiry(payload)
+    .pipe(this.cancelOnDestroy())
+    .subscribe({
+      next: () => {
+        this.enquiryLoading = false;
+        this.enquirySuccess = true;
+        this.enquiryForm.reset();
+
+        // Close modal after 3 seconds
+        // setTimeout(() => this.closeEnquiryModal(), 3000);
+      },
+      error: (error) => {
+        this.enquiryLoading = false;
+
+        if (error.status === 400) {
+          this.enquiryError = 'Please check all fields and try again.';
+        } else if (error.status === 0) {
+          this.enquiryError = 'Network error. Please check your connection.';
+        } else {
+          this.enquiryError = 'Something went wrong. Please try again.';
+        }
+      },
+    });
+}
 
   goToDashboard(): void {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
