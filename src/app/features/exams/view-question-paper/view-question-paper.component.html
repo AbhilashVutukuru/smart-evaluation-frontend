@@ -176,11 +176,11 @@
         <tbody>
           <tr *ngFor="let paper of filteredPapersList; let i = index"
             [class.active-row]="questionPaper?.questionPaperId === paper.questionPaperId">
-            <td class="text-muted">{{ i + 1 }}</td>
-            <td><strong class="roll-number">{{ paper.subjectName }}</strong></td>
+            <td><strong class="roll-number">{{ i + 1 }}</strong></td>
+            <td>{{ paper.subjectName }}</td>
             <td>{{ paper.examTypeName }}</td>
             <td>{{ paper.questionPaperName }}</td>
-            <td><span class="badge badge-primary">{{ paper.totalMarks }}</span></td>
+            <td>{{ paper.totalMarks }}</td>
             <td>{{ paper.totalQuestions }}</td>
             <td>
               <span *ngIf="paper.examDate; else noDate">{{ paper.examDate | date:'dd MMM yyyy' }}</span>
@@ -245,7 +245,7 @@
           Locked — Exam Date Passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
         </span>      
         <button *ngIf="!isEditMode && !isLocked" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
-          <i class="fas fa-trash-alt"></i> Delete
+          <i class="fas fa-trash-alt"></i> Delete Question Paper
         </button>
           <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
           <i class="fas fa-edit"></i> Edit Question Paper
@@ -417,7 +417,8 @@
                   <td class="text-center">
                     <span class="marks-badge-sm"
                       [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
-                      {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                      <!-- {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} -->
+                      {{ currentQuestion.maxMarks }}
                     </span>
                   </td>
                 </tr>

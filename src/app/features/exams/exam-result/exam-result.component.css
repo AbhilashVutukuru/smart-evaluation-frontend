@@ -10,17 +10,8 @@
 
 
 /* ── Stat icon colors — all use brand CSS variables from styles.css ── */
-/* ── Stat card hover — strong brand lift ────────────────────── */
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-color: var(--gray-300); }
-.stat-card.stat-total:hover  { border-color: var(--blue); }
-.stat-card.stat-absent:hover { border-color: var(--red); }
-.stat-card.stat-uploaded:hover { border-color: var(--green); }
-.stat-card.stat-pending:hover  { border-color: var(--yellow); }
-
-.stat-card.stat-total    .stat-icon { background: var(--blue-light);   color: var(--blue); }
-.stat-card.stat-absent   .stat-icon { background: var(--red-light);    color: var(--red); }
-.stat-card.stat-uploaded .stat-icon { background: var(--green-light);  color: var(--green); }
-.stat-card.stat-pending  .stat-icon { background: var(--yellow-light); color: var(--yellow); }
+/* .stat-card:hover + border-color variants → global.css */
+/* .stat-card.stat-*.stat-icon → global.css */
 
 /* ── Badge colors — vivid brand colors ──────────────────────── */
 .badge-success   { background: var(--green-light);  color: var(--green-dark) !important; }
@@ -37,7 +28,7 @@
 /* ── Table — NO overrides. global.css handles table design fully ── */
 
 /* ── Roll number ────────────────────────────────────────────── */
-.roll-number { color: var(--blue); font-size: 1rem; }
+.roll-number { font-size: 1rem; }
 
 /* .results-page-header → global.css */
 /* ── Student info grid ──────────────────────────────────────── */
@@ -190,7 +181,7 @@
 .ml-2            { margin-left: 0.5rem; }
 .py-2            { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
 .form-control-sm { padding: 0.25rem 0.5rem; font-size: 0.875rem; }
-.is-invalid      { border-color: var(--red) !important; }
+/* .is-invalid → global.css (border-color + focus shadow) */
 .is-valid        { border-color: var(--green) !important; }
 .invalid-feedback{ color: var(--red); font-size: 0.8125rem; margin-top: 0.25rem; }
 
@@ -298,6 +289,4 @@
 .er-search { flex: 1; max-width: 100%; }
 
 /* Reduce gap between last table and nav buttons */
-.question-section:last-of-type {
-  margin-bottom: 0 !important;
-}.criterion-cell { max-width: 250px; padding: 0.5rem; }
+/* .question-section:last-of-type → global.css */

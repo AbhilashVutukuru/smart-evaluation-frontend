@@ -6,7 +6,6 @@ import {
   ReactiveFormsModule, FormsModule,
 } from '@angular/forms';
 import { AdminSettingsService } from '../../../core/services/admin-settings.service';
-import { DeleteConfirmationComponent } from '../../../shared/components/delete-confirmation/delete-confirmation.component';
 import { MasterDataService } from '../../../core/services/master-data.service';
 import { ToastService }      from '../../../core/services/toast.service';
 import { ErrorHandlerService } from '../../../core/services/error-handler.service';
@@ -14,7 +13,7 @@ import { ErrorHandlerService } from '../../../core/services/error-handler.servic
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, DeleteConfirmationComponent],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './admin-settings.component.html',
   styleUrls: ['./admin-settings.component.css'],
 })
@@ -78,6 +77,7 @@ export class AdminSettingsComponent implements OnInit {
   assignSubjectFilter  = '';
   assignExamTypeFilter = '';
   academicYearFilter   = '';
+  adminFilter          = '';
 
   // ── Delete modal ──────────────────────────────────────────
   showDeleteModal    = false;
@@ -110,9 +110,23 @@ export class AdminSettingsComponent implements OnInit {
     this.subjectForm   = this.fb.group({ subjectName: ['', Validators.required] });
     this.examTypeForm  = this.fb.group({ examTypeName: ['', Validators.required] });
 
-    this.assignSectionForm  = this.fb.group({ classId: ['', Validators.required], sectionId: ['', Validators.required] });
-    this.assignSubjectForm  = this.fb.group({ classId: ['', Validators.required], subjectId: ['', Validators.required] });
-    this.assignExamTypeForm = this.fb.group({ classId: ['', Validators.required], examTypeId: ['', Validators.required] });
+    this.assignSectionForm  = this.fb.group({ classId: ['', Validators.required], sectionId: [{value: '', disabled: true}, Validators.required] });
+    this.assignSubjectForm  = this.fb.group({ classId: ['', Validators.required], subjectId: [{value: '', disabled: true}, Validators.required] });
+    this.assignExamTypeForm = this.fb.group({ classId: ['', Validators.required], examTypeId: [{value: '', disabled: true}, Validators.required] });
+
+    // Enable second dropdown only after class is selected
+    this.assignSectionForm.get('classId')?.valueChanges.subscribe(v => {
+      const ctrl = this.assignSectionForm.get('sectionId');
+      v ? ctrl?.enable() : ctrl?.disable();
+    });
+    this.assignSubjectForm.get('classId')?.valueChanges.subscribe(v => {
+      const ctrl = this.assignSubjectForm.get('subjectId');
+      v ? ctrl?.enable() : ctrl?.disable();
+    });
+    this.assignExamTypeForm.get('classId')?.valueChanges.subscribe(v => {
+      const ctrl = this.assignExamTypeForm.get('examTypeId');
+      v ? ctrl?.enable() : ctrl?.disable();
+    });
 
     this.academicYearForm = this.fb.group(
       {
@@ -396,6 +410,11 @@ export class AdminSettingsComponent implements OnInit {
   onPromoteCancelled(): void {
     this.showPromoteModal       = false;
     this._pendingPromotePayload = null;
+  }
+
+  get filteredAdmins() {
+    return this.filterList(this.admins, this.adminFilter,
+      ['firstName', 'lastName', 'email', 'assignedBy']);
   }
 
   get activeAcademicYears()    { return this.academicYears.filter(y => y.isActive); }

@@ -453,7 +453,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 .table-bordered { border: 1px solid var(--gray-200); }
 .table-bordered td, .table-bordered th { border: 1px solid var(--gray-200); }
 
-.roll-number { color: var(--primary); font-weight: 600; }
+.roll-number { font-weight: 600; }
 
 @media (max-width: 767px) {
   .table th, .table td { padding: 0.625rem 0.75rem; font-size: 0.8125rem; }
@@ -573,6 +573,22 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
   font-size: var(--font-size-sm);
   line-height: 1.5;
 }
+/* <div class="warning-box"> — yellow informational callout box */
+.warning-box { background: var(--yellow-light); border: 1px solid var(--yellow); color: var(--yellow-dark); }
+/* <div class="error-box"> — red error callout box */
+.error-box   { background: var(--red-light);    border: 1px solid var(--red);    color: var(--red-dark); }
+
+/* Icon inside info/warning/error boxes */
+.info-box i,
+.warning-box i,
+.error-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+@media (max-width: 479px) {
+  .info-box,
+  .warning-box,
+  .error-box { padding: 0.875rem; font-size: var(--font-size-sm); gap: 0.625rem; }
+}
+
 
 .info-box i { font-size: 1.125rem; flex-shrink: 0; margin-top: 0.1rem; }
 
@@ -589,7 +605,7 @@ input[type="date"].form-control::-webkit-calendar-picker-indicator { cursor: poi
 
 /* Pill shape + consistent size regardless of btn-lg class */
 .navigation-buttons .btn {
-  border-radius: 999px;
+ border-radius: var(--border-radius);
   padding: 0.5rem 1.5rem;
   font-size: var(--font-size-sm);
 }
@@ -871,9 +887,12 @@ input[type="checkbox"] {
 .search-icon {
   position: absolute;
   left: 0.75rem;
-  color: var(--gray-400);
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--blue);
   font-size: var(--font-size-sm);
   pointer-events: none;
+  z-index: 1;
 }
 
 /* <input class="search-input form-control"> — extra padding for icon + clear btn */
@@ -927,7 +946,7 @@ input[type="checkbox"] {
   transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
   max-height: 1000px;
   opacity: 1;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
 }
 
 /* .collapsed modifier — clamps body to zero height with overflow:hidden */
@@ -1013,6 +1032,9 @@ input[type="checkbox"] {
 /* Full-screen backdrop — components add position:fixed + z-index on top */
 /* <div class="confirm-overlay"> */
 .confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1517,4 +1539,1328 @@ input[type="checkbox"] {
   .fullscreen-content { max-height: 95vh; border-radius: var(--border-radius); }
   .fullscreen-header  { padding: 0.875rem; }
   .fullscreen-body    { padding: 1rem; font-size: var(--font-size-sm); line-height: 1.6; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REGISTRATION SHARED — student-registration, teacher-registration,
+   non-teaching-registration all use .registration-container.
+   Single source of truth here; component files are now empty.
+   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================
+   STUDENT / TEACHER REGISTRATION — POLISHED STYLES
+   ViewEncapsulation.None — scoped via .registration-container
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.registration-container {
+padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) { .registration-container { padding: 0.875rem 1rem; } }
+@media (max-width: 479px) { .registration-container { padding: 0.75rem; } }
+
+/* ─── Page Header ───────────────────────────────────────────────────────────── */
+.registration-container .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* .registration-container .page-header h2 {
+  color: var(--gray-900);
+  font-weight: 500;
+  margin: 0;
+  font-size: 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+    margin-top: 1rem !important;
+  margin-bottom: 1rem !important;
+    margin-left: 1rem;
+} */
+
+.registration-container .page-header h2 i { color: var(--blue); flex-shrink: 0; }
+
+@media (max-width: 479px) {
+  .registration-container .page-header { flex-direction: column; align-items: stretch; }
+  .registration-container .page-header h2 { font-size: 1rem; }
+}
+
+/* ─── Form Content max-width ─────────────────────────────────────────────────── */
+.registration-container .card {
+  background: var(--white) !important;
+  border-radius: var(--border-radius-lg) !important;
+  margin-bottom: 0.75rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04) !important;
+  overflow: hidden;
+  padding: 0 !important;
+  border: 1px solid rgba(0,0,0,0.05) !important;
+  animation: reg-fade 0.25s ease;
+  max-width: 820px;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+@keyframes reg-fade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card h4 (used inside card before form) ─────────────────────────────────── */
+.registration-container .card h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.125rem !important;
+  background: var(--white) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  border-top: 3px solid var(--blue) !important;
+  font-weight: 600 !important;
+  color: var(--gray-900) !important;
+  font-size: 1.15rem !important;
+  margin-bottom: 0 !important;
+  letter-spacing: 0.01em;
+}
+
+.registration-container .card h4 i { color: var(--blue) !important; font-size: 1rem !important; }
+
+/* ─── Card Body (wraps the form content) ────────────────────────────────────── */
+.registration-container form {
+  padding: 0.875rem 1.125rem;
+}
+
+/* ─── Section Headers ───────────────────────────────────────────────────────── */
+.registration-container .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;  /* override the space-between from general .section-header */
+  gap: 0.5rem;
+  padding: 0.45rem 0.875rem;
+  background: var(--gray-50);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--border-radius);
+  margin: 0.875rem 0 0.625rem 0;
+  font-weight: 500;
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.registration-container .section-header i { color: var(--blue); font-size: var(--font-size-sm); }
+
+/* ─── Form Controls ─────────────────────────────────────────────────────────── */
+/* .registration-container .form-label — global.css */
+/* .registration-container .required — global.css */
+/* .registration-container .form-control — global.css */
+/* .registration-container .form-control:focus, :disabled, :focus-visible — global.css */
+/* .registration-container .form-control.is-invalid — global.css */
+/* .registration-container textarea.form-control — global.css */
+/* .registration-container input[type="date"].form-control — global.css */
+
+/* ─── Custom Select ─────────────────────────────────────────────────────────── */
+/* .registration-container .select-wrapper — global.css */
+/* .registration-container .select-wrapper .select-icon — global.css */
+/* .registration-container .select-wrapper select.form-control — global.css */
+
+/* ─── Error Message ─────────────────────────────────────────────────────────── */
+.registration-container .error-message,
+.registration-container .error-message * {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+}
+
+.registration-container .error-message {
+  margin-top: 0.2rem !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.registration-container .error-message::before { content: none !important; display: none !important; }
+
+/* ─── Grid ───────────────────────────────────────────────────────────────────── */
+.registration-container .row { display: flex; flex-wrap: wrap; margin: 0 -0.375rem; }
+
+.registration-container .col-md-4,
+.registration-container .col-md-6,
+.registration-container .col-sm-6 {
+  padding: 0 0.375rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .registration-container .col-md-4 { width: 33.333333%; }
+  .registration-container .col-md-6 { width: 50%; }
+}
+
+@media (max-width: 767px) and (min-width: 480px) {
+  .registration-container .col-md-4 { width: 50%; }
+}
+
+/* col-sm-6 stays 50% even on mobile */
+@media (max-width: 479px) {
+  .registration-container .col-sm-6 { width: 50% !important; }
+}
+
+.registration-container .mb-3 { margin-bottom: 0.625rem !important; }
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.registration-container .btn {
+  padding: 0.45rem 1.125rem !important;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.registration-container .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+.registration-container .btn-lg { padding: 0.55rem 1.375rem !important; }
+.registration-container .btn-sm { padding: 0.375rem 0.75rem !important; font-size: var(--font-size-xs) !important; }
+
+/* Primary */
+.registration-container .btn-primary { background: var(--green) !important; color: var(--white) !important; box-shadow: 0 2px 6px var(--shadow-blue-xs) !important; }
+.registration-container .btn-primary:hover:not(:disabled) { background: var(--green-dark) !important; box-shadow: 0 4px 14px var(--shadow-blue) !important; transform: translateY(-1px); }
+
+/* Outline primary (Bulk Upload toggle) */
+.registration-container .btn-outline-primary { background: transparent !important; color: var(--blue) !important; border: 1.5px solid var(--blue) !important; box-shadow: none !important; }
+.registration-container .btn-outline-primary:hover:not(:disabled) { background: var(--blue) !important; color: var(--white) !important; }
+
+/* Reset — brand red-orange */
+.registration-container .btn-reset,
+.registration-container .btn-secondary {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+}
+.registration-container .btn-reset i,
+.registration-container .btn-secondary i { color: var(--red) !important; }
+.registration-container .btn-reset:hover:not(:disabled),
+.registration-container .btn-secondary:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm) !important;
+  transform: translateY(-1px);
+}
+.registration-container .btn-reset:hover:not(:disabled) i,
+.registration-container .btn-secondary:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* Success */
+.registration-container .btn-success { background: var(--green) !important; color: var(--white) !important; box-shadow: none !important; }
+.registration-container .btn-success:hover:not(:disabled) { background: var(--green-dark) !important; box-shadow: var(--shadow-green) !important; transform: translateY(-1px); }
+
+/* Danger */
+.registration-container .btn-danger { background: var(--red) !important; color: var(--white) !important; box-shadow: none !important; }
+.registration-container .btn-danger:hover:not(:disabled) { background: var(--red-dark) !important; box-shadow: 0 4px 14px var(--shadow-red) !important; transform: translateY(-1px); }
+
+/* ─── Button Group ───────────────────────────────────────────────────────────── */
+/* .button-group → see below */
+
+@media (max-width: 479px) {
+  .registration-container .button-group {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+  .registration-container .button-group .btn { width: 100%; }
+}
+
+/* ─── Info card (bulk upload instructions) ──────────────────────────────────── */
+/* .info-card → see polished version below */
+
+.registration-container .info-card h4 {
+  border-top: 3px solid var(--blue) !important;
+  background: var(--blue-light) !important;
+}
+
+/* ─── Instructions list ──────────────────────────────────────────────────────── */
+/* .instructions-list → see below */
+
+/* ─── Upload section ─────────────────────────────────────────────────────────── */
+/* .upload-section → see below */
+
+.registration-container .upload-section:hover { border-color: var(--blue); background: var(--blue-light); }
+.registration-container .upload-placeholder i { font-size: 3rem; color: var(--gray-300); margin-bottom: 0.75rem; display: block; }
+.registration-container .upload-placeholder p { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0.25rem 0; }
+.registration-container .file-icon { font-size: 2.5rem; color: var(--green); flex-shrink: 0; }
+/* .registration-container .file-details strong { color: var(--gray-900); font-size: var(--font-size-sm); word-break: break-all; } */
+.registration-container .file-details span { color: var(--gray-500); font-size: var(--font-size-sm); }
+
+.registration-container .file-details strong {
+    color: var(--gray-900);
+    font-size: var(--font-size-sm);
+    word-break: break-all;
+}
+/* ─── Upload Results ─────────────────────────────────────────────────────────── */
+.registration-container .upload-results {
+  background: var(--gray-50);
+  border-radius: var(--border-radius-lg);
+  padding: 1rem 1.125rem;
+  margin: 0.75rem 1.125rem;
+}
+
+.registration-container .upload-results h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registration-container .upload-results h5 i { color: var(--blue); }
+
+.registration-container .results-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 479px) { .registration-container .results-grid { grid-template-columns: repeat(3,1fr); gap: 0.5rem; } }
+
+.registration-container .result-card {
+  background: var(--app-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 2px solid;
+}
+
+.registration-container .result-card i      { font-size: 1.75rem; flex-shrink: 0; }
+.registration-container .result-card strong { font-size: 1.375rem; font-weight: 700; line-height: 1; }
+.registration-container .result-card span   { font-size: var(--font-size-xs); color: var(--gray-500); font-weight: 500; }
+
+.registration-container .result-card.total   { border-color: var(--blue); }
+.registration-container .result-card.total i { color: var(--blue); }
+.registration-container .result-card.total strong { color: var(--blue-dark); }
+
+.registration-container .result-card.success   { border-color: var(--green); }
+.registration-container .result-card.success i { color: var(--green); }
+.registration-container .result-card.success strong { color: var(--green-dark); }
+
+.registration-container .result-card.failed   { border-color: var(--red); }
+.registration-container .result-card.failed i { color: var(--red); }
+.registration-container .result-card.failed strong { color: var(--red-dark); }
+
+/* ─── Error table ────────────────────────────────────────────────────────────── */
+.registration-container .error-details {
+  background: var(--app-bg);
+  border-radius: var(--border-radius);
+  padding: 0.875rem;
+  border: 1px solid var(--red-light);
+  margin-top: 0.75rem;
+}
+
+.registration-container .error-details h6 {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--red-dark);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.registration-container .error-details h6 i { color: var(--red); }
+.registration-container .error-table-wrap { max-height: 360px; overflow-y: auto; overflow-x: auto; border-radius: var(--border-radius); border: 1px solid var(--red-light); }
+.registration-container .error-table { width: 100%; border-collapse: collapse; font-size: var(--font-size-xs); min-width: 400px; }
+.registration-container .error-table thead { background: var(--red-light); position: sticky; top: 0; z-index: 1; }
+.registration-container .error-table thead th { padding: 0.5rem 0.75rem; text-align: left; font-size: var(--font-size-xs); font-weight: 700; color: var(--red-dark); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--red-light); white-space: nowrap; }
+.registration-container .error-table tbody tr { border-bottom: 1px solid var(--red-light); vertical-align: top; }
+.registration-container .error-table tbody tr:hover { background: var(--red-light); }
+.registration-container .error-table td { padding: 0.625rem 0.75rem; }
+.registration-container .row-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; background: var(--red-light); color: var(--red-dark); border-radius: var(--border-radius); font-size: var(--font-size-xs); font-weight: 700; padding: 0 4px; }
+.registration-container .row-badge.unknown { background: var(--gray-100); color: var(--gray-400); }
+.registration-container .col-error-item { display: flex; align-items: flex-start; gap: 0.4rem; font-size: var(--font-size-xs); color: var(--red-dark); line-height: 1.4; }
+.registration-container .col-error-item i { color: var(--red); font-size: var(--font-size-xs); margin-top: 0.15rem; flex-shrink: 0; }
+
+/* ─── Success msg ────────────────────────────────────────────────────────────── */
+.registration-container .all-success-msg {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--green-light);
+  border: 1px solid var(--green);
+  border-radius: var(--border-radius);
+  color: var(--green-dark);
+  font-weight: 600; font-size: 0.9rem;
+}
+
+.registration-container .all-success-msg i { color: var(--green); font-size: 1.125rem; flex-shrink: 0; }
+
+/* ─── Utilities ──────────────────────────────────────────────────────────────── */
+/* .d-flex → global.css */
+/* .gap-2 → global.css */
+.registration-container .mt-3   { margin-top: 0.875rem; }
+/* .text-danger → global.css */
+/* .text-muted → global.css */
+
+/* ─── Print ──────────────────────────────────────────────────────────────────── */
+@media print {
+  .registration-container { padding: 0; background: var(--app-bg); }
+  .registration-container .btn, .registration-container .button-group { display: none; }
+  .registration-container .card { box-shadow: none !important; }
+}
+
+/* ─── Bulk Upload — polished to match edit-view style ────────────────────────── */
+
+/* Instructions card — subtle blue tint, no heavy border */
+.registration-container .info-card {
+  background: var(--blue-light) !important;
+  border: 1px solid var(--blue-light) !important;
+  border-top: 3px solid var(--blue) !important;
+  border-radius: var(--border-radius-lg) !important;
+  padding: 0 !important;
+}
+
+.registration-container .info-card h4 {
+  background: var(--white) !important;
+  border-top: 3px solid var(--blue) !important;
+  border-bottom: 1px solid var(--blue-light) !important;
+  color: var(--blue-dark) !important;
+  font-size: 1rem !important;
+}
+
+.registration-container .info-card h4 i { color: var(--blue) !important; }
+
+/* Instructions list inside card body */
+.registration-container .instructions-list {
+  padding: 0.75rem 1.125rem !important;
+  margin: 0 0 0.5rem 0 !important;
+}
+
+.registration-container .instructions-list li {
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+}
+
+.registration-container .instructions-list li i { color: var(--green); }
+
+/* Download template button — outline style, not full width */
+.registration-container .info-card .btn-outline-primary {
+  background: var(--white) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+  margin: 0 1.125rem 0.875rem !important;
+  width: auto !important;
+}
+
+.registration-container .info-card .btn-outline-primary:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  box-shadow: 0 4px 14px var(--shadow-red) !important;
+}
+
+/* Upload section — cleaner dashed box */
+.registration-container .upload-section {
+  background: var(--white) !important;
+  border: 2px dashed var(--gray-300) !important;
+  border-radius: var(--border-radius-lg);
+  padding: 1.5rem !important;
+  margin: 0 1.125rem 0.875rem !important;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.registration-container .upload-section:hover {
+  border-color: var(--blue);
+}
+
+/* Upload placeholder icon */
+.registration-container .upload-placeholder i {
+  font-size: 2.5rem;
+  color: var(--gray-400);
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.registration-container .upload-placeholder p {
+  color: var(--gray-700);
+  font-size: var(--font-size-sm);
+  margin: 0.2rem 0;
+}
+
+/* Browse Files button — compact, not huge */
+.registration-container label[for="fileInput"].btn {
+  padding: 0.45rem 1.25rem !important;
+  font-size: var(--font-size-sm) !important;
+  margin-top: 0.75rem;
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border-radius: var(--border-radius);
+  display: inline-flex !important;
+  width: auto !important;
+}
+
+.registration-container label[for="fileInput"].btn:hover {
+  background: var(--blue-dark) !important;
+}
+
+/* Upload button group */
+.registration-container .button-group {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin: 0 !important;
+  padding: 0.75rem 1.125rem !important;
+  border-top: 1px solid var(--gray-100) !important;
+  flex-wrap: wrap;
+}
+
+/* ─── Force Download Template button to auto width ───────────────────────────── */
+.registration-container .info-card button,
+.registration-container .info-card .btn {
+  width: auto !important;
+  display: inline-flex !important;
+  margin: 0 1.125rem 0.875rem !important;
+}
+
+/* ─── Upload card inner padding fix ─────────────────────────────────────────── */
+.registration-container .card > .row,
+.registration-container .card > div.row {
+  padding: 0.875rem 1.125rem 0;
+}
+
+.registration-container .card > .mb-3 {
+  padding: 0 1.125rem;
+}
+
+/* ─── Bulk upload card row padding ───────────────────────────────────────────── */
+.registration-container .card > .row {
+  padding: 1rem 1.125rem 0.25rem !important;
+}
+
+/* ─── Download Template button icon — brand red-orange ───────────────────────── */
+.registration-container .info-card .btn-outline-primary i {
+  color: var(--red) !important;
+}
+.registration-container .info-card .btn-outline-primary:hover:not(:disabled) i {
+  color: var(--white) !important;
+}
+
+/* ─── Reset any orange hover bleeding from info-card icon rule ───────────────── */
+/* Page header Bulk Upload toggle — keep blue */
+.registration-container .page-header .btn-outline-primary {
+  border-color: var(--blue) !important;
+  color: var(--blue) !important;
+  box-shadow: none !important;
+}
+.registration-container .page-header .btn-outline-primary:hover:not(:disabled) {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  border-color: var(--blue) !important;
+  box-shadow: 0 4px 12px var(--shadow-blue-xs) !important;
+}
+.registration-container .page-header .btn-outline-primary i { color: var(--blue) !important; }
+.registration-container .page-header .btn-outline-primary:hover:not(:disabled) i { color: var(--white) !important; }
+/* ─── File selected — clean close button ─────────────────────────────────────── */
+.registration-container .file-info .btn-danger {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 0.75rem !important;
+}
+.registration-container .file-info .btn-danger:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.registration-container .file-info {
+  justify-content: center;   /* 👈 centers horizontally */
+  align-items: center;
+  width: 100%;
+  text-align: center;
+}
+
+.registration-container .file-name-row {
+  align-items: center;
+  justify-content: center;  /* 👈 important */
+  gap: 0.5rem;
+}
+
+/* ─── File name row — inline with close button ───────────────────────────────── */
+.registration-container .file-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.registration-container .file-name-row strong {
+  color: var(--gray-900);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.registration-container .file-size {
+  color: var(--gray-400);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.registration-container .btn-close-file {
+  width: 1.5rem !important;
+  height: 1.5rem !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: none !important;
+  box-shadow: none !important;
+  flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: var(--font-size-xs) !important;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.registration-container .btn-close-file:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+}
+
+/* ─── col-sm-6 mobile fix ────────────────────────────────────────────────────── */
+@media (max-width: 479px) {
+  .registration-container .col-sm-6 { width: 50% !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   VIEW / EDIT SHARED — student-view-edit, teacher-view-edit,
+   non-teaching-view-edit all use .view-container.
+   Single source of truth here; component files are now empty.
+   ═══════════════════════════════════════════════════════════════ */
+/* ============================================================
+   STUDENT VIEW / EDIT — POLISHED STYLES
+   ViewEncapsulation.None — scoped via .view-container
+   ============================================================ */
+
+/* ─── Container ─────────────────────────────────────────────────────────────── */
+.view-container {
+padding: 0.5rem 1.5rem 1.5rem;
+  background: var(--app-bg);
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+@media (max-width: 767px) { .view-container { padding: 0.875rem 1rem; } }
+@media (max-width: 479px) { .view-container { padding: 0.75rem; } }
+
+/* ─── Page Header ───────────────────────────────────────────────────────────── */
+.view-container .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem !important;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.view-container .header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.view-container .btn-back {
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: 50%;
+  border: none;
+  background: var(--white);
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+}
+
+.view-container .btn-back:hover {
+  background: var(--blue);
+  color: var(--white);
+  box-shadow: 0 3px 10px var(--shadow-blue-xs);
+  transform: translateX(-2px);
+}
+
+.view-container .header-title h2 {
+  color: var(--gray-900);
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.view-container .header-title h2 i { color: var(--blue); flex-shrink: 0; }
+
+.view-container .breadcrumb {
+  color: var(--gray-400);
+  font-size: var(--font-size-xs);
+  margin: 0.1rem 0 0 0;
+  letter-spacing: 0.01em;
+}
+
+.view-container .header-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+
+@media (max-width: 479px) {
+  .view-container .page-header    { flex-direction: column; align-items: stretch; }
+  .view-container .header-left    { width: 100%; }
+  .view-container .header-actions { width: 100%; }
+  .view-container .header-actions .btn { flex: 1; justify-content: center; }
+}
+
+/* ─── Loading ────────────────────────────────────────────────────────────────── */
+.view-container .loading-state { text-align: center; padding: 3rem 1rem; }
+
+.view-container .spinner {
+  width: 2.5rem; height: 2.5rem;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: ve-spin 0.8s linear infinite;
+  margin: 0 auto 0.75rem;
+}
+
+@keyframes ve-spin { to { transform: rotate(360deg); } }
+.view-container .loading-state p { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+
+/* ─── Form Content ───────────────────────────────────────────────────────────── */
+.view-container .form-content {
+  max-width: 820px;
+  margin: 0 auto;
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────────── */
+.view-container .card {
+  background: var(--app-bg) !important;
+  border-radius: var(--border-radius-lg) !important;
+  margin-bottom: 0.875rem !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 8px rgba(0,0,0,0.04) !important;
+  overflow: visible;
+  padding: 0 !important;
+  border: 1px solid var(--gray-200) !important;
+  animation: ve-fade 0.25s ease;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+@keyframes ve-fade {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Card Header — colored top border accent ───────────────────────────────── */
+.view-container .card-header {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.625rem !important;
+  padding: 0.625rem 1.125rem !important;
+  background: var(--app-bg) !important;
+  border-bottom: 1px solid var(--gray-100) !important;
+  border-top: 3px solid var(--blue) !important;
+  font-weight: 600 !important;
+  color: var(--gray-900) !important;
+  font-size: 1.0rem !important;
+  margin-bottom: 0 !important;
+  letter-spacing: 0.01em;
+}
+
+.view-container .card-header i {
+  color: var(--blue) !important;
+  font-size: var(--font-size-sm) !important;
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ─── Card Body ─────────────────────────────────────────────────────────────── */
+.view-container .card-body {
+  padding: 1rem 1.125rem !important;
+}
+
+@media (max-width: 479px) {
+  .view-container .card-header { padding: 0.5rem 0.875rem !important; }
+  .view-container .card-body   { padding: 0.75rem 0.875rem !important; }
+}
+
+/* ─── Form Controls ─────────────────────────────────────────────────────────── */
+/* .view-container .form-label — global.css */
+/* .view-container .required — global.css */
+/* .view-container .form-control — global.css */
+/* .view-container .form-control:focus, :disabled, :focus-visible — global.css */
+/* .view-container .form-control.is-invalid — global.css */
+/* .view-container textarea.form-control — global.css */
+/* .view-container input[type="date"].form-control — global.css */
+
+/* ─── Custom Select ─────────────────────────────────────────────────────────── */
+/* .view-container .select-wrapper — global.css */
+/* .view-container .select-wrapper .select-icon — global.css */
+/* .view-container .select-wrapper select.form-control — global.css */
+
+/* ─── Error Message ─────────────────────────────────────────────────────────── */
+.view-container .error-message,
+.view-container .error-message *,
+.view-container div.error-message {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 500 !important;
+}
+
+.view-container .error-message {
+  margin-top: 0.2rem !important;
+  display: flex !important;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.view-container .error-message i {
+  color: var(--red) !important;
+  font-size: var(--font-size-xs) !important;
+  flex-shrink: 0;
+}
+
+/* Override global ::before with brand color */
+.view-container .error-message::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* ─── Grid ───────────────────────────────────────────────────────────────────── */
+.view-container .row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -0.375rem;
+}
+
+.view-container .col-md-4,
+.view-container .col-md-6 {
+  padding: 0 0.375rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .view-container .col-md-4 { width: 33.333333%; }
+  .view-container .col-md-6 { width: 50%; }
+}
+
+@media (max-width: 767px) and (min-width: 480px) {
+  .view-container .col-md-4 { width: 50%; }
+}
+
+.view-container .mb-3 { margin-bottom: 0.625rem !important; }
+
+/* ─── Buttons ───────────────────────────────────────────────────────────────── */
+.view-container .btn {
+  padding: 0.45rem 1.125rem !important;
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: 0.01em;
+}
+
+.view-container .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+.view-container .btn-lg { padding: 0.55rem 1.375rem !important; }
+
+/* Primary — brand blue */
+.view-container .btn-primary {
+  background: var(--blue) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-primary:hover:not(:disabled) {
+  background: var(--blue-dark) !important;
+  box-shadow: 0 4px 14px var(--shadow-blue) !important;
+  transform: translateY(-1px);
+}
+
+/* Secondary */
+.view-container .btn-secondary {
+  background: var(--gray-500) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-secondary:hover:not(:disabled) {
+  background: var(--gray-700) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-gray) !important;
+}
+
+/* Cancel — brand red-orange with border */
+.view-container .btn-cancel {
+  background: var(--red-light) !important;
+  color: var(--red) !important;
+  border: 1.5px solid var(--red) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-cancel i { color: var(--red) !important; }
+
+.view-container .btn-cancel:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm) !important;
+  transform: translateY(-1px);
+}
+.view-container .btn-cancel:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* Success — brand green */
+.view-container .btn-success {
+  background: var(--green) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-success:hover:not(:disabled) {
+  background: var(--green-dark) !important;
+  box-shadow: var(--shadow-green) !important;
+  transform: translateY(-1px);
+}
+
+/* Danger — brand red */
+.view-container .btn-danger {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  box-shadow: none !important;
+}
+.view-container .btn-danger:hover:not(:disabled) {
+  background: var(--red-dark) !important;
+  box-shadow: 0 4px 14px var(--shadow-red) !important;
+  transform: translateY(-1px);
+}
+
+/* ─── Action Buttons footer ──────────────────────────────────────────────────── */
+.view-container .action-buttons {
+  display: flex !important;
+  gap: 0.625rem !important;
+  margin-top: 0.75rem !important;
+  padding-top: 0.875rem !important;
+  border-top: 1px solid var(--gray-100) !important;
+  border-bottom: none !important;
+  justify-content: flex-end !important;
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 479px) {
+  .view-container .action-buttons {
+    flex-direction: column-reverse !important;
+    gap: 0.5rem !important;
+    padding-top: 0.625rem !important;
+  }
+  .view-container .action-buttons .btn { width: 100%; }
+}
+
+/* ─── Print ─────────────────────────────────────────────────────────────────── */
+@media print {
+  .view-container { padding: 0; background: var(--white); }
+  .view-container .btn,
+  .view-container .btn-back,
+  .view-container .header-actions,
+  .view-container .action-buttons { display: none !important; }
+  .view-container .card {
+    box-shadow: none !important;
+    border: 1px solid var(--gray-200) !important;
+    margin-bottom: 1rem !important;
+  }
+}
+/* ─── Identity lock banner ───────────────────────────────────────────────────── */
+/* .identity-lock-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  background: var(--warning-light);
+  border: 1px solid var(--warning);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--border-radius);
+  margin-bottom: 0.875rem;
+  font-size: var(--font-size-sm);
+  color: var(--yellow-dark);
+  line-height: 1.5;
+}
+
+.identity-lock-banner i {
+  color: var(--yellow-dark);
+  font-size: var(--font-size-sm);
+  margin-top: 0.1rem;
+  flex-shrink: 0;
+} */
+
+/* ─── Field lock icon (inline in label) ─────────────────────────────────────── */
+.field-lock-icon {
+  color: var(--yellow-dark);
+  font-size: 0.7rem;
+  margin-left: 0.3rem;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+/* ═══════════════════════════════════════════════════════════════
+   LIST SHARED — student-list, teacher-list, non-teaching-list
+   All use the same search, filter, action buttons, cards pattern.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Search Section ─────────────────────────────────────────── */
+/* <div class="search-section"> — grid: filter dropdowns + button */
+.search-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  align-items: end;
+}
+
+@media (max-width: 767px) {
+  .search-section { grid-template-columns: 1fr 1fr; gap: 0.625rem; }
+  .search-section .filter-wrapper:last-child { grid-column: 1 / -1; }
+  .search-section .filter-wrapper:last-child .btn { width: 100%; }
+}
+
+@media (max-width: 479px) {
+  .search-section { grid-template-columns: 1fr; gap: 0.5rem; }
+  .search-section .filter-wrapper:last-child { grid-column: 1; }
+}
+
+/* <div class="filter-wrapper"> — column wrapper for each filter slot */
+.filter-wrapper { display: flex; flex-direction: column; }
+.filter-wrapper:last-child .btn { min-width: 6rem; }
+
+/* ─── Search below filters ───────────────────────────────────── */
+/* <div class="search-below"> — search input shown after first load */
+.search-below { margin-bottom: 1rem; position: relative; }
+
+/* ─── Name & Roll Number ─────────────────────────────────────── */
+/* <div class="name"> — person's full name in table/card */
+.name        { font-weight: 600; color: var(--gray-900); font-size: var(--font-size-sm); line-height: 1.2; }
+/* <strong class="roll-number"> / <strong class="emp-code"> */
+.roll-number,
+.emp-code    { color: var(--blue); font-weight: 600; }
+
+/* ─── Table Action Buttons ───────────────────────────────────── */
+/* Reset global .action-buttons (form footer) for inline table icon group */
+.table .action-buttons,
+.page-container .table .action-buttons,
+.list-container .table .action-buttons {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 0.3rem !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  border-top: none !important;
+  justify-content: flex-start !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+}
+
+/* <button class="btn-action btn-view|btn-se-edit|btn-delete"> — icon button */
+.btn-action {
+  width: 1.875rem;
+  height: 1.875rem;
+  border: none;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+  padding: 0 !important;
+}
+
+/* View — blue */
+.btn-action.btn-view                { background: var(--blue-light) !important; color: var(--blue) !important; }
+.btn-action.btn-view i              { color: var(--blue) !important; }
+.btn-action.btn-view:hover          { background: var(--blue) !important; color: var(--white) !important; box-shadow: var(--shadow-blue-xs) !important; transform: translateY(-1px); }
+.btn-action.btn-view:hover i        { color: var(--white) !important; }
+
+/* Edit — yellow */
+.btn-action.btn-se-edit             { background: var(--yellow-light) !important; color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit i           { color: var(--yellow-dark) !important; }
+.btn-action.btn-se-edit:hover       { background: var(--yellow) !important; color: var(--white) !important; box-shadow: var(--shadow-yellow-xs) !important; transform: translateY(-1px); }
+.btn-action.btn-se-edit:hover i     { color: var(--white) !important; }
+
+/* Delete — red */
+.btn-action.btn-delete              { background: var(--red-light) !important; color: var(--red) !important; }
+.btn-action.btn-delete i            { color: var(--red) !important; }
+.btn-action.btn-delete:hover        { background: var(--red) !important; color: var(--white) !important; box-shadow: var(--shadow-red-sm) !important; transform: translateY(-1px); }
+.btn-action.btn-delete:hover i      { color: var(--white) !important; }
+
+/* Mobile card footer btn-action — wider to fill card */
+.card-footer .btn-action {
+  width: auto !important;
+  flex: 1;
+  height: 2rem !important;
+  font-size: var(--font-size-sm) !important;
+  padding: 0 0.5rem !important;
+  gap: 0.375rem;
+}
+
+/* ─── Info Row (mobile cards) ────────────────────────────────── */
+/* <div class="info-row"> — icon + text row in mobile cards */
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: var(--font-size-sm);
+  color: var(--gray-500);
+  min-width: 0;
+}
+
+.info-row i    { width: 1.125rem; color: var(--blue); flex-shrink: 0; text-align: center; font-size: var(--font-size-sm); }
+.info-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+
+/* ─── Results Footer ─────────────────────────────────────────── */
+/* <div class="results-footer"> — "Showing N of M" count at bottom */
+.results-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--gray-200);
+  text-align: center;
+}
+
+.results-footer p      { color: var(--gray-500); font-size: var(--font-size-sm); margin: 0; }
+.results-footer strong { color: var(--blue); font-weight: 700; }
+
+/* ─── Avatar ─────────────────────────────────────────────────── */
+/* <div class="avatar"> — small initials circle in table row */
+.avatar {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+}
+
+/* <div class="teacher-avatar"> / <div class="student-avatar"> — larger avatar in cards */
+.teacher-avatar,
+.student-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: var(--blue) !important;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+}
+
+/* ─── Mobile Card — shared card layout for student/teacher/staff ─ */
+/* <div class="student-card"> / <div class="teacher-card"> */
+.student-card,
+.teacher-card {
+  background: var(--app-bg);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.student-card:hover,
+.teacher-card:hover { box-shadow: var(--shadow-md); }
+
+/* Override global .card-header inside mobile cards */
+.student-card .card-header,
+.teacher-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--gray-200);
+  background: var(--blue-light);
+  flex-wrap: wrap;
+  font-weight: normal;
+  font-size: inherit;
+  color: inherit;
+  border-top: none;
+}
+
+/* <div class="student-details"> / <div class="teacher-details"> */
+.student-details,
+.teacher-details { flex: 1; min-width: 0; }
+
+.student-details h4,
+.teacher-details h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-details p,
+.teacher-details p { margin: 0.15rem 0 0; font-size: var(--font-size-sm); }
+
+/* Override global .card-body inside mobile cards */
+.student-card .card-body,
+.teacher-card .card-body {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Override global .card-footer inside mobile cards */
+.student-card .card-footer,
+.teacher-card .card-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-top: 1px solid var(--gray-200);
+  background: var(--gray-50);
+}
+
+.student-card .card-footer .btn,
+.teacher-card .card-footer .btn { flex: 1; }
+
+@media (max-width: 479px) {
+  .student-avatar,
+  .teacher-avatar              { width: 2rem; height: 2rem; font-size: var(--font-size-xs); }
+  .student-details h4,
+  .teacher-details h4          { font-size: var(--font-size-sm); }
+  .student-card .card-body,
+  .teacher-card .card-body     { padding: 0.625rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer,
+  .teacher-card .card-footer   { padding: 0.5rem 0.875rem; gap: 0.375rem; }
+  .student-card .card-footer .btn,
+  .teacher-card .card-footer .btn { font-size: var(--font-size-xs); padding: 0.375rem 0.5rem; }
+  .info-row                    { gap: 0.5rem; }
+}
+
+/* ─── Clear Search Button — used in teacher-list, non-teaching-list ─────────── */
+/* <button class="btn btn-clear-search"> — red-light pill, fills red on hover */
+.btn-clear-search {
+  background: var(--red-light);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.btn-clear-search i { color: var(--red-dark) !important; }
+
+.btn-clear-search:hover:not(:disabled) {
+  background: var(--red) !important;
+  color: var(--white) !important;
+  border-color: var(--red) !important;
+  box-shadow: var(--shadow-red-sm);
+  transform: translateY(-1px);
+}
+
+.btn-clear-search:hover:not(:disabled) i { color: var(--white) !important; }
+
+/* ═══════════════════════════════════════════════════════════════
+   UPLOAD ANSWER SHEET — Students table column widths
+   The Answer Sheet(s) column must always be wide enough to show
+   the Upload / Update pill button without clipping.
+   Scoped via .students-table-wrap added to the table-responsive div.
+   ═══════════════════════════════════════════════════════════════ */
+.students-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.students-table-wrap .table {
+  table-layout: fixed !important;
+  min-width: 900px !important;
+  width: 100%;
+}
+
+/* Column widths — fixed layout honours these exactly */
+.students-table-wrap .table th:nth-child(1) { width:  75px; }  /* Roll No          */
+.students-table-wrap .table th:nth-child(2) { width: 140px; }  /* Student Name      */
+.students-table-wrap .table th:nth-child(3) { width: 145px; }  /* Attendance        */
+.students-table-wrap .table th:nth-child(4) { width: 135px; }  /* Answer Sheet Type */
+.students-table-wrap .table th:nth-child(5) { width: 250px; }  /* Answer Sheet(s)   */
+.students-table-wrap .table th:nth-child(6) { width: 130px; }  /* Evaluation Status */
+.students-table-wrap .table th:nth-child(7) { width: 150px; }  /* Action            */
+
+/* Cells: clip long filenames, never clip the button */
+.students-table-wrap .table td { vertical-align: middle; }
+.students-table-wrap .doc-cell { white-space: nowrap; overflow: visible; }
+.students-table-wrap .doc-cell .pdf-name {
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  vertical-align: middle;
 }

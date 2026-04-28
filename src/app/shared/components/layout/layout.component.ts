@@ -66,7 +66,7 @@ import { PageContextService } from '../../../core/services/page-context.service'
       min-width: 0;
       display: flex;
       flex-direction: column;
-      background: #ffffff;
+      background: var(--app-bg);
     }
 
     .main-content.collapsed { margin-left: 70px; }
@@ -76,7 +76,7 @@ import { PageContextService } from '../../../core/services/page-context.service'
       display: flex;
       align-items: center;
       padding: 0 1.5rem;
-      background: #ffffff;
+      background: var(--app-bg);
 
       position: sticky;
       top: 0;
@@ -91,20 +91,20 @@ import { PageContextService } from '../../../core/services/page-context.service'
       gap: 0.625rem;
       font-size: 1.73rem;
       font-weight: 500;
-      color: #1f2937;
+      color: var(--gray-900);
       white-space: nowrap;
       letter-spacing: -0.01em;
     }
 
     .topbar-page-title i {
-      color: #0ea4f4;
+      color: var(--blue);
       font-size: 1.6rem;
     }
 
     .topbar-subtitle {
       font-size: 1rem;
       font-weight: 500;
-      color:  #5f8e04;
+      color: var(--green-dark);
       margin-left: 0.5rem;
       white-space: nowrap;
     }
@@ -119,30 +119,30 @@ import { PageContextService } from '../../../core/services/page-context.service'
       display: none;
       width: 2.25rem;
       height: 2.25rem;
-      background: #f1f5f9;
+      background: var(--gray-100);
       border: none;
       border-radius: 8px;
-      color: #374151;
+      color: var(--gray-700);
       font-size: 1rem;
       cursor: pointer;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
-      transition: background 0.2s;
+      transition: var(--transition);
     }
-    .hamburger-btn:hover { background: #e2e8f0; }
+    .hamburger-btn:hover { background: var(--gray-200); }
 
     .topbar-title {
       display: none;
       font-size: 0.9375rem;
       font-weight: 600;
-      color: #111827;
+      color: var(--gray-900);
     }
 
     /* Page content — no extra background, no gap */
     .page-content {
       flex: 1;
-      background: #ffffff;
+      background: var(--app-bg);
     }
 
     @media (max-width: 767px) {
@@ -165,45 +165,67 @@ export class LayoutComponent implements OnInit {
   pageIcon = 'fa-tachometer-alt';
 
 
-  private readonly routeTitles: Record<string, string> = {
-    '/dashboard':            'Dashboard',
-    '/create/exam':          'Create Question Paper',
-    '/upload-answer-sheets': 'Upload Answer Sheets',
-    '/results':              'View Exam Results',
-    '/admin-settings':       'Settings',
-    '/profile':              'Profile',
-    '/change-password':      'Change Password',
-  };
+  // private readonly routeTitles: Record<string, string> = {
+  //   // '/dashboard':            'Dashboard',
+  //   // '/create/exam':          'Create Question Paper',
+  //   // '/upload-answer-sheets': 'Upload Answer Sheets',
+  //   // '/results':              'View Exam Results',
+  //   // '/admin-settings':       'Settings',
+  //   // '/profile':              'Profile',
+  //   // '/change-password':      'Change Password',
+  // };
 
-  private readonly routeIcons: Record<string, string> = {
-    '/dashboard':            'fa-tachometer-alt',
-    '/create/exam':          'fa-file-alt',
-    '/upload-answer-sheets': 'fa-cloud-upload-alt',
-    '/results':              'fa-chart-bar',
-    '/admin-settings':       'fa-cog',
-    '/profile':              'fa-user-circle',
-    '/change-password':      'fa-key',
-  };
+  // private readonly routeIcons: Record<string, string> = {
+  //   // '/dashboard':            'fa-tachometer-alt',
+  //   // '/create/exam':          'fa-file-alt',
+  //   // '/upload-answer-sheets': 'fa-cloud-upload-alt',
+  //   // '/results':              'fa-chart-bar',
+  //   // '/admin-settings':       'fa-cog',
+  //   // '/profile':              'fa-user-circle',
+  //   // '/change-password':      'fa-key',
+  // };
 
   private readonly routePrefixes: Array<{ prefix: string; title: string; icon: string }> = [
-    { prefix: '/view/exam',            title: 'View Question Papers',        icon: 'fa-file-alt' },
+    { prefix: '/dashboard',            title: 'Dashboard',                  icon: 'fa-tachometer-alt' },
+    { prefix: '/view/exam',            title: 'View Question Papers',       icon: 'fa-file-alt' },
     { prefix: '/create/exam',          title: 'Create Question Paper',      icon: 'fa-file-alt' },
     { prefix: '/upload-answer-sheets', title: 'Upload Answer Sheets',       icon: 'fa-cloud-upload-alt' },
     { prefix: '/results',              title: 'View Exam Results',          icon: 'fa-chart-bar' },
     { prefix: '/admin-settings',       title: 'Settings',                   icon: 'fa-cog' },
     { prefix: '/profile',              title: 'Profile',                    icon: 'fa-user-circle' },
     { prefix: '/change-password',      title: 'Change Password',            icon: 'fa-key' },
-    { prefix: '/students',                  title: 'Students',                   icon: 'fa-user-graduate' },
-    { prefix: '/teachers',                  title: 'Teachers',                   icon: 'fa-chalkboard-teacher' },
-    { prefix: '/assign-subjects',           title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
-    { prefix: '/assign-teacher-subjects',   title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
-    { prefix: '/teacher-subjects',          title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
-    { prefix: '/register-student',          title: 'Student Registration',       icon: 'fa-user-graduate' },
-    { prefix: '/register-teacher',          title: 'Teacher Registration',       icon: 'fa-chalkboard-teacher' },
-    { prefix: '/admin-settings',            title: 'Settings',                   icon: 'fa-cog' },
+    { prefix: '/students',             title: 'Students',                   icon: 'fa-user-graduate' },
+    { prefix: '/teachers',             title: 'Teachers',                   icon: 'fa-chalkboard-teacher' },
+    { prefix: '/non-teaching-staff',   title: 'Non-Teaching Staff', icon: 'fa-user-tie' },
+    // { prefix: '/assign-subjects',           title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
+    { prefix: '/assign-teacher-subjects', title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
+    // { prefix: '/teacher-subjects',          title: 'Assign Subjects to Teacher', icon: 'fa-chalkboard-teacher' },
+    { prefix: '/register-student',      title: 'Student Registration',       icon: 'fa-user-graduate' },
+    { prefix: '/register-teacher',      title: 'Teacher Registration',       icon: 'fa-chalkboard-teacher' },
+    { prefix: '/admin-settings',        title: 'Settings',                   icon: 'fa-cog' },
   ];
 
-  private resolveRoute(url: string): { title: string; icon: string } {
+  // private resolveRoute(url: string): { title: string; icon: string } {
+  //   const [path, query] = url.split('?');
+  //   const params        = new URLSearchParams(query ?? '');
+  //   const isEditMode    = params.get('mode') === 'edit';
+
+  //   // Edit mode override — must come BEFORE exact/prefix match
+  //   if (isEditMode && path.startsWith('/create/exam')) {
+  //     return { title: 'Edit Question Paper', icon: 'fa-edit' };
+  //   }
+  //   // Exact match
+  //   if (this.routeTitles[path]) {
+  //     return { title: this.routeTitles[path], icon: this.routeIcons[path] ?? 'fa-circle' };
+  //   }
+  //   // Prefix match for dynamic routes
+  //   const match = this.routePrefixes.find(r => path.startsWith(r.prefix));
+  //   if (match) return { title: match.title, icon: match.icon };
+  //   // Fallback
+  //   return { title: this.titleFromUrl(path), icon: 'fa-layer-group' };
+  // }
+
+    private resolveRoute(url: string): { title: string; icon: string } {
     const [path, query] = url.split('?');
     const params        = new URLSearchParams(query ?? '');
     const isEditMode    = params.get('mode') === 'edit';
@@ -212,11 +234,7 @@ export class LayoutComponent implements OnInit {
     if (isEditMode && path.startsWith('/create/exam')) {
       return { title: 'Edit Question Paper', icon: 'fa-edit' };
     }
-    // Exact match
-    if (this.routeTitles[path]) {
-      return { title: this.routeTitles[path], icon: this.routeIcons[path] ?? 'fa-circle' };
-    }
-    // Prefix match for dynamic routes
+    // Exact match via prefix (first entry wins, most specific prefixes listed first)
     const match = this.routePrefixes.find(r => path.startsWith(r.prefix));
     if (match) return { title: match.title, icon: match.icon };
     // Fallback

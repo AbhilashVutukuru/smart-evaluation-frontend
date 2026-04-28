@@ -124,12 +124,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let student of filteredStudents">
-            <td><strong class="roll-number">{{ student.rollNumber }}</strong></td>
+            <td><strong>{{ student.rollNumber }}</strong></td>
             <td>
               <div class="student-info">
-                <div class="avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div>
+                <!-- <div class="avatar">{{ student.firstName[0] }}{{ student.lastName[0] }}</div> -->
                 <div>
-                  <div class="name">{{ student.firstName }} {{ student.lastName }}</div>
+                  <div>{{ student.firstName }} {{ student.lastName }}</div>
                   <!-- <small class="text-muted">{{ student.gender }}</small> -->
                 </div>
               </div>

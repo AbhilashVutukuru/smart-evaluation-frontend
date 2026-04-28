@@ -187,8 +187,11 @@ input[type="checkbox"] { width: 1rem; height: 1rem; cursor: pointer; accent-colo
 .doc-desktop-btns { align-items: center; gap: 6px; }
 
 /* ── Document column ────────────────────────────────────────── */
-.doc-cell { vertical-align: middle; }
-@media (max-width: 767px) { .doc-cell { min-width: 180px; } }
+/* .students-table-wrap table layout → global.css
+   (Angular ViewEncapsulation scopes component CSS, breaking
+   descendant selectors like .students-table-wrap .table —
+   global.css is unscoped so these rules apply correctly) */
+.doc-cell { vertical-align: middle; white-space: nowrap; overflow: visible; }
 
 /* ── Document action buttons (btn-doc) ─────────────────────── */
 label.btn-doc,
@@ -1067,7 +1070,7 @@ label.btn-doc-img,
   display: inline-flex;
 }
 
-.btn-action {
+.btn-upload-action {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
@@ -1083,11 +1086,11 @@ label.btn-doc-img,
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 
-.btn-action-upload { background: var(--blue); }
-.btn-action-upload:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.btn-upload-action.btn-action-upload { background: var(--blue); }
+.btn-upload-action.btn-action-upload:hover { background: var(--blue-dark); transform: translateY(-1px); }
 
-.btn-action-update { background: var(--yellow); color: var(--white); }
-.btn-action-update:hover:not(:disabled) { background: var(--yellow-dark); transform: translateY(-1px); box-shadow: var(--shadow-yellow-sm); }
+.btn-upload-action.btn-action-update { background: var(--yellow); color: var(--white); }
+.btn-upload-action.btn-action-update:hover:not(:disabled) { background: var(--yellow-dark); transform: translateY(-1px); box-shadow: var(--shadow-yellow-sm); }
 
 .menu-chevron { font-size: 0.65rem; margin-left: 2px; }
 
@@ -1193,7 +1196,7 @@ label.btn-doc-img,
   align-items: flex-start;
 }
 
-.mobile-direct-btns .btn-action {
+.mobile-direct-btns .btn-upload-action {
   width: 100%;
   justify-content: center;
   padding: 0.5rem 1rem;
@@ -1206,15 +1209,10 @@ label.btn-doc-img,
 .badge-warning { background: var(--yellow-light); color: var(--yellow-dark) !important; }
 
 /* ─── View Answer Sheet — single line on mobile ──────────────── */
-.download-link {
-  white-space: nowrap;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  color: var(--blue);
-  text-decoration: none;
-}
-.download-link:hover { color: var(--blue); text-decoration: none; }
+/* .download-link base (inline-flex, gap, color, text-decoration) → global.css */
+/* UAS-specific: white-space:nowrap so links never wrap in table cells */
+.download-link { white-space: nowrap; }
+/* .download-link:hover (color) → global.css */
 .download-link:hover .link-text {
   text-decoration: underline;
   text-decoration-color: var(--blue);
@@ -1222,7 +1220,7 @@ label.btn-doc-img,
   text-underline-offset: 2px;
 }
 .download-link span:not(.link-text) { text-decoration: none; }
-.download-link i { text-decoration: none !important; }
+/* .download-link i { text-decoration: none } → global.css */
 
 
 
@@ -1280,17 +1278,9 @@ label.btn-doc-img,
 }
 
 /* ─── Stat card hover ────────────────────────────────────────── */
-.stat-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
-.stat-card.stat-total:hover    { border-color: var(--blue); }
-.stat-card.stat-absent:hover   { border-color: var(--red); }
-.stat-card.stat-uploaded:hover { border-color: var(--green); }
-.stat-card.stat-pending:hover  { border-color: var(--yellow); }
+/* .stat-card:hover border-color variants → global.css */
 
-/* ─── Stat card icon brand colors ────────────────────────────── */
-.stat-card.stat-total    .stat-icon { background: var(--blue-light);   color: var(--blue); }
-.stat-card.stat-absent   .stat-icon { background: var(--red-light);    color: var(--red); }
-.stat-card.stat-uploaded .stat-icon { background: var(--green-light);  color: var(--green); }
-.stat-card.stat-pending  .stat-icon { background: var(--yellow-light); color: var(--yellow); }
+/* .stat-card.stat-*.stat-icon → global.css */
 /* ─── Uploaded row — filename + Update button same line ─────── */
 .doc-uploaded-row {
   display: flex !important;
@@ -1347,14 +1337,14 @@ label.btn-doc-img,
 }
 
 /* Overwrite */
-.header-info-icon { margin-left: 0.1rem; font-size: 0.83rem; cursor: help; color: var(--yellow) !important;}
+/* .header-info-icon base → global.css; icon is yellow by default from global */
 /* .header-info-icon:hover { color:var(--yellow-dark); } */
 /* ══════════════════════════════════════════════════════════════
    IMAGE PREVIEW & EDIT MODAL
    ══════════════════════════════════════════════════════════════ */
 
 /* Preview & Edit button in the Answer Sheet(s) cell */
-.btn-action-preview {
+.btn-upload-action.btn-action-preview {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;

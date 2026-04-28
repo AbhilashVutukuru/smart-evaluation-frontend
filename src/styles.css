@@ -73,7 +73,7 @@ body {
   /* ─── Brand Shadows — tinted hover glows per brand color ─────────────────── */
   --shadow-blue:      0 4px 14px rgba(14,  164, 244, 0.45); /* --blue hover     */
   --shadow-blue-sm:   0 0   0 3px rgba(14,  164, 244, 0.1); /* focus ring       */
-  --shadow-green:     0 4px 14px rgba(127, 187, 6,   0.45); /* --green hover    */
+  --shadow-green:     0 4px 14px rgba(95, 142, 4,   0.55); /* --green hover    */
   --shadow-red:       0 4px 14px rgba(248, 83,  16,  0.45); /* --red hover      */
   --shadow-red-sm:    0 4px 12px rgba(248, 83,  16,  0.35); /* --red cancel btn */
   --shadow-red-focus: 0 0   0 3px rgba(248, 83,  16,  0.1); /* invalid ring     */

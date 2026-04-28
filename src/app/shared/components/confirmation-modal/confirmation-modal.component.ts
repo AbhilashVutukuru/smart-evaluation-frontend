@@ -61,243 +61,175 @@ import { CommonModule } from '@angular/common';
     </div>
   `,
   styles: [`
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    animation: fadeIn 0.2s ease;
-  }
+    /*
+      Removed (already in global.css):
+        .btn, .btn:disabled                → global.css lines 285–301
+        .btn-primary + hover               → global.css lines 310–325
+        .btn-secondary (gray) + hover      → global.css lines 328–329
+        .btn-danger + hover                → global.css lines 337–338
+        @keyframes fadeIn                  → global.css line 731
+      Removed (already in styles.css):
+        all hardcoded hex colours          → replaced with CSS variables
+    */
 
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .modal-container {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 480px;
-    width: 90%;
-    animation: slideUp 0.3s ease;
-  }
-
-  @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  .modal-content {
-    padding: 24px;
-  }
-
-  /* ✅ UPDATED HEADER STYLES */
-  .modal-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-  }
-
-  .icon-circle {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-  }
-
- .icon-circle.danger {
-  background: var(--red-light) !important; 
-  color: var(--red) !important;             
-  border: 2px solid var(--red) !important;  
-}
-
-  .icon-circle.warning {
-    background: #fef3c7;
-    color: #ffbb0a;
-  }
-
-  .icon-circle.info {
-    background: #dbeafe;
-    color: #0ea4f4;
-  }
-
-  .icon-circle.success {
-    background: #eef7d6;
-    color: #5f8e04;
-  }
-
-  .modal-title {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #111827;
-    text-align: center;
-  }
-
-  .modal-body {
-    margin-bottom: 24px;
-  }
-
-  .modal-message {
-    text-align: center;
-    color: #6b7280;
-    font-size: 15px;
-    line-height: 1.6;
-    margin: 0 0 16px 0;
-  }
-
-  .detail-box {
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 16px;
-  }
-
-  .detail-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #e5e7eb;
-  }
-
-  .detail-row:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  .detail-label {
-    color: #6b7280;
-    font-weight: 500;
-    font-size: 14px;
-  }
-
-  .detail-value {
-    color: #111827;
-    font-weight: 600;
-    font-size: 14px;
-  }
-
-  .warning-box {
-    background: #fef3c7;
-    border: 1px solid #ffbb0a;
-    border-radius: 8px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: #92400e;
-  }
-
-  .warning-box i {
-    color: #ffbb0a;
-    font-size: 18px;
-  }
-
-  .modal-footer {
-    display: flex;
-    gap: 12px;
-    justify-content: flex-end;
-  }
-
-  .btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-.btn-secondary {
-  background: var(--green) !important;
-  color: #fff !important;
-  border: 2px solid var(--green) !important;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #5f8e04 !important;
-  border-color: #5f8e04 !important;
-  color: #fff !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(127,187,6,0.55) !important; 
-}
-
-  .btn-primary {
-    background: #0ea4f4;
-    color: white;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: #0882c4;
-  }
-
-.btn-danger {
-  background: var(--red) !important;
-  color: #fff !important;
-  border: 2px solid var(--red) !important;
-}
-
-.btn-danger:hover:not(:disabled) {
-  background: #d04008 !important;
-  border-color: #d04008 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(248,83,16,0.55) !important; 
-}
-
-  .btn-warning {
-    background: #f59e0b;
-    color: white;
-  }
-
-  .btn-warning:hover:not(:disabled) {
-    background: #d97706;
-  }
-
-  @media (max-width: 576px) {
-    .modal-container {
-      margin: 20px;
-    }
-
-    .modal-footer {
-      flex-direction: column-reverse;
-    }
-
-    .btn {
-      width: 100%;
+    /* ── Overlay ─────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--overlay-bg);
+      display: flex;
+      align-items: center;
       justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.2s ease;        /* @keyframes fadeIn → global.css */
     }
-  }
-`]
+
+    /* ── Modal Container ─────────────────────────────────────── */
+    .modal-container {
+      background: var(--app-bg);
+      border-radius: var(--border-radius-lg);
+      box-shadow: var(--shadow-md);
+      max-width: 480px;
+      width: 90%;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-content { padding: 24px; }
+
+    /* ── Header ──────────────────────────────────────────────── */
+    .modal-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    /* Icon circle — coloured per type */
+    .icon-circle {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .icon-circle.danger  { background: var(--red-light);    color: var(--red);        border: 2px solid var(--red); }
+    .icon-circle.warning { background: var(--yellow-light); color: var(--yellow);     border: 2px solid var(--yellow); }
+    .icon-circle.info    { background: var(--blue-light);   color: var(--blue);       border: 2px solid var(--blue); }
+    .icon-circle.success { background: var(--green-light);  color: var(--green-dark); border: 2px solid var(--green); }
+
+    .modal-title {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--gray-900);
+      text-align: center;
+    }
+
+    /* ── Body ────────────────────────────────────────────────── */
+    .modal-body { margin-bottom: 24px; }
+
+    .modal-message {
+      text-align: center;
+      color: var(--gray-500);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+      margin: 0 0 16px 0;
+    }
+
+    /* Detail key-value box */
+    .detail-box {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--border-radius);
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .detail-label { color: var(--gray-500); font-weight: 500;  font-size: var(--font-size-xs); }
+    .detail-value { color: var(--gray-900); font-weight: 600;  font-size: var(--font-size-xs); }
+
+    /* Warning callout — mirrors .warning-box from global.css */
+    .warning-box {
+      background: var(--yellow-light);
+      border: 1px solid var(--yellow);
+      border-radius: var(--border-radius);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: var(--font-size-xs);
+      color: var(--yellow-dark);
+    }
+
+    .warning-box i { color: var(--yellow); font-size: 18px; }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /*
+      .btn, .btn:disabled  → global.css
+      .btn-primary + hover → global.css
+      .btn-danger  + hover → global.css
+
+      Design decision: Cancel uses green (overrides global gray .btn-secondary)
+    */
+    .btn-secondary {
+      background: var(--green) !important;
+      color: var(--white) !important;
+      border: 2px solid var(--green) !important;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--green-dark) !important;
+      border-color: var(--green-dark) !important;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-green) !important;
+    }
+
+    /* Warning button — no global equivalent, defined locally */
+    .btn-warning {
+      background: var(--yellow);
+      color: var(--white);
+      border: none;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+      background: var(--yellow-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-yellow);
+    }
+
+    /* ── Mobile ──────────────────────────────────────────────── */
+    @media (max-width: 576px) {
+      .modal-container { margin: 20px; }
+
+      .modal-footer { flex-direction: column-reverse; }
+
+      .btn { width: 100%; justify-content: center; }
+    }
+  `]
 })
 export class ConfirmationModalComponent {
   @Input() isOpen = false;

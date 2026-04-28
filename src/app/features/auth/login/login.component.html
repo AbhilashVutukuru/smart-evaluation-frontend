@@ -62,24 +62,87 @@
   <!-- Right side - Login Card -->
   <div class="login-card">
 
-    <!-- ── Already logged in ─────────────────────────────────── -->
-    @if (alreadyLoggedIn) {
-      <div class="already-logged-in">
-        <div class="logged-in-icon" role="img" aria-label="Already signed in">
-          <i class="fas fa-user-check" aria-hidden="true"></i>
+    <!-- ── Login form ──────────────────────────────────────── -->
+    <div class="logo-section">
+      <div class="logo-icon" role="img" aria-label="School portal">
+        <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+      </div>
+      <h1>Welcome Back!</h1>
+      <p>Sign in to continue to School Portal</p>
+    </div>
+
+    <!-- Error alert -->
+    @if (error) {
+      <div class="alert alert-danger" role="alert" aria-live="polite">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        {{ error }}
+        <button type="button" class="btn-close" (click)="error = ''" aria-label="Dismiss error"></button>
+      </div>
+    }
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <div class="input-group">
+          <span class="input-group-text" aria-hidden="true">
+            <i class="fas fa-envelope"></i>
+          </span>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            formControlName="email"
+            placeholder="teacher@school.edu"
+            (input)="clearError()"
+            [class.is-invalid]="f['email'].invalid && f['email'].touched"
+            autocomplete="email"
+          >
         </div>
+<<<<<<< HEAD
         <h1 class="already-logged-in-title">Already Signed In</h1>
         <p>You are currently logged in as <strong>{{ loggedInUserName }}</strong></p>
         <div class="logged-in-actions">
           <button type="button" class="btn-go-dashboard" (click)="goToDashboard()">
             <i class="fas fa-th-large" aria-hidden="true"></i>
             Go to Dashboard
+=======
+        @if (f['email'].invalid && f['email'].touched) {
+          <div class="text-danger small mt-1" role="alert">
+            @if (f['email'].errors?.['required']) { Email is required }
+            @if (f['email'].errors?.['email']) { Please enter a valid email }
+          </div>
+        }
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <div class="input-group">
+          <span class="input-group-text" aria-hidden="true">
+            <i class="fas fa-lock"></i>
+          </span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            class="form-control"
+            id="password"
+            formControlName="password"
+            placeholder="Enter your password"
+            (input)="clearError()"
+            [class.is-invalid]="f['password'].invalid && f['password'].touched"
+            autocomplete="current-password"
+          >
+          <button
+            type="button"
+            class="toggle-password"
+            (click)="togglePassword()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+            <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" aria-hidden="true"></i>
+>>>>>>> azure/main
           </button>
-          <p class="switch-hint">
-            <i class="fas fa-info-circle" aria-hidden="true"></i>
-            To switch accounts, please <strong>Logout</strong> from the sidebar first.
-          </p>
         </div>
+<<<<<<< HEAD
       </div>
     }
 
@@ -91,36 +154,24 @@
         </div>
         <h1>Welcome Back!</h1>
         <p>Sign in to continue to School Portal</p>
+=======
+        @if (f['password'].invalid && f['password'].touched) {
+          <div class="text-danger small mt-1" role="alert">Password is required</div>
+        }
+>>>>>>> azure/main
       </div>
 
-      <!-- Error alert -->
-      @if (error) {
-        <div class="alert alert-danger" role="alert" aria-live="polite">
-          <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
-          {{ error }}
-          <button type="button" class="btn-close" (click)="error = ''" aria-label="Dismiss error"></button>
-        </div>
-      }
-
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
-
-        <!-- Email -->
-        <div class="mb-3">
-          <label for="email" class="form-label">Email Address</label>
-          <div class="input-group">
-            <span class="input-group-text" aria-hidden="true">
-              <i class="fas fa-envelope"></i>
-            </span>
+      <!-- Remember Me & Forgot Password -->
+      <div class="row mb-3">
+        <div class="col-6">
+          <div class="form-check">
             <input
-              type="email"
-              class="form-control"
-              id="email"
-              formControlName="email"
-              placeholder="teacher@school.edu"
-              (input)="clearError()"
-              [class.is-invalid]="f['email'].invalid && f['email'].touched"
-              autocomplete="email"
+              class="form-check-input"
+              type="checkbox"
+              id="rememberMe"
+              formControlName="rememberMe"
             >
+<<<<<<< HEAD
           </div>
           @if (f['email'].invalid && f['email'].touched) {
             <div class="text-danger small mt-1" role="alert">
@@ -177,19 +228,29 @@
           </div>
           <div class="col-6 text-end">
             <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
+=======
+            <label class="form-check-label" for="rememberMe" title="Stay logged in for 30 days">
+              Remember me
+            </label>
+>>>>>>> azure/main
           </div>
         </div>
+        <div class="col-6 text-end">
+          <a routerLink="/auth/forgot-password" class="forgot-link">Forgot Password?</a>
+        </div>
+      </div>
 
-        <!-- Submit -->
-        <button
-          type="submit"
-          class="btn btn-submit"
-          [disabled]="loading || loginForm.invalid"
-          [attr.aria-busy]="loading">
-          <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sign-in-alt'" aria-hidden="true"></i>
-          {{ loading ? 'Signing in...' : 'Sign In' }}
-        </button>
+      <!-- Submit -->
+      <button
+        type="submit"
+        class="btn btn-submit"
+        [disabled]="loading || loginForm.invalid"
+        [attr.aria-busy]="loading">
+        <i [class]="loading ? 'fas fa-spinner fa-spin' : 'fas fa-sign-in-alt'" aria-hidden="true"></i>
+        {{ loading ? 'Signing in...' : 'Sign In' }}
+      </button>
 
+<<<<<<< HEAD
       </form>
 
       <!-- Request Demo Button -->
@@ -201,6 +262,9 @@
         </button>
       </div>
     }
+=======
+    </form>
+>>>>>>> azure/main
 
   </div>
 </div>
