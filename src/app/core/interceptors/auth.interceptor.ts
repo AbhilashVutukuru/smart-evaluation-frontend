@@ -116,6 +116,7 @@ export class AuthInterceptor implements HttpInterceptor {
       '/auth/refresh-token',
       '/auth/me',
       '/auth/logout',
+      '/api/enquiry',
     ];
     return authEndpoints.some((endpoint) => url.includes(endpoint));
   }
