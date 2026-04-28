@@ -596,11 +596,15 @@
 
     <!-- Actions -->
     <div class="confirm-dialog-actions">
-      <button type="button" class="img-modal-cancel"
-              [title]="confirmDialog.cancelLabel === 'Discard' ? 'Permanently delete this question paper' : 'Cancel'"
+      <button *ngIf="confirmDialog.discardLabel" type="button" class="btn btn-danger btn-sm"
+              title="Permanently delete this question paper"
+              (click)="confirmDialogDiscard()">
+        <i class="fas fa-trash"></i> {{ confirmDialog.discardLabel }}
+      </button>
+      <button *ngIf="confirmDialog.cancelLabel" type="button" class="img-modal-cancel"
+              title="Cancel"
               (click)="confirmDialogCancel()">
-        <i class="fas" [ngClass]="confirmDialog.cancelLabel === 'Discard' ? 'fa-trash' : 'fa-times'"></i>
-        {{ confirmDialog.cancelLabel || 'Cancel' }}
+        <i class="fas fa-times"></i> {{ confirmDialog.cancelLabel }}
       </button>
       <button type="button" class="confirm-ok-btn"
               [class.confirm-ok-btn--yellow]="!confirmDialog.isDanger"

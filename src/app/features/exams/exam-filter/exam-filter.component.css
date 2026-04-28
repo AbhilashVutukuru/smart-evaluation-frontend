@@ -48,3 +48,20 @@
 .col-md-2 .btn {
   margin-top: 12px;
 }
+/* ─── Show Students button styled as a chip ─────────────────── */
+.filter-chip-btn {
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--blue-dark);
+  color: var(--white);   
+}
+.filter-chip-btn:hover:not(:disabled) {
+  background: var(--blue);
+  color: var(--white);
+   box-shadow: var(--shadow-blue);
+}
+.filter-chip-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

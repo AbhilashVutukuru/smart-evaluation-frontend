@@ -32,6 +32,13 @@
     <span class="filter-chip" *ngIf="getQuestionPaperName()">
       <i class="fas fa-file-signature"></i> {{ getQuestionPaperName() }}
     </span>
+    <button
+      class="filter-chip filter-chip-btn"
+      (click)="showStudentsClick.emit()"
+      [disabled]="!canShowStudents || isLoading">
+      <i [class]="isLoading ? 'fas fa-spinner fa-spin' : 'fas fa-search'"></i>
+      {{ isLoading ? loadingLabel : buttonLabel }}
+    </button>
   </div>
 
   <!-- Collapsible body -->

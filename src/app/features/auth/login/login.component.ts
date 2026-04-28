@@ -53,11 +53,8 @@ export class LoginComponent extends BaseComponent implements OnInit {
     }
 
     if (this.authService.isAuthenticated()) {
-      this.alreadyLoggedIn  = true;
-      this.loggedInUserName =
-        this.authService.getUserEmail() ??
-        this.authService.getUserDisplayName() ??
-        'another account';
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+      this.router.navigate([returnUrl]);
     }
   }
 

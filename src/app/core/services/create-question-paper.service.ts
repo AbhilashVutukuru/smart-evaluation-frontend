@@ -250,9 +250,9 @@ export class CreateQuestionPaperService {
       .pipe(catchError(err => { throw err; }));
   }
 
-  discardDraft(questionPaperId: number): Observable<unknown> {
+  deleteQuestionPaper(questionPaperId: number): Observable<unknown> {
     return this.http
-      .delete(`${this.apiUrl}/question-paper/${questionPaperId}/draft`)
+      .delete(`${this.apiUrl}/question-paper/${questionPaperId}`)
       .pipe(catchError(err => { throw err; }));
   }
 

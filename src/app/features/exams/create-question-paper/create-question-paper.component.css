@@ -756,6 +756,7 @@ label.disabled {
   background: var(--gray-200);
   border-radius: 50px;
   overflow: hidden;
+  margin-top: 8px;
 }
 
 .q-progress-inline .q-progress-fill {
@@ -1194,16 +1195,22 @@ label.disabled {
   border-bottom: 1px solid var(--gray-300);
   border-top: 1px solid var(--gray-300);
   border-right: 1px solid var(--gray-300);
+  /* background: var(--green);
+  color: var(--white); */
+  color: var(--green-dark);
 }
 .spinner-up:hover:not(:disabled) {
-  background: var(--blue);
+  background: var(--green);
   color: var(--white);
-  border-color: var(--blue);
+  border-color: var(--green);
 }
 .spinner-down {
   border-radius: 0 0 var(--border-radius, 8px) 0;
   border-bottom: 1px solid var(--gray-300);
   border-right: 1px solid var(--gray-300);
+  /* background: var(--red);
+  color: var(--white); */
+   color: var(--red-dark); 
 }
 .spinner-down:hover:not(:disabled) {
   background: var(--red);

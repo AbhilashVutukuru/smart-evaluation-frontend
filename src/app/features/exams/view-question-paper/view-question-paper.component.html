@@ -245,7 +245,7 @@
           Locked — Exam Date Passed ({{ questionPaper.examDate | date:'dd MMM yyyy' }})
         </span>      
         <button *ngIf="!isEditMode && !isLocked" class="btn btn-delete-paper" (click)="deleteQuestionPaper()">
-          <i class="fas fa-trash-alt"></i> Delete
+          <i class="fas fa-trash-alt"></i> Delete Question Paper
         </button>
           <button *ngIf="!isLocked && !isEditMode" class="btn btn-edit-paper" (click)="enterEditMode()">
           <i class="fas fa-edit"></i> Edit Question Paper
@@ -417,7 +417,8 @@
                   <td class="text-center">
                     <span class="marks-badge-sm"
                       [class.marks-mismatch]="getTotalRubricMarks() !== currentQuestion.maxMarks">
-                      {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }}
+                      <!-- {{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} -->
+                      {{ currentQuestion.maxMarks }}
                     </span>
                   </td>
                 </tr>

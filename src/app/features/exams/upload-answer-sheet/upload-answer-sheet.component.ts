@@ -606,21 +606,28 @@ export class UploadAnswerSheetsComponent extends BaseExamFilterComponent impleme
     this.isSubmittedForEvaluation = false;
     this.submittedAt              = null;
     this.absentStudentIds         = [];
-    this.noExamPaperFound         = false;
+//  this.noExamPaperFound         = false;
     this.capturedImages.clear();
     this.capturedImageFiles.clear();
     this.updateModeStudentIds.clear();
-    this.modal           = null;
+    this.modal            = null;
     this.isFilterCollapsed = false;
     this.hasSearched       = false;
   }
 
+   // ─── Filter change overrides ──────────────────────────────────────────────────
+  // override onClassChange(classId: string): void { this.clearStudents(); super.onClassChange(classId); }
+  // override onSectionChange(): void               { this.clearStudents(); super.onSectionChange(); }
+  // override onSubjectChange(): void               { this.clearStudents(); super.onSubjectChange(); }
+  // override onExamTypeChange(): void              { this.clearStudents(); super.onExamTypeChange(); }
+  // override onQuestionPaperChange(): void         { this.clearStudents(); super.onQuestionPaperChange(); }
+
   // ─── Filter change overrides ──────────────────────────────────────────────────
-  override onClassChange(classId: string): void { this.clearStudents(); super.onClassChange(classId); }
-  override onSectionChange(): void               { this.clearStudents(); super.onSectionChange(); }
-  override onSubjectChange(): void               { this.clearStudents(); super.onSubjectChange(); }
-  override onExamTypeChange(): void              { this.clearStudents(); super.onExamTypeChange(); }
-  override onQuestionPaperChange(): void         { this.clearStudents(); super.onQuestionPaperChange(); }
+  override onClassChange(classId: string): void   { this.noExamPaperFound = false; this.clearStudents(); super.onClassChange(classId); }
+  override onSectionChange(): void                { this.noExamPaperFound = false; this.clearStudents(); super.onSectionChange(); }
+  override onSubjectChange(): void                { this.noExamPaperFound = false; this.clearStudents(); super.onSubjectChange(); }
+  override onExamTypeChange(): void               { this.noExamPaperFound = false; this.clearStudents(); super.onExamTypeChange(); }
+  override onQuestionPaperChange(): void          { this.noExamPaperFound = false; this.clearStudents(); super.onQuestionPaperChange(); }
 
   // ─── Show Students ────────────────────────────────────────────────────────────
   showStudents(): void {
