@@ -737,6 +737,10 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       const paperId = this.draftPaperId || this.editingPaperId;
       if (paperId) {
         this.createQuestionPaperService.updateDraftHeader(paperId, {
+          classId:           +this.examFormData.classId,
+          subjectId:         +this.examFormData.subjectId,
+          examTypeId:        +this.examFormData.examTypeId,
+          questionPaperName: this.examFormData.questionPaperName?.trim() ?? '',
           totalMarks:        this.examFormData.totalMarks!,
           numberOfQuestions: this.examFormData.numberOfQuestions!,
           examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
@@ -750,7 +754,16 @@ export class CreateExamComponent implements OnInit, OnDestroy {
           },
           error: (error) => {
             this.isLoading = false;
-            this.errorHandler.handle('Failed to update question paper', error);
+            const msg = error?.error?.message ?? '';
+            if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate')) {
+              this.questionPaperNameExists = true;
+              this.toastService.showError(
+                'Duplicate Question Paper Name',
+                'A question paper with the same name already exists for this class, subject, and exam type.\nPlease choose a different name.',
+              );
+            } else {
+              this.errorHandler.handle('Failed to update question paper', error);
+            }
           },
         });
       } else {
