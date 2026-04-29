@@ -268,7 +268,7 @@ export class CreateQuestionPaperService {
   updateExam(questionPaperId: number, formData: ExamFormData): Observable<unknown> {
     const payload = {
       totalMarks:        formData.totalMarks,
-      questionPaperName: formData.questionPaperName?.trim() ?? '',
+      questionPaperName: formData.questionPaperName?.trim() || undefined,
       questionsEdited:   true,
       examDate:          formData.examDate ? `${formData.examDate}T00:00:00Z` : null,
       questions: formData.questionSets.map(qs => ({
@@ -297,10 +297,10 @@ export class CreateQuestionPaperService {
   }
 
   updateDraftHeader(questionPaperId: number, dto: {
-    classId?:          number;
-    subjectId?:        number;
-    examTypeId?:       number;
-    questionPaperName?: string;
+    classId:           number;
+    subjectId:         number;
+    examTypeId:        number;
+    questionPaperName: string;
     totalMarks:        number;
     numberOfQuestions: number;
     examDate:          string | null;
