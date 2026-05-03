@@ -1208,10 +1208,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       r.marksTouched       = true;
     });
 
+    if (this.currentQuestionSet.maxMarks === 1) this.autoFillOneMarkQuestion();
+
     const currentErrors = this.getQuestionValidationErrors();
     if (currentErrors.length > 0) { this.toastService.showError('Validation Error', currentErrors[0]); return; }
 
-    if (!this.validateMarksMatch()) {
+    if (this.currentQuestionSet.maxMarks !== 1 && !this.validateMarksMatch()) {
       this.toastService.showError('Validation Error', 'Validation marks must match maximum marks'); return;
     }
 
