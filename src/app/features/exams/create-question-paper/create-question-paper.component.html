@@ -279,16 +279,10 @@
       <div class="question-badge">
         Question {{ currentQuestionIndex + 1 }} of {{ questionSets.length }}
       </div>
-      <!-- Centre: progress bar -->
-      <div class="q-progress-inline">
-        <div class="q-progress-bar-wrap">
-          <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
-        </div>
-        <span class="q-progress-text">{{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%</span>
-      </div>
+      
       <!-- Right: goto dropdown + clear -->
       <div class="question-goto-inline">
-        <label class="goto-label">Go to question #</label>
+        <label class="goto-label">Go to: </label>
         <div class="select-wrapper question-goto-select">
           <select #cqpGotoSelect class="form-control"
             (change)="currentQuestionIndex = +cqpGotoSelect.value; cqpGotoSelect.selectedIndex = 0"
@@ -304,6 +298,18 @@
           </select>
           <i class="fas fa-chevron-down select-icon"></i>
         </div>
+        <!-- <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()" [disabled]="questionsFrozen">
+          <i class="fas fa-trash"></i> Clear
+        </button> -->
+      </div>
+
+      <!-- Centre: progress bar -->
+      <div class="q-progress-inline">
+        <div class="q-progress-bar-wrap">
+          <div class="q-progress-fill" [style.width]="((currentQuestionIndex + 1) / questionSets.length) * 100 + '%'"></div>
+        </div>
+        <span class="q-progress-text">{{ (((currentQuestionIndex + 1) / questionSets.length) * 100).toFixed(0) }}%</span>
+
         <button class="btn btn-danger btn-sm" (click)="clearCurrentQuestion()" [disabled]="questionsFrozen">
           <i class="fas fa-trash"></i> Clear
         </button>

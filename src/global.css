@@ -1216,7 +1216,13 @@ input[type="checkbox"] {
 /* <div class="question-goto-inline"> — flex pair: "Go to question ▸" label + select */
 .question-goto-inline { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
 /* <p class="goto-label"> — small uppercase "Go to question #" label */
-.goto-label           { font-size: var(--font-size-xs); font-weight: 600; color: var(--gray-500); white-space: nowrap; margin: 0; }
+.goto-label           
+{ 
+  /* font-size: var(--font-size-xs);  */
+  font-weight: 600; 
+  /* color: var(--gray-500);  */
+  white-space: nowrap; margin: 0; 
+}
 
 /* ─── Question section wrapper ───────────────────────────────── */
 /* <div class="question-section"> — spacing between each Q&A block */
@@ -1256,7 +1262,16 @@ input[type="checkbox"] {
 
 /* ─── Marks badges ───────────────────────────────────────────── */
 /* <span class="marks-badge"> — solid blue pill showing total/awarded marks */
-.marks-badge    { background: var(--blue); color: var(--white); padding: 0.25rem 0.75rem; border-radius: 1.25rem; font-size: var(--font-size-sm); font-weight: 700; white-space: nowrap; }
+.marks-badge    
+{ 
+  background: var(--blue); 
+  color: var(--white); 
+  padding: 0.2rem 0.7rem 0.3rem; 
+  border-radius: 1.25rem; 
+  font-size: var(--font-size-sm); 
+  font-weight: 700; 
+  white-space: nowrap; 
+}
 /* <span class="marks-badge-sm"> — smaller blue-light pill for sub-marks */
 .marks-badge-sm { background: var(--blue-light); color: var(--blue); padding: 0.25rem 0.625rem; border-radius: 1rem; font-size: 0.8125rem; font-weight: 700; }
 /* Mismatch variant — red when awarded ≠ expected */
@@ -2592,7 +2607,7 @@ padding: 0.5rem 1.5rem 1.5rem;
 .name        { font-weight: 600; color: var(--gray-900); font-size: var(--font-size-sm); line-height: 1.2; }
 /* <strong class="roll-number"> / <strong class="emp-code"> */
 .roll-number,
-.emp-code    { color: var(--blue); font-weight: 600; }
+.emp-code    { font-weight: 600; }
 
 /* ─── Table Action Buttons ───────────────────────────────────── */
 /* Reset global .action-buttons (form footer) for inline table icon group */

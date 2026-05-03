@@ -264,13 +264,13 @@
         <h5 *ngIf="currentQuestion && !isLoadingQuestion">
           <i class="fas fa-question"></i>
           Question # {{ currentQuestion.questionNumber }}
-          <span class="marks-badge">({{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks)</span>
+          <span class="marks-badge">{{ getTotalRubricMarks() }} / {{ currentQuestion.maxMarks }} Marks</span>
         </h5>
         <h5 *ngIf="isLoadingQuestion">
           <i class="fas fa-spinner fa-spin"></i> Loading...
         </h5>
         <div class="question-goto-inline">
-          <label class="goto-label">Go to question #</label>
+          <label class="goto-label">Go to:</label>
           <div class="select-wrapper question-goto-select">
             <select #gotoSelect class="form-control"
               [disabled]="isAnyRubricEditing()"

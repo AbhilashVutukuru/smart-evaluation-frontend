@@ -349,7 +349,7 @@
           <span class="marks-badge">{{ currentQuestion.maxMarks === 1 ? '1 Mark' : currentQuestion.maxMarks + ' Marks' }}</span>
         </h5>
         <div class="question-goto-inline">
-          <label class="goto-label">Go to question #</label>
+          <label class="goto-label">Go to:</label>
           <div class="select-wrapper question-goto-select">
             <select #gotoSelect class="form-control"
               (change)="loadQuestion(+gotoSelect.value); gotoSelect.selectedIndex = 0">
