@@ -200,6 +200,7 @@
           <input
             type="date"
             [(ngModel)]="examFormData.examDate"
+            (ngModelChange)="onExamDateChange($event)"
             [min]="todayIso"
             class="form-control"
             [class.input-date-error]="isExamDateInPast(examFormData.examDate)"
@@ -207,7 +208,7 @@
           <button
             *ngIf="examFormData.examDate"
             class="btn-clear-date"
-            (click)="examFormData.examDate = null"
+            (click)="onExamDateChange(null)"
             title="Clear date"
             type="button"
           >&#x2715;</button>

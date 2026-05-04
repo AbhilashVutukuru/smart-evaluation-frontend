@@ -718,6 +718,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
    * and freeze the Q&A section (inputs disabled, notice shown).
    * The questionSets data is NOT cleared — just frozen.
    */
+  onExamDateChange(value: string | null): void {
+    this.examFormData.examDate = value;
+    if (this.questionsLocked) this.onHeaderFieldChanged();
+  }
+
   private onHeaderFieldChanged(): void {
     if (this.questionsLocked) {
       this.questionsLocked = false;
@@ -804,6 +809,45 @@ export class CreateExamComponent implements OnInit, OnDestroy {
         };
       };
       showResumeDialog();
+      return;
+    }
+
+    // ── Edit mode / existing draft with questions ───────────────────────────
+    // If we already have questions generated (edit mode or resumed draft),
+    // just update the header — never try to create a new draft.
+    // This prevents the "already exists" error when changing exam date, total marks etc.
+    const existingPaperId = this.draftPaperId || (this.isEditMode ? this.editingPaperId : 0);
+    if (existingPaperId && this.questionsGenerated) {
+      this.createQuestionPaperService.updateDraftHeader(existingPaperId, {
+        classId:           +this.examFormData.classId,
+        subjectId:         +this.examFormData.subjectId,
+        examTypeId:        +this.examFormData.examTypeId,
+        questionPaperName: this.examFormData.questionPaperName?.trim() ?? '',
+        totalMarks:        this.examFormData.totalMarks!,
+        numberOfQuestions: this.examFormData.numberOfQuestions!,
+        examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
+      }).pipe(takeUntil(this.destroy$)).subscribe({
+        next: () => {
+          this.isLoading          = false;
+          this.questionsLocked    = true;
+          this.questionsFrozen    = false;
+          this.questionsGenerated = true;
+          this.toastService.showSuccess('Updated', 'Question paper updated. You can continue editing.');
+        },
+        error: (error) => {
+          this.isLoading = false;
+          const msg = error?.error?.message ?? '';
+          if (msg.toLowerCase().includes('already exists') || msg.toLowerCase().includes('duplicate')) {
+            this.questionPaperNameExists = true;
+            this.toastService.showError(
+              'Duplicate Question Paper Name',
+              'A question paper with this name already exists. Please choose a different name.',
+            );
+          } else {
+            this.errorHandler.handle('Failed to update question paper', error);
+          }
+        },
+      });
       return;
     }
 
@@ -987,6 +1031,11 @@ export class CreateExamComponent implements OnInit, OnDestroy {
       validationRulesCount: 0,
       rubricPoints:         [],
     };
+
+    // Freeze immediately — unfreeze only after API confirms success
+    this.questionsLocked = false;
+    this.questionsFrozen = true;
+
     this.questionSets.push(newQ);
     this.examFormData.questionSets      = this.questionSets;
     this.examFormData.numberOfQuestions = this.questionSets.length;
@@ -1002,10 +1051,26 @@ export class CreateExamComponent implements OnInit, OnDestroy {
         numberOfQuestions: this.questionSets.length,
         examDate:          this.examFormData.examDate ? `${this.examFormData.examDate}T00:00:00Z` : null,
       }).pipe(takeUntil(this.destroy$)).subscribe({
-        next:  () => this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`),
-        error: (error) => this.errorHandler.handle('Failed to add question', error),
+        next: () => {
+          // API confirmed — unfreeze
+          this.questionsLocked = true;
+          this.questionsFrozen = false;
+          this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
+        },
+        error: (error) => {
+          // Rollback — remove the question we just added
+          this.questionSets.pop();
+          this.examFormData.questionSets      = this.questionSets;
+          this.examFormData.numberOfQuestions = this.questionSets.length;
+          this.questionsLocked = true;
+          this.questionsFrozen = false;
+          this.errorHandler.handle('Failed to add question', error);
+        },
       });
     } else {
+      // No API — unfreeze immediately
+      this.questionsLocked = true;
+      this.questionsFrozen = false;
       this.toastService.showSuccess('Question Added', `Question ${newQ.questionNumber} added.`);
     }
   }
@@ -1027,6 +1092,10 @@ export class CreateExamComponent implements OnInit, OnDestroy {
         const lastQ   = this.questionSets[this.questionSets.length - 1];
         const paperId = this.draftPaperId || this.editingPaperId;
 
+        // Freeze immediately — unfreeze only after API confirms
+        this.questionsLocked = false;
+        this.questionsFrozen = true;
+
         const doDelete = () => {
           this.questionSets.pop();
           this.examFormData.questionSets      = this.questionSets;
@@ -1035,6 +1104,9 @@ export class CreateExamComponent implements OnInit, OnDestroy {
             this.currentQuestionIndex = this.questionSets.length - 1;
           }
           this.resetTouchState();
+          // API confirmed — unfreeze
+          this.questionsLocked = true;
+          this.questionsFrozen = false;
           this.toastService.showSuccess('Deleted', 'Last question permanently deleted.');
         };
 
@@ -1044,7 +1116,12 @@ export class CreateExamComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
               next:  doDelete,
-              error: (error) => this.errorHandler.handle('Failed to delete question', error),
+              error: (error) => {
+                // Rollback freeze — API failed, nothing changed
+                this.questionsLocked = true;
+                this.questionsFrozen = false;
+                this.errorHandler.handle('Failed to delete question', error);
+              },
             });
         } else {
           doDelete();
