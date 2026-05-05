@@ -46,7 +46,7 @@
         <i class="fas fa-list-ol"></i> {{ examFormData.numberOfQuestions }} Questions
       </span>
       <span class="filter-chip" [hidden]="!examFormData.examDate">
-        <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate }}
+        <i class="fas fa-calendar-alt"></i> {{ examFormData.examDate | date:'dd MMM yyyy' }}
       </span>
     </div>
 
@@ -196,7 +196,7 @@
           Exam Date
           <small class="text-muted">(Optional)</small>
         </label>
-        <div class="exam-date-input-group">
+        <div class="exam-date-input-group" [class.has-date]="examFormData.examDate">
           <input
             type="date"
             [(ngModel)]="examFormData.examDate"

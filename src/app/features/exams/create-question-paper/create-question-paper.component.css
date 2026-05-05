@@ -156,15 +156,23 @@
 .exam-date-input-group input[type="date"].form-control::-webkit-calendar-picker-indicator {
   position: absolute;
   right: 0.75rem;
+  opacity: 1;
+  cursor: pointer;
+}
+
+/* Hide the native cal icon when a date is selected (clear button takes its place) */
+.exam-date-input-group.has-date input[type="date"].form-control::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .btn-clear-date {
   position: absolute;
-  right: 2.25rem;
+  right: 0.6rem;        /* same position as the native cal icon */
   background: none;
   border: none;
   color: var(--red);
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   line-height: 1;
   cursor: pointer;
   padding: 0.2rem;
