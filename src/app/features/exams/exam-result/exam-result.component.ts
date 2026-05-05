@@ -388,23 +388,35 @@ export class ExamResultsComponent extends BaseExamFilterComponent implements OnD
     rubric.teacherRemarks = rubric.originalRemarks;
   }
 
-  isRubricValid(rubric: ResultRubric): boolean {
-    if (rubric.marksGiven < 0 || rubric.marksGiven > rubric.maxMarks) return false;
-    if (!rubric.teacherRemarks?.trim()) return false;
+  // Returns the first validation failure reason, or null if valid.
+  // Keeps saveRubric clean — one place to read, one specific message per failure.
+  private getRubricValidationError(rubric: ResultRubric): string | null {
+    if (rubric.marksGiven < 0 || rubric.marksGiven > rubric.maxMarks)
+      return `Marks must be between 0 and ${rubric.maxMarks}`;
+
     const marksStr = rubric.marksGiven.toString();
-    if (marksStr.includes('.')) {
-      const decimal = marksStr.split('.')[1];
-      if (decimal && decimal.length > 1) return false;
-    }
-    return true;
+    if (marksStr.includes('.') && (marksStr.split('.')[1]?.length ?? 0) > 1)
+      return 'Marks must be in 0.5 steps (e.g. 0, 0.5, 1, 1.5)';
+
+    if (!rubric.teacherRemarks?.trim())
+      return 'Teacher remarks are required';
+
+    return null;
+  }
+
+  // Kept for template binding (e.g. disabling save button, inline hint visibility)
+  isRubricValid(rubric: ResultRubric): boolean {
+    return this.getRubricValidationError(rubric) === null;
   }
 
   saveRubric(rubric: ResultRubric): void {
     if (!this.selectedStudent || !this.currentQuestion) {
       this.toastService.showWarning('Warning', 'No question selected'); return;
     }
-    if (!this.isRubricValid(rubric)) {
-      this.toastService.showError('Error', 'Please enter valid marks (0.5 step) and remarks'); return;
+
+    const validationError = this.getRubricValidationError(rubric);
+    if (validationError) {
+      this.toastService.showError('Validation Error', validationError); return;
     }
     if (!this.isRubricChanged(rubric)) {
       rubric.isEditing = false;
