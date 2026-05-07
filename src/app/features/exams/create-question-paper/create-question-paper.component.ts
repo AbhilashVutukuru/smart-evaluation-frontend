@@ -1267,6 +1267,31 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Returns true if the question at the given index has been fully saved.
+   * Used to enable/disable individual options in the Go-to dropdown.
+   */
+  isQuestionIndexSaved(index: number): boolean {
+    const qs = this.questionSets[index];
+    return !!qs && this.savedSnapshots.has(qs.questionNumber);
+  }
+
+  /**
+   * Go-to dropdown handler.
+   * Only saved questions are selectable in the dropdown, so just navigate directly.
+   */
+  goToQuestion(targetIndex: number): void {
+    if (this.isSaving) return;
+    if (targetIndex === this.currentQuestionIndex) return;
+
+    this.currentQuestionIndex = targetIndex;
+    this.resetTouchState();
+    const q = this.currentQuestionSet;
+    if (q && q.maxMarks !== 1 && (q.rubricPoints?.length ?? 0) > 0) {
+      this.rulesGenerated = true;
+    }
+  }
+
   private autoFillOneMarkQuestion(): void {
     this.currentQuestionSet.validationRulesCount = 1;
     this.currentQuestionSet.rubricPoints = [
@@ -1452,6 +1477,7 @@ export class CreateExamComponent implements OnInit, OnDestroy {
     this.currentQuestionSet.maxMarks             = null;
     this.currentQuestionSet.validationRulesCount = 0;
     this.currentQuestionSet.rubricPoints         = [];
+    this.savedSnapshots.delete(this.currentQuestionSet.questionNumber);
     this.resetTouchState();
     this.toastService.showInfo('Info', 'Question cleared');
   }
