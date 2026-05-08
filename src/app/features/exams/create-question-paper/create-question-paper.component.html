@@ -286,13 +286,13 @@
         <label class="goto-label">Go to: </label>
         <div class="select-wrapper question-goto-select">
           <select #cqpGotoSelect class="form-control"
-            (change)="currentQuestionIndex = +cqpGotoSelect.value; cqpGotoSelect.selectedIndex = 0"
+            (change)="goToQuestion(+cqpGotoSelect.value); cqpGotoSelect.selectedIndex = 0"
             [disabled]="questionsFrozen">
             <option value="" disabled selected>
               Question # {{ currentQuestionIndex + 1 }} ({{ currentQuestionSet.maxMarks === 1 ? '1 Mark' : (currentQuestionSet.maxMarks ?? '?') + ' Marks' }})
             </option>
             <ng-container *ngFor="let qs of questionSets; let i = index">
-              <option *ngIf="i !== currentQuestionIndex" [value]="i">
+              <option *ngIf="i !== currentQuestionIndex" [disabled]="!isQuestionIndexSaved(i)" [value]="i">
                 Question # {{ qs.questionNumber }} ({{ qs.maxMarks === 1 ? '1 Mark' : (qs.maxMarks ?? '?') + ' Marks' }})
               </option>
             </ng-container>
