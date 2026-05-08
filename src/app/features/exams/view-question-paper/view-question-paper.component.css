@@ -345,6 +345,92 @@
 /* ─── Table — NO overrides. global.css handles .table, .table th,
    .table td, .table thead fully. Same as upload-answer-sheet.  ── */
 
+/* ── Question Papers list table: CSS-only card reflow (mobile + tablet) ─── */
+/* Applies up to 1023px — covers phones, tablets, and iPads (incl. iPad Pro 11") */
+@media (max-width: 1023px) {
+  .table:not(.rubric-table) {
+    display: block;
+    border: none;
+    background: transparent;
+    width: 100%;
+  }
+
+  .table:not(.rubric-table) thead { display: none; }
+
+  .table:not(.rubric-table) tbody {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .table:not(.rubric-table) tbody tr {
+    display: block;
+    background: var(--app-bg);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  .table:not(.rubric-table) tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: var(--font-size-sm);
+    text-align: right;
+  }
+
+  .table:not(.rubric-table) tbody td:last-child { border-bottom: none; }
+
+  /* Column labels via ::before */
+  .table:not(.rubric-table) tbody td::before {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--gray-500);
+    text-align: left;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .table:not(.rubric-table) tbody td:nth-child(1)::before  { content: "#"; }
+  .table:not(.rubric-table) tbody td:nth-child(2)::before  { content: "Subject"; }
+  .table:not(.rubric-table) tbody td:nth-child(3)::before  { content: "Exam Type"; }
+  .table:not(.rubric-table) tbody td:nth-child(4)::before  { content: "Question Paper"; }
+  .table:not(.rubric-table) tbody td:nth-child(5)::before  { content: "Total Marks"; }
+  .table:not(.rubric-table) tbody td:nth-child(6)::before  { content: "Questions"; }
+  .table:not(.rubric-table) tbody td:nth-child(7)::before  { content: "Exam Date"; }
+  .table:not(.rubric-table) tbody td:nth-child(8)::before  { content: "Status"; }
+  .table:not(.rubric-table) tbody td:nth-child(9)::before  { content: "Description"; }
+  /* Action column — right-aligned, subtle background */
+  .table:not(.rubric-table) tbody td:nth-child(10) {
+    justify-content: flex-end;
+    background: var(--gray-50);
+  }
+
+  /* active-row highlight */
+  .table:not(.rubric-table) tbody tr.active-row {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 2px var(--blue-light);
+  }
+}
+
+/* Tablet (768–1023px): 2-column card grid to fill wider screen */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .table:not(.rubric-table) tbody {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.875rem;
+  }
+}
+
+@media (max-width: 479px) {
+  .table:not(.rubric-table) tbody td { padding: 0.4rem 0.875rem; }
+}
+
 /* ─── Edit mode fullscreen ───────────────────────────────────────────────────── */
 .fullscreen-edit-body {
   padding: 1rem 1.5rem;

@@ -30,7 +30,7 @@ import { PageContextService } from '../../../core/services/page-context.service'
           </button>
           <div class="topbar-page-title">
             <i class="fas {{ pageIcon }}"></i>
-            {{ pageTitle }}
+            <span class="title-text">{{ pageTitle }}</span>
             <span *ngIf="pageContext.topbarSubtitle()" class="topbar-subtitle">
               ( {{ pageContext.topbarSubtitle() }} )
             </span>
@@ -94,11 +94,22 @@ import { PageContextService } from '../../../core/services/page-context.service'
       color: var(--gray-900);
       white-space: nowrap;
       letter-spacing: -0.01em;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .topbar-page-title i {
       color: var(--blue);
       font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+
+    .title-text {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
     }
 
     .topbar-subtitle {
@@ -107,6 +118,7 @@ import { PageContextService } from '../../../core/services/page-context.service'
       color: var(--green-dark);
       margin-left: 0.5rem;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .topbar-right {
@@ -155,7 +167,21 @@ import { PageContextService } from '../../../core/services/page-context.service'
       .topbar-title  { display: none; }
       .topbar-page-title { display: flex; font-size: 1.1rem; }
       .topbar-page-title i { font-size: 1rem; }
-      .topbar { padding: 0.625rem 1rem; }
+      .topbar { padding: 0.625rem 1rem; border-bottom: 1px solid var(--gray-100); }
+      .topbar-subtitle { font-size: 0.875rem; }
+    }
+
+    @media (max-width: 479px) {
+      .topbar { padding: 0.5rem 0.875rem; gap: 0.5rem; }
+      .topbar-page-title { font-size: 1rem; gap: 0.5rem; }
+      .topbar-page-title i { font-size: 0.9rem; }
+      .topbar-subtitle { display: none; }
+      .hamburger-btn { width: 2rem; height: 2rem; font-size: 0.9rem; }
+    }
+
+    @media (max-width: 360px) {
+      .topbar { padding: 0.5rem 0.625rem; gap: 0.375rem; }
+      .topbar-page-title { font-size: 0.9rem; }
     }
   `],
 })

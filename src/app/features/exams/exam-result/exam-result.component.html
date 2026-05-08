@@ -88,7 +88,7 @@
     </div>
 
     <!-- Students Table -->
-    <div class="table-responsive">
+    <div class="table-responsive er-table-desktop">
 
       <!-- No results state -->
       <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
@@ -169,6 +169,62 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile card list (hidden on desktop) -->
+    <div class="er-students-cards" *ngIf="filteredStudents.length > 0">
+      <div class="er-student-card" *ngFor="let student of filteredStudents">
+
+        <!-- Head: roll + name | status badge -->
+        <div class="er-card-head">
+          <div class="er-card-identity">
+            <span class="er-card-roll">{{ student.rollNumber }}</span>
+            <span class="er-card-name">{{ student.studentName }}</span>
+          </div>
+          <div class="er-card-status">
+            <span *ngIf="student.isAbsent" class="badge badge-danger">Absent</span>
+            <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated' && student.hasUploaded"
+              class="badge badge-success">Evaluated</span>
+            <span *ngIf="!student.isAbsent && student.evaluationStatus === 'Pending' && student.hasUploaded"
+              class="badge badge-warning">Pending</span>
+            <span *ngIf="!student.isAbsent && !student.hasUploaded && answerSheetsSubmitted"
+              class="badge badge-primary">Submitted</span>
+          </div>
+        </div>
+
+        <!-- Body: marks rows -->
+        <div class="er-card-body">
+          <div class="er-card-row">
+            <span class="er-card-label">Total Marks</span>
+            <span class="er-card-value">{{ totalMarks || "—" }}</span>
+          </div>
+          <div class="er-card-row">
+            <span class="er-card-label">Obtained Marks</span>
+            <span class="er-card-value">
+              <span *ngIf="student.isAbsent || !student.hasUploaded">—</span>
+              <span *ngIf="!student.isAbsent && student.hasUploaded">{{ student.obtainedMarks }}</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- Footer: action link -->
+        <div class="er-card-foot"
+          *ngIf="!student.isAbsent && student.evaluationStatus === 'Evaluated'">
+          <a href="javascript:void(0)" class="download-link" (click)="viewStudentResults(student)">
+            <i class="fas fa-eye"></i> View Results
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Empty state for mobile cards -->
+    <div class="er-students-cards">
+      <div class="empty-state" *ngIf="filteredStudents.length === 0 && searchTerm">
+        <i class="fas fa-search"></i>
+        <h5>No Students Found</h5>
+        <p>No students match "<strong>{{ searchTerm }}</strong>"</p>
+      </div>
     </div>
   </div>
 

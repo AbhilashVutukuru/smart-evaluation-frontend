@@ -47,11 +47,17 @@
 /* <div class="teacher-info"> - avatar + name in table row */
 .teacher-info { display: flex; align-items: center; gap: 0.5rem; }
 
-/* -- Mobile cards toggle -------------------------------------- */
+/* -- Mobile/tablet cards toggle ------------------------------- */
 /* .teacher-card, .teacher-details, .avatar -> global.css */
+.list-container .table-responsive { display: block; }
+
+@media (max-width: 1023px) {
+  .list-container .table-responsive { display: none !important; }
+}
+
 .teachers-cards { display: none; }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .teachers-cards { display: flex; flex-direction: column; gap: 0.875rem; }
 }
 

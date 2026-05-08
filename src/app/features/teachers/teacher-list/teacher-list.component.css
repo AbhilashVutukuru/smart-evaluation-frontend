@@ -64,10 +64,16 @@
   white-space: nowrap;
 }
 
-/* -- Mobile cards toggle ------------------------------------ */
+/* -- Mobile/tablet cards toggle ----------------------------- */
+.list-container .table-responsive { display: block; }
+
+@media (max-width: 1023px) {
+  .list-container .table-responsive { display: none !important; }
+}
+
 .teachers-cards { display: none; }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .teachers-cards { display: flex; flex-direction: column; gap: 0.875rem; }
 }
 

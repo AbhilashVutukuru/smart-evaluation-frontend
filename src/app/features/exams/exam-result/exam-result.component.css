@@ -290,3 +290,201 @@
 
 /* Reduce gap between last table and nav buttons */
 /* .question-section:last-of-type → global.css */
+
+/* ── Students list: desktop table / mobile cards ──────────── */
+
+/* Desktop: show table, hide cards */
+.er-table-desktop   { display: block; }
+.er-students-cards  { display: none; }
+
+/* Mobile + tablet: hide table, show cards */
+@media (max-width: 1023px) {
+  .er-table-desktop  { display: none !important; }
+  .er-students-cards { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.25rem 0; }
+}
+
+/* Card shell */
+.er-student-card {
+  background: var(--app-bg);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Head row: identity on left, badge on right */
+.er-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.er-card-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.er-card-roll {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--blue);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.er-card-name {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--gray-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.er-card-status { flex-shrink: 0; }
+
+/* Body rows: label + value */
+.er-card-body {
+  display: flex;
+  flex-direction: column;
+  padding: 0.625rem 1rem;
+  gap: 0.375rem;
+}
+
+.er-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: var(--font-size-sm);
+}
+
+.er-card-label {
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.er-card-value {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* Footer: action link */
+.er-card-foot {
+  padding: 0.5rem 1rem;
+  border-top: 1px solid var(--gray-100);
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 479px) {
+  .er-card-head  { padding: 0.625rem 0.875rem; }
+  .er-card-body  { padding: 0.5rem 0.875rem; }
+  .er-card-foot  { padding: 0.5rem 0.875rem; }
+  .er-card-name  { font-size: var(--font-size-xs); }
+}
+
+/* ── Rubric tables: CSS-only card reflow — mobile + tablet (≤1023px) ── */
+@media (max-width: 1023px) {
+
+  /* Table shell becomes a block container */
+  .rubric-table {
+    display: block;
+    min-width: 0 !important;
+    width: 100%;
+    border: none;
+    background: transparent;
+  }
+
+  .rubric-table thead { display: none; }
+
+  .rubric-table tbody { display: flex; flex-direction: column; gap: 0.625rem; }
+
+  /* Each rubric row → a card */
+  .rubric-table tbody tr {
+    display: block;
+    background: var(--app-bg);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+
+  /* Each cell → label-left / value-right row */
+  .rubric-table tbody td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-bottom: 1px solid var(--gray-100);
+    font-size: var(--font-size-sm);
+    white-space: normal !important;
+    max-width: none !important;
+    min-width: 0;
+    box-sizing: border-box;
+    text-align: left !important;
+  }
+
+  .rubric-table tbody td:last-child { border-bottom: none; }
+
+  /* Column labels via ::before */
+  .rubric-table tbody td::before {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--gray-500);
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding-top: 2px;
+  }
+
+  /* rubric-table-no-criterion: 5 columns */
+  .rubric-table-no-criterion tbody td:nth-child(1)::before { content: "Max Marks"; }
+  .rubric-table-no-criterion tbody td:nth-child(2)::before { content: "System Marks"; }
+  .rubric-table-no-criterion tbody td:nth-child(3)::before { content: "System Remarks"; }
+  .rubric-table-no-criterion tbody td:nth-child(4)::before { content: "Teacher Marks"; }
+  .rubric-table-no-criterion tbody td:nth-child(5)::before { content: "Teacher Remarks"; }
+
+  /* rubric-table with criterion: 6 columns */
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(1)::before { content: "Criterion"; }
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(2)::before { content: "Max Marks"; }
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(3)::before { content: "System Marks"; }
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(4)::before { content: "System Remarks"; }
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(5)::before { content: "Teacher Marks"; }
+  .rubric-table:not(.rubric-table-no-criterion) tbody td:nth-child(6)::before { content: "Teacher Remarks"; }
+
+  /* Teacher marks cell: stack input + buttons vertically */
+  .rubric-table tbody td.teacher-marks-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  .rubric-table .marks-input-group { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+  .rubric-table .marks-input       { width: 70px; }
+
+  /* Remarks + criterion cells: stack content vertically */
+  .rubric-table tbody td.remarks-cell,
+  .rubric-table tbody td.criterion-cell {
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: none;
+    gap: 0.375rem;
+  }
+
+  /* Scrollable areas fill full card width */
+  .rubric-table .scrollable-remarks,
+  .rubric-table .scrollable-criterion { width: 100%; max-width: 100%; max-height: 80px; }
+
+  /* Remarks input fills full width */
+  .rubric-table .scrollable-remarks input.form-control { width: 100%; }
+}

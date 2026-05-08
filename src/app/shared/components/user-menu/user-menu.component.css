@@ -143,3 +143,17 @@
   inset: 0;
   z-index: 1999;
 }
+
+/* ── Responsive ────────────────────────────────────────────── */
+@media (max-width: 479px) {
+  /* Hide name/role on small screens — avatar-only trigger */
+  .user-identity,
+  .user-caret { display: none; }
+  .user-avatar-btn { padding: 0.25rem; border-radius: 50%; }
+  /* Dropdown aligns to right edge, full width on tiny screens */
+  .user-dropdown { width: min(200px, calc(100vw - 1.5rem)); right: 0; }
+}
+
+@media (max-width: 360px) {
+  .user-avatar { width: 1.75rem; height: 1.75rem; font-size: 0.65rem; }
+}
